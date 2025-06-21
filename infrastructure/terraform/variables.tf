@@ -65,3 +65,26 @@ variable "gemini_api_key" {
   type        = string
   sensitive   = true
 }
+
+# Billing Variables
+variable "billing_account_name" {
+  description = "The display name of the billing account"
+  type        = string
+}
+
+variable "budget_amount" {
+  description = "Total budget amount in USD"
+  type        = string
+  default     = "300"
+}
+
+variable "budget_alert_email" {
+  description = "Email address for budget alerts"
+  type        = string
+}
+
+variable "notification_channels" {
+  description = "List of notification channel IDs for budget alerts"
+  type        = list(string)
+  default     = []
+}
