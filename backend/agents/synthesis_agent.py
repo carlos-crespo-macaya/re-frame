@@ -1,12 +1,13 @@
 """Synthesis Agent for creating user-friendly responses."""
 
+from typing import Any
+
 from .base import ReFrameAgent
-from typing import Dict, Any
 
 
 class SynthesisAgent(ReFrameAgent):
     """Agent responsible for synthesizing CBT output into supportive responses."""
-    
+
     INSTRUCTIONS = """You are a compassionate communication specialist working with individuals who have Avoidant Personality Disorder (AvPD).
 
 Your role is to:
@@ -38,15 +39,12 @@ Output format:
     "encouragement": "supportive closing message"
 }
 """
-    
+
     def __init__(self):
         """Initialize the Synthesis Agent."""
-        super().__init__(
-            name="SynthesisAgent",
-            instructions=self.INSTRUCTIONS
-        )
-    
-    def _extract_reasoning_path(self, response: Any) -> Dict[str, Any]:
+        super().__init__(name="SynthesisAgent", instructions=self.INSTRUCTIONS)
+
+    def _extract_reasoning_path(self, response: Any) -> dict[str, Any]:
         """Extract synthesis reasoning for transparency."""
         return {
             "raw_response": str(response),
@@ -55,23 +53,23 @@ Output format:
                 "Selected appropriate tone and language",
                 "Structured supportive response",
                 "Added transparency elements",
-                "Included encouragement and next steps"
-            ]
+                "Included encouragement and next steps",
+            ],
         }
-    
-    async def create_user_response(self, cbt_data: Dict[str, Any]) -> Dict[str, Any]:
+
+    async def create_user_response(self, cbt_data: dict[str, Any]) -> dict[str, Any]:
         """Create final user-facing response from CBT analysis."""
         # Prepare synthesis input
         synthesis_input = {
             "cbt_analysis": cbt_data,
             "tone": "warm and supportive",
             "transparency_level": "high",
-            "avpd_sensitivity": "maximum"
+            "avpd_sensitivity": "maximum",
         }
-        
+
         return await self.process_with_transparency(synthesis_input)
-    
-    def format_transparency_block(self, techniques: List[str], reasoning: str) -> str:
+
+    def format_transparency_block(self, techniques: list[str], reasoning: str) -> str:
         """Format transparency information for user display."""
         return f"""
 🔍 **How I processed your thought:**
