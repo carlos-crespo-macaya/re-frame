@@ -4,9 +4,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-re-frame is a web-based support tool for people with Avoidant Personality Disorder (AvPD), providing transparent AI-assisted cognitive reframing using evidence-based frameworks. The project is currently in planning phase with comprehensive specifications but no code implementation yet.
+re-frame.social is a web-based cognitive reframing support tool for people with Avoidant Personality Disorder (AvPD). It's a three-tier application using Google Cloud Platform services with a multi-agent AI system powered by Google Gemini 1.5 Flash.
 
-## Tech Stack (Planned)
+## Architecture
+
+- **Frontend**: Next.js 14 (TypeScript) in `frontend/` directory
+- **Backend**: FastAPI (Python 3.12) in `backend/` directory  
+- **Infrastructure**: Terraform configurations in `infrastructure/` directory
+- **Multi-Agent System**: Intake → Framework → Synthesis agents with Knowledge/Query agents for data access
+
+## Tech Stack
 
 - **Frontend**: Next.js 14 + Tailwind CSS v3 (static export to Firebase Hosting)
 - **Backend**: Python 3.12 + FastAPI (containerized in Google Cloud Run)
@@ -17,31 +24,27 @@ re-frame is a web-based support tool for people with Avoidant Personality Disord
 - **Infrastructure**: Terraform
 - **CI/CD**: GitHub Actions → Cloud Build
 
-## Architecture
-
-The system uses a multi-agent architecture:
-- **Intake Agent**: Collects and validates user input
-- **Framework Agent**: Applies CBT techniques for reframing
-- **Synthesis Agent**: Processes raw LLM output into responses
-- **Knowledge Agent**: Manages persistent learning data
-- **Query Agent**: Handles semantic search
-
 ## Development Commands
 
-As the project has no code yet, when implementation begins:
-
-### Python Backend
+### Backend (Python)
 ```bash
-# Setup virtual environment
+# Setup environment
+uv venv
+source .venv/bin/activate
+uv pip install -e ".[dev]"
+
+# Development
+poe dev        # Start FastAPI development server
+poe test       # Run pytest tests
+poe lint       # Run ruff linter
+poe format     # Format with black
+poe type-check # Run mypy type checking
+poe check      # Run all checks (lint + format + type-check + tests)
+
+# Alternative setup (if UV not available)
 python3.12 -m venv venv
 source venv/bin/activate  # or venv\Scripts\activate on Windows
-
-# Install dependencies (once requirements.txt exists)
 pip install -r requirements.txt
-
-# Run tests (pytest will be used)
-pytest
-pytest --asyncio-mode=auto  # for async tests
 
 # Run FastAPI locally
 uvicorn main:app --reload
@@ -50,29 +53,39 @@ uvicorn main:app --reload
 docker build --platform linux/amd64 -t re-frame-backend .
 ```
 
-### Next.js Frontend
+### Frontend (Next.js)
 ```bash
-# Install dependencies (once package.json exists)
-npm install
-
-# Run development server
-npm run dev
-
-# Build for production
-npm run build
-npm run export  # for static export
-
-# Run tests (when configured)
-npm test
+cd frontend
+pnpm install   # Install dependencies
+pnpm dev       # Start Next.js dev server on localhost:3000
+pnpm build     # Build for production
+pnpm test      # Run tests
+pnpm lint      # Run ESLint
 ```
 
-### Infrastructure
+### Infrastructure (Terraform)
 ```bash
-# Deploy with Terraform (once configured)
+cd infrastructure
 terraform init
 terraform plan
 terraform apply
+terraform fmt -check -recursive  # Check formatting
+terraform validate              # Validate configuration
 ```
+
+## Testing
+
+- **Backend**: Run `poe test` to execute pytest suite. Single test: `pytest backend/tests/path/to/test.py::test_name`
+- **Frontend**: Run `pnpm test` in frontend directory
+- **CI**: All tests run automatically on PRs via GitHub Actions
+
+## Key Conventions
+
+1. **PR Titles**: Must include task ID prefix: [BE-XXX], [FE-XXX], [IF-XXX], or [ALL-XXX]
+2. **Python**: Use UV for package management, Ruff for linting, Black for formatting
+3. **TypeScript**: Use pnpm, follow Next.js 14 conventions
+4. **API**: RESTful endpoints in `/api/v1/` namespace
+5. **Environment Variables**: Store in `.env` files (never commit)
 
 ## Key Implementation Priorities
 
@@ -98,7 +111,7 @@ terraform apply
    - Basic rate limiting
    - Toxicity filtering
 
-## Project Structure (Planned)
+## Project Structure
 
 ```
 re-frame/
@@ -117,17 +130,11 @@ re-frame/
 └── docs/               # Product specs and documentation
 ```
 
-## Important Context
+## Project Management
 
-- Target users have AvPD/severe social anxiety and may be skeptical of AI
-- Building trust through transparency is critical
-- The project follows a phased approach (P0 Alpha → P3)
-- Each phase must deliver a complete, usable product
-- Success metrics: 25 unique users, <10% abuse-flagged, ≥60% helpful feedback
+- The project management is done through GitHub projects
 
-When implementing, always consider the vulnerable user population and prioritize clear, non-judgmental communication in all UI/UX decisions.
-
-## Project Management Protocol
+### Project Management Protocol
 
 When working on re-frame tasks:
 
@@ -159,39 +166,39 @@ When working on re-frame tasks:
    - No hidden decisions - communicate all architectural choices
    - Ask for clarification when requirements are ambiguous
 
-## Task Management Reminders
+### Task Management Reminders
 
-### Automated Enforcement
+#### Automated Enforcement
 - Git hooks enforce task IDs in commit messages (e.g., `[BE-001] Message`)
 - Branch naming convention: `feature/BE-001-description` auto-populates task IDs
 - GitHub Actions will comment on stale tasks (>24h without update)
 
-### Task ID Format
+#### Task ID Format
 - **INF-XXX**: Infrastructure tasks (Terraform, GCP, CI/CD)
 - **BE-XXX**: Backend tasks (FastAPI, ADK agents, integrations)
 - **FE-XXX**: Frontend tasks (Next.js, components, UX)
 - **ALL-XXX**: Cross-team tasks (integration, testing, docs)
 
-### Daily Checklist
+#### Daily Checklist
 - [ ] Morning: Check `/claude/project-management-plan.md` for assigned tasks
 - [ ] Before coding: Update task to "in_progress" with `TodoWrite`
 - [ ] During coding: Reference task ID in ALL commits
 - [ ] After coding: Update task status and log actual time
 - [ ] End of day: Note blockers and tomorrow's priorities
 
-### Weekly Milestones
+#### Weekly Milestones
 - **Monday**: Sprint planning, assign tasks from backlog
 - **Wednesday**: Mid-week sync, address blockers
 - **Friday**: Integration checkpoint, update project board
 
-### Critical Path Awareness
+#### Critical Path Awareness
 Always prioritize tasks that:
 1. Block other teams (API contracts, data models)
 2. Have external dependencies (GCP setup, domain config)
 3. Impact user-facing features directly
 4. Relate to security or cost controls
 
-### Cost & Quality Gates
+#### Cost & Quality Gates
 Before marking any task complete:
 - [ ] Verify no increase in GCP costs beyond plan
 - [ ] Confirm all tests pass
@@ -200,6 +207,29 @@ Before marking any task complete:
 - [ ] Validate against success metrics
 
 Remember: Each phase must deliver a **complete, usable product**. No task is done until it contributes to a deployable feature.
+
+## Multi-Agent AI System
+
+The backend implements a multi-agent system using Google ADK:
+- **Intake Agent**: Processes user input
+- **Framework Agents**: Apply therapeutic frameworks (CBT, DBT, ACT, Stoicism)
+- **Synthesis Agent**: Combines framework outputs
+- **Knowledge/Query Agents**: Manage Firestore/FAISS data access
+
+## Important Notes
+
+- Project uses Google Cloud Platform services (Cloud Run, Firestore, Vertex AI)
+- Designed for $300 GCP credit budget constraint
+- Privacy-first: 7-day TTL for anonymous data
+- Accessibility: WCAG AA compliance required
+- Currently in Phase 0/Alpha - basic structure only, implementation pending
+- Target users have AvPD/severe social anxiety and may be skeptical of AI
+- Building trust through transparency is critical
+- The project follows a phased approach (P0 Alpha → P3)
+- Each phase must deliver a complete, usable product
+- Success metrics: 25 unique users, <10% abuse-flagged, ≥60% helpful feedback
+
+When implementing, always consider the vulnerable user population and prioritize clear, non-judgmental communication in all UI/UX decisions.
 
 ## MCP (Model Context Protocol) Tools
 
@@ -281,16 +311,17 @@ When you ask me to implement a task, I will:
 5. Create PR for your review
 6. Never merge without your approval
 
-## Project Management Guidelines
+## Claude Workspace Guidelines
 
 - All documentation, intermediate scripts, and other artifacts that are not intended to be part of the project codebases should be located in the claude directory
 
-## Claude Assistant Commitments
+## Claude Code Instructions
 
-- Your job is to make this project successful, maximizing the chances of it by proving me wrong in each assumption that is not correct
-- You will have failed if you allow me to take a decision that you know is not the best possible one and do not convince me out of it
+- **Project Success Philosophy**: 
+  - Your job is to make this project successful, maximizing the chances of success by proving me wrong in each assumption that is not correct
+  - You will have failed if you allow me to take a decision that you know is not the best possible one and do not convince me otherwise
 
 ## Communication and Decision-Making Guidelines
 
 - Any deviation from our guidelines should be previously communicated and agreed, no hidden decisions should be taken
-- In the face of ambiguity or doubt, always ask until you have all the required information to successfully carry out the commended task at hand
+- In the face of ambiguity or doubt, always ask until you have all the required information to successfully carry on the commended task at hand

@@ -1,7 +1,7 @@
 resource "google_compute_security_policy" "policy" {
   name        = var.policy_name
   description = "Security policy for re-frame application"
-  
+
   # Default rule - allow traffic
   rule {
     action   = "allow"
@@ -14,7 +14,7 @@ resource "google_compute_security_policy" "policy" {
     }
     description = "Default rule - allow all traffic"
   }
-  
+
   # Rate limiting rule
   rule {
     action   = "rate_based_ban"
@@ -28,17 +28,17 @@ resource "google_compute_security_policy" "policy" {
     rate_limit_options {
       conform_action = "allow"
       exceed_action  = "deny(429)"
-      
+
       rate_limit_threshold {
         count        = var.rate_limit_threshold
         interval_sec = var.rate_limit_interval
       }
-      
-      ban_duration_sec = 600  # Ban for 10 minutes
+
+      ban_duration_sec = 600 # Ban for 10 minutes
     }
     description = "Rate limiting - ${var.rate_limit_threshold} requests per ${var.rate_limit_interval} seconds"
   }
-  
+
   # Block common attack patterns
   rule {
     action   = "deny(403)"
@@ -70,7 +70,7 @@ resource "google_compute_security_policy" "policy" {
     }
     description = "Block common attack patterns"
   }
-  
+
   # Geo-blocking rule (optional - uncomment if needed)
   # rule {
   #   action   = "deny(403)"
@@ -82,17 +82,17 @@ resource "google_compute_security_policy" "policy" {
   #   }
   #   description = "Geo-blocking for high-risk countries"
   # }
-  
+
   # Adaptive protection (DDoS mitigation)
   adaptive_protection_config {
     layer_7_ddos_defense_config {
-      enable = true
+      enable          = true
       rule_visibility = "STANDARD"
     }
   }
-  
+
   # Recaptcha options for future use
   recaptcha_options_config {
-    redirect_site_key = ""  # To be configured when reCAPTCHA is set up
+    redirect_site_key = "" # To be configured when reCAPTCHA is set up
   }
 }
