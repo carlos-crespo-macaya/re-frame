@@ -1,0 +1,78 @@
+[tool.poetry]
+name = "re-frame-backend"
+version = "0.1.0"
+description = "Backend API for re-frame.social - AI-assisted cognitive reframing for AvPD"
+authors = ["re-frame team"]
+readme = "README.md"
+python = "^3.12"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = "^0.109.0"
+uvicorn = {extras = ["standard"], version = "^0.27.0"}
+google-adk = "^0.1.0"
+google-generativeai = "^0.3.2"
+pydantic-settings = "^2.1.0"
+python-dotenv = "^1.0.0"
+firebase-admin = "^6.4.0"
+httpx = "^0.26.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.4"
+pytest-asyncio = "^0.23.3"
+pytest-cov = "^4.1.0"
+black = "^23.12.1"
+ruff = "^0.1.14"
+mypy = "^1.8.0"
+httpx = "^0.26.0"
+types-python-dateutil = "^2.8.19"
+types-requests = "^2.31.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+select = [
+    "E",   # pycodestyle
+    "F",   # pyflakes
+    "I",   # isort
+    "N",   # pep8-naming
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "DTZ", # flake8-datetimez
+    "T20", # flake8-print
+    "RET", # flake8-return
+    "SIM", # flake8-simplify
+    "RUF", # ruff-specific rules
+]
+ignore = ["E501"]  # line too long (handled by black)
+
+[tool.black]
+line-length = 100
+target-version = ['py312']
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = "google.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "firebase_admin.*"
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_functions = "test_*"
+asyncio_mode = "auto"
+addopts = "--cov=. --cov-report=html --cov-report=term-missing"
