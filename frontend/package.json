@@ -1,0 +1,13 @@
+{
+  "name": "re-frame-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "echo 'Dev server not configured yet'",
+    "build": "echo 'Build not configured yet'",
+    "test": "echo 'No tests yet' && exit 0",
+    "lint": "echo 'Linting not configured yet' && exit 0"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
