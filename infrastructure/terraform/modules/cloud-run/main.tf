@@ -1,12 +1,12 @@
 resource "google_cloud_run_service" "backend" {
   name     = var.service_name
   location = var.region
-  
+
   template {
     spec {
       containers {
         image = var.image_url
-        
+
         # Cost-saving: minimal resources
         resources {
           limits = {
@@ -14,7 +14,7 @@ resource "google_cloud_run_service" "backend" {
             memory = var.memory
           }
         }
-        
+
         # Environment variables
         dynamic "env" {
           for_each = var.environment_variables
@@ -23,7 +23,7 @@ resource "google_cloud_run_service" "backend" {
             value = env.value
           }
         }
-        
+
         # Health check endpoint
         startup_probe {
           http_get {
@@ -35,31 +35,31 @@ resource "google_cloud_run_service" "backend" {
           failure_threshold     = 3
         }
       }
-      
+
       # Concurrency limit per instance
       container_concurrency = 80
-      
+
       # Request timeout
       timeout_seconds = 300
     }
-    
+
     metadata {
       annotations = {
         # Scale to zero when not in use
         "autoscaling.knative.dev/minScale" = tostring(var.min_instances)
         "autoscaling.knative.dev/maxScale" = tostring(var.max_instances)
-        
+
         # CPU allocation during request processing only
         "run.googleapis.com/cpu-throttling" = "true"
       }
     }
   }
-  
+
   traffic {
     percent         = 100
     latest_revision = true
   }
-  
+
   autogenerate_revision_name = true
 }
 

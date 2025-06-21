@@ -52,13 +52,34 @@ out/
 *.tsbuildinfo
 next-env.d.ts
 
+# Frontend
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.env.local
+frontend/.env.*.local
+
+# Backend
+backend/.venv/
+backend/__pycache__/
+backend/*.pyc
+backend/.pytest_cache/
+backend/.mypy_cache/
+backend/.ruff_cache/
+backend/htmlcov/
+backend/.coverage
+backend/*.egg-info/
+
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
+
+# OS
 .DS_Store
+Thumbs.db
 
 # Terraform
 **/.terraform/*
@@ -95,6 +116,16 @@ htmlcov/
 .tox/
 .nox/
 .hypothesis/
+coverage/
+.nyc_output/
+
+# Environment
+.env
+.env.local
+.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
 
 # Logs
 logs/
@@ -105,19 +136,14 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# OS files
-.DS_Store
-Thumbs.db
-
-# Environment variables
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
 # Temporary files
 *.tmp
 *.temp
 .tmp/
 .temp/
+
+# Misc
+.serena/
+worktrees/
+.mcp.json
+claude/
