@@ -87,6 +87,54 @@ terraform validate              # Validate configuration
 4. **API**: RESTful endpoints in `/api/v1/` namespace
 5. **Environment Variables**: Store in `.env` files (never commit)
 
+## Development Standards
+
+### Mandatory Local Checks Before Pushing
+**CRITICAL**: Every branch must pass ALL local checks before pushing. No exceptions.
+
+1. **Run checks before EVERY push**:
+   ```bash
+   make check-all  # Runs all CI/CD checks locally
+   # OR
+   ./scripts/local-checks.sh  # Detailed output
+   ```
+
+2. **Local checks MUST be identical to CI/CD**:
+   - Backend: Ruff linting, Black formatting, Mypy type checking, Pytest
+   - Frontend: ESLint, build verification
+   - Infrastructure: Terraform fmt and validate
+   - Security: No secrets, no large files
+
+3. **Never push if local checks fail** - fix issues first
+
+### Test-Driven Development (TDD) Policy
+**MANDATORY** for all feature development:
+
+1. **Frontend & Backend**: TDD is required without exception
+   - Write tests FIRST
+   - Then write implementation to make tests pass
+   - Refactor while keeping tests green
+
+2. **Infrastructure**: May be excepted due to its nature
+
+3. **No feature PRs without tests**:
+   - Tests must exist before implementation
+   - Tests must pass locally before pushing
+   - Tests must cover the new functionality
+
+4. **TDD Workflow**:
+   ```bash
+   # 1. Write failing test
+   # 2. Run test to see it fail
+   make test
+   # 3. Write minimal code to pass
+   # 4. Run test to see it pass
+   make test
+   # 5. Refactor if needed
+   # 6. Ensure all checks pass
+   make check-all
+   ```
+
 ## Key Implementation Priorities
 
 1. **Cost Efficiency**: Stay within $300 GCP credit budget
@@ -132,39 +180,38 @@ re-frame/
 
 ## Project Management
 
-- The project management is done through GitHub projects
+**SINGLE SOURCE OF TRUTH**: GitHub Project "re-frame" (ID: 3)
 
 ### Project Management Protocol
 
-When working on re-frame tasks:
+**CRITICAL**: The GitHub project board is the ONLY place to track tasks, status, and progress. No local files or todo lists.
 
 1. **Start of Session**: 
-   - Run `TodoRead` to check current tasks
-   - Check GitHub Project board status (when available)
-   - Review `/claude/project-management-plan.md` for task IDs
-   - Note any blockers or dependencies
+   - Check GitHub Project board: `gh project view 3 --owner macayaven`
+   - Review open issues and their status
+   - Check assigned tasks and priorities
 
 2. **During Work**:
-   - Update task status when starting work using `TodoWrite`
-   - Reference task IDs in all commits (e.g., `[BE-001] Add health check`)
-   - Log time estimates vs actual in comments
-   - Document any deviations from plan
+   - Update issue status on GitHub project board
+   - Reference issue numbers in all commits (e.g., `[BE-001] Add health check #7`)
+   - Comment on issues with progress updates
+   - Use GitHub issue comments for any blockers or questions
 
 3. **End of Session**:
-   - Update all task statuses with `TodoWrite`
-   - Create PR with task reference
-   - Summarize progress and next steps
+   - Update issue status on GitHub project board
+   - Comment on issues with work completed
+   - Create PR linked to the issue
 
 4. **Task References**:
-   - Always include task ID in commits: `[BE-001] Add health check endpoint`
-   - Link PRs to tasks using GitHub keywords (fixes #123)
-   - Track completion in project management doc
+   - Always include issue number in commits: `[BE-001] Add health check endpoint #7`
+   - Link PRs to issues using GitHub keywords: `Fixes #7` or `Closes #7`
+   - All task tracking happens in GitHub issues/project
 
 5. **Important Decisions**:
-   - **Therapist Portal**: DEFERRED to post-Phase 3 based on demand
-   - Always challenge assumptions that could impact project success
-   - No hidden decisions - communicate all architectural choices
-   - Ask for clarification when requirements are ambiguous
+   - Document architectural decisions in issue comments
+   - Use issue labels for categorization
+   - Create new issues for discovered tasks
+   - No hidden decisions - everything tracked in GitHub
 
 ### Task Management Reminders
 
