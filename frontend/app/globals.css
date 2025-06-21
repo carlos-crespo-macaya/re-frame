@@ -1,0 +1,108 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  
+  /* Accessible focus styles */
+  --focus-color: #1677ff;
+  --focus-width: 3px;
+  
+  /* Animation settings - reduced motion by default */
+  --animation-duration: 300ms;
+  --animation-ease: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+    --focus-color: #69b1ff;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --animation-duration: 0.01ms;
+  }
+}
+
+@layer base {
+  
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    
+    /* Mobile viewport fix */
+    -webkit-text-size-adjust: 100%;
+    
+    /* Smooth scrolling with accessibility considerations */
+    scroll-behavior: smooth;
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    body {
+      scroll-behavior: auto;
+    }
+  }
+  
+  /* Focus styles for better accessibility */
+  :focus-visible {
+    outline: var(--focus-width) solid var(--focus-color);
+    outline-offset: 2px;
+  }
+  
+  /* Remove focus outline for mouse users */
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+}
+
+@layer components {
+  /* Container with safe area padding for mobile */
+  .container-safe {
+    @apply container mx-auto px-4 sm:px-6 lg:px-8;
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+  
+  /* Accessible button base styles */
+  .btn-base {
+    @apply relative inline-flex items-center justify-center rounded-md font-medium transition-all duration-[var(--animation-duration)] ease-[var(--animation-ease)];
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2;
+    @apply disabled:pointer-events-none disabled:opacity-50;
+    min-height: 44px; /* WCAG AA touch target */
+    min-width: 44px;
+  }
+  
+  /* Form input base styles */
+  .input-base {
+    @apply flex w-full rounded-md border bg-transparent px-3 py-2 text-base;
+    @apply file:border-0 file:bg-transparent file:text-sm file:font-medium;
+    @apply placeholder:text-neutral-500;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2;
+    @apply disabled:cursor-not-allowed disabled:opacity-50;
+    min-height: 44px; /* WCAG AA touch target */
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  /* Animation utilities */
+  .animate-in {
+    animation-duration: var(--animation-duration);
+    animation-timing-function: var(--animation-ease);
+    animation-fill-mode: both;
+  }
+  
+  /* Skip to content link for screen readers */
+  .skip-link {
+    @apply absolute left-0 top-0 z-50 -translate-y-full bg-primary-600 px-4 py-2 text-white;
+    @apply focus:translate-y-0;
+  }
+}

@@ -1,0 +1,150 @@
+Below is a technical-architecture proposal that details every major component, the frameworks or managed services to use, and how they fit together for re-frame.social (v0–v1).  Each section lists why the choice fits the $300 GCP-credit constraint and the project’s transparency / anti-abuse goals.
+
+⸻
+
+1. High-Level Diagram (logical)
+
+┌──────────────────────────────────────────────────────────────┐
+│                      Frontend (Next.js)                     │
+│  (Vercel-style SSG → Firebase Hosting → re-frame.social)    │
+└───────────────┬───────────────────────────┬─────────────────┘
+                │                           │  
+        (HTTPS JSON)                 (Auth redirect)
+                │                           │
+        ┌──────▼──────┐          ┌──────────▼─────────┐
+        │ Cloud Run    │         │ Firebase Auth       │
+        │  API (FastAPI│         │  (email/OAuth/anon) │
+        │  + ADK)      │         └──────────┬─────────┘
+        └──────┬──────┘                    (UID token)
+  gRPC / SDK   │
+                │
+        ┌──────▼───────────┐
+        │ Vertex AI (LLMs) │
+        └──────┬───────────┘
+                │
+  gRPC / REST   │
+                │
+  ┌─────────────▼─────────────┐
+  │   Firestore (document DB) │
+  └─────────────┬─────────────┘
+                │
+                │
+  ┌─────────────▼─────────────┐
+  │   FAISS  (Vector DB)      │
+  │  (Docker on Cloud Run)    │
+  └─────────────┬─────────────┘
+                │
+                ▼
+    Cloud Logging / Monitoring
+
+
+⸻
+
+2. Component-by-Component Spec
+
+Layer	Choice	Version / Plan	Rationale
+Frontend	Next.js 14 + Tailwind v3	Static-site export, deployed to Firebase Hosting	Zero runtime cost; excellent DX; Tailwind keeps UI snappy & WCAG-AA compliant.
+Voice Input (optional)	Vanilla Web Speech API	Progressive enhancement; no backend cost	Runs in-browser; polyfills for Safari ≈3 KB.
+Auth	Firebase Auth	Email/password, Google OAuth, anonymous mode	Fully managed; free tier scales far beyond MVP.
+API layer	Python 3.12 + FastAPI	Containerised in Cloud Run (256 MiB; minInst=0)	Highest productivity; async endpoints; pydantic for validation; integrates nicely with ADK.
+Agent Orchestration	Google AI Developer Kit (ADK)	semantic-router runtime inside FastAPI process	Native to Vertex LLMs; handles tool-calling & multi-step plans without external orchestration engine.
+LLMs	Gemini 1.5 Flash (default)	Vertex AI chat endpoint; fallback to PaLM 2	Flash tier is 60-80 % cheaper per token vs. Pro; good quality + cost-cap controls.
+Document DB	Cloud Firestore (Native mode)	sessions, stars, feedback collections	Millisecond reads; free until 50 k docs/month; server-side security via Firebase Rules.
+Vector DB	FAISS (CPU-only) in Docker	Single Cloud-Run service (512 MiB) with /search & /upsert endpoints	No license fees; easy to dump to GCS backup; can swap to Vertex Matching Engine later.
+Rate Limiting	Cloud Armor IP-based rule + Redis-like in-mem tokens (FastAPI middleware)	5 req/hour/UID (anon or logged)	Cloud Armor gives global edge enforcement; middleware covers local dev paths.
+Toxicity Filter	Perspective API (Attribute: TOXICITY)	Free 1000-req/day tier + local regex fallback	Blocks hate / derogatory content cheaply.
+Logging / Metrics	Cloud Logging, Cloud Monitoring (free quotas)	Structured JSON logs from FastAPI; basic uptime dashboard	GCP native; zero extra cost until >50 GiB logs.
+CI/CD	GitHub Actions → Cloud Build	PR triggers; docker build --platform linux/amd64	Free GitHub runner minutes; Cloud Build uses the same GCP credits.
+IaC	Terraform 1.7	Manage Cloud Run, Firestore indexes, Armor rules, IAM	One-shot deploy script; keeps infra reproducible.
+Testing	Pytest + pytest-asyncio	Unit tests for agent logic & rate-limit middleware	Cheap to run; integrate coverage badge.
+
+
+⸻
+
+3. Agent Workflows (Phase 1 – single CBT agent)
+	1.	/intake
+	•	FastAPI route validates raw text.
+	•	Calls ADK Intake Agent chain: few-shot prompt → YAML fields.
+	•	If required fields missing → ADK returns follow-up question → API relays to user.
+	2.	/reframe
+	•	Receives structured JSON.
+	•	CBT Agent prompt template:
+
+{event_desc}
+---
+distortions = detect_distortions(event_desc)
+reasoning = step_by_step_reframe(distortions)
+return {{"distortions": distortions,
+         "reframe": reasoning.reframe,
+         "steps": reasoning.steps}}
+
+
+	•	Gemini Flash chat endpoint, temperature=0.3.
+
+	3.	/synth (Phase 2)
+	•	Accepts outputs from multiple framework agents.
+	•	Merges by tagging insight, overlap, unique.
+	4.	/store
+	•	Firestore: write session doc (UID or anon-UUID).
+	•	FAISS: embed "[event] // [distortion list]" with sentence-transformers/all-MiniLM-L6-v2 (runs CPU).
+	5.	/query (Phase 3)
+	•	Vector search top-k personal memories → Gemini summarise.
+	•	Blend with curated AvPD docs (static embeddings).
+
+⸻
+
+4. Cost Guardrails
+
+Resource	Monthly Cap	Est. Cost
+Cloud Run API (0 → max 1 vCPU, 256 MiB)	2 hrs/day active	≈ $10
+Vector-DB Cloud Run (512 MiB)	1 hr/day	≈ $6
+Vertex AI tokens (Gemini Flash)	1 M input / 1 M output	≈ $60
+Firestore & Hosting	n/a (below free tier)	$0
+Perspective API	5 k requests	$0
+Total	–	≈ $80 (well under $300 grant for several months)
+
+
+⸻
+
+5. Security & Privacy
+	•	IAM principle of least privilege (Terraform):
+	•	Cloud Run SA → Firestore read/write specific collections only.
+	•	Firebase Security Rules:
+	•	Authenticated users only read/write own docs.
+	•	Anonymous doc TTL enforced by scheduled Cloud Task purger.
+	•	Encryption:
+	•	HTTPS everywhere; Firestore & GCS encrypted at rest by default.
+	•	No PII required for anon use; e-mail optional for login.
+
+⸻
+
+6. Observability
+	•	Structured log fields: uid, session_id, endpoint, latency_ms, gemini_tokens_in/out.
+	•	Alerts:
+	•	95th percentile latency >3 s.
+	•	Abuse flag rate >10 % per hour.
+	•	Vertex AI cost anomaly >$5/day.
+
+⸻
+
+7. Incremental Upgrade Path
+
+Future Need	Drop-in Swap
+Heavier traffic	Cloud Run minInst ≥ 1; add Cloud Tasks queue for async LLM calls
+More frameworks	Additional agent classes; ADK planner decides order
+Better similarity search	Vertex Matching Engine (vectors ≈ $0.30/GB/mo)
+Native mobile	Flutter web → iOS/Android wrap; reuse FastAPI endpoints
+Therapist console	Role-based Firebase Auth + Firestore sub-collection per client
+
+
+⸻
+
+Ready to Build
+
+With these components you can:
+	1.	Bootstrap Terraform → Firestore, Cloud Run, Armor.
+	2.	Scaffold FastAPI routes + ADK agents.
+	3.	Push static Next.js build to Firebase Hosting under re-frame.social.
+	4.	Iterate cheaply inside the $300 grant while collecting real-world feedback from Reddit.
+
+Let me know if you’d like the actual Terraform starter or sample FastAPI + ADK code snippets, and we’ll get the first container running.
