@@ -53,11 +53,12 @@ jobs:
       uses: actions/labeler@v5
       with:
         configuration-path: .github/labeler.yml
-        sync-labels: true
 
   pr-size:
     name: Check PR Size
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
     
     steps:
     - uses: actions/checkout@v4
