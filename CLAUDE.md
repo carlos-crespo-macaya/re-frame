@@ -349,6 +349,26 @@ Example: If `gh project create` fails, check GitHub API docs via MCP tools for c
 - Update documentation if needed
 - Ensure all checks pass before merge
 
+### After PR Merge
+**IMPORTANT**: After a PR is successfully merged, always follow this workflow before starting the next task:
+
+1. **Switch to main branch**:
+   ```bash
+   git checkout main
+   ```
+
+2. **Pull latest changes**:
+   ```bash
+   git pull origin main
+   ```
+
+3. **Create new feature branch from updated main**:
+   ```bash
+   git checkout -b feature/[NEW-TASK-ID]-brief-description
+   ```
+
+This ensures your new branch includes all recently merged changes and prevents conflicts.
+
 ### My Responsibilities
 When you ask me to implement a task, I will:
 1. Create appropriate feature branch
@@ -357,6 +377,7 @@ When you ask me to implement a task, I will:
 4. Push to remote
 5. Create PR for your review
 6. Never merge without your approval
+7. After merge, checkout main and pull latest before starting next task
 
 ## Claude Workspace Guidelines
 
