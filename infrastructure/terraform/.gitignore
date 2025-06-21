@@ -1,0 +1,28 @@
+# Terraform files
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Variable files that might contain sensitive data
+terraform.tfvars
+*.auto.tfvars
+
+# Ignore any .tfvars files that are not example files
+!*.tfvars.example
+!environments/*.tfvars
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
