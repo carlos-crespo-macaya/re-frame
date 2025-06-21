@@ -1,3 +1,57 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+*.log
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+.ruff_cache/
+
+# Node.js / Next.js
+node_modules/
+.next/
+out/
+.cache/
+.parcel-cache/
+.turbo/
+.vercel/
+*.tsbuildinfo
+next-env.d.ts
+
 # Frontend
 frontend/node_modules/
 frontend/.next/
@@ -21,26 +75,72 @@ backend/*.egg-info/
 .idea/
 *.swp
 *.swo
+*~
 
 # OS
 .DS_Store
 Thumbs.db
 
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+*.tfvars
+*.tfvars.json
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+.terraform.lock.hcl
+
+# Claude directory (local documentation and scripts)
+/claude/
+
+# Firebase
+.firebase/
+firebase-debug.log
+firestore-debug.log
+firestore.rules
+firestore.indexes.json
+
+# Google Cloud
+.gcloudignore
+app.yaml
+
+# Testing
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+coverage/
+.nyc_output/
+
 # Environment
 .env
 .env.local
 .env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
 
 # Logs
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+lerna-debug.log*
 
-# Testing
-coverage/
-.nyc_output/
+# Temporary files
+*.tmp
+*.temp
+.tmp/
+.temp/
 
 # Misc
 .serena/
