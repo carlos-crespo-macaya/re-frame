@@ -1,0 +1,19 @@
+# Example Terraform variables file
+# Copy this to terraform.tfvars and fill in your values
+
+project_id = "your-gcp-project-id"
+region     = "us-central1"
+
+# Cloud Run configuration
+cloud_run_service_name  = "re-frame-backend"
+backend_image_url      = "gcr.io/your-project-id/re-frame-backend:latest"
+cloud_run_max_instances = 2
+cloud_run_cpu          = "1"
+cloud_run_memory       = "512Mi"
+
+# Firebase configuration
+firebase_hosting_site_id = "your-firebase-site-id"
+auth_domain             = "your-project.firebaseapp.com"
+
+# Sensitive variables (set as environment variables)
+# export TF_VAR_gemini_REDACTED"
