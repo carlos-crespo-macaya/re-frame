@@ -1,0 +1,17 @@
+# Example backend configuration for remote state storage
+# Uncomment and configure this for team collaboration
+
+# terraform {
+#   backend "gcs" {
+#     bucket  = "YOUR-PROJECT-ID-terraform-state"
+#     prefix  = "terraform/state"
+#   }
+# }
+
+# To use this:
+# 1. Create a GCS bucket: 
+#    gsutil mb gs://YOUR-PROJECT-ID-terraform-state
+# 2. Enable versioning:
+#    gsutil versioning set on gs://YOUR-PROJECT-ID-terraform-state
+# 3. Rename this file to backend.tf
+# 4. Run: terraform init -migrate-state
