@@ -17,7 +17,7 @@ re-frame.social is a web-based cognitive reframing support tool for people with 
 
 - **Frontend**: Next.js 14 + Tailwind CSS v3 (static export to Firebase Hosting)
 - **Backend**: Python 3.12 + FastAPI (containerized in Google Cloud Run)
-- **LLMs**: Gemini 1.5 Flash via Vertex AI (PaLM 2 fallback)
+- **LLMs**: Gemini 1.5 Flash via Google AI Studio API
 - **Agent Framework**: Google AI Developer Kit (ADK)
 - **Databases**: Cloud Firestore (documents), FAISS (vectors)
 - **Auth**: Firebase Auth
@@ -265,7 +265,7 @@ The backend implements a multi-agent system using Google ADK:
 
 ## Important Notes
 
-- Project uses Google Cloud Platform services (Cloud Run, Firestore, Vertex AI)
+- Project uses Google Cloud Platform services (Cloud Run, Firestore) and Google AI Studio API
 - Designed for $300 GCP credit budget constraint
 - Privacy-first: 7-day TTL for anonymous data
 - Accessibility: WCAG AA compliance required
@@ -393,3 +393,69 @@ When you ask me to implement a task, I will:
 
 - Any deviation from our guidelines should be previously communicated and agreed, no hidden decisions should be taken
 - In the face of ambiguity or doubt, always ask until you have all the required information to successfully carry on the commended task at hand
+
+## Definition of Done
+
+### Task Level
+- [ ] Code complete and tested (TDD - tests written first)
+- [ ] PR created with task reference
+- [ ] Peer reviewed and approved
+- [ ] Documentation updated
+- [ ] All checks pass (lint, format, type-check, tests)
+- [ ] Task marked complete in GitHub project
+
+### Sprint Level
+- [ ] All planned tasks complete
+- [ ] Integration tests passing
+- [ ] No increase in GCP costs beyond plan
+- [ ] Sprint retro conducted
+- [ ] Next sprint planned
+
+### Phase Level
+- [ ] Success metrics achieved
+- [ ] Security audit passed
+- [ ] Documentation complete
+- [ ] Deployed and functional
+- [ ] Go/no-go decision made
+
+## Risk Management
+
+### Technical Risks
+1. **Google AI API Costs Exceed Budget**
+   - Mitigation: Daily cost alerts at $10 threshold
+   - Contingency: Switch to cached responses only
+   - Prevention: Aggressive caching, rate limiting (10 req/hour per user)
+
+2. **Abuse/Toxicity Spike**
+   - Mitigation: Rate limiting (10 req/hour), Perspective API
+   - Contingency: Temporary anonymous disable
+   - Prevention: Content filtering, user feedback
+
+3. **Performance Issues**
+   - Mitigation: Load test early with expected traffic
+   - Contingency: Scale down features, add caching
+   - Prevention: Performance budgets, monitoring
+
+### Process Risks
+1. **Integration Delays**
+   - Mitigation: Clear API contracts, regular syncs
+   - Contingency: Mock implementations
+   - Prevention: Early integration tests
+
+2. **Scope Creep**
+   - Mitigation: Strict phase gates, defer decisions
+   - Contingency: Feature flags for experimental work
+   - Prevention: Clear acceptance criteria
+
+## Integration Checkpoints
+
+### Weekly Schedule
+- **Monday**: Sprint planning, assign tasks from backlog
+- **Wednesday**: Mid-week sync, address blockers
+- **Friday**: Integration checkpoint, demo progress
+
+### Integration Requirements
+- All teams demo working components
+- Backend provides updated API contracts
+- Frontend validates against real endpoints
+- Infrastructure provides deployment status
