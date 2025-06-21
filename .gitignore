@@ -97,9 +97,6 @@ override.tf.json
 terraform.rc
 .terraform.lock.hcl
 
-# Claude directory (local documentation and scripts)
-/claude/
-
 # Firebase
 .firebase/
 firebase-debug.log
@@ -146,5 +143,7 @@ lerna-debug.log*
 .serena/
 worktrees/
 .mcp.json
+
+# Claude directory (local documentation and scripts)
 claude/
 
