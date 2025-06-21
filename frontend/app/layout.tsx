@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import RootErrorBoundary from "@/components/error/RootErrorBoundary";
+import { ThemeProvider } from "@/lib/theme/ThemeContext";
+import { themeScript } from "@/lib/theme/theme-script";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -56,26 +58,37 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="scroll-smooth">
+    <html lang="en" className="scroll-smooth" suppressHydrationWarning>
       <head>
         {/* Preconnect to potential external domains */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+        
+        {/* Prevent FOUC with theme */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: themeScript,
+          }}
+        />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased min-h-screen`}
+        suppressHydrationWarning
       >
         {/* Skip to main content link for screen readers */}
         <a href="#main-content" className="skip-link">
           Skip to main content
         </a>
         
-        {/* Main application with error boundary */}
-        <RootErrorBoundary>
-          <div className="flex flex-col min-h-screen">
-            {children}
-          </div>
-        </RootErrorBoundary>
+        {/* Theme provider wrapper */}
+        <ThemeProvider>
+          {/* Main application with error boundary */}
+          <RootErrorBoundary>
+            <div className="flex flex-col min-h-screen">
+              {children}
+            </div>
+          </RootErrorBoundary>
+        </ThemeProvider>
       </body>
     </html>
   );
