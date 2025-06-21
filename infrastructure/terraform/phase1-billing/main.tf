@@ -18,8 +18,8 @@ terraform {
 }
 
 provider "google" {
-  project = var.project_id
-  region  = var.region
+  project         = var.project_id
+  region          = var.region
   billing_project = var.project_id
 }
 
@@ -53,8 +53,8 @@ resource "google_billing_budget" "project_budget" {
   display_name    = "${var.project_id}-budget"
 
   budget_filter {
-    projects = ["projects/${var.project_id}"]
-    services = []
+    projects               = ["projects/${var.project_id}"]
+    services               = []
     credit_types_treatment = "INCLUDE_ALL_CREDITS"
   }
 
@@ -67,47 +67,47 @@ resource "google_billing_budget" "project_budget" {
 
   # Alert thresholds
   threshold_rules {
-    threshold_percent = 0.03  # $10 alert
+    threshold_percent = 0.03 # $10 alert
     spend_basis       = "CURRENT_SPEND"
   }
 
   threshold_rules {
-    threshold_percent = 0.17  # $50 alert
+    threshold_percent = 0.17 # $50 alert
     spend_basis       = "CURRENT_SPEND"
   }
 
   threshold_rules {
-    threshold_percent = 0.33  # $100 alert
+    threshold_percent = 0.33 # $100 alert
     spend_basis       = "CURRENT_SPEND"
   }
 
   threshold_rules {
-    threshold_percent = 0.50  # $150 alert
+    threshold_percent = 0.50 # $150 alert
     spend_basis       = "CURRENT_SPEND"
   }
 
   threshold_rules {
-    threshold_percent = 0.67  # $200 alert
+    threshold_percent = 0.67 # $200 alert
     spend_basis       = "CURRENT_SPEND"
   }
 
   threshold_rules {
-    threshold_percent = 0.83  # $250 alert - CRITICAL
+    threshold_percent = 0.83 # $250 alert - CRITICAL
     spend_basis       = "CURRENT_SPEND"
   }
 
   threshold_rules {
-    threshold_percent = 0.90  # $270 alert - EMERGENCY
+    threshold_percent = 0.90 # $270 alert - EMERGENCY
     spend_basis       = "CURRENT_SPEND"
   }
 
   threshold_rules {
-    threshold_percent = 1.0   # $300 alert - BUDGET EXHAUSTED
+    threshold_percent = 1.0 # $300 alert - BUDGET EXHAUSTED
     spend_basis       = "CURRENT_SPEND"
   }
 
   threshold_rules {
-    threshold_percent = 1.2   # Alert if forecasted to exceed by 20%
+    threshold_percent = 1.2 # Alert if forecasted to exceed by 20%
     spend_basis       = "FORECASTED_SPEND"
   }
 
@@ -121,7 +121,7 @@ resource "google_billing_budget" "project_budget" {
 resource "google_monitoring_notification_channel" "email" {
   display_name = "Budget Alert Email"
   type         = "email"
-  
+
   labels = {
     email_address = var.budget_alert_email
   }

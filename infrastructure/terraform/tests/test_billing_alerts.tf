@@ -3,22 +3,22 @@
 
 # Test data
 locals {
-  test_project_id          = "test-project-123"
-  test_billing_account     = "Test Billing Account"
-  test_budget_amount       = "300"
-  test_alert_email         = "test@example.com"
-  
+  test_project_id      = "test-project-123"
+  test_billing_account = "Test Billing Account"
+  test_budget_amount   = "300"
+  test_alert_email     = "test@example.com"
+
   # Expected alert thresholds
   expected_thresholds = [
-    { percent = 0.03, amount = 10,  basis = "CURRENT_SPEND" },    # $10
-    { percent = 0.17, amount = 50,  basis = "CURRENT_SPEND" },    # $50
-    { percent = 0.33, amount = 100, basis = "CURRENT_SPEND" },    # $100
-    { percent = 0.50, amount = 150, basis = "CURRENT_SPEND" },    # $150
-    { percent = 0.67, amount = 200, basis = "CURRENT_SPEND" },    # $200
-    { percent = 0.83, amount = 250, basis = "CURRENT_SPEND" },    # $250
-    { percent = 0.90, amount = 270, basis = "CURRENT_SPEND" },    # $270
-    { percent = 1.00, amount = 300, basis = "CURRENT_SPEND" },    # $300
-    { percent = 1.20, amount = 360, basis = "FORECASTED_SPEND" }  # 120% forecast
+    { percent = 0.03, amount = 10, basis = "CURRENT_SPEND" },    # $10
+    { percent = 0.17, amount = 50, basis = "CURRENT_SPEND" },    # $50
+    { percent = 0.33, amount = 100, basis = "CURRENT_SPEND" },   # $100
+    { percent = 0.50, amount = 150, basis = "CURRENT_SPEND" },   # $150
+    { percent = 0.67, amount = 200, basis = "CURRENT_SPEND" },   # $200
+    { percent = 0.83, amount = 250, basis = "CURRENT_SPEND" },   # $250
+    { percent = 0.90, amount = 270, basis = "CURRENT_SPEND" },   # $270
+    { percent = 1.00, amount = 300, basis = "CURRENT_SPEND" },   # $300
+    { percent = 1.20, amount = 360, basis = "FORECASTED_SPEND" } # 120% forecast
   ]
 }
 
