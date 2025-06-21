@@ -1,25 +1,33 @@
+@import './design-tokens.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Legacy variables for backward compatibility */
+  --background: var(--color-background);
+  --foreground: var(--color-text-primary);
   
   /* Accessible focus styles */
-  --focus-color: #1677ff;
-  --focus-width: 3px;
+  --focus-color: var(--focus-ring-color);
+  --focus-width: var(--focus-ring-width);
   
-  /* Animation settings - reduced motion by default */
-  --animation-duration: 300ms;
-  --animation-ease: cubic-bezier(0.4, 0, 0.2, 1);
+  /* Animation settings */
+  --animation-duration: var(--duration-normal);
+  --animation-ease: var(--ease-smooth);
 }
 
+/* System preference for dark mode */
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-    --focus-color: #69b1ff;
+  :root:not([data-theme="light"]) {
+    @apply [&]:bg-neutral-950;
+  }
+  
+  body:not([data-theme="light"]) {
+    /* Apply dark mode tokens */
+    --color-background: var(--color-neutral-950);
+    --color-text-primary: var(--color-neutral-50);
   }
 }
 

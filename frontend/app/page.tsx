@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import ThoughtInputForm from '@/components/forms/ThoughtInputForm'
+import { ThemeToggle } from '@/components/ui'
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false)
@@ -29,12 +30,17 @@ export default function Home() {
       {/* Header */}
       <header className="border-b border-neutral-200 dark:border-neutral-800">
         <div className="container-safe py-6">
-          <h1 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
-            re-frame.social
-          </h1>
-          <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">
-            Cognitive reframing support
-          </p>
+          <div className="flex items-start justify-between">
+            <div>
+              <h1 className="text-2xl font-semibold text-neutral-900 dark:text-neutral-100">
+                re-frame.social
+              </h1>
+              <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">
+                Cognitive reframing support
+              </p>
+            </div>
+            <ThemeToggle className="ml-4" />
+          </div>
         </div>
       </header>
 
