@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import RootErrorBoundary from "@/components/error/RootErrorBoundary";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -69,10 +70,12 @@ export default function RootLayout({
           Skip to main content
         </a>
         
-        {/* Main application */}
-        <div className="flex flex-col min-h-screen">
-          {children}
-        </div>
+        {/* Main application with error boundary */}
+        <RootErrorBoundary>
+          <div className="flex flex-col min-h-screen">
+            {children}
+          </div>
+        </RootErrorBoundary>
       </body>
     </html>
   );
