@@ -50,7 +50,7 @@ jobs:
     
     
     - name: Upload coverage reports
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v5
       with:
         file: backend/coverage.xml
         flags: backend
@@ -87,7 +87,7 @@ jobs:
       run: pnpm test || echo "No tests yet"
     
     - name: Upload coverage reports
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v5
       with:
         file: frontend/coverage/lcov.info
         flags: frontend
