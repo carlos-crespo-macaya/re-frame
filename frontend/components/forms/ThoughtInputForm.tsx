@@ -2,6 +2,7 @@
 
 import { useState, FormEvent, KeyboardEvent } from 'react'
 import { cn } from '@/lib/utils'
+import { Button } from '@/components/ui'
 
 interface ThoughtInputFormProps {
   onSubmit: (thought: string) => void
@@ -75,34 +76,25 @@ export default function ThoughtInputForm({
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">
-        <button
+        <Button
           type="submit"
           disabled={isSubmitDisabled}
-          className={cn(
-            "btn-base flex-1 sm:flex-none",
-            "bg-primary-600 text-white hover:bg-primary-700",
-            "disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed",
-            "dark:disabled:bg-gray-700 dark:disabled:text-gray-500",
-            "transition-colors duration-200"
-          )}
-          aria-busy={isLoading}
+          loading={isLoading}
+          variant="primary"
+          size="medium"
+          className="flex-1 sm:flex-none"
         >
           {isLoading ? 'Analyzing...' : 'Analyze Thought'}
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
           onClick={handleClear}
           disabled={isLoading}
-          className={cn(
-            "btn-base",
-            "bg-gray-200 text-gray-700 hover:bg-gray-300",
-            "dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600",
-            "disabled:opacity-50 disabled:cursor-not-allowed",
-            "transition-colors duration-200"
-          )}
+          variant="secondary"
+          size="medium"
         >
           Clear
-        </button>
+        </Button>
       </div>
 
       {isLoading && (
