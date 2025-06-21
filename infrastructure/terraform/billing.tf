@@ -107,7 +107,7 @@ resource "google_monitoring_alert_policy" "daily_spend_alert" {
       filter          = "resource.type=\"billing_account\" AND metric.type=\"billing.googleapis.com/billing/v1/daily_cost\""
       duration        = "60s"
       comparison      = "COMPARISON_GT"
-      threshold_value = 10.0
+      threshold_value = 10
 
       aggregations {
         alignment_period   = "86400s" # 24 hours
@@ -142,7 +142,7 @@ output "alert_thresholds" {
   value = [
     for rule in google_billing_budget.project_budget.threshold_rules : {
       percent = rule.threshold_percent
-      amount  = format("%.0f", rule.threshold_percent * tonumber(var.budget_amount))
+      amount  = format("%.0f", rule.threshold_percent * var.budget_amount)
       basis   = rule.spend_basis
     }
   ]
