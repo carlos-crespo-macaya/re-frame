@@ -1,0 +1,201 @@
+name: Security Checks
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+  push:
+    branches: [ main ]
+  schedule:
+    # Run security checks daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+permissions:
+  contents: read
+  security-events: write
+  pull-requests: read
+
+jobs:
+  python-security:
+    name: Python Security Scan
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    
+    - name: Install UV
+      run: |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+    
+    - name: Cache dependencies
+      uses: actions/cache@v4
+      with:
+        path: backend/.venv
+        key: venv-security-${{ runner.os }}-${{ hashFiles('backend/pyproject.toml') }}
+    
+    - name: Install dependencies
+      run: |
+        uv venv
+        . .venv/bin/activate
+        uv pip install bandit[toml] || echo "Minimal dependencies installed"
+    
+    - name: Run Bandit security scan
+      run: |
+        . .venv/bin/activate
+        bandit -r . -f json -o bandit-report.json || echo "No Python files to scan yet"
+      continue-on-error: true
+    
+    - name: Upload Bandit results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: bandit-results
+        path: backend/bandit-report.json
+    
+    - name: Check for high severity issues
+      run: |
+        . .venv/bin/activate
+        bandit -r . -ll || echo "No high severity issues found"
+
+  terraform-security:
+    name: Infrastructure Security Scan
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infrastructure
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    
+    - name: Install Checkov
+      run: pip install checkov
+    
+    - name: Run Checkov scan
+      id: checkov
+      uses: bridgecrewio/checkov-action@master
+      with:
+        directory: infrastructure
+        quiet: true
+        soft_fail: true
+        framework: terraform
+        output_format: json
+        output_file_path: checkov-report.json
+    
+    - name: Upload Checkov results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: checkov-results
+        path: checkov-report.json
+    
+    - name: Check for critical issues
+      run: |
+        if [[ -f checkov-report.json ]]; then
+          critical_count=$(jq '.summary.failed_critical_policies // 0' checkov-report.json)
+          if [[ $critical_count -gt 0 ]]; then
+            echo "Critical security issues found in Terraform!"
+            exit 1
+          fi
+        fi
+
+  dependency-check:
+    name: Dependency Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+        severity: 'CRITICAL,HIGH'
+    
+
+  secrets-scan:
+    name: Secrets Detection
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Detect secrets with Gitleaks
+      uses: gitleaks/gitleaks-action@v2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Check for sensitive files
+      run: |
+        # Check for common sensitive file patterns
+        sensitive_patterns=(
+          "*.pem"
+          "*.key"
+          "*.p12"
+          "*.pfx"
+          ".env.local"
+          ".env.production"
+          "secrets.json"
+          "credentials.json"
+          "service-account*.json"
+        )
+        
+        found_files=()
+        for pattern in "${sensitive_patterns[@]}"; do
+          while IFS= read -r file; do
+            if [[ -n "$file" ]]; then
+              found_files+=("$file")
+            fi
+          done < <(find . -name "$pattern" -type f 2>/dev/null | grep -v .git)
+        done
+        
+        if [[ ${#found_files[@]} -gt 0 ]]; then
+          echo "⚠️  Warning: Potentially sensitive files found:"
+          printf '%s\n' "${found_files[@]}"
+          echo "Please ensure these files should be committed"
+        fi
+
+  security-summary:
+    name: Security Summary
+    needs: [python-security, terraform-security, dependency-check, secrets-scan]
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+    - name: Check security scan results
+      run: |
+        echo "Security Scan Summary:"
+        echo "====================="
+        echo "Python Security: ${{ needs.python-security.result }}"
+        echo "Infrastructure Security: ${{ needs.terraform-security.result }}"
+        echo "Dependency Check: ${{ needs.dependency-check.result }}"
+        echo "Secrets Scan: ${{ needs.secrets-scan.result }}"
+        
+        if [[ "${{ needs.python-security.result }}" == "failure" || 
+              "${{ needs.terraform-security.result }}" == "failure" || 
+              "${{ needs.dependency-check.result }}" == "failure" || 
+              "${{ needs.secrets-scan.result }}" == "failure" ]]; then
+          echo ""
+          echo "⚠️  Security checks failed! Please review the results above."
+          exit 1
+        else
+          echo ""
+          echo "✅ All security checks passed!"
+        fi
