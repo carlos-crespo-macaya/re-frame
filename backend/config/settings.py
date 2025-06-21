@@ -1,6 +1,7 @@
 """Configuration settings for re-frame backend."""
 
 from pydantic_settings import BaseSettings
+from pydantic import Field
 from functools import lru_cache
 from typing import Optional
 
@@ -14,7 +15,7 @@ class Settings(BaseSettings):
     api_description: str = "AI-assisted cognitive reframing support tool for AvPD"
     
     # Google AI Configuration
-    google_ai_api_key: str
+    google_ai_api_key: str = Field(alias="GOOGLE_API_KEY")  # Maps from Doppler env var
     google_ai_model: str = "gemini-1.5-flash"
     google_ai_temperature: float = 0.7
     google_ai_max_tokens: int = 2048
@@ -35,6 +36,7 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         case_sensitive = False
+        populate_by_name = True  # Allow both field name and alias
 
 
 @lru_cache()
