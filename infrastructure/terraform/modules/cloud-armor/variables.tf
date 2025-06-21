@@ -22,5 +22,5 @@ variable "rate_limit_threshold" {
 variable "rate_limit_interval" {
   description = "Rate limit interval in seconds"
   type        = number
-  default     = 3600  # 1 hour
+  default     = 3600 # 1 hour
 }

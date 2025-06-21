@@ -20,7 +20,7 @@ output "cloud_armor_policy_name" {
 
 output "estimated_monthly_cost" {
   description = "Estimated monthly cost based on minimal usage"
-  value       = {
+  value = {
     cloud_run     = "$0-5 (with scale to zero)"
     firestore     = "$0-10 (minimal usage)"
     firebase_auth = "$0 (free tier)"

@@ -31,19 +31,19 @@ variable "backend_image_url" {
 variable "cloud_run_max_instances" {
   description = "Maximum number of Cloud Run instances"
   type        = number
-  default     = 2  # Keep low for cost savings
+  default     = 2 # Keep low for cost savings
 }
 
 variable "cloud_run_cpu" {
   description = "CPU allocation for Cloud Run instances"
   type        = string
-  default     = "1"  # Minimum CPU
+  default     = "1" # Minimum CPU
 }
 
 variable "cloud_run_memory" {
   description = "Memory allocation for Cloud Run instances"
   type        = string
-  default     = "512Mi"  # Minimum memory for cost savings
+  default     = "512Mi" # Minimum memory for cost savings
 }
 
 # Firebase Variables
