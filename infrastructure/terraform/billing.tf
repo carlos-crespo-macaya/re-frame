@@ -138,13 +138,15 @@ output "budget_amount" {
   description = "The budget amount in USD"
 }
 
-output "alert_thresholds" {
-  value = [
-    for rule in google_billing_budget.project_budget.threshold_rules : {
-      percent = rule.threshold_percent
-      amount  = tostring(floor(rule.threshold_percent * tonumber(var.budget_amount)))
-      basis   = rule.spend_basis
-    }
-  ]
-  description = "List of configured alert thresholds"
-}
+# TODO: Re-enable when Checkov fixes the TypeError bug with for loops and float operations
+# https://github.com/bridgecrewio/checkov/issues/[ISSUE_NUMBER]
+# output "alert_thresholds" {
+#   value = [
+#     for rule in google_billing_budget.project_budget.threshold_rules : {
+#       percent = rule.threshold_percent
+#       amount  = tostring(floor(rule.threshold_percent * tonumber(var.budget_amount)))
+#       basis   = rule.spend_basis
+#     }
+#   ]
+#   description = "List of configured alert thresholds"
+# }

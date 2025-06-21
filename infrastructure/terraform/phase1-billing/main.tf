@@ -138,12 +138,13 @@ output "notification_channel" {
   value = google_monitoring_notification_channel.email.display_name
 }
 
-output "alert_thresholds" {
-  value = [
-    for rule in google_billing_budget.project_budget.threshold_rules : {
-      percent = format("%.0f", rule.threshold_percent * 100)
-      amount  = format("%.0f", rule.threshold_percent * 300)
-      basis   = rule.spend_basis
-    }
-  ]
-}
+# TODO: Re-enable when Checkov fixes the TypeError bug with for loops and float operations
+# output "alert_thresholds" {
+#   value = [
+#     for rule in google_billing_budget.project_budget.threshold_rules : {
+#       percent = format("%.0f", rule.threshold_percent * 100)
+#       amount  = format("%.0f", rule.threshold_percent * 300)
+#       basis   = rule.spend_basis
+#     }
+#   ]
+# }
