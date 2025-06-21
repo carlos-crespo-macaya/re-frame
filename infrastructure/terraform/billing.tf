@@ -142,7 +142,7 @@ output "alert_thresholds" {
   value = [
     for rule in google_billing_budget.project_budget.threshold_rules : {
       percent = rule.threshold_percent
-      amount  = format("%.0f", rule.threshold_percent * tonumber(var.budget_amount))
+      amount  = tostring(floor(rule.threshold_percent * tonumber(var.budget_amount)))
       basis   = rule.spend_basis
     }
   ]
