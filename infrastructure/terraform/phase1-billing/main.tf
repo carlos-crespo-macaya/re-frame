@@ -141,8 +141,8 @@ output "notification_channel" {
 output "alert_thresholds" {
   value = [
     for rule in google_billing_budget.project_budget.threshold_rules : {
-      percent = rule.threshold_percent * 100
-      amount  = rule.threshold_percent * 300
+      percent = format("%.0f", rule.threshold_percent * 100)
+      amount  = format("%.0f", rule.threshold_percent * 300)
       basis   = rule.spend_basis
     }
   ]
