@@ -1,1 +1,1 @@
-"""Backend tests package."""
+"""Test modules for re-frame backend."""
