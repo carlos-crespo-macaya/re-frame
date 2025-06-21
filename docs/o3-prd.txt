@@ -1,0 +1,138 @@
+Below is the updated project specification—ready to paste into the O3 model—to generate the full PRD.
+This version adds the domain you secured: re-frame.social.
+
+⸻
+
+🧠 O3 Input for PRD Generation (Final, with Domain)
+
+I’m building an MVP of a web-based support tool for people with Avoidant Personality Disorder (AvPD).
+The MVP will live on Google Cloud Platform within a $300 credit budget, use Google LLMs via Vertex AI, and orchestrate agents with the Google AI Developer Kit (ADK).
+The public domain is re-frame.social.
+
+Please generate a comprehensive Product Requirements Document (PRD) that includes:
+	•	Executive summary
+	•	Target users & personas
+	•	User stories
+	•	Functional requirements
+	•	Architecture overview
+	•	Agent design
+	•	Data model (Firestore + FAISS)
+	•	Anti-abuse mechanisms
+	•	Tech stack
+	•	Phased roadmap (each phase delivers a usable product)
+	•	Success metrics per phase
+	•	Open questions (with proposed answers)
+	•	Future expansion ideas
+
+Here is the project spec you should base it on:
+
+⸻
+
+📘 Project Name & Domain
+
+Perspective (working title)
+Public URL: https://re-frame.social
+
+⸻
+
+🌱 Purpose
+
+Provide transparent, AI-assisted cognitive reframing for people with AvPD. Users describe a distressing situation; the system applies evidence-based frameworks (starting with CBT) and exposes the reasoning path to build trust and self-insight.
+
+⸻
+
+👥 Target Users
+	•	Individuals with AvPD or severe social anxiety
+	•	People who avoid therapy but want structured self-help
+	•	Anyone seeking a transparent way to challenge distorted thoughts
+
+⸻
+
+🔄 User Journey
+	1.	Visit re-frame.social (anonymous or logged-in).
+	2.	Describe a distressing situation (text/voice).
+	3.	Intake Agent gathers essential details.
+	4.	Framework Agent (CBT in MVP) delivers reframing + reasoning.
+	5.	User can star the insight, give feedback, or ask follow-up questions.
+	6.	Data stored in Firestore; semantic vectors in FAISS.
+
+⸻
+
+🧠 Agent Architecture (via ADK)
+	1.	Intake Agent – collects structured data.
+	2.	Framework Agent (CBT) – identifies distortions, reframes, outputs reasoning.
+	3.	Synthesis Agent – formats response (single framework in MVP).
+	4.	Knowledge Agent – writes to Firestore + FAISS.
+	5.	Query Agent – answers user questions from personal and curated knowledge.
+
+⸻
+
+📂 Storage
+	•	Firestore document DB for sessions, starred items, feedback.
+	•	FAISS vector DB (Cloud Run micro instance) for semantic search.
+
+⸻
+
+🛡️ Abuse Safeguards
+	•	Rate-limit: 5 submissions/hour/IP (anonymous).
+	•	Perspective API toxicity filter.
+	•	Cool-down (1–2 min) between anonymous posts.
+	•	Ethical use disclaimer before first interaction.
+
+⸻
+
+🧪 Feature Decisions
+	•	Users may save/star reframings and leave feedback.
+	•	Anonymous sessions may expire (configurable).
+	•	No tone selector in MVP.
+	•	Follow-up prompts are proactive until enough data is captured, then suggested questions appear.
+	•	Only one framework (CBT) in Phase 1 to control scope.
+
+⸻
+
+🖥️ Tech Stack
+
+Layer	Tech
+LLMs	Gemini 1.5 / PaLM via Vertex AI
+Agents	Google ADK
+Backend	FastAPI on Cloud Run
+Storage	Firestore + FAISS
+Auth	Firebase (optional)
+Frontend	Next.js + Tailwind (mobile-first)
+Domain	re-frame.social (served via Cloud Run/Firebase Hosting)
+
+
+⸻
+
+🚀 Phased Roadmap
+
+Phase	Key Deliverable	Timeline
+P0 Alpha	One-page form → CBT reframing (in-memory)	2 wks
+P1 MVP	Conversational intake, Firestore, stars, feedback, abuse filter	6 wks
+P2 Multi-Framework	Add Self-Compassion + ACT, synthesis view	6 wks
+P3 Knowledge & Query	Persistent accounts, FAISS queries, dashboard	8 wks
+
+(Each phase deploys to re-frame.social and is fully usable.)
+
+⸻
+
+📈 Success Metrics (highlight per phase)
+	•	25 unique users completing a reflection by end of P1.
+	•	<10 % abuse-flagged sessions.
+	•	≥60 % “Helpful” feedback on reframing usefulness (P1).
+
+⸻
+
+❓ Open Questions (with provisional answers)
+	1.	CBT sub-model? Opt for Burns’ 10 common distortions (concise).
+	2.	Anonymous session TTL? Purge after 7 days to save costs and protect privacy.
+	3.	Perspective API quota? Free tier suffices under rate limits; monitor logs.
+
+⸻
+
+🔮 Future Ideas
+	•	Voice-to-voice mode, therapist portal, progress analytics, community layer.
+
+⸻
+
+End of spec for O3 PRD generation – June 2025
