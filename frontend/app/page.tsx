@@ -1,4 +1,29 @@
+'use client'
+
+import { useState } from 'react'
+import ThoughtInputForm from '@/components/forms/ThoughtInputForm'
+
 export default function Home() {
+  const [isLoading, setIsLoading] = useState(false)
+  const [response, setResponse] = useState<string | null>(null)
+
+  const handleSubmit = async (thought: string) => {
+    setIsLoading(true)
+    setResponse(null)
+    
+    // Simulate API call for now
+    // TODO: Replace with actual API call when backend is ready
+    console.log('Submitted thought:', thought)
+    setTimeout(() => {
+      setIsLoading(false)
+      setResponse('Thank you for sharing. Backend integration coming soon.')
+    }, 2000)
+  }
+
+  const handleClear = () => {
+    setResponse(null)
+  }
+
   return (
     <>
       {/* Header */}
@@ -29,56 +54,30 @@ export default function Home() {
             </p>
           </section>
 
-          {/* Form placeholder section */}
+          {/* Form section */}
           <section className="max-w-2xl mx-auto">
             <div className="bg-white dark:bg-neutral-900 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-800 p-6 md:p-8">
-              <h3 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100 mb-4">
+              <h3 className="text-xl font-semibold text-neutral-900 dark:text-neutral-100 mb-6">
                 Share your thoughts
               </h3>
               
-              {/* Placeholder form */}
-              <form className="space-y-6">
-                <div>
-                  <label 
-                    htmlFor="situation" 
-                    className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-2"
-                  >
-                    Describe a situation that&apos;s troubling you
-                  </label>
-                  <textarea
-                    id="situation"
-                    name="situation"
-                    rows={6}
-                    className="input-base border-neutral-300 dark:border-neutral-700 focus-visible:ring-primary-500"
-                    placeholder="Take your time. There's no rush. You can share as much or as little as you feel comfortable with..."
-                    aria-describedby="situation-hint"
-                  />
-                  <p id="situation-hint" className="mt-2 text-sm text-neutral-500">
-                    Your privacy is important. We don&apos;t store any personal information.
+              <ThoughtInputForm 
+                onSubmit={handleSubmit}
+                onClear={handleClear}
+                isLoading={isLoading}
+              />
+
+              {response && (
+                <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                  <p className="text-sm text-blue-800 dark:text-blue-200">
+                    {response}
                   </p>
                 </div>
+              )}
 
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <button
-                    type="submit"
-                    className="btn-base bg-primary-500 text-white hover:bg-primary-600 focus-visible:ring-primary-500 px-6 py-3"
-                    disabled
-                  >
-                    Get perspective
-                  </button>
-                  <button
-                    type="button"
-                    className="btn-base bg-transparent text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 px-6 py-3"
-                    disabled
-                  >
-                    Clear
-                  </button>
-                </div>
-
-                <p className="text-sm text-neutral-500 text-center">
-                  This form is a placeholder. Backend integration coming soon.
-                </p>
-              </form>
+              <p className="mt-4 text-sm text-neutral-500 text-center">
+                Your privacy is important. We don&apos;t store any personal information.
+              </p>
             </div>
           </section>
 
