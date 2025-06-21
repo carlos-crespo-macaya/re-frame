@@ -1,0 +1,66 @@
+# Configuration for GitHub labeler action
+# Automatically applies labels based on changed files
+
+backend:
+  - changed-files:
+    - any-glob-to-any-file: 'backend/**/*'
+
+frontend:
+  - changed-files:
+    - any-glob-to-any-file: 'frontend/**/*'
+
+infrastructure:
+  - changed-files:
+    - any-glob-to-any-file: 'infrastructure/**/*'
+
+documentation:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '**/*.md'
+      - 'docs/**/*'
+
+ci/cd:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '.github/workflows/**/*'
+      - '.github/actions/**/*'
+
+dependencies:
+  - changed-files:
+    - any-glob-to-any-file:
+      - 'backend/poetry.lock'
+      - 'backend/pyproject.toml'
+      - 'frontend/package.json'
+      - 'frontend/pnpm-lock.yaml'
+      - 'infrastructure/terraform/.terraform.lock.hcl'
+
+security:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '**/*.pem'
+      - '**/*.key'
+      - '**/secrets.*'
+      - '**/.env*'
+      - 'infrastructure/terraform/modules/security/**/*'
+
+tests:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '**/*test*'
+      - '**/*spec*'
+      - 'backend/tests/**/*'
+      - 'frontend/__tests__/**/*'
+      - 'frontend/**/*.test.*'
+      - 'frontend/**/*.spec.*'
+
+config:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '**/*.json'
+      - '**/*.yaml'
+      - '**/*.yml'
+      - '**/*.toml'
+      - '**/*.ini'
+      - '**/*.conf'
+      - '.gitignore'
+      - '.dockerignore'

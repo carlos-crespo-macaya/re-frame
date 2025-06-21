@@ -1,0 +1,100 @@
+# Dependabot configuration for automated dependency updates
+version: 2
+
+updates:
+  # Python dependencies (backend)
+  - package-ecosystem: "pip"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "backend"
+    groups:
+      development:
+        patterns:
+          - "pytest*"
+          - "mypy*"
+          - "ruff*"
+          - "black*"
+      google-cloud:
+        patterns:
+          - "google-cloud-*"
+          - "google-auth*"
+          - "google-api-*"
+
+  # JavaScript dependencies (frontend)
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "frontend"
+    groups:
+      development:
+        patterns:
+          - "eslint*"
+          - "prettier*"
+          - "@types/*"
+          - "jest*"
+          - "@testing-library/*"
+      nextjs:
+        patterns:
+          - "next"
+          - "@next/*"
+          - "react"
+          - "react-dom"
+
+  # Terraform providers
+  - package-ecosystem: "terraform"
+    directory: "/infrastructure/terraform"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "infrastructure"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "ci/cd"
+
+  # Docker base images
+  - package-ecosystem: "docker"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    labels:
+      - "dependencies"
+      - "backend"
+      - "docker"
+
+  - package-ecosystem: "docker"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+    labels:
+      - "dependencies"
+      - "frontend"
+      - "docker"
