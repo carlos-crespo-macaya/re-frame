@@ -8,8 +8,7 @@ from fastapi.responses import JSONResponse
 
 from api import health, reframe
 from config.settings import get_settings
-from middleware import setup_cors, setup_logging, setup_rate_limiting
-from middleware.rate_limiting import get_rate_limit, limiter
+from middleware import AbusePreventionMiddleware, setup_cors, setup_logging, setup_rate_limiting
 
 # Configure logging before creating app
 logging.basicConfig(level=logging.INFO)
@@ -44,7 +43,25 @@ app = FastAPI(
 # Configure middleware
 setup_logging(app)
 setup_cors(app)
+
+# IMPORTANT: Rate limiting must come first to prevent expensive operations
+# on requests that will be blocked anyway
 setup_rate_limiting(app)
+
+# Add abuse prevention middleware after rate limiting
+settings = get_settings()
+app.add_middleware(
+    AbusePreventionMiddleware,
+    enable_perspective_api=(
+        settings.enable_perspective_REDACTED") else False
+    ),
+    perspective_api_key=(
+        settings.perspective_api_key if hasattr(settings, "perspective_api_key") else None
+    ),
+    toxicity_threshold=(
+        settings.toxicity_threshold if hasattr(settings, "toxicity_threshold") else 0.7
+    ),
+)
 
 # Include routers
 app.include_router(health.router, prefix="/api/health", tags=["health"])
@@ -52,8 +69,7 @@ app.include_router(reframe.router, prefix="/api/reframe", tags=["reframe"])
 
 
 @app.get("/")
-@limiter.limit(get_rate_limit())
-async def root(request: Request):
+async def root():
     """Root endpoint with basic information."""
     return {
         "service": "re-frame API",

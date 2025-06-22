@@ -6,7 +6,6 @@ import time
 import uuid
 
 from fastapi import FastAPI, Request
-from pythonjsonlogger import jsonlogger
 
 from config.settings import get_settings
 
@@ -15,9 +14,9 @@ def setup_logging(app: FastAPI) -> None:
     """Configure structured logging for the application."""
     settings = get_settings()
 
-    # Configure JSON formatter
+    # Configure basic formatter
     log_handler = logging.StreamHandler(sys.stdout)
-    formatter = jsonlogger.JsonFormatter(
+    formatter = logging.Formatter(
         fmt="%(asctime)s %(levelname)s %(name)s %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
     )
     log_handler.setFormatter(formatter)

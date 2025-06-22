@@ -5,10 +5,10 @@ To be implemented in future tasks
 
 from typing import Any
 
-from .base import ReFrameAgent
+from .base import BaseAgent
 
 
-class SynthesisAgent(ReFrameAgent):
+class SynthesisAgent(BaseAgent):
     """
     Agent responsible for synthesizing and formatting final responses
     """

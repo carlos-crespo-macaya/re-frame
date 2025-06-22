@@ -3,11 +3,10 @@
 import logging
 from typing import Any
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
 from agents import CBTFrameworkAgent, IntakeAgent, SynthesisAgent
-from middleware.rate_limiting import get_rate_limit, limiter
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -41,8 +40,7 @@ synthesis_agent = SynthesisAgent()
 
 
 @router.post("/", response_model=ReframeResponse)
-@limiter.limit(get_rate_limit())
-async def reframe_thought(request: Request, reframe_request: ReframeRequest):
+async def reframe_thought(reframe_request: ReframeRequest):
     """Process a thought for cognitive reframing."""
     try:
         logger.info(f"Reframe request received: {len(reframe_request.thought)} characters")
@@ -120,8 +118,7 @@ async def reframe_thought(request: Request, reframe_request: ReframeRequest):
 
 
 @router.get("/techniques")
-@limiter.limit(get_rate_limit())
-async def list_techniques(request: Request):
+async def list_techniques():
     """List available CBT techniques."""
     techniques = {
         "cognitive_restructuring": {
