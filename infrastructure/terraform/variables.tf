@@ -67,8 +67,8 @@ variable "gemini_api_key" {
 }
 
 # Billing Variables
-variable "billing_account_name" {
-  description = "The display name of the billing account"
+variable "billing_account_id" {
+  description = "The billing account ID (format: XXXXXX-XXXXXX-XXXXXX)"
   type        = string
 }
 

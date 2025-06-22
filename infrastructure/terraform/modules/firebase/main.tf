@@ -45,57 +45,14 @@ resource "google_firebase_hosting_site" "default" {
   depends_on = [google_firebase_project.default]
 }
 
-# Firebase Hosting configuration
-# TODO: Fix firebase hosting version configuration for provider v5.x
-# resource "google_firebase_hosting_version" "default" {
-#   provider = google-beta
-#   site_id  = google_firebase_hosting_site.default.site_id
+# Firebase Hosting placeholder
+# Note: Firebase Hosting configuration will be managed via Firebase CLI
+# due to limitations in Terraform provider v5.x
+# 
+# The firebase.json file in the frontend directory defines:
+# - Hosting rewrites and headers
+# - Security headers (CSP, X-Frame-Options, etc.)
+# - Cache control settings
 #
-#   config {
-#     rewrites {
-#       glob = "**"
-#       path = "/index.html"
-#     }
-#
-#     headers {
-#       glob = "**/*.@(js|css|woff2)"
-#       headers = {
-#         "Cache-Control" = "max-age=31536000"
-#       }
-#     }
-#
-#     headers {
-#       glob = "**"
-#       headers = {
-#         "X-Frame-Options"        = "DENY"
-#         "X-Content-Type-Options" = "nosniff"
-#         "X-XSS-Protection"       = "1; mode=block"
-#         "Referrer-Policy"        = "strict-origin-when-cross-origin"
-#         "Permissions-Policy"     = "geolocation=(), microphone=(), camera=()"
-#         "Content-Security-Policy" = join(" ", [
-#           "default-src 'self';",
-#           "script-src 'self' 'unsafe-inline' https://*.googleapis.com https://*.firebaseapp.com;",
-#           "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;",
-#           "font-src 'self' https://fonts.gstatic.com;",
-#           "img-src 'self' data: https:;",
-#           "connect-src 'self' https://*.googleapis.com https://*.firebaseapp.com ${var.project_id}.web.app;",
-#           "frame-src 'none';",
-#           "object-src 'none';",
-#           "base-uri 'self';",
-#           "form-action 'self';"
-#         ])
-#       }
-#     }
-#   }
-# }
-
-# Firebase Hosting release (will be updated by CI/CD)
-# TODO: Uncomment when firebase hosting version is fixed
-# resource "google_firebase_hosting_release" "default" {
-#   provider     = google-beta
-#   project      = var.project_id
-#   site_id      = google_firebase_hosting_site.default.site_id
-#   version_name = google_firebase_hosting_version.default.version_name
-#
-#   message = "Initial release"
-# }
+# Deployment will be handled by CI/CD using:
+# firebase deploy --only hosting
