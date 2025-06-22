@@ -3,18 +3,16 @@
 import logging
 from datetime import UTC, datetime
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter
 
 from config.settings import get_settings
-from middleware.rate_limiting import get_rate_limit, limiter
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
 @router.get("/")
-@limiter.limit(get_rate_limit())
-async def health_check(request: Request):
+async def health_check():
     """Basic health check endpoint."""
     return {
         "status": "healthy",
@@ -25,8 +23,7 @@ async def health_check(request: Request):
 
 
 @router.get("/detailed")
-@limiter.limit(get_rate_limit())
-async def detailed_health_check(request: Request):
+async def detailed_health_check():
     """Detailed health check with component status."""
     settings = get_settings()
 

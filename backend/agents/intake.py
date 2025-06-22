@@ -5,10 +5,10 @@ To be implemented in future tasks
 
 from typing import Any
 
-from .base import ReFrameAgent
+from .base import BaseAgent
 
 
-class IntakeAgent(ReFrameAgent):
+class IntakeAgent(BaseAgent):
     """
     Agent responsible for collecting and structuring user input
     """
