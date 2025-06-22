@@ -1,15 +1,9 @@
 # Billing Budget and Alerts Configuration
 # CRITICAL: This must be applied FIRST to prevent cost overruns
 
-# Get the billing account ID
-data "google_billing_account" "account" {
-  display_name = var.billing_account_name
-  open         = true
-}
-
 # Create budget with multiple alert thresholds
 resource "google_billing_budget" "project_budget" {
-  billing_account = data.google_billing_account.account.id
+  billing_account = var.billing_account_id
   display_name    = "${var.project_id}-budget"
 
   budget_filter {
@@ -138,15 +132,19 @@ output "budget_amount" {
   description = "The budget amount in USD"
 }
 
-# TODO: Re-enable when Checkov fixes the TypeError bug with for loops and float operations
-# https://github.com/bridgecrewio/checkov/issues/[ISSUE_NUMBER]
-# output "alert_thresholds" {
-#   value = [
-#     for rule in google_billing_budget.project_budget.threshold_rules : {
-#       percent = rule.threshold_percent
-#       amount  = tostring(floor(rule.threshold_percent * tonumber(var.budget_amount)))
-#       basis   = rule.spend_basis
-#     }
-#   ]
-#   description = "List of configured alert thresholds"
-# }
+# Output alert thresholds as a simple list to avoid Checkov parser issues
+output "alert_threshold_percentages" {
+  value = [
+    for rule in google_billing_budget.project_budget.threshold_rules : 
+    rule.threshold_percent
+  ]
+  description = "List of alert threshold percentages"
+}
+
+output "alert_threshold_amounts" {
+  value = [
+    for rule in google_billing_budget.project_budget.threshold_rules : 
+    floor(rule.threshold_percent * tonumber(var.budget_amount))
+  ]
+  description = "List of alert threshold amounts in USD"
+}
