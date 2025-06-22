@@ -30,21 +30,53 @@ class RateLimitExceeded(HTTPException):
         self.reset = reset
 
 
-def get_client_ip(request: Request) -> str:
-    """Extract client IP from request, handling proxies."""
-    # Check X-Forwarded-For header (comma-separated list of IPs)
-    forwarded_for = request.headers.get("x-forwarded-for")
-    if forwarded_for:
-        # Take the first IP (original client)
-        return forwarded_for.split(",")[0].strip()
+# Trusted proxy networks (Cloud Run, common load balancers)
+TRUSTED_PROXIES = {
+    "127.0.0.0/8",     # Localhost
+    "10.0.0.0/8",      # Private network
+    "172.16.0.0/12",   # Private network  
+    "192.168.0.0/16",  # Private network
+    "169.254.169.254", # GCP metadata server
+}
 
-    # Check X-Real-IP header
-    real_ip = request.headers.get("x-real-ip")
-    if real_ip:
-        return real_ip
+def _is_trusted_proxy(ip: str) -> bool:
+    """Check if IP is from a trusted proxy."""
+    import ipaddress
+    try:
+        client_ip = ipaddress.ip_address(ip)
+        for trusted_network in TRUSTED_PROXIES:
+            if "/" in trusted_network:
+                if client_ip in ipaddress.ip_network(trusted_network, strict=False):
+                    return True
+            else:
+                if str(client_ip) == trusted_network:
+                    return True
+        return False
+    except ValueError:
+        return False
+
+def get_client_ip(request: Request) -> str:
+    """Extract client IP from request, handling proxies securely."""
+    # Get the direct client IP
+    direct_ip = request.client.host if request.client else "unknown"
+    
+    # Only trust proxy headers if request comes from trusted proxy
+    if _is_trusted_proxy(direct_ip):
+        # Check X-Forwarded-For header (comma-separated list of IPs)
+        forwarded_for = request.headers.get("x-forwarded-for")
+        if forwarded_for:
+            # Take the first IP (original client) and validate
+            original_ip = forwarded_for.split(",")[0].strip()
+            if original_ip and original_ip != "unknown":
+                return original_ip
+
+        # Check X-Real-IP header
+        real_ip = request.headers.get("x-real-ip")
+        if real_ip and real_ip != "unknown":
+            return real_ip
 
     # Fall back to direct client IP
-    return request.client.host
+    return direct_ip
 
 
 class RateLimiter:
@@ -54,6 +86,9 @@ class RateLimiter:
     single-instance deployments. For production with multiple instances,
     consider using Redis-based distributed rate limiting.
     """
+
+    MAX_TRACKED_CLIENTS = 10000  # Prevent memory exhaustion attacks
+    CLEANUP_INTERVAL = 300  # Cleanup every 5 minutes
 
     def __init__(self, max_requests: int, window_seconds: int):
         """Initialize rate limiter.
@@ -66,6 +101,7 @@ class RateLimiter:
         self.window_seconds = window_seconds
         # TODO: Replace with Redis for distributed deployment
         self.requests: dict[str, deque[float]] = defaultdict(deque)
+        self.last_cleanup = time.time()
 
     def _cleanup_old_requests(self, client_id: str, current_time: float) -> None:
         """Remove requests older than the time window."""
@@ -83,6 +119,28 @@ class RateLimiter:
         if not client_requests:
             del self.requests[client_id]
 
+    def _memory_protection_cleanup(self, current_time: float) -> None:
+        """Protect against memory exhaustion attacks."""
+        # Periodic cleanup to prevent memory exhaustion
+        if current_time - self.last_cleanup > self.CLEANUP_INTERVAL:
+            self.last_cleanup = current_time
+            
+            # If too many clients tracked, remove oldest inactive ones
+            if len(self.requests) > self.MAX_TRACKED_CLIENTS:
+                # Find clients with old requests to remove
+                clients_to_remove = []
+                cutoff_time = current_time - self.window_seconds
+                
+                for client_id, client_requests in self.requests.items():
+                    if not client_requests or client_requests[-1] < cutoff_time:
+                        clients_to_remove.append(client_id)
+                
+                # Remove oldest clients first
+                for client_id in clients_to_remove[:len(self.requests) - self.MAX_TRACKED_CLIENTS + 1000]:
+                    del self.requests[client_id]
+                
+                logger.warning(f"Memory protection: removed {len(clients_to_remove)} inactive clients")
+
     def is_allowed(self, client_id: str) -> bool:
         """Check if request is allowed for client.
 
@@ -93,6 +151,7 @@ class RateLimiter:
             True if request is allowed, False if rate limit exceeded
         """
         current_time = time.time()
+        self._memory_protection_cleanup(current_time)
         self._cleanup_old_requests(client_id, current_time)
 
         client_requests = self.requests[client_id]
