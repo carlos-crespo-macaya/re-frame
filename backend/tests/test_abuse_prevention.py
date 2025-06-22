@@ -199,12 +199,12 @@ class TestAbusePreventionMiddleware:
         }
         mock_post.return_value = mock_response
 
-        # Create app with mock API key
+        # Create app with valid format mock API key
         app = FastAPI()
         app.add_middleware(
             AbusePreventionMiddleware,
             enable_perspective_api=True,
-            perspective_api_key="mock-api-key",
+            perspective_REDACTED",  # Valid format mock key
         )
 
         @app.post("/api/v1/reframe")
