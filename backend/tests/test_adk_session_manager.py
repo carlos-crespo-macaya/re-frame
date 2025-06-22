@@ -1,35 +1,33 @@
 """Tests for ADK Session Manager."""
 
-from unittest.mock import AsyncMock, MagicMock, patch
 from datetime import datetime, timedelta
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from agents.adk_session_manager import ADKSessionManager, SessionData
 from agents.adk_base import ReFrameResponse, ReFrameTransparencyData
+from agents.adk_session_manager import ADKSessionManager, SessionData
 
 
 @pytest.fixture
 def mock_agents():
     """Mock ADK agents."""
-    with patch("agents.adk_session_manager.ADKIntakeAgent") as mock_intake, \
-         patch("agents.adk_session_manager.ADKCBTFrameworkAgent") as mock_cbt, \
-         patch("agents.adk_session_manager.ADKSynthesisAgent") as mock_synthesis:
-        
+    with (
+        patch("agents.adk_session_manager.ADKIntakeAgent") as mock_intake,
+        patch("agents.adk_session_manager.ADKCBTFrameworkAgent") as mock_cbt,
+        patch("agents.adk_session_manager.ADKSynthesisAgent") as mock_synthesis,
+    ):
+
         # Create mock instances
         intake_instance = AsyncMock()
         cbt_instance = AsyncMock()
         synthesis_instance = AsyncMock()
-        
+
         mock_intake.return_value = intake_instance
         mock_cbt.return_value = cbt_instance
         mock_synthesis.return_value = synthesis_instance
-        
-        yield {
-            "intake": intake_instance,
-            "cbt": cbt_instance,
-            "synthesis": synthesis_instance
-        }
+
+        yield {"intake": intake_instance, "cbt": cbt_instance, "synthesis": synthesis_instance}
 
 
 class TestSessionData:
@@ -116,12 +114,12 @@ class TestADKSessionManagerWorkflow:
             agent_name="ADKIntakeAgent",
             model_used="gemini-1.5-flash",
             reasoning_path={"agent_type": "intake"},
-            raw_response='{"is_valid": true, "requires_crisis_support": false}'
+            raw_response='{"is_valid": true, "requires_crisis_support": false}',
         )
         intake_response = ReFrameResponse(
             success=True,
             response='{"is_valid": true, "requires_crisis_support": false}',
-            transparency_data=intake_transparency
+            transparency_data=intake_transparency,
         )
         mock_agents["intake"].process_user_input.return_value = intake_response
 
@@ -129,12 +127,12 @@ class TestADKSessionManagerWorkflow:
             agent_name="ADKCBTFrameworkAgent",
             model_used="gemini-1.5-flash",
             reasoning_path={"agent_type": "cbt"},
-            raw_response='{"reframed_thoughts": [{"thought": "balanced view"}]}'
+            raw_response='{"reframed_thoughts": [{"thought": "balanced view"}]}',
         )
         cbt_response = ReFrameResponse(
             success=True,
             response='{"reframed_thoughts": [{"thought": "balanced view"}]}',
-            transparency_data=cbt_transparency
+            transparency_data=cbt_transparency,
         )
         mock_agents["cbt"].apply_cbt_techniques.return_value = cbt_response
 
@@ -142,12 +140,12 @@ class TestADKSessionManagerWorkflow:
             agent_name="ADKSynthesisAgent",
             model_used="gemini-1.5-flash",
             reasoning_path={"agent_type": "synthesis"},
-            raw_response='{"main_response": "Here is a supportive response..."}'
+            raw_response='{"main_response": "Here is a supportive response..."}',
         )
         synthesis_response = ReFrameResponse(
             success=True,
             response='{"main_response": "Here is a supportive response..."}',
-            transparency_data=synthesis_transparency
+            transparency_data=synthesis_transparency,
         )
         mock_agents["synthesis"].create_user_response.return_value = synthesis_response
 
@@ -181,9 +179,7 @@ class TestADKSessionManagerWorkflow:
 
         # Mock intake validation failure
         intake_response = ReFrameResponse(
-            success=False,
-            error="Input too short",
-            error_type="validation"
+            success=False, error="Input too short", error_type="validation"
         )
         mock_agents["intake"].process_user_input.return_value = intake_response
 
@@ -210,12 +206,12 @@ class TestADKSessionManagerWorkflow:
             agent_name="ADKIntakeAgent",
             model_used="gemini-1.5-flash",
             reasoning_path={"agent_type": "intake"},
-            raw_response='{"is_valid": true, "requires_crisis_support": true}'
+            raw_response='{"is_valid": true, "requires_crisis_support": true}',
         )
         intake_response = ReFrameResponse(
             success=True,
             response='{"is_valid": true, "requires_crisis_support": true}',
-            transparency_data=intake_transparency
+            transparency_data=intake_transparency,
         )
         mock_agents["intake"].process_user_input.return_value = intake_response
 
@@ -224,12 +220,12 @@ class TestADKSessionManagerWorkflow:
             agent_name="ADKSynthesisAgent",
             model_used="gemini-1.5-flash",
             reasoning_path={"agent_type": "synthesis"},
-            raw_response='{"main_response": "Crisis support resources..."}'
+            raw_response='{"main_response": "Crisis support resources..."}',
         )
         crisis_response = ReFrameResponse(
             success=True,
             response='{"main_response": "Crisis support resources..."}',
-            transparency_data=crisis_transparency
+            transparency_data=crisis_transparency,
         )
         mock_agents["synthesis"].create_crisis_response.return_value = crisis_response
 
@@ -243,7 +239,7 @@ class TestADKSessionManagerWorkflow:
 
         # Verify crisis response was called
         mock_agents["synthesis"].create_crisis_response.assert_called_once()
-        
+
         # Verify CBT agent was skipped
         mock_agents["cbt"].apply_cbt_techniques.assert_not_called()
 
@@ -257,21 +253,14 @@ class TestADKSessionManagerWorkflow:
 
         # Mock successful responses
         intake_response = ReFrameResponse(
-            success=True,
-            response='{"is_valid": true, "requires_crisis_support": false}'
+            success=True, response='{"is_valid": true, "requires_crisis_support": false}'
         )
         mock_agents["intake"].process_user_input.return_value = intake_response
 
-        cbt_response = ReFrameResponse(
-            success=True,
-            response='{"reframed_thoughts": []}'
-        )
+        cbt_response = ReFrameResponse(success=True, response='{"reframed_thoughts": []}')
         mock_agents["cbt"].apply_cbt_techniques.return_value = cbt_response
 
-        synthesis_response = ReFrameResponse(
-            success=True,
-            response='{"main_response": "response"}'
-        )
+        synthesis_response = ReFrameResponse(success=True, response='{"main_response": "response"}')
         mock_agents["synthesis"].create_user_response.return_value = synthesis_response
 
         user_input = "I feel anxious about work."
@@ -292,16 +281,13 @@ class TestADKSessionManagerWorkflow:
 
         # Mock successful intake
         intake_response = ReFrameResponse(
-            success=True,
-            response='{"is_valid": true, "requires_crisis_support": false}'
+            success=True, response='{"is_valid": true, "requires_crisis_support": false}'
         )
         mock_agents["intake"].process_user_input.return_value = intake_response
 
         # Mock CBT error
         cbt_response = ReFrameResponse(
-            success=False,
-            error="CBT processing failed",
-            error_type="processing_error"
+            success=False, error="CBT processing failed", error_type="processing_error"
         )
         mock_agents["cbt"].apply_cbt_techniques.return_value = cbt_response
 
@@ -326,7 +312,7 @@ class TestADKSessionManagerUtilities:
 
         session_id = manager.create_session()
         session = manager.get_session(session_id)
-        
+
         # Add some test data
         session.user_inputs.append("Test input")
         session.agent_responses.append({"test": "response"})
