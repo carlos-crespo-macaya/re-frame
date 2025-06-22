@@ -1,0 +1,201 @@
+{
+  "info": {
+    "name": "re-frame API",
+    "description": "AI-assisted cognitive reframing API for supporting individuals with AvPD",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Cognitive Reframing",
+      "item": [
+        {
+          "name": "Reframe Thought",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"thought\": \"Everyone will judge me if I speak up in the meeting\",\n  \"context\": \"I have a presentation tomorrow\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/reframe/",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reframe", ""]
+            },
+            "description": "Process a thought through cognitive reframing using multiple therapeutic frameworks"
+          }
+        },
+        {
+          "name": "List Techniques",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/reframe/techniques",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reframe", "techniques"]
+            },
+            "description": "Get a list of all cognitive behavioral therapy techniques available"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sessions",
+      "item": [
+        {
+          "name": "Get Session History",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/reframe/session/:sessionId/history",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reframe", "session", ":sessionId", "history"],
+              "variable": [
+                {
+                  "key": "sessionId",
+                  "value": "test-session-123",
+                  "description": "Session ID to retrieve history for"
+                }
+              ]
+            },
+            "description": "Retrieve the interaction history for a specific session"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Basic Health Check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "health"]
+            },
+            "description": "Simple health check to verify the service is running"
+          }
+        },
+        {
+          "name": "Detailed Health Check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/health/detailed",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "health", "detailed"]
+            },
+            "description": "Comprehensive health check including all dependencies"
+          }
+        },
+        {
+          "name": "Liveness Probe",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/health/live",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "health", "live"]
+            },
+            "description": "Kubernetes liveness probe endpoint"
+          }
+        },
+        {
+          "name": "Readiness Probe",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/health/ready",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "health", "ready"]
+            },
+            "description": "Kubernetes readiness probe endpoint"
+          }
+        },
+        {
+          "name": "Startup Probe",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/health/startup",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "health", "startup"]
+            },
+            "description": "Kubernetes startup probe endpoint"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Monitoring",
+      "item": [
+        {
+          "name": "Get Performance Metrics",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/reframe/observability/performance",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reframe", "observability", "performance"]
+            },
+            "description": "Retrieve system performance metrics and error analysis (admin only)"
+          }
+        },
+        {
+          "name": "Enable Debug Mode",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/reframe/observability/debug/enable",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reframe", "observability", "debug", "enable"]
+            },
+            "description": "Enable detailed debug logging (admin only)"
+          }
+        },
+        {
+          "name": "Disable Debug Mode",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/reframe/observability/debug/disable",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reframe", "observability", "debug", "disable"]
+            },
+            "description": "Disable debug logging"
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [""]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8000",
+      "type": "string"
+    }
+  ]
+}
