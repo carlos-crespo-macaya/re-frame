@@ -4,31 +4,61 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  /* Legacy variables for backward compatibility */
-  --background: var(--color-background);
-  --foreground: var(--color-text-primary);
-  
-  /* Accessible focus styles */
-  --focus-color: var(--focus-ring-color);
-  --focus-width: var(--focus-ring-width);
-  
-  /* Animation settings */
-  --animation-duration: var(--duration-normal);
-  --animation-ease: var(--ease-smooth);
+/* ===== Font Imports ===== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ===== Base Styles ===== */
+@layer base {
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Base document styles with Deep Charcoal background */
+  body {
+    @apply bg-[#161616] text-[#EDEDED];
+    font-family: var(--font-sans);
+    line-height: var(--line-height-relaxed);
+    letter-spacing: var(--letter-spacing-normal);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Organic selection colors */
+  ::selection {
+    @apply bg-primary-800 text-primary-100;
+  }
+
+  /* Focus styles for all interactive elements */
+  :focus-visible {
+    outline: none;
+    box-shadow: 
+      0 0 0 var(--focus-ring-offset) var(--focus-ring-offset-color),
+      0 0 0 calc(var(--focus-ring-offset) + var(--focus-ring-width)) var(--focus-ring-color);
+    border-radius: inherit;
+  }
+
+  /* Headings with Inter font */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-medium tracking-tight;
+    font-family: var(--font-inter);
+    line-height: var(--line-height-tight);
+  }
+
+  /* Links with gentle hover */
+  a {
+    @apply text-primary-400 underline-offset-2 transition-colors duration-200;
+  }
+
+  a:hover {
+    @apply text-primary-300;
+  }
 }
 
-/* System preference for dark mode */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    @apply [&]:bg-neutral-950;
-  }
-  
-  body:not([data-theme="light"]) {
-    /* Apply dark mode tokens */
-    --color-background: var(--color-neutral-950);
-    --color-text-primary: var(--color-neutral-50);
-  }
+/* Deep Charcoal theme - no dark/light mode toggle */
+:root {
+  --color-background: #161616;
+  --color-text-primary: #EDEDED;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -112,5 +142,82 @@
   .skip-link {
     @apply absolute left-0 top-0 z-50 -translate-y-full bg-primary-600 px-4 py-2 text-white;
     @apply focus:translate-y-0;
+  }
+  
+  /* Font utilities */
+  .font-rounded {
+    font-family: var(--font-rounded);
+  }
+  
+  /* Animation utilities */
+  .animate-breathe {
+    animation: breathe var(--duration-breath) var(--ease-organic) infinite;
+  }
+  
+  .animate-float {
+    animation: float 3s var(--ease-organic) infinite;
+  }
+  
+  .animate-pulse-soft {
+    animation: pulse-soft 2s var(--ease-organic) infinite;
+  }
+  
+  .animate-fade-in {
+    animation: fade-in var(--duration-normal) var(--ease-out) forwards;
+  }
+}
+
+/* ===== Animations ===== */
+@keyframes breathe {
+  0%, 100% { 
+    transform: scale(1); 
+    opacity: 0.8; 
+  }
+  50% { 
+    transform: scale(1.05); 
+    opacity: 1; 
+  }
+}
+
+@keyframes float {
+  0%, 100% { 
+    transform: translateY(0) rotate(0deg); 
+  }
+  33% { 
+    transform: translateY(-10px) rotate(2deg); 
+  }
+  66% { 
+    transform: translateY(-5px) rotate(-2deg); 
+  }
+}
+
+@keyframes pulse-soft {
+  0%, 100% { 
+    opacity: 1; 
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 0.7; 
+    transform: scale(0.98);
+  }
+}
+
+@keyframes fade-in {
+  from { 
+    opacity: 0; 
+    transform: translateY(10px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes fadeIn {
+  from { 
+    opacity: 0; 
+  }
+  to { 
+    opacity: 1; 
   }
 }

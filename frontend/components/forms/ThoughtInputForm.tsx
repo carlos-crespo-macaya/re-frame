@@ -41,71 +41,119 @@ export default function ThoughtInputForm({
 
   const isSubmitDisabled = !thought.trim() || isLoading
 
+  // Status messages based on input length
+  const getStatusMessage = () => {
+    if (thought.length === 0) return ""
+    if (thought.length < 50) return "Continue if you'd like to add more context."
+    if (thought.length < 200) return "Good amount of detail."
+    if (thought.length < 500) return "Comprehensive description."
+    return "Maximum detail captured."
+  }
+
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-2xl mx-auto space-y-4">
-      <div className="space-y-2">
-        <label 
-          htmlFor="thought-input" 
-          className="block text-sm font-medium text-gray-700 dark:text-gray-200"
-        >
-          What&apos;s on your mind?
-        </label>
-        <textarea
-          id="thought-input"
-          value={thought}
-          onChange={(e) => setThought(e.target.value.slice(0, maxLength))}
-          onKeyDown={handleKeyDown}
-          placeholder="Describe the thought, feeling, or situation that's troubling you..."
-          className={cn(
-            "input-base",
-            "min-h-[120px] resize-y",
-            isLoading && "opacity-50 cursor-not-allowed"
-          )}
-          disabled={isLoading}
-          maxLength={maxLength}
-          aria-describedby="character-count"
-          required
-        />
-        <div 
-          id="character-count" 
-          className="text-sm text-gray-500 dark:text-gray-400 text-right"
-          aria-live="polite"
-        >
-          {thought.length} / {maxLength}
+    <form onSubmit={handleSubmit} className="w-full space-y-6">
+      <div className="space-y-3">
+        <div className="relative">
+          <textarea
+            id="thought-input"
+            value={thought}
+            onChange={(e) => setThought(e.target.value.slice(0, maxLength))}
+            onKeyDown={handleKeyDown}
+            placeholder="What happened? How did it feel?"
+            className={cn(
+              "w-full min-h-[140px] resize-y rounded-xl",
+              "bg-white",
+              "border-2 border-neutral-200",
+              "focus:border-primary-400",
+              "focus:ring-4 focus:ring-primary-400/20",
+              "px-5 py-4",
+              "text-base text-neutral-800",
+              "placeholder:text-neutral-400",
+              "transition-all duration-200",
+              isLoading && "opacity-60 cursor-not-allowed"
+            )}
+            disabled={isLoading}
+            maxLength={maxLength}
+            aria-describedby="character-count encouraging-message"
+            required
+          />
+          {/* Decorative element */}
+          <div className="absolute -bottom-2 -right-2 w-16 h-16 bg-gradient-to-br from-primary-200/30 to-secondary-200/30 rounded-full blur-xl pointer-events-none" />
+        </div>
+        
+        <div className="flex justify-between items-end">
+          <p 
+            id="encouraging-message"
+            className="text-sm text-neutral-600 italic"
+            aria-live="polite"
+          >
+            {getStatusMessage()}
+          </p>
+          <div 
+            id="character-count" 
+            className="text-sm text-neutral-500"
+            aria-live="polite"
+          >
+            {thought.length} / {maxLength}
+          </div>
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-3">
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-6 items-center justify-center">
         <Button
           type="submit"
           disabled={isSubmitDisabled}
           loading={isLoading}
           variant="primary"
-          size="medium"
-          className="flex-1 sm:flex-none"
+          size="large"
+          className="w-full sm:w-auto group relative overflow-hidden"
         >
-          {isLoading ? 'Analyzing...' : 'Analyze Thought'}
+          {isLoading ? (
+              <span>Processing...</span>
+            ) : (
+              <span>Generate perspective</span>
+            )}
         </Button>
         <Button
           type="button"
           onClick={handleClear}
           disabled={isLoading}
           variant="secondary"
-          size="medium"
+          size="large"
+          className="w-full sm:w-auto group"
         >
-          Clear
+          <span className="flex items-center gap-2">
+            <span className="group-hover:rotate-180 transition-transform duration-300">
+              ↻
+            </span>
+            <span>Clear</span>
+          </span>
         </Button>
       </div>
 
       {isLoading && (
         <div 
-          className="text-sm text-gray-600 dark:text-gray-400 text-center"
+          className="text-center space-y-2"
           role="status"
           aria-live="polite"
         >
-          Processing your thought...
+          <div className="flex justify-center gap-2">
+            <span className="inline-block w-2 h-2 bg-primary-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+            <span className="inline-block w-2 h-2 bg-secondary-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+            <span className="inline-block w-2 h-2 bg-accent-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+          </div>
+          <p className="text-sm text-neutral-600">
+            Analyzing your input...
+          </p>
         </div>
       )}
+
+      {/* Tip for keyboard shortcut */}
+      <p className="text-xs text-neutral-500 text-center">
+        <kbd className="px-2 py-1 bg-neutral-100 rounded text-xs">Ctrl</kbd> + 
+        <kbd className="px-2 py-1 bg-neutral-100 rounded text-xs ml-1">Enter</kbd>
+        <span className="ml-2">to submit</span>
+      </p>
     </form>
   )
 }
