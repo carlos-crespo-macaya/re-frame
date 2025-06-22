@@ -1,3 +1,12 @@
+terraform {
+  required_providers {
+    google-beta = {
+      source  = "hashicorp/google-beta"
+      version = "~> 5.0"
+    }
+  }
+}
+
 resource "google_firebase_project" "default" {
   provider = google-beta
   project  = var.project_id
@@ -5,7 +14,8 @@ resource "google_firebase_project" "default" {
 
 # Firebase Auth configuration
 resource "google_identity_platform_config" "default" {
-  project = var.project_id
+  provider = google-beta
+  project  = var.project_id
 
   # Enable anonymous auth for alpha phase
   sign_in {
@@ -34,6 +44,15 @@ resource "google_identity_platform_config" "default" {
     "${var.project_id}.web.app",
     "${var.project_id}.firebaseapp.com"
   ]
+}
+
+# Firebase Web App
+resource "google_firebase_web_app" "default" {
+  provider     = google-beta
+  project      = var.project_id
+  display_name = "re-frame Web App"
+
+  depends_on = [google_firebase_project.default]
 }
 
 # Firebase Hosting

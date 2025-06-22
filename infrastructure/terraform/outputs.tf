@@ -8,6 +8,17 @@ output "firebase_hosting_url" {
   value       = module.firebase.hosting_url
 }
 
+output "firebase_web_app_id" {
+  description = "Firebase Web App ID"
+  value       = module.firebase.web_app_id
+}
+
+output "firebase_config" {
+  description = "Firebase SDK configuration for frontend"
+  value       = module.firebase.firebase_config
+  sensitive   = true
+}
+
 output "firestore_database_name" {
   description = "Firestore database name"
   value       = module.firestore.database_name
