@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import ThoughtInputForm from '@/components/forms/ThoughtInputForm'
 
 export default function Home() {
@@ -51,7 +52,7 @@ export default function Home() {
               Explore a new perspective
             </h2>
             <p className="text-lg text-[#999999] mb-4 leading-relaxed">
-              We'll use <strong>CBT</strong> (Cognitive Behavioural Therapy) to surface thinking patterns and gentler viewpoints.
+              We'll use <strong>CBT</strong>-informed cognitive restructuring to spot thinking patterns and suggest gentler perspectives.
             </p>
             <p className="text-[#999999] max-w-2xl mx-auto">
               <span className="text-sm">Curious about CBT? <a href="/learn-cbt" className="text-brand-green-400 underline hover:text-brand-green-300">Learn the basics in 2 minutes ↗</a></span>
@@ -175,28 +176,28 @@ export default function Home() {
             <nav aria-label="Footer navigation">
               <ul className="flex gap-6 text-sm">
                 <li>
-                  <a 
-                    href="#" 
+                  <Link 
+                    href="/privacy" 
                     className="text-[#999999] hover:text-brand-green-400 transition-colors"
                   >
                     Privacy
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a 
-                    href="#" 
+                  <Link 
+                    href="/support" 
                     className="text-[#999999] hover:text-brand-green-400 transition-colors"
                   >
                     Support
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a 
-                    href="#" 
+                  <Link 
+                    href="/about" 
                     className="text-[#999999] hover:text-brand-green-400 transition-colors"
                   >
                     About
-                  </a>
+                  </Link>
                 </li>
               </ul>
             </nav>
