@@ -69,7 +69,7 @@ Output format:
         """Apply CBT techniques to validated user input."""
         import logging
 
-        logger = logging.getLogger(__name__)
+        logger = logging.getLogger("agents.cbt")
 
         # Prepare input for CBT processing
         cbt_input = {

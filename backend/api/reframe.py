@@ -22,7 +22,7 @@ from agents.models import (
 )
 
 router = APIRouter()
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("api.reframe")
 
 
 class ReframeRequest(BaseModel):

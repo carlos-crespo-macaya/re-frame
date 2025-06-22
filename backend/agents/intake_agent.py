@@ -45,6 +45,9 @@ Output format:
 
     def _extract_reasoning_path(self, response: Any) -> dict[str, Any]:
         """Extract intake reasoning for transparency."""
+        import logging
+        logger = logging.getLogger("agents.intake")
+        logger.debug(f"Extracting reasoning path from response")
         return {
             "raw_response": str(response),
             "steps": [
@@ -70,7 +73,7 @@ Output format:
         """Process and validate user input."""
         import logging
 
-        logger = logging.getLogger(__name__)
+        logger = logging.getLogger("agents.intake")
 
         logger.info(f"IntakeAgent.process_user_input called with: '{user_input[:50]}...'")
 

@@ -62,7 +62,7 @@ Output format:
         """Create final user-facing response from CBT analysis."""
         import logging
 
-        logger = logging.getLogger(__name__)
+        logger = logging.getLogger("agents.synthesis")
 
         # Prepare synthesis input
         synthesis_input = {
