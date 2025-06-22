@@ -37,11 +37,35 @@ resource "google_project_service" "required_apis" {
     "cloudarmor.googleapis.com",
     "billingbudgets.googleapis.com",
     "monitoring.googleapis.com",
-    "cloudresourcemanager.googleapis.com"
+    "cloudresourcemanager.googleapis.com",
+    "secretmanager.googleapis.com"
   ])
 
   service            = each.value
   disable_on_destroy = false
+}
+
+# Secret Manager for sensitive data
+resource "google_secret_manager_secret" "gemini_api_key" {
+  secret_id = "gemini-api-key"
+
+  labels = {
+    environment = var.environment
+    purpose     = "api-key"
+  }
+
+  replication {
+    auto {}
+  }
+
+  depends_on = [google_project_service.required_apis]
+}
+
+# Create a secret version with the actual API key
+resource "google_secret_manager_secret_version" "gemini_api_key" {
+  secret = google_secret_manager_secret.gemini_api_key.id
+
+  secret_data = var.gemini_api_key
 }
 
 # Cloud Run Module
@@ -62,9 +86,15 @@ module "cloud_run" {
   environment_variables = {
     PROJECT_ID          = var.project_id
     ENVIRONMENT         = var.environment
-    GEMINI_API_KEY      = var.gemini_api_key
     RATE_LIMIT_REQUESTS = "10"
     RATE_LIMIT_WINDOW   = "3600" # 1 hour in seconds
+  }
+
+  secret_environment_variables = {
+    GEMINI_API_KEY = {
+      secret_name    = google_secret_manager_secret.gemini_api_key.secret_id
+      secret_version = "latest"
+    }
   }
 
   depends_on = [google_project_service.required_apis]
