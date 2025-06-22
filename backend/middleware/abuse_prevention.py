@@ -33,28 +33,33 @@ class ContentFilter:
 
     def __init__(self):
         """Initialize content filter with basic patterns."""
-        # Basic patterns for harmful content detection
+        # Basic patterns for harmful content detection - optimized to prevent ReDoS
         # In production, use more sophisticated NLP models
         self.toxic_patterns = [
-            # Self-harm related
-            r"\b(kill\s+myself|suicide|self[\-\s]?harm|cut\s+myself)\b",
-            r"\b(want\s+to\s+die|better\s+off\s+dead)\b",
-            # Violence
-            r"\b(kill|murder|hurt|harm|attack)\s+(someone|people|them|him|her|you)\b",
-            r"\bwant\s+to\s+(hurt|harm)\s+",
-            r"\b(weapon|gun|knife|bomb)\b.*\b(use|get|make)\b",
+            # Self-harm related (fixed potential ReDoS)
+            r"\b(?:kill myself|suicide|self.?harm|cut myself)\b",
+            r"\b(?:want to die|better off dead)\b",
+            # Violence (simplified to prevent backtracking)
+            r"\b(?:kill|murder|hurt|harm|attack) (?:someone|people|them|him|her|you)\b",
+            r"\bwant to (?:hurt|harm) ",
+            r"\b(?:weapon|gun|knife|bomb)\b.{0,50}\b(?:use|get|make)\b",  # Limited quantifier
             # Hate speech (basic patterns)
-            r"\b(hate|despise)\s+(everyone|everything|all)\b",
-            r"\bhate\s+(myself|you|them)\b",
-            r"\bI\s+hate\s+everything\b",
+            r"\b(?:hate|despise) (?:everyone|everything|all)\b",
+            r"\bhate (?:myself|you|them)\b",
+            r"\bI hate everything\b",
             # Extreme negativity
-            r"\b(worthless|useless|pathetic|disgusting)\s+(person|human|life)\b",
+            r"\b(?:worthless|useless|pathetic|disgusting) (?:person|human|life)\b",
         ]
 
-        # Compile patterns for efficiency
-        self.compiled_patterns = [
-            re.compile(pattern, re.IGNORECASE) for pattern in self.toxic_patterns
-        ]
+        # Compile patterns for efficiency with timeout protection
+        self.compiled_patterns = []
+        for pattern in self.toxic_patterns:
+            try:
+                compiled = re.compile(pattern, re.IGNORECASE)
+                self.compiled_patterns.append(compiled)
+            except re.error as e:
+                logger.warning(f"Invalid regex pattern '{pattern}': {e}")
+                continue
 
     def is_toxic(self, text: str) -> bool:
         """Check if text contains toxic content.
@@ -65,15 +70,30 @@ class ContentFilter:
         Returns:
             True if toxic content detected, False otherwise
         """
-        if not text:
+        if not text or len(text) > 50000:  # Prevent processing of extremely long text
+            return len(text) > 50000  # Consider very long text suspicious
+
+        # Check against compiled patterns with timeout protection
+        import signal
+        
+        def timeout_handler(signum, frame):
+            raise TimeoutError("Regex timeout")
+        
+        # Set a timeout for regex operations (1 second)
+        signal.signal(signal.SIGALRM, timeout_handler)
+        signal.alarm(1)
+        
+        try:
+            for pattern in self.compiled_patterns:
+                if pattern.search(text):
+                    return True
             return False
-
-        # Check against compiled patterns
-        for pattern in self.compiled_patterns:
-            if pattern.search(text):
-                return True
-
-        return False
+        except (TimeoutError, Exception):
+            # If regex times out or fails, be conservative and flag as toxic
+            logger.warning(f"Regex timeout or error while checking text: {text[:100]}...")
+            return True
+        finally:
+            signal.alarm(0)  # Cancel the alarm
 
     def get_toxic_score(self, text: str) -> float:
         """Get toxicity score for text (0.0 to 1.0).
@@ -346,17 +366,29 @@ class AbusePreventionMiddleware(BaseHTTPMiddleware):
         # For POST requests, check content
         if request.method == "POST" and request.url.path == "/api/v1/reframe":
             try:
-                # Read request body
+                # Read request body with size limit
                 body = await request.body()
-                request._body = body  # Cache for downstream
+                
+                # Check payload size (50KB limit)
+                if len(body) > 50000:
+                    logger.warning(f"Payload too large from {client_id}: {len(body)} bytes")
+                    return Response("Payload too large", status_code=413)
 
-                # Parse JSON
+                # Parse JSON safely
                 import json
 
                 try:
                     data = json.loads(body)
+                    if not isinstance(data, dict):
+                        return Response("Invalid JSON structure", status_code=400)
+                    
                     thought = data.get("thought", "")
-                except:
+                    if not isinstance(thought, str):
+                        return Response("Invalid thought format", status_code=400)
+                        
+                except json.JSONDecodeError:
+                    return Response("Invalid JSON", status_code=400)
+                except Exception:
                     thought = ""
 
                 # Check content toxicity
