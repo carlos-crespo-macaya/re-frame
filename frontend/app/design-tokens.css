@@ -95,11 +95,11 @@
   --color-neutral-900: #1c1917;
   --color-neutral-950: #0c0a09;
   
-  /* Background & Surface - Warm, soft backgrounds */
-  --color-background: #fffdfb;
-  --color-surface: #fffaf7;
+  /* Background & Surface - Deep Charcoal theme */
+  --color-background: #161616;
+  --color-surface: #F7F4F2;
   --color-surface-raised: #ffffff;
-  --color-surface-overlay: rgba(139, 92, 39, 0.03);
+  --color-surface-overlay: rgba(0, 0, 0, 0.03);
   
   /* Special therapeutic colors */
   --color-calm-blue: #cbd5e1;
@@ -108,16 +108,16 @@
   --color-soft-sky: #bae6fd;
   
   /* Text */
-  --color-text-primary: var(--color-neutral-900);
-  --color-text-secondary: var(--color-neutral-600);
-  --color-text-tertiary: #666666;
+  --color-text-primary: #EDEDED;
+  --color-text-secondary: #999999;
+  --color-text-tertiary: #999999;
   --color-text-disabled: var(--color-neutral-400);
-  --color-text-inverse: #ffffff;
+  --color-text-inverse: #161616;
   
   /* Borders */
-  --color-border-light: var(--color-neutral-200);
-  --color-border-default: var(--color-neutral-300);
-  --color-border-dark: var(--color-neutral-400);
+  --color-border-light: #2a2a2a;
+  --color-border-default: #3a3a3a;
+  --color-border-dark: #4a4a4a;
   
   /* ===== Typography Tokens ===== */
   

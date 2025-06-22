@@ -14,9 +14,9 @@
     scroll-behavior: smooth;
   }
 
-  /* Base document styles with warm background */
+  /* Base document styles with Deep Charcoal background */
   body {
-    @apply bg-background text-text-primary;
+    @apply bg-[#161616] text-[#EDEDED];
     font-family: var(--font-sans);
     line-height: var(--line-height-relaxed);
     letter-spacing: var(--letter-spacing-normal);
@@ -26,7 +26,7 @@
 
   /* Organic selection colors */
   ::selection {
-    @apply bg-primary-200 text-primary-900 dark:bg-primary-800 dark:text-primary-100;
+    @apply bg-primary-800 text-primary-100;
   }
 
   /* Focus styles for all interactive elements */
@@ -47,25 +47,18 @@
 
   /* Links with gentle hover */
   a {
-    @apply text-primary-600 dark:text-primary-400 underline-offset-2 transition-colors duration-200;
+    @apply text-primary-400 underline-offset-2 transition-colors duration-200;
   }
 
   a:hover {
-    @apply text-primary-700 dark:text-primary-300;
+    @apply text-primary-300;
   }
 }
 
-/* System preference for dark mode */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    @apply [&]:bg-neutral-950;
-  }
-  
-  body:not([data-theme="light"]) {
-    /* Apply dark mode tokens */
-    --color-background: var(--color-neutral-950);
-    --color-text-primary: var(--color-neutral-50);
-  }
+/* Deep Charcoal theme - no dark/light mode toggle */
+:root {
+  --color-background: #161616;
+  --color-text-primary: #EDEDED;
 }
 
 @media (prefers-reduced-motion: reduce) {
