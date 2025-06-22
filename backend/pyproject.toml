@@ -14,7 +14,6 @@ dependencies = [
     "python-dotenv>=1.0.0",
     "firebase-admin>=6.4.0",
     "httpx>=0.26.0",
-    "slowapi>=0.1.9",
     "python-multipart>=0.0.6",
 ]
 
@@ -103,7 +102,6 @@ plugins = ["pydantic.mypy"]
 module = [
     "firebase_admin.*",
     "google.adk.*",
-    "slowapi.*",
 ]
 ignore_missing_imports = true
 
