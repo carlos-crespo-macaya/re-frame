@@ -1,13 +1,13 @@
 """Reframing API endpoints."""
 
-from fastapi import APIRouter, Request, HTTPException
-from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field
-from typing import Optional, Dict, Any
 import logging
+from typing import Any
 
-from agents import IntakeAgent, CBTFrameworkAgent, SynthesisAgent
-from middleware.rate_limiting import limiter, get_rate_limit
+from fastapi import APIRouter, Request
+from pydantic import BaseModel, Field
+
+from agents import CBTFrameworkAgent, IntakeAgent, SynthesisAgent
+from middleware.rate_limiting import get_rate_limit, limiter
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -21,7 +21,7 @@ class ReframeRequest(BaseModel):
         max_length=2000,
         description="The thought or situation to reframe"
     )
-    context: Optional[str] = Field(
+    context: str | None = Field(
         None,
         max_length=500,
         description="Additional context about the situation"
@@ -32,9 +32,9 @@ class ReframeResponse(BaseModel):
     """Response model for reframing endpoint."""
     success: bool
     response: str
-    transparency: Dict[str, Any]
+    transparency: dict[str, Any]
     techniques_used: list[str]
-    error: Optional[str] = None
+    error: str | None = None
 
 
 # Initialize agents (in production, these would be managed differently)
@@ -49,10 +49,10 @@ async def reframe_thought(request: Request, reframe_request: ReframeRequest):
     """Process a thought for cognitive reframing."""
     try:
         logger.info(f"Reframe request received: {len(reframe_request.thought)} characters")
-        
+
         # Step 1: Intake processing
         intake_result = await intake_agent.process_user_input(reframe_request.thought)
-        
+
         if not intake_result.get("success"):
             return ReframeResponse(
                 success=False,
@@ -61,7 +61,7 @@ async def reframe_thought(request: Request, reframe_request: ReframeRequest):
                 techniques_used=[],
                 error=intake_result.get("error")
             )
-        
+
         # Check for crisis content
         if intake_result.get("requires_crisis_support"):
             return ReframeResponse(
@@ -71,10 +71,10 @@ async def reframe_thought(request: Request, reframe_request: ReframeRequest):
                 techniques_used=["crisis_detection"],
                 error=None
             )
-        
+
         # Step 2: Apply CBT techniques
         cbt_result = await cbt_agent.apply_cbt_techniques(intake_result)
-        
+
         if not cbt_result.get("success"):
             return ReframeResponse(
                 success=False,
@@ -83,10 +83,10 @@ async def reframe_thought(request: Request, reframe_request: ReframeRequest):
                 techniques_used=[],
                 error=cbt_result.get("error")
             )
-        
+
         # Step 3: Synthesize response
         synthesis_result = await synthesis_agent.create_user_response(cbt_result)
-        
+
         if not synthesis_result.get("success"):
             return ReframeResponse(
                 success=False,
@@ -95,10 +95,10 @@ async def reframe_thought(request: Request, reframe_request: ReframeRequest):
                 techniques_used=[],
                 error=synthesis_result.get("error")
             )
-        
+
         # Extract response data
         response_data = synthesis_result.get("response", {})
-        
+
         return ReframeResponse(
             success=True,
             response=response_data.get("main_response", ""),
@@ -110,9 +110,9 @@ async def reframe_thought(request: Request, reframe_request: ReframeRequest):
             },
             techniques_used=response_data.get("techniques_explained", [])
         )
-        
+
     except Exception as e:
-        logger.error(f"Error in reframe endpoint: {str(e)}", exc_info=True)
+        logger.error(f"Error in reframe endpoint: {e!s}", exc_info=True)
         return ReframeResponse(
             success=False,
             response="An unexpected error occurred. Please try again later.",
@@ -153,7 +153,7 @@ async def list_techniques(request: Request):
             "helpful_for": ["self-criticism", "perfectionism", "shame"]
         }
     }
-    
+
     return {
         "techniques": techniques,
         "note": "These techniques are particularly selected for their effectiveness with AvPD-related challenges."

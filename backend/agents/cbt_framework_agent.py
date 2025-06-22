@@ -1,12 +1,13 @@
 """CBT Framework Agent for applying cognitive behavioral therapy techniques."""
 
+from typing import Any
+
 from .base import ReFrameAgent
-from typing import Dict, Any, List
 
 
 class CBTFrameworkAgent(ReFrameAgent):
     """Agent responsible for applying CBT techniques to user thoughts."""
-    
+
     INSTRUCTIONS = """You are a Cognitive Behavioral Therapy (CBT) specialist working with individuals who have Avoidant Personality Disorder (AvPD).
 
 Your role is to:
@@ -46,15 +47,15 @@ Output format:
     "transparency_notes": "explanation of approach"
 }
 """
-    
+
     def __init__(self):
         """Initialize the CBT Framework Agent."""
         super().__init__(
             name="CBTFrameworkAgent",
             instructions=self.INSTRUCTIONS
         )
-    
-    def _extract_reasoning_path(self, response: Any) -> Dict[str, Any]:
+
+    def _extract_reasoning_path(self, response: Any) -> dict[str, Any]:
         """Extract CBT reasoning for transparency."""
         return {
             "raw_response": str(response),
@@ -66,8 +67,8 @@ Output format:
                 "Proposed gradual action steps"
             ]
         }
-    
-    async def apply_cbt_techniques(self, intake_data: Dict[str, Any]) -> Dict[str, Any]:
+
+    async def apply_cbt_techniques(self, intake_data: dict[str, Any]) -> dict[str, Any]:
         """Apply CBT techniques to validated user input."""
         # Prepare input for CBT processing
         cbt_input = {
@@ -79,10 +80,10 @@ Output format:
                 "gradual_exposure"
             ]
         }
-        
+
         return await self.process_with_transparency(cbt_input)
-    
-    def get_avpd_specific_techniques(self) -> List[str]:
+
+    def get_avpd_specific_techniques(self) -> list[str]:
         """Return CBT techniques particularly effective for AvPD."""
         return [
             "Gentle cognitive restructuring",
