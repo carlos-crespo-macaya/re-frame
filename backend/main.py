@@ -44,7 +44,11 @@ app = FastAPI(
 setup_logging(app)
 setup_cors(app)
 
-# Add abuse prevention middleware
+# IMPORTANT: Rate limiting must come first to prevent expensive operations
+# on requests that will be blocked anyway
+setup_rate_limiting(app)
+
+# Add abuse prevention middleware after rate limiting
 settings = get_settings()
 app.add_middleware(
     AbusePreventionMiddleware,
@@ -58,9 +62,6 @@ app.add_middleware(
         settings.toxicity_threshold if hasattr(settings, "toxicity_threshold") else 0.7
     ),
 )
-
-# Add rate limiting after abuse prevention
-setup_rate_limiting(app)
 
 # Include routers
 app.include_router(health.router, prefix="/api/health", tags=["health"])
