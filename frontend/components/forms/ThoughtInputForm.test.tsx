@@ -15,7 +15,7 @@ describe('ThoughtInputForm', () => {
     
     expect(screen.getByLabelText(/describe your thought/i)).toBeInTheDocument()
     expect(screen.getByPlaceholderText(/what situation or thought would you like to examine/i)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /generate reframing/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /reframe this thought/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /clear/i })).toBeInTheDocument()
   })
 
@@ -34,7 +34,7 @@ describe('ThoughtInputForm', () => {
     render(<ThoughtInputForm onSubmit={mockOnSubmit} onClear={mockOnClear} />)
     
     const textarea = screen.getByLabelText(/describe your thought/i)
-    const submitButton = screen.getByRole('button', { name: /generate reframing/i })
+    const submitButton = screen.getByRole('button', { name: /reframe this thought/i })
     
     await user.type(textarea, 'I feel anxious about the meeting')
     await user.click(submitButton)
@@ -60,7 +60,7 @@ describe('ThoughtInputForm', () => {
   it('disables submit button when textarea is empty', () => {
     render(<ThoughtInputForm onSubmit={mockOnSubmit} onClear={mockOnClear} />)
     
-    const submitButton = screen.getByRole('button', { name: /generate reframing/i })
+    const submitButton = screen.getByRole('button', { name: /reframe this thought/i })
     expect(submitButton).toBeDisabled()
   })
 
@@ -69,7 +69,7 @@ describe('ThoughtInputForm', () => {
     render(<ThoughtInputForm onSubmit={mockOnSubmit} onClear={mockOnClear} />)
     
     const textarea = screen.getByLabelText(/describe your thought/i)
-    const submitButton = screen.getByRole('button', { name: /generate reframing/i })
+    const submitButton = screen.getByRole('button', { name: /reframe this thought/i })
     
     await user.type(textarea, 'Some thought')
     expect(submitButton).toBeEnabled()
@@ -108,7 +108,7 @@ describe('ThoughtInputForm', () => {
     render(<ThoughtInputForm onSubmit={mockOnSubmit} onClear={mockOnClear} />)
     
     const textarea = screen.getByLabelText(/describe your thought/i)
-    const submitButton = screen.getByRole('button', { name: /generate reframing/i })
+    const submitButton = screen.getByRole('button', { name: /reframe this thought/i })
     
     await user.type(textarea, 'My thought')
     await user.click(submitButton)
@@ -137,7 +137,7 @@ describe('ThoughtInputForm', () => {
     await user.type(screen.getByLabelText(/describe your thought/i), 'Test')
     
     await user.tab()
-    expect(screen.getByRole('button', { name: /generate reframing/i })).toHaveFocus()
+    expect(screen.getByRole('button', { name: /reframe this thought/i })).toHaveFocus()
     
     await user.tab()
     expect(screen.getByRole('button', { name: /clear/i })).toHaveFocus()
