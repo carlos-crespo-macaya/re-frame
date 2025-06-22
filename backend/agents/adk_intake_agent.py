@@ -1,7 +1,7 @@
 """ADK-based Intake Agent for collecting and validating user input."""
 
 import re
-from typing import Any, Dict, List
+from typing import Any
 
 from .adk_base import ADKReFrameAgent, ReFrameResponse
 from .adk_tools import get_all_reframe_tools
@@ -48,7 +48,7 @@ Output format:
             tools=get_all_reframe_tools(),
         )
 
-    def _extract_reasoning_path(self, response: str) -> Dict[str, Any]:
+    def _extract_reasoning_path(self, response: str) -> dict[str, Any]:
         """Extract intake reasoning for transparency."""
         return {
             "raw_response": response,
@@ -62,13 +62,13 @@ Output format:
             "focus": "input_validation_and_pattern_identification",
         }
 
-    def _extract_techniques_used(self, response: str) -> List[str]:
+    def _extract_techniques_used(self, response: str) -> list[str]:
         """Extract techniques used by the intake agent."""
         techniques = ["content_validation", "pattern_identification"]
-        
+
         # Check response for specific techniques mentioned
         response_lower = response.lower()
-        
+
         if "crisis" in response_lower or "harm" in response_lower:
             techniques.append("crisis_detection")
         if "avpd" in response_lower or "avoidant" in response_lower:
@@ -77,7 +77,7 @@ Output format:
             techniques.append("emotion_extraction")
         if "behavior" in response_lower:
             techniques.append("behavior_extraction")
-            
+
         return techniques
 
     def _validate_input_length(self, text: str) -> bool:
@@ -93,8 +93,13 @@ Output format:
     def _check_for_crisis_keywords(self, text: str) -> bool:
         """Check for crisis-related keywords that need immediate attention."""
         crisis_keywords = [
-            "suicide", "kill myself", "end it all", "harm myself",
-            "hurt myself", "want to die", "better off dead"
+            "suicide",
+            "kill myself",
+            "end it all",
+            "harm myself",
+            "hurt myself",
+            "want to die",
+            "better off dead",
         ]
         text_lower = text.lower()
         return any(keyword in text_lower for keyword in crisis_keywords)
@@ -106,19 +111,17 @@ Output format:
             return ReFrameResponse(
                 success=False,
                 error="Input must be between 5 and 500 words.",
-                error_type="validation"
+                error_type="validation",
             )
 
         if self._check_for_urls(user_input):
             return ReFrameResponse(
-                success=False,
-                error="URLs are not allowed in thoughts.",
-                error_type="validation"
+                success=False, error="URLs are not allowed in thoughts.", error_type="validation"
             )
 
         # Crisis detection - flag for immediate attention
         has_crisis_content = self._check_for_crisis_keywords(user_input)
-        
+
         # Process with agent
         input_data = {
             "user_thought": user_input,
@@ -129,17 +132,19 @@ Output format:
         }
 
         result = await self.process_with_transparency(input_data)
-        
+
         # Add crisis flag to transparency data if detected
         if has_crisis_content and result.transparency_data:
             result.transparency_data.techniques_used.append("crisis_detection")
             if "crisis_detected" not in result.transparency_data.reasoning_path:
                 result.transparency_data.reasoning_path["crisis_detected"] = True
-                result.transparency_data.reasoning_path["crisis_note"] = "Crisis keywords detected in input"
+                result.transparency_data.reasoning_path["crisis_note"] = (
+                    "Crisis keywords detected in input"
+                )
 
         return result
 
-    def get_validation_rules(self) -> Dict[str, Any]:
+    def get_validation_rules(self) -> dict[str, Any]:
         """Return validation rules used by this agent."""
         return {
             "min_word_count": 5,
@@ -151,15 +156,15 @@ Output format:
                 "spam_detection": True,
                 "harmful_content_detection": True,
                 "avpd_pattern_recognition": True,
-            }
+            },
         }
 
-    def get_extracted_patterns(self) -> List[str]:
+    def get_extracted_patterns(self) -> list[str]:
         """Return patterns this agent can identify."""
         return [
             "fear_of_criticism",
             "social_avoidance",
-            "perfectionism", 
+            "perfectionism",
             "negative_self_talk",
             "catastrophic_thinking",
             "emotional_isolation",
