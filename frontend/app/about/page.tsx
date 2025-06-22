@@ -38,7 +38,7 @@ export default function About() {
             <ul className="space-y-3 text-[#999999] mb-8">
               <li className="flex items-start">
                 <span className="mr-2">•</span>
-                <div><strong className="text-[#EDEDED]">What it is:</strong> a CBT-informed cognitive-restructuring tool that spots thinking traps (catastrophising, mind-reading, etc.) and offers kinder perspectives.</div>
+                <div><strong className="text-[#EDEDED]">What it is:</strong> a therapeutic framework-informed cognitive restructuring tool that spots thinking traps (catastrophising, mind-reading, etc.) and offers kinder perspectives.</div>
               </li>
               <li className="flex items-start">
                 <span className="mr-2">•</span>
@@ -59,7 +59,7 @@ export default function About() {
             </ul>
 
             <p className="text-base text-[#999999] leading-relaxed">
-              Questions? Reach me at <a href="mailto:macayaven@gmail.com" className="text-[#EDEDED] hover:text-brand-green-400 underline">macayaven@gmail.com</a> or view the roadmap on GitHub → <a href="https://github.com/macayaven/re-frame" className="text-brand-green-400 hover:text-brand-green-300 underline" target="_blank" rel="noopener noreferrer">https://github.com/macayaven/re-frame</a>
+              Questions? Reach me at <a href="mailto:hello@re-frame.social" className="text-[#EDEDED] hover:text-brand-green-400 underline">hello@re-frame.social</a>.
             </p>
 
             <div className="mt-12 text-center">
