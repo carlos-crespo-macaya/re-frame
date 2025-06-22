@@ -52,7 +52,7 @@ async def reframe_thought(reframe_request: ReframeRequest):
                 response="I wasn't able to process your thought. Please try rephrasing it.",
                 transparency={
                     "stage": result.get("workflow_stage", "unknown"),
-                    "issue": result.get("error")
+                    "issue": result.get("error"),
                 },
                 techniques_used=[],
                 error=result.get("error"),
@@ -62,7 +62,10 @@ async def reframe_thought(reframe_request: ReframeRequest):
         if result.get("crisis_flag"):
             return ReframeResponse(
                 success=True,
-                response=result.get("response", "I notice you might be going through a particularly difficult time. Please consider reaching out to a mental health professional or crisis helpline for immediate support."),
+                response=result.get(
+                    "response",
+                    "I notice you might be going through a particularly difficult time. Please consider reaching out to a mental health professional or crisis helpline for immediate support.",
+                ),
                 transparency=result.get("transparency", {}),
                 techniques_used=["crisis_detection"],
                 error=None,
@@ -73,6 +76,7 @@ async def reframe_thought(reframe_request: ReframeRequest):
         if isinstance(response_text, str):
             try:
                 import json
+
                 response_data = json.loads(response_text)
                 main_response = response_data.get("main_response", response_text)
             except json.JSONDecodeError:
@@ -141,10 +145,10 @@ async def get_session_history(session_id: str):
     history = session_manager.get_session_history(session_id)
     if not history:
         return {"error": "Session not found"}
-    
+
     return {
         "session": history,
-        "note": "Session data is automatically cleaned up after 24 hours for privacy."
+        "note": "Session data is automatically cleaned up after 24 hours for privacy.",
     }
 
 
@@ -154,7 +158,7 @@ async def get_performance_metrics():
     return {
         "performance": observability_manager.get_performance_summary(),
         "errors": observability_manager.get_error_analysis(),
-        "note": "This endpoint should be restricted to administrators in production."
+        "note": "This endpoint should be restricted to administrators in production.",
     }
 
 
@@ -162,7 +166,10 @@ async def get_performance_metrics():
 async def enable_debug_mode():
     """Enable debug mode for detailed logging (admin only)."""
     observability_manager.enable_debug_mode()
-    return {"message": "Debug mode enabled", "warning": "This should only be used for troubleshooting."}
+    return {
+        "message": "Debug mode enabled",
+        "warning": "This should only be used for troubleshooting.",
+    }
 
 
 @router.post("/observability/debug/disable")

@@ -1,6 +1,6 @@
 """ADK-based CBT Framework Agent for applying cognitive behavioral therapy techniques."""
 
-from typing import Any, Dict, List
+from typing import Any
 
 from .adk_base import ADKReFrameAgent, ReFrameResponse
 from .adk_tools import get_all_reframe_tools
@@ -58,14 +58,14 @@ Output format:
             tools=get_all_reframe_tools(),
         )
 
-    def _extract_reasoning_path(self, response: str) -> Dict[str, Any]:
+    def _extract_reasoning_path(self, response: str) -> dict[str, Any]:
         """Extract CBT reasoning for transparency."""
         return {
             "raw_response": response,
             "steps": [
                 "Identified cognitive distortions",
                 "Selected appropriate CBT techniques",
-                "Generated balanced alternatives", 
+                "Generated balanced alternatives",
                 "Crafted gentle challenges",
                 "Proposed gradual action steps",
             ],
@@ -74,15 +74,15 @@ Output format:
             "approach": "avpd_sensitive_cbt",
         }
 
-    def _extract_techniques_used(self, response: str) -> List[str]:
+    def _extract_techniques_used(self, response: str) -> list[str]:
         """Extract CBT techniques used from the response."""
         techniques = []
         response_lower = response.lower()
-        
+
         # Map technique mentions to standard names
         technique_mapping = {
             "cognitive restructuring": "cognitive_restructuring",
-            "evidence": "evidence_examination", 
+            "evidence": "evidence_examination",
             "decatastroph": "decatastrophizing",
             "behavioral experiment": "behavioral_experiments",
             "graded exposure": "graded_exposure",
@@ -92,18 +92,18 @@ Output format:
             "self-compassion": "self_compassion",
             "gradual": "gradual_approach",
         }
-        
+
         for phrase, technique in technique_mapping.items():
             if phrase in response_lower:
                 techniques.append(technique)
-        
+
         # Always include base CBT techniques for this agent
         if not techniques:
             techniques = ["cognitive_restructuring", "evidence_examination"]
-            
+
         return techniques
 
-    async def apply_cbt_techniques(self, intake_data: Dict[str, Any]) -> ReFrameResponse:
+    async def apply_cbt_techniques(self, intake_data: dict[str, Any]) -> ReFrameResponse:
         """Apply CBT techniques to validated user input."""
         # Prepare input for CBT processing
         cbt_input = {
@@ -111,7 +111,7 @@ Output format:
             "focus": "AvPD-sensitive reframing",
             "techniques_priority": [
                 "cognitive_restructuring",
-                "evidence_examination", 
+                "evidence_examination",
                 "gradual_exposure",
             ],
             "safety_level": "maximum_gentleness",
@@ -120,18 +120,18 @@ Output format:
 
         return await self.process_with_transparency(cbt_input)
 
-    def get_avpd_specific_techniques(self) -> List[str]:
+    def get_avpd_specific_techniques(self) -> list[str]:
         """Return CBT techniques particularly effective for AvPD."""
         return [
             "gentle_cognitive_restructuring",
-            "self_compassion_exercises", 
+            "self_compassion_exercises",
             "gradual_social_exposure_planning",
             "fear_of_criticism_analysis",
             "perfectionism_challenging",
             "social_situation_reframing",
         ]
 
-    def get_cognitive_distortions(self) -> List[str]:
+    def get_cognitive_distortions(self) -> list[str]:
         """Return common cognitive distortions this agent can identify."""
         return [
             "all_or_nothing_thinking",
@@ -146,7 +146,7 @@ Output format:
             "disqualifying_positive",
         ]
 
-    def get_reframing_strategies(self) -> Dict[str, str]:
+    def get_reframing_strategies(self) -> dict[str, str]:
         """Return reframing strategies used by this agent."""
         return {
             "balanced_perspective": "Present multiple viewpoints on the situation",
@@ -157,7 +157,7 @@ Output format:
             "strength_identification": "Identify personal strengths and past successes",
         }
 
-    async def analyze_thought_patterns(self, thoughts: List[str]) -> ReFrameResponse:
+    async def analyze_thought_patterns(self, thoughts: list[str]) -> ReFrameResponse:
         """Analyze multiple thoughts for patterns and provide comprehensive CBT analysis."""
         analysis_input = {
             "thoughts_list": thoughts,
@@ -165,10 +165,10 @@ Output format:
             "focus": "avpd_specific_patterns",
             "depth": "comprehensive",
         }
-        
+
         return await self.process_with_transparency(analysis_input)
 
-    def get_safety_guidelines(self) -> Dict[str, Any]:
+    def get_safety_guidelines(self) -> dict[str, Any]:
         """Return safety guidelines for AvPD-sensitive CBT application."""
         return {
             "approach": "collaborative_not_directive",
