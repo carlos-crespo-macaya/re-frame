@@ -110,7 +110,7 @@
   /* Text */
   --color-text-primary: var(--color-neutral-900);
   --color-text-secondary: var(--color-neutral-600);
-  --color-text-tertiary: var(--color-neutral-500);
+  --color-text-tertiary: #666666;
   --color-text-disabled: var(--color-neutral-400);
   --color-text-inverse: #ffffff;
   
@@ -294,8 +294,8 @@
   
   /* Text - Softer whites for comfort */
   --color-text-primary: #faf6f2;
-  --color-text-secondary: #d6cfc7;
-  --color-text-tertiary: #a8a29e;
+  --color-text-secondary: #ededed;
+  --color-text-tertiary: #b0b0b0;
   --color-text-disabled: #78716c;
   --color-text-inverse: var(--color-neutral-900);
   
