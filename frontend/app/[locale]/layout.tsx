@@ -8,7 +8,7 @@ import "../globals.css";
 import RootErrorBoundary from "@/components/error/RootErrorBoundary";
 import { ThemeProvider } from "@/lib/theme/ThemeContext";
 import { themeScript } from "@/lib/theme/theme-script";
-import { locales } from '@/i18n';
+import { routing } from '@/i18n/routing';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -30,7 +30,7 @@ const geistMono = localFont({
 });
 
 export function generateStaticParams() {
-  return locales.map((locale) => ({locale}));
+  return routing.locales.map((locale) => ({locale}));
 }
 
 export async function generateMetadata({
@@ -51,7 +51,7 @@ export async function generateMetadata({
       siteName: "re-frame.social",
       type: "website",
       locale: locale,
-      alternateLocale: locales.filter(l => l !== locale),
+      alternateLocale: routing.locales.filter(l => l !== locale),
     },
     twitter: {
       card: "summary",
@@ -64,7 +64,7 @@ export async function generateMetadata({
     },
     alternates: {
       languages: Object.fromEntries(
-        locales.map((locale) => [locale, `/${locale}`])
+        routing.locales.map((locale) => [locale, `/${locale}`])
       ),
     },
   };
@@ -89,7 +89,7 @@ export default async function LocaleLayout({
   params: {locale: string};
 }>) {
   // Ensure that the incoming locale is valid
-  if (!locales.includes(locale as typeof locales[number])) {
+  if (!routing.locales.includes(locale as (typeof routing.locales)[number])) {
     notFound();
   }
 

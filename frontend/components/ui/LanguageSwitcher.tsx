@@ -2,8 +2,8 @@
 
 import { useTransition } from 'react';
 import { useLocale } from 'next-intl';
-import { useRouter, usePathname } from 'next/navigation';
-import { locales } from '@/i18n';
+import { useRouter, usePathname } from '@/i18n/routing';
+import { routing } from '@/i18n/routing';
 
 export default function LanguageSwitcher() {
   const locale = useLocale();
@@ -13,9 +13,8 @@ export default function LanguageSwitcher() {
 
   const handleChange = (newLocale: string) => {
     startTransition(() => {
-      // Remove the current locale from the pathname
-      const newPath = pathname.replace(`/${locale}`, `/${newLocale}`);
-      router.replace(newPath);
+      // Use the router from next-intl which handles locale switching
+      router.replace(pathname, {locale: newLocale});
     });
   };
 
@@ -47,7 +46,7 @@ export default function LanguageSwitcher() {
         "
         aria-label="Change language"
       >
-        {locales.map((loc) => (
+        {routing.locales.map((loc) => (
           <option key={loc} value={loc}>
             {loc === 'en' ? 'English' : 'Español'}
           </option>

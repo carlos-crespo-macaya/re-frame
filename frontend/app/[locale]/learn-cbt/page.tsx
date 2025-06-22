@@ -32,7 +32,7 @@ export default function LearnCBT() {
             </h1>
             
             <p className="text-base text-[#999999] leading-relaxed mb-6">
-              Cognitive Behavioural Therapy (CBT) is an evidence-based approach that links <strong className="text-[#EDEDED]">thoughts, feelings, and actions</strong> <sup className="text-xs"><a href="#ref1" className="text-brand-green-400 hover:text-brand-green-300">[1]</a></sup>. By spotting common <strong className="text-[#EDEDED]">thinking traps</strong>—such as catastrophising, mind-reading, or "all-or-nothing" statements—you can practise kinder, more balanced perspectives.
+              Cognitive Behavioural Therapy (CBT) is an evidence-based approach that links <strong className="text-[#EDEDED]">thoughts, feelings, and actions</strong> <sup className="text-xs"><a href="#ref1" className="text-brand-green-400 hover:text-brand-green-300">[1]</a></sup>. By spotting common <strong className="text-[#EDEDED]">thinking traps</strong>—such as catastrophising, mind-reading, or &quot;all-or-nothing&quot; statements—you can practise kinder, more balanced perspectives.
             </p>
 
             <h2 className="text-2xl font-semibold text-[#EDEDED] mt-8 mb-4">
@@ -50,7 +50,7 @@ export default function LearnCBT() {
             </ul>
 
             <p className="text-base text-[#999999] leading-relaxed mb-6">
-              Consistent CBT exercises can gradually chip away at the belief <em>"I will always be rejected."</em>
+              Consistent CBT exercises can gradually chip away at the belief <em>&quot;I will always be rejected.&quot;</em>
             </p>
 
             <h2 className="text-2xl font-semibold text-[#EDEDED] mt-8 mb-4">
@@ -78,7 +78,7 @@ export default function LearnCBT() {
               <li className="flex items-start">
                 <span className="mr-2">•</span>
                 <div>
-                  <strong className="text-[#EDEDED]">"Unhelpful Thinking Styles"</strong> factsheet – CCI • 
+                  <strong className="text-[#EDEDED]">&quot;Unhelpful Thinking Styles&quot;</strong> factsheet – CCI • 
                   <a href="https://www.cci.health.wa.gov.au/~/media/CCI/Mental-Health-Professionals/Depression/Depression---Information-Sheets/Depression-Information-Sheet---11--Unhelpful-Thinking-Styles.pdf" className="text-brand-green-400 hover:text-brand-green-300 underline" target="_blank" rel="noopener noreferrer">
                     <span className="inline-flex items-center gap-1">
                       <svg className="inline w-[14px] h-[14px]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -133,19 +133,19 @@ export default function LearnCBT() {
                       Beck, A.T. <em>Cognitive Therapy and the Emotional Disorders.</em><br />
                       International Universities Press, 1976.
                     </td>
-                    <td className="py-3 text-[#999999]">Definition of CBT & thought–emotion–behaviour link</td>
+                    <td className="py-3 text-[#999999]">Definition of CBT &amp; thought–emotion–behaviour link</td>
                   </tr>
                   <tr className="border-b border-[#2a2a2a]">
                     <td className="py-3 pr-4 text-[#999999] align-top" id="ref2">[2]</td>
                     <td className="py-3 pr-4 text-[#999999]">
-                      Lampe, L., & Sunderland, M. (2013). <em>Avoidant Personality Disorder: current status and future directions.</em> <strong>Australian & New Zealand Journal of Psychiatry, 47(6)</strong>, 515-22.
+                      Lampe, L., &amp; Sunderland, M. (2013). <em>Avoidant Personality Disorder: current status and future directions.</em> <strong>Australian &amp; New Zealand Journal of Psychiatry, 47(6)</strong>, 515-22.
                     </td>
                     <td className="py-3 text-[#999999]">AvPD features: fear of evaluation, self-criticism</td>
                   </tr>
                   <tr>
                     <td className="py-3 pr-4 text-[#999999] align-top" id="ref3">[3]</td>
                     <td className="py-3 pr-4 text-[#999999]">
-                      Clark, D.A. & Beck, A.T. <em>Cognitive Therapy of Anxiety Disorders.</em><br />
+                      Clark, D.A. &amp; Beck, A.T. <em>Cognitive Therapy of Anxiety Disorders.</em><br />
                       The Guilford Press, 2010.
                     </td>
                     <td className="py-3 text-[#999999]">CBT techniques: naming, testing, practising alternatives</td>
@@ -156,7 +156,7 @@ export default function LearnCBT() {
 
             <div className="mt-6 p-4 bg-[#2a2a2a] border border-[#3a3a3a] rounded-lg">
               <p className="text-xs text-[#999999] leading-relaxed">
-                <strong>Note:</strong> CCI's "Unhelpful Thinking Styles" PDF and Psychology Tools workbooks are freely available, evidence-aligned handouts often recommended by clinicians.<br />
+                <strong>Note:</strong> CCI&apos;s &quot;Unhelpful Thinking Styles&quot; PDF and Psychology Tools workbooks are freely available, evidence-aligned handouts often recommended by clinicians.<br />
                 Link to CCI module: <a href="https://www.cci.health.wa.gov.au/Resources/Looking-After-Yourself/Unhelpful-Thinking-Styles" className="text-brand-green-400 hover:text-brand-green-300 underline break-words" target="_blank" rel="noopener noreferrer">https://www.cci.health.wa.gov.au/Resources/Looking-After-Yourself/Unhelpful-Thinking-Styles</a>
               </p>
             </div>
