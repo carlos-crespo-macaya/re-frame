@@ -38,6 +38,32 @@ app = FastAPI(
     docs_url="/api/docs",
     redoc_url="/api/redoc",
     openapi_url="/api/openapi.json",
+    openapi_tags=[
+        {
+            "name": "Cognitive Reframing",
+            "description": "Main endpoints for processing thoughts through therapeutic frameworks",
+        },
+        {
+            "name": "Health",
+            "description": "Service health monitoring endpoints",
+        },
+        {
+            "name": "Sessions",
+            "description": "Session management and history",
+        },
+        {
+            "name": "Reference",
+            "description": "Reference information about available techniques",
+        },
+        {
+            "name": "Monitoring",
+            "description": "Performance monitoring and debugging (admin only)",
+        },
+    ],
+    servers=[
+        {"url": "http://localhost:8000", "description": "Local development"},
+        {"url": "https://api.re-frame.social", "description": "Production"},
+    ],
 )
 
 # Configure middleware
