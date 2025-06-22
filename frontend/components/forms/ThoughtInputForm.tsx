@@ -117,7 +117,7 @@ export default function ThoughtInputForm({
           {isLoading ? (
               <span>Processing...</span>
             ) : (
-              <span>Generate reframing</span>
+              <span>Reframe this thought</span>
             )}
         </Button>
         <Button

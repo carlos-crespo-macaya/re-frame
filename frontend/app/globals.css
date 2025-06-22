@@ -38,10 +38,10 @@
     border-radius: inherit;
   }
 
-  /* Headings with personality */
+  /* Headings with Inter font */
   h1, h2, h3, h4, h5, h6 {
     @apply font-medium tracking-tight;
-    font-family: var(--font-rounded);
+    font-family: var(--font-inter);
     line-height: var(--line-height-tight);
   }
 
