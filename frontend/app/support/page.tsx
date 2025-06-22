@@ -87,7 +87,7 @@ export default function Support() {
                 <ul className="space-y-2 text-[#999999] pl-6">
                   <li className="flex items-start">
                     <span className="mr-2">•</span>
-                    <div>Email <a href="mailto:support@re-frame.social" className="text-[#EDEDED] hover:text-brand-green-400 underline">support@re-frame.social</a> (24 h response on weekdays).</div>
+                    <div>Email <a href="mailto:support@re-frame.social" className="text-[#EDEDED] hover:text-brand-green-400 underline">support@re-frame.social</a>. This is a solo project maintained with care — I&apos;ll do my best to respond promptly.</div>
                   </li>
                 </ul>
               </div>
