@@ -1,5 +1,4 @@
 import createMiddleware from 'next-intl/middleware';
-import { NextRequest } from 'next/server';
 
 export default createMiddleware({
   // A list of all locales that are supported
@@ -9,7 +8,10 @@ export default createMiddleware({
   defaultLocale: 'en',
   
   // Always use a locale prefix in the URL
-  localePrefix: 'always'
+  localePrefix: 'always',
+  
+  // Redirect root to default locale
+  localeDetection: true
 });
 
 export const config = {
