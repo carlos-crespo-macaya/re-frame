@@ -33,12 +33,12 @@ def setup_rate_limiting(app: FastAPI) -> None:
     # Add limiter to app state
     app.state.limiter = limiter
 
-    # Add exception handler
-    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+    # Add exception handler (disabled - using custom handler below)
+    # app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
     # Create custom error handler with helpful message
     @app.exception_handler(RateLimitExceeded)
-    async def custom_rate_limit_handler(request: Request, exc: RateLimitExceeded):
+    async def custom_rate_limit_handler(request: Request, exc: RateLimitExceeded) -> JSONResponse:
         response = {
             "error": "Rate limit exceeded",
             "message": f"You have exceeded the limit of {settings.rate_limit_requests} requests per hour.",
@@ -49,7 +49,7 @@ def setup_rate_limiting(app: FastAPI) -> None:
             content=response,
             headers={
                 "X-RateLimit-Limit": str(settings.rate_limit_requests),
-                "X-RateLimit-Reset": str(exc.retry_after),
+                "X-RateLimit-Reset": str(getattr(exc, 'retry_after', 0)),
             },
         )
 
