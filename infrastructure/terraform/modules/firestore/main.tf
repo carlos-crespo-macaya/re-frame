@@ -92,6 +92,6 @@ resource "google_firebaserules_ruleset" "firestore" {
 
 resource "google_firebaserules_release" "firestore" {
   project      = var.project_id
-  release_id   = "cloud.firestore"
-  ruleset_name = google_firebaserules_ruleset.firestore.name
+  name         = "cloud.firestore"
+  ruleset_name = "projects/${var.project_id}/rulesets/${google_firebaserules_ruleset.firestore.name}"
 }
