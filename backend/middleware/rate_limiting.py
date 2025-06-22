@@ -4,7 +4,7 @@ import logging
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
-from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi import Limiter
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
@@ -49,7 +49,7 @@ def setup_rate_limiting(app: FastAPI) -> None:
             content=response,
             headers={
                 "X-RateLimit-Limit": str(settings.rate_limit_requests),
-                "X-RateLimit-Reset": str(getattr(exc, 'retry_after', 0)),
+                "X-RateLimit-Reset": str(getattr(exc, "retry_after", 0)),
             },
         )
 
