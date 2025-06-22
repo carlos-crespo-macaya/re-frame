@@ -111,18 +111,18 @@ class TestRateLimiter:
     def test_memory_protection_cleanup(self):
         """Test memory protection against exhaustion attacks."""
         limiter = RateLimiter(max_requests=1, window_seconds=1)
-        
+
         # Force memory protection by creating many clients
         original_max = limiter.MAX_TRACKED_CLIENTS
         limiter.MAX_TRACKED_CLIENTS = 5  # Lower limit for testing
-        
+
         # Create more clients than the limit
         for i in range(10):
             limiter.is_allowed(f"user{i}")
-            
+
         # Should trigger cleanup and limit tracked clients
         assert len(limiter.requests) <= limiter.MAX_TRACKED_CLIENTS + 1000  # Allow some buffer
-        
+
         # Restore original limit
         limiter.MAX_TRACKED_CLIENTS = original_max
 

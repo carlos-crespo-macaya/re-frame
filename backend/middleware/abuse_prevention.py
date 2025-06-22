@@ -75,14 +75,14 @@ class ContentFilter:
 
         # Check against compiled patterns with timeout protection
         import signal
-        
+
         def timeout_handler(signum, frame):
             raise TimeoutError("Regex timeout")
-        
+
         # Set a timeout for regex operations (1 second)
         signal.signal(signal.SIGALRM, timeout_handler)
         signal.alarm(1)
-        
+
         try:
             for pattern in self.compiled_patterns:
                 if pattern.search(text):
@@ -320,10 +320,10 @@ class AbusePreventionMiddleware(BaseHTTPMiddleware):
 
     def _validate_perspective_api_key(self, api_key: str) -> bool:
         """Validate Perspective API key format.
-        
+
         Args:
             api_key: API key to validate
-            
+
         Returns:
             True if key format is valid, False otherwise
         """
@@ -331,11 +331,12 @@ class AbusePreventionMiddleware(BaseHTTPMiddleware):
         # and have specific length requirements
         if not api_key or len(api_key) < 20:
             return False
-            
+
         # Google API keys often start with 'AIza' but can vary
         # This is a basic check to catch obvious errors
         import re
-        pattern = r'^[A-Za-z0-9_-]{20,}$'
+
+        pattern = r"^[A-Za-z0-9_-]{20,}$"
         return re.match(pattern, api_key) is not None
 
     async def dispatch(self, request: Request, call_next):
@@ -368,7 +369,7 @@ class AbusePreventionMiddleware(BaseHTTPMiddleware):
             try:
                 # Read request body with size limit
                 body = await request.body()
-                
+
                 # Check payload size (50KB limit)
                 if len(body) > 50000:
                     logger.warning(f"Payload too large from {client_id}: {len(body)} bytes")
@@ -381,11 +382,11 @@ class AbusePreventionMiddleware(BaseHTTPMiddleware):
                     data = json.loads(body)
                     if not isinstance(data, dict):
                         return Response("Invalid JSON structure", status_code=400)
-                    
+
                     thought = data.get("thought", "")
                     if not isinstance(thought, str):
                         return Response("Invalid thought format", status_code=400)
-                        
+
                 except json.JSONDecodeError:
                     return Response("Invalid JSON", status_code=400)
                 except Exception:

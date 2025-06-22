@@ -4,8 +4,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from agents.adk_intake_agent import ADKIntakeAgent
 from agents.adk_base import ReFrameResponse
+from agents.adk_intake_agent import ADKIntakeAgent
 
 
 @pytest.fixture
@@ -22,19 +22,21 @@ def mock_settings():
 @pytest.fixture
 def mock_adk_components():
     """Mock ADK components."""
-    with patch("agents.adk_base.LlmAgent") as mock_llm_agent, \
-         patch("agents.adk_base.LiteLlm") as mock_lite_llm, \
-         patch("agents.adk_intake_agent.get_all_reframe_tools") as mock_tools:
-        
+    with (
+        patch("agents.adk_base.LlmAgent") as mock_llm_agent,
+        patch("agents.adk_base.LiteLlm") as mock_lite_llm,
+        patch("agents.adk_intake_agent.get_all_reframe_tools") as mock_tools,
+    ):
+
         agent_instance = AsyncMock()
         mock_llm_agent.return_value = agent_instance
         mock_tools.return_value = []
-        
+
         yield {
             "llm_agent": agent_instance,
             "llm_agent_class": mock_llm_agent,
             "lite_llm": mock_lite_llm,
-            "tools": mock_tools
+            "tools": mock_tools,
         }
 
 
@@ -48,7 +50,7 @@ class TestADKIntakeAgentInitialization:
         assert agent.name == "ADKIntakeAgent"
         assert "intake specialist" in agent.instructions.lower()
         assert "avoidant personality disorder" in agent.instructions.lower()
-        
+
         # Verify tools were requested
         mock_adk_components["tools"].assert_called_once()
 
@@ -57,13 +59,13 @@ class TestADKIntakeAgentInitialization:
         agent = ADKIntakeAgent()
 
         instructions = agent.instructions.lower()
-        
+
         # Check for key intake responsibilities
         assert "validate user input" in instructions
         assert "harmful content" in instructions
         assert "crisis situations" in instructions
         assert "avpd" in instructions
-        
+
         # Check for expected output format
         assert "is_valid" in agent.instructions
         assert "requires_crisis_support" in agent.instructions
@@ -107,7 +109,9 @@ class TestADKIntakeAgentInputValidation:
         assert agent._check_for_urls("Go to http://test.org") is True
         assert agent._check_for_urls("No URLs in this text") is False
 
-    def test_check_for_crisis_keywords_detects_crisis_content(self, mock_settings, mock_adk_components):
+    def test_check_for_crisis_keywords_detects_crisis_content(
+        self, mock_settings, mock_adk_components
+    ):
         """Test crisis keyword detection."""
         agent = ADKIntakeAgent()
 
@@ -116,7 +120,7 @@ class TestADKIntakeAgentInputValidation:
         assert agent._check_for_crisis_keywords("I'm thinking about suicide") is True
         assert agent._check_for_crisis_keywords("I want to hurt myself") is True
         assert agent._check_for_crisis_keywords("I'd be better off dead") is True
-        
+
         # Test non-crisis content
         assert agent._check_for_crisis_keywords("I feel sad and anxious") is False
         assert agent._check_for_crisis_keywords("I'm having a bad day") is False
@@ -142,7 +146,9 @@ class TestADKIntakeAgentProcessUserInput:
         """Test processing rejects input with URLs."""
         agent = ADKIntakeAgent()
 
-        result = await agent.process_user_input("I found this helpful site https://example.com with lots of advice")
+        result = await agent.process_user_input(
+            "I found this helpful site https://example.com with lots of advice"
+        )
 
         assert isinstance(result, ReFrameResponse)
         assert result.success is False
@@ -150,7 +156,9 @@ class TestADKIntakeAgentProcessUserInput:
         assert result.error_type == "validation"
 
     @pytest.mark.asyncio
-    async def test_process_user_input_successful_processing(self, mock_settings, mock_adk_components):
+    async def test_process_user_input_successful_processing(
+        self, mock_settings, mock_adk_components
+    ):
         """Test successful processing of valid input."""
         agent = ADKIntakeAgent()
 
@@ -169,18 +177,20 @@ class TestADKIntakeAgentProcessUserInput:
         assert isinstance(result, ReFrameResponse)
         assert result.success is True
         assert result.response is not None
-        
+
         # Verify the ADK agent was called with proper input data
         mock_adk_components["llm_agent"].run_async.assert_called_once()
         call_args = mock_adk_components["llm_agent"].run_async.call_args[0][0]
         call_content = call_args.parts[0].text.text
-        
+
         assert valid_input in call_content
         assert "initial_intake" in call_content
         assert "crisis_flag" in call_content
 
     @pytest.mark.asyncio
-    async def test_process_user_input_detects_crisis_content(self, mock_settings, mock_adk_components):
+    async def test_process_user_input_detects_crisis_content(
+        self, mock_settings, mock_adk_components
+    ):
         """Test processing detects and flags crisis content."""
         agent = ADKIntakeAgent()
 
@@ -193,17 +203,19 @@ class TestADKIntakeAgentProcessUserInput:
         mock_response.parts = [mock_part]
         mock_adk_components["llm_agent"].run_async.return_value = mock_response
 
-        crisis_input = "I feel hopeless and want to kill myself because nothing will ever get better."
+        crisis_input = (
+            "I feel hopeless and want to kill myself because nothing will ever get better."
+        )
         result = await agent.process_user_input(crisis_input)
 
         assert isinstance(result, ReFrameResponse)
         assert result.success is True
-        
+
         # Verify crisis flag was set in the input data
         call_args = mock_adk_components["llm_agent"].run_async.call_args[0][0]
         call_content = call_args.parts[0].text.text
         assert '"crisis_flag": true' in call_content
-        
+
         # Verify crisis detection was added to transparency
         if result.transparency_data:
             assert "crisis_detection" in result.transparency_data.techniques_used
@@ -224,7 +236,9 @@ class TestADKIntakeAgentReasoningPath:
         assert "Content validation and safety check" in reasoning_path["steps"]
         assert "AvPD-specific pattern recognition" in reasoning_path["steps"]
 
-    def test_extract_techniques_used_identifies_techniques(self, mock_settings, mock_adk_components):
+    def test_extract_techniques_used_identifies_techniques(
+        self, mock_settings, mock_adk_components
+    ):
         """Test technique extraction identifies used techniques."""
         agent = ADKIntakeAgent()
 
@@ -268,7 +282,7 @@ class TestADKIntakeAgentConfiguration:
 
         expected_patterns = [
             "fear_of_criticism",
-            "social_avoidance", 
+            "social_avoidance",
             "perfectionism",
             "negative_self_talk",
             "catastrophic_thinking",
