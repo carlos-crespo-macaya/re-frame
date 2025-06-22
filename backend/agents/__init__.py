@@ -1,11 +1,6 @@
 """Agent implementations using Google ADK."""
 
-# Legacy agents (for backwards compatibility during migration)
-from .cbt_framework_agent import CBTFrameworkAgent
-from .intake_agent import IntakeAgent
-from .synthesis_agent import SynthesisAgent
-
-# ADK-based agents (new implementation)
+# ADK-based agents
 from .adk_base import ADKReFrameAgent, ReFrameResponse, ReFrameTransparencyData
 from .adk_intake_agent import ADKIntakeAgent
 from .adk_cbt_agent import ADKCBTFrameworkAgent
@@ -16,20 +11,19 @@ from .adk_config import ADKConfigurationManager, config_manager
 from .adk_observability import ADKObservabilityManager, observability_manager
 
 __all__ = [
-    # Legacy agents
-    "CBTFrameworkAgent",
-    "IntakeAgent",
-    "SynthesisAgent",
-    # ADK agents
+    # Core ADK agents
     "ADKReFrameAgent",
     "ReFrameResponse", 
     "ReFrameTransparencyData",
     "ADKIntakeAgent",
     "ADKCBTFrameworkAgent",
     "ADKSynthesisAgent",
+    # Session and workflow management
     "ADKSessionManager",
     "SessionData",
+    # Tools and utilities
     "get_all_reframe_tools",
+    # Configuration and observability
     "ADKConfigurationManager",
     "config_manager",
     "ADKObservabilityManager",
