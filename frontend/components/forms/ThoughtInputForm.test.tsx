@@ -13,9 +13,9 @@ describe('ThoughtInputForm', () => {
   it('renders form with all required elements', () => {
     render(<ThoughtInputForm onSubmit={mockOnSubmit} onClear={mockOnClear} />)
     
-    expect(screen.getByLabelText(/what's on your mind\?/i)).toBeInTheDocument()
-    expect(screen.getByPlaceholderText(/describe the thought/i)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /analyze thought/i })).toBeInTheDocument()
+    expect(screen.getByLabelText(/describe your thought/i)).toBeInTheDocument()
+    expect(screen.getByPlaceholderText(/what situation or thought would you like to examine/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /reframe this thought/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /clear/i })).toBeInTheDocument()
   })
 
@@ -23,7 +23,7 @@ describe('ThoughtInputForm', () => {
     const user = userEvent.setup()
     render(<ThoughtInputForm onSubmit={mockOnSubmit} onClear={mockOnClear} />)
     
-    const textarea = screen.getByLabelText(/what's on your mind\?/i)
+    const textarea = screen.getByLabelText(/describe your thought/i)
     await user.type(textarea, 'I feel anxious about the meeting')
     
     expect(textarea).toHaveValue('I feel anxious about the meeting')
@@ -33,8 +33,8 @@ describe('ThoughtInputForm', () => {
     const user = userEvent.setup()
     render(<ThoughtInputForm onSubmit={mockOnSubmit} onClear={mockOnClear} />)
     
-    const textarea = screen.getByLabelText(/what's on your mind\?/i)
-    const submitButton = screen.getByRole('button', { name: /analyze thought/i })
+    const textarea = screen.getByLabelText(/describe your thought/i)
+    const submitButton = screen.getByRole('button', { name: /reframe this thought/i })
     
     await user.type(textarea, 'I feel anxious about the meeting')
     await user.click(submitButton)
@@ -47,7 +47,7 @@ describe('ThoughtInputForm', () => {
     const user = userEvent.setup()
     render(<ThoughtInputForm onSubmit={mockOnSubmit} onClear={mockOnClear} />)
     
-    const textarea = screen.getByLabelText(/what's on your mind\?/i)
+    const textarea = screen.getByLabelText(/describe your thought/i)
     const clearButton = screen.getByRole('button', { name: /clear/i })
     
     await user.type(textarea, 'Some text')
@@ -60,7 +60,7 @@ describe('ThoughtInputForm', () => {
   it('disables submit button when textarea is empty', () => {
     render(<ThoughtInputForm onSubmit={mockOnSubmit} onClear={mockOnClear} />)
     
-    const submitButton = screen.getByRole('button', { name: /analyze thought/i })
+    const submitButton = screen.getByRole('button', { name: /reframe this thought/i })
     expect(submitButton).toBeDisabled()
   })
 
@@ -68,8 +68,8 @@ describe('ThoughtInputForm', () => {
     const user = userEvent.setup()
     render(<ThoughtInputForm onSubmit={mockOnSubmit} onClear={mockOnClear} />)
     
-    const textarea = screen.getByLabelText(/what's on your mind\?/i)
-    const submitButton = screen.getByRole('button', { name: /analyze thought/i })
+    const textarea = screen.getByLabelText(/describe your thought/i)
+    const submitButton = screen.getByRole('button', { name: /reframe this thought/i })
     
     await user.type(textarea, 'Some thought')
     expect(submitButton).toBeEnabled()
@@ -85,7 +85,7 @@ describe('ThoughtInputForm', () => {
     const user = userEvent.setup()
     render(<ThoughtInputForm onSubmit={mockOnSubmit} onClear={mockOnClear} />)
     
-    const textarea = screen.getByLabelText(/what's on your mind\?/i)
+    const textarea = screen.getByLabelText(/describe your thought/i)
     await user.type(textarea, 'Hello')
     
     expect(screen.getByText(/5 \/ 1000/i)).toBeInTheDocument()
@@ -95,7 +95,7 @@ describe('ThoughtInputForm', () => {
     const user = userEvent.setup()
     render(<ThoughtInputForm onSubmit={mockOnSubmit} onClear={mockOnClear} />)
     
-    const textarea = screen.getByLabelText(/what's on your mind\?/i) as HTMLTextAreaElement
+    const textarea = screen.getByLabelText(/describe your thought/i) as HTMLTextAreaElement
     const longText = 'a'.repeat(1001)
     
     await user.type(textarea, longText)
@@ -107,8 +107,8 @@ describe('ThoughtInputForm', () => {
     const user = userEvent.setup()
     render(<ThoughtInputForm onSubmit={mockOnSubmit} onClear={mockOnClear} />)
     
-    const textarea = screen.getByLabelText(/what's on your mind\?/i)
-    const submitButton = screen.getByRole('button', { name: /analyze thought/i })
+    const textarea = screen.getByLabelText(/describe your thought/i)
+    const submitButton = screen.getByRole('button', { name: /reframe this thought/i })
     
     await user.type(textarea, 'My thought')
     await user.click(submitButton)
@@ -119,11 +119,12 @@ describe('ThoughtInputForm', () => {
   it('handles loading state', () => {
     render(<ThoughtInputForm onSubmit={mockOnSubmit} onClear={mockOnClear} isLoading />)
     
-    const submitButton = screen.getByRole('button', { name: /analyzing/i })
-    const textarea = screen.getByLabelText(/what's on your mind\?/i)
+    const submitButton = screen.getByRole('button', { name: /processing/i })
+    const textarea = screen.getByLabelText(/describe your thought/i)
     
     expect(submitButton).toBeDisabled()
     expect(textarea).toBeDisabled()
+    expect(screen.getByText(/analyzing your input/i)).toBeInTheDocument()
   })
 
   it('is keyboard accessible', async () => {
@@ -131,12 +132,12 @@ describe('ThoughtInputForm', () => {
     render(<ThoughtInputForm onSubmit={mockOnSubmit} onClear={mockOnClear} />)
     
     await user.tab()
-    expect(screen.getByLabelText(/what's on your mind\?/i)).toHaveFocus()
+    expect(screen.getByLabelText(/describe your thought/i)).toHaveFocus()
     
-    await user.type(screen.getByLabelText(/what's on your mind\?/i), 'Test')
+    await user.type(screen.getByLabelText(/describe your thought/i), 'Test')
     
     await user.tab()
-    expect(screen.getByRole('button', { name: /analyze thought/i })).toHaveFocus()
+    expect(screen.getByRole('button', { name: /reframe this thought/i })).toHaveFocus()
     
     await user.tab()
     expect(screen.getByRole('button', { name: /clear/i })).toHaveFocus()
@@ -146,10 +147,27 @@ describe('ThoughtInputForm', () => {
     const user = userEvent.setup()
     render(<ThoughtInputForm onSubmit={mockOnSubmit} onClear={mockOnClear} />)
     
-    const textarea = screen.getByLabelText(/what's on your mind\?/i)
+    const textarea = screen.getByLabelText(/describe your thought/i)
     await user.type(textarea, 'My thought')
     await user.keyboard('{Control>}{Enter}{/Control}')
     
     expect(mockOnSubmit).toHaveBeenCalledWith('My thought')
+  })
+  
+  it('shows status messages based on input length', async () => {
+    const user = userEvent.setup()
+    render(<ThoughtInputForm onSubmit={mockOnSubmit} onClear={mockOnClear} />)
+    
+    // Initial state - empty message
+    const textarea = screen.getByLabelText(/describe your thought/i)
+    
+    // Short input
+    await user.type(textarea, 'Hello')
+    expect(screen.getByText(/continue if you'd like to add more context/i)).toBeInTheDocument()
+    
+    // Medium input
+    await user.clear(textarea)
+    await user.type(textarea, 'a'.repeat(100))
+    expect(screen.getByText(/good amount of detail/i)).toBeInTheDocument()
   })
 })
