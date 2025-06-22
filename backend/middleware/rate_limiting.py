@@ -42,18 +42,20 @@ def setup_rate_limiting(app: FastAPI) -> None:
         response = {
             "error": "Rate limit exceeded",
             "message": f"You have exceeded the limit of {settings.rate_limit_requests} requests per hour.",
-            "detail": "This limit helps ensure fair access for all users. Please try again later."
+            "detail": "This limit helps ensure fair access for all users. Please try again later.",
         }
         return JSONResponse(
             status_code=429,
             content=response,
             headers={
                 "X-RateLimit-Limit": str(settings.rate_limit_requests),
-                "X-RateLimit-Reset": str(exc.retry_after)
-            }
+                "X-RateLimit-Reset": str(exc.retry_after),
+            },
         )
 
-    logger.info(f"Rate limiting configured: {settings.rate_limit_requests} requests per {settings.rate_limit_period} seconds")
+    logger.info(
+        f"Rate limiting configured: {settings.rate_limit_requests} requests per {settings.rate_limit_period} seconds"
+    )
 
 
 def get_rate_limit() -> str:

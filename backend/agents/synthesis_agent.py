@@ -42,10 +42,7 @@ Output format:
 
     def __init__(self):
         """Initialize the Synthesis Agent."""
-        super().__init__(
-            name="SynthesisAgent",
-            instructions=self.INSTRUCTIONS
-        )
+        super().__init__(name="SynthesisAgent", instructions=self.INSTRUCTIONS)
 
     def _extract_reasoning_path(self, response: Any) -> dict[str, Any]:
         """Extract synthesis reasoning for transparency."""
@@ -56,8 +53,8 @@ Output format:
                 "Selected appropriate tone and language",
                 "Structured supportive response",
                 "Added transparency elements",
-                "Included encouragement and next steps"
-            ]
+                "Included encouragement and next steps",
+            ],
         }
 
     async def create_user_response(self, cbt_data: dict[str, Any]) -> dict[str, Any]:
@@ -67,7 +64,7 @@ Output format:
             "cbt_analysis": cbt_data,
             "tone": "warm and supportive",
             "transparency_level": "high",
-            "avpd_sensitivity": "maximum"
+            "avpd_sensitivity": "maximum",
         }
 
         return await self.process_with_transparency(synthesis_input)

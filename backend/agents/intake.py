@@ -2,12 +2,13 @@
 Intake Agent - Collects and validates user input
 To be implemented in future tasks
 """
+
 from typing import Any
 
-from .base import BaseAgent
+from .base import ReFrameAgent
 
 
-class IntakeAgent(BaseAgent):
+class IntakeAgent(ReFrameAgent):
     """
     Agent responsible for collecting and structuring user input
     """

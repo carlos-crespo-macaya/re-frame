@@ -4,7 +4,8 @@ import logging
 from typing import Any
 
 import google.generativeai as genai
-from google import adk
+
+# from google import adk
 from google.generativeai import GenerativeModel
 
 from config.settings import get_settings
@@ -12,7 +13,19 @@ from config.settings import get_settings
 logger = logging.getLogger(__name__)
 
 
-class ReFrameAgent(adk.LlmAgent):
+# Temporary mock class until google.adk is available
+class MockLlmAgent:
+    def __init__(self, name: str, instructions: str, model: GenerativeModel | None = None):
+        self.name = name
+        self.instructions = instructions
+        self.model = model
+
+    async def run(self, input_data: dict[str, Any]) -> Any:
+        """Mock run method - to be implemented with actual ADK"""
+        return {"mock": "response", "input": input_data}
+
+
+class ReFrameAgent(MockLlmAgent):
     """Base agent class with re-frame specific configuration."""
 
     def __init__(self, name: str, instructions: str, model: GenerativeModel | None = None):
@@ -29,15 +42,11 @@ class ReFrameAgent(adk.LlmAgent):
                 generation_config={
                     "temperature": settings.google_ai_temperature,
                     "max_output_REDACTED,
-                }
+                },
             )
 
         # Initialize parent class
-        super().__init__(
-            name=name,
-            instructions=instructions,
-            model=model
-        )
+        super().__init__(name=name, instructions=instructions, model=model)
 
         logger.info(f"Initialized {name} agent with model {settings.google_ai_model}")
 
@@ -55,20 +64,13 @@ class ReFrameAgent(adk.LlmAgent):
                 "response": response,
                 "reasoning_path": reasoning_path,
                 "agent_name": self.name,
-                "model_used": get_settings().google_ai_model
+                "model_used": get_settings().google_ai_model,
             }
         except Exception as e:
             logger.error(f"Error in {self.name}: {e!s}")
-            return {
-                "success": False,
-                "error": str(e),
-                "agent_name": self.name
-            }
+            return {"success": False, "error": str(e), "agent_name": self.name}
 
     def _extract_reasoning_path(self, response: Any) -> dict[str, Any]:
         """Extract reasoning path from agent response for transparency."""
         # This will be customized by each agent subclass
-        return {
-            "raw_response": str(response),
-            "steps": []
-        }
+        return {"raw_response": str(response), "steps": []}
