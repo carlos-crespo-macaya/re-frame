@@ -23,9 +23,14 @@ class Settings(BaseSettings):
     # CORS Configuration
     cors_origins: list[str] = ["http://localhost:3000", "https://re-frame.social"]
 
-    # Rate Limiting
+    # Rate Limiting (using in-memory storage for now)
+    # TODO: For production deployment, integrate Redis for distributed rate limiting
     rate_limit_requests: int = 10
     rate_limit_period: int = 3600  # 1 hour in seconds
+    
+    # Redis Configuration (for future distributed rate limiting)
+    # redis_url: str = Field(default="redis://localhost:6379", alias="REDIS_URL")
+    # redis_password: str | None = Field(default=None, alias="REDIS_PASSWORD")
 
     # Logging
     log_level: str = "INFO"
