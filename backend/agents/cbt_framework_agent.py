@@ -3,6 +3,7 @@
 from typing import Any
 
 from .base import ReFrameAgent
+from .models import AgentResponse, CBTAnalysis, IntakeAnalysis
 
 
 class CBTFrameworkAgent(ReFrameAgent):
@@ -34,17 +35,16 @@ Output format:
 {
     "original_thought": "user's thought",
     "cognitive_distortions": ["distortion 1", "distortion 2"],
-    "techniques_applied": ["technique 1", "technique 2"],
-    "reframed_thoughts": [
+    "reframed_thoughts": ["reframed thought 1", "reframed thought 2"],
+    "techniques_applied": [
         {
-            "thought": "reframed version",
-            "technique": "CBT technique used",
-            "explanation": "why this helps"
+            "technique_name": "Cognitive Restructuring",
+            "description": "Challenge negative automatic thoughts",
+            "application": "How it was applied to this specific thought"
         }
     ],
-    "gentle_challenges": ["challenge 1", "challenge 2"],
-    "small_steps": ["step 1", "step 2"],
-    "transparency_notes": "explanation of approach"
+    "action_suggestions": ["small actionable step 1", "small actionable step 2"],
+    "validation": "Acknowledging and validating the person's feelings"
 }
 """
 
@@ -65,11 +65,15 @@ Output format:
             ],
         }
 
-    async def apply_cbt_techniques(self, intake_data: dict[str, Any]) -> dict[str, Any]:
+    async def apply_cbt_techniques(self, intake_analysis: IntakeAnalysis) -> AgentResponse:
         """Apply CBT techniques to validated user input."""
+        import logging
+
+        logger = logging.getLogger(__name__)
+
         # Prepare input for CBT processing
         cbt_input = {
-            "thought_data": intake_data,
+            "thought_data": intake_analysis.model_dump(),
             "focus": "AvPD-sensitive reframing",
             "techniques_priority": [
                 "cognitive_restructuring",
@@ -78,7 +82,21 @@ Output format:
             ],
         }
 
-        return await self.process_with_transparency(cbt_input)
+        result = await self.process_with_transparency(cbt_input)
+
+        # Parse and validate the response
+        if result.get("success") and result.get("response"):
+            try:
+                analysis_dict = self.parse_json_response(result["response"])
+                # Validate the response matches our CBTAnalysis model
+                analysis = CBTAnalysis.model_validate(analysis_dict)
+                result["parsed_response"] = analysis
+            except Exception as e:
+                logger.error(f"Failed to validate CBT analysis: {e}")
+                result["success"] = False
+                result["error"] = f"Invalid response format: {str(e)}"
+
+        return AgentResponse(**result)
 
     def get_avpd_specific_techniques(self) -> list[str]:
         """Return CBT techniques particularly effective for AvPD."""

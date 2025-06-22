@@ -4,6 +4,7 @@ import re
 from typing import Any
 
 from .base import ReFrameAgent
+from .models import AgentResponse, IntakeAnalysis, IntakeInput
 
 
 class IntakeAgent(ReFrameAgent):
@@ -57,27 +58,63 @@ Output format:
     def _validate_input_length(self, text: str) -> bool:
         """Validate input is within reasonable bounds."""
         word_count = len(text.split())
-        return 5 <= word_count <= 500
+        # Allow shorter inputs - 3 words minimum is more reasonable
+        return 3 <= word_count <= 500
 
     def _check_for_urls(self, text: str) -> bool:
         """Check if input contains URLs (potential spam)."""
         url_pattern = r"https?://\S+|www\.\S+"
         return bool(re.search(url_pattern, text))
 
-    async def process_user_input(self, user_input: str) -> dict[str, Any]:
+    async def process_user_input(self, user_input: str) -> AgentResponse:
         """Process and validate user input."""
+        import logging
+
+        logger = logging.getLogger(__name__)
+
+        logger.info(f"IntakeAgent.process_user_input called with: '{user_input[:50]}...'")
+
         # Basic validation
         if not self._validate_input_length(user_input):
-            return {"success": False, "error": "Input must be between 5 and 500 words."}
+            word_count = len(user_input.split())
+            logger.warning(f"Input validation failed: {word_count} words (needs 3-500)")
+            return AgentResponse(
+                success=False,
+                error="Input must be between 3 and 500 words.",
+                agent_name=self.name,
+                model_used="",
+            )
 
         if self._check_for_urls(user_input):
-            return {"success": False, "error": "URLs are not allowed in thoughts."}
+            logger.warning("Input validation failed: contains URLs")
+            return AgentResponse(
+                success=False,
+                error="URLs are not allowed in thoughts.",
+                agent_name=self.name,
+                model_used="",
+            )
 
         # Process with agent
-        input_data = {
-            "user_thought": user_input,
-            "timestamp": "current",
-            "context": "initial_intake",
-        }
+        intake_input = IntakeInput(
+            user_thought=user_input,
+            timestamp="current",
+            context="initial_intake",
+        )
 
-        return await self.process_with_transparency(input_data)
+        logger.info("IntakeAgent: Calling process_with_transparency")
+        result = await self.process_with_transparency(intake_input.model_dump())
+        logger.info(f"IntakeAgent: process_with_transparency returned: {list(result.keys())}")
+
+        # Parse the response and validate it matches our expected structure
+        if result.get("success") and result.get("response"):
+            try:
+                analysis_dict = self.parse_json_response(result["response"])
+                # Validate the response matches our IntakeAnalysis model
+                analysis = IntakeAnalysis.model_validate(analysis_dict)
+                result["parsed_response"] = analysis
+            except Exception as e:
+                logger.error(f"Failed to validate intake analysis: {e}")
+                result["success"] = False
+                result["error"] = f"Invalid response format: {str(e)}"
+
+        return AgentResponse(**result)

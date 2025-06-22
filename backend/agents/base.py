@@ -23,10 +23,15 @@ class ReFrameAgent:
         settings = get_settings()
 
         # Configure Google AI API
-        genai.configure(api_key=settings.google_ai_api_key)
+        api_key = settings.google_ai_api_key
+        logger.info(
+            f"{name}: Configuring with API key: {'*' * 10}{api_key[-4:] if len(api_key) > 4 else 'TOO_SHORT'}"
+        )
+        genai.configure(api_key=api_key)
 
         # Create model if not provided
         if model is None:
+            logger.info(f"{name}: Creating GenerativeModel with {settings.google_ai_model}")
             self.model = GenerativeModel(
                 model_name=settings.google_ai_model,
                 generation_config={
@@ -65,14 +70,20 @@ Input data:
 
 Please provide your response in the exact JSON format specified in the instructions.
 """
+        logger.info(f"{self.name}: Sending prompt to Gemini (length: {len(prompt)} chars)")
+        logger.debug(f"{self.name}: Full prompt: {prompt[:500]}...")
 
         try:
             # Generate response - this makes the actual API call
+            logger.info(f"{self.name}: Calling Gemini API...")
             response = self.model.generate_content(prompt)
+            logger.info(f"{self.name}: Received response from Gemini")
 
             # The response object has a text property that contains the generated text
             # It could be empty if the model refuses to generate content
             if hasattr(response, "text") and response.text:
+                logger.info(f"{self.name}: Response text length: {len(response.text)} chars")
+                logger.debug(f"{self.name}: Response text: {response.text[:200]}...")
                 return response.text
             # Handle empty response case
             logger.warning(f"{self.name}: Received empty response from model")
@@ -88,9 +99,13 @@ Please provide your response in the exact JSON format specified in the instructi
 
         Provides user-friendly error messages for common API errors.
         """
+        logger.info(f"{self.name}: Starting process_with_transparency")
         try:
             # Execute agent
             response = await self.run(input_data)
+            logger.info(
+                f"{self.name}: Agent run completed, response length: {len(response) if response else 0}"
+            )
 
             # Extract reasoning path for transparency
             reasoning_path = self._extract_reasoning_path(response)

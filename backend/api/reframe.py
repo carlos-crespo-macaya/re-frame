@@ -1,12 +1,25 @@
 """Reframing API endpoints."""
 
+import json
 import logging
 from typing import Any
 
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
-from agents import ADKSessionManager, observability_manager
+from agents import (
+    CBTFrameworkAgent,
+    IntakeAgent,
+    SynthesisAgent,
+    observability_manager,
+)
+from agents.models import (
+    CBTAnalysis,
+    IntakeAnalysis,
+    SessionResponse,
+    SynthesisInput,
+    SynthesisOutput,
+)
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -31,10 +44,132 @@ class ReframeResponse(BaseModel):
     transparency: dict[str, Any]
     techniques_used: list[str]
     error: str | None = None
+    key_points: list[str] = Field(default_factory=list)
+    techniques_explained: str = ""
 
 
-# Initialize ADK session manager (in production, this would be a singleton service)
-session_manager = ADKSessionManager()
+# Temporary session manager implementation
+class TemporarySessionManager:
+    """Temporary session manager until ADK is configured."""
+
+    def __init__(self):
+        self.intake_agent = IntakeAgent()
+        self.cbt_agent = CBTFrameworkAgent()
+        self.synthesis_agent = SynthesisAgent()
+
+    async def process_user_input(self, thought: str) -> SessionResponse:
+        """Process user thought through agents."""
+        try:
+            logger.info(
+                f"Starting TemporarySessionManager processing for thought: '{thought[:50]}...'"
+            )
+
+            # Process through intake
+            logger.info("Calling IntakeAgent...")
+            intake_result = await self.intake_agent.process_user_input(thought)
+            logger.info(f"IntakeAgent returned: success={intake_result.success}")
+
+            if not intake_result.success:
+                return SessionResponse(
+                    success=False,
+                    error=intake_result.error or "Failed to process input",
+                    workflow_stage="intake",
+                )
+
+            # Get the parsed intake analysis
+            if not hasattr(intake_result, "parsed_response") or not intake_result.parsed_response:
+                return SessionResponse(
+                    success=False,
+                    error="Invalid intake response format",
+                    workflow_stage="intake",
+                )
+
+            intake_analysis: IntakeAnalysis = intake_result.parsed_response
+
+            # Apply CBT framework
+            logger.info("Calling CBTFrameworkAgent...")
+            cbt_result = await self.cbt_agent.apply_cbt_techniques(intake_analysis)
+            logger.info(f"CBTFrameworkAgent returned: success={cbt_result.success}")
+
+            if not cbt_result.success:
+                return SessionResponse(
+                    success=False,
+                    error=cbt_result.error or "Failed to apply framework",
+                    workflow_stage="framework",
+                )
+
+            # Get the parsed CBT analysis
+            if not hasattr(cbt_result, "parsed_response") or not cbt_result.parsed_response:
+                return SessionResponse(
+                    success=False,
+                    error="Invalid CBT response format",
+                    workflow_stage="framework",
+                )
+
+            cbt_analysis: CBTAnalysis = cbt_result.parsed_response
+
+            # Synthesize response
+            synthesis_input = SynthesisInput(
+                intake_analysis=intake_analysis,
+                cbt_results=cbt_analysis,
+                original_thought=thought,
+            )
+
+            logger.info("Calling SynthesisAgent...")
+            synthesis_result = await self.synthesis_agent.create_user_response(synthesis_input)
+            logger.info(f"SynthesisAgent returned: success={synthesis_result.success}")
+
+            if not synthesis_result.success:
+                return SessionResponse(
+                    success=False,
+                    error=synthesis_result.error or "Failed to synthesize response",
+                    workflow_stage="synthesis",
+                )
+
+            # Get the parsed synthesis output
+            if not hasattr(synthesis_result, "parsed_response") or not synthesis_result.parsed_response:
+                return SessionResponse(
+                    success=False,
+                    error="Invalid synthesis response format",
+                    workflow_stage="synthesis",
+                )
+
+            synthesis_output: SynthesisOutput = synthesis_result.parsed_response
+
+            # Build the final response
+            return SessionResponse(
+                success=True,
+                response=synthesis_output.main_response,
+                transparency={
+                    "techniques_applied": [
+                        tech.technique_name for tech in cbt_analysis.techniques_applied
+                    ],
+                    "reasoning_path": {
+                        "intake": intake_result.reasoning_path,
+                        "cbt": cbt_result.reasoning_path,
+                        "synthesis": synthesis_result.reasoning_path,
+                    },
+                    "stage": "complete",
+                    "key_points": synthesis_output.key_points,
+                    "techniques_explained": synthesis_output.techniques_explained,
+                },
+                crisis_flag=intake_analysis.requires_crisis_support,
+            )
+        except Exception as e:
+            logger.error(f"Error in session processing: {e}", exc_info=True)
+            return SessionResponse(
+                success=False,
+                error=str(e),
+                workflow_stage="error",
+            )
+
+    def get_session_history(self, session_id: str) -> dict[str, Any] | None:
+        """Get session history - not implemented yet."""
+        return None
+
+
+# Initialize session manager (in production, this would be a singleton service)
+session_manager = TemporarySessionManager()
 
 
 @router.post("/", response_model=ReframeResponse)
@@ -44,51 +179,44 @@ async def reframe_thought(reframe_request: ReframeRequest):
         logger.info(f"Reframe request received: {len(reframe_request.thought)} characters")
 
         # Process through complete ADK workflow
+        logger.info("Calling session_manager.process_user_input")
         result = await session_manager.process_user_input(reframe_request.thought)
+        logger.info(f"session_manager returned: success={result.success}")
 
-        if not result["success"]:
+        if not result.success:
             return ReframeResponse(
                 success=False,
                 response="I wasn't able to process your thought. Please try rephrasing it.",
                 transparency={
-                    "stage": result.get("workflow_stage", "unknown"),
-                    "issue": result.get("error"),
+                    "stage": result.workflow_stage or "unknown",
+                    "issue": result.error,
                 },
                 techniques_used=[],
-                error=result.get("error"),
+                error=result.error,
             )
 
         # Handle crisis responses
-        if result.get("crisis_flag"):
+        if result.crisis_flag:
             return ReframeResponse(
                 success=True,
-                response=result.get(
-                    "response",
-                    "I notice you might be going through a particularly difficult time. Please consider reaching out to a mental health professional or crisis helpline for immediate support.",
-                ),
-                transparency=result.get("transparency", {}),
+                response=result.response or "I notice you might be going through a particularly difficult time. Please consider reaching out to a mental health professional or crisis helpline for immediate support.",
+                transparency=result.transparency,
                 techniques_used=["crisis_detection"],
                 error=None,
             )
 
-        # Parse the successful response
-        response_text = result.get("response", "")
-        if isinstance(response_text, str):
-            try:
-                import json
-
-                response_data = json.loads(response_text)
-                main_response = response_data.get("main_response", response_text)
-            except json.JSONDecodeError:
-                main_response = response_text
-        else:
-            main_response = str(response_text)
+        # Extract key information from transparency data
+        techniques_used = result.transparency.get("techniques_applied", [])
+        key_points = result.transparency.get("key_points", [])
+        techniques_explained = result.transparency.get("techniques_explained", "")
 
         return ReframeResponse(
             success=True,
-            response=main_response,
-            transparency=result.get("transparency", {}),
-            techniques_used=result.get("transparency", {}).get("techniques_applied", []),
+            response=result.response or "",
+            transparency=result.transparency,
+            techniques_used=techniques_used,
+            key_points=key_points,
+            techniques_explained=techniques_explained,
         )
 
     except Exception as e:

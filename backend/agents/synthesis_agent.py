@@ -3,6 +3,7 @@
 from typing import Any
 
 from .base import ReFrameAgent
+from .models import AgentResponse, SynthesisInput, SynthesisOutput
 
 
 class SynthesisAgent(ReFrameAgent):
@@ -57,17 +58,35 @@ Output format:
             ],
         }
 
-    async def create_user_response(self, cbt_data: dict[str, Any]) -> dict[str, Any]:
+    async def create_user_response(self, synthesis_data: SynthesisInput) -> AgentResponse:
         """Create final user-facing response from CBT analysis."""
+        import logging
+
+        logger = logging.getLogger(__name__)
+
         # Prepare synthesis input
         synthesis_input = {
-            "cbt_analysis": cbt_data,
+            "cbt_analysis": synthesis_data.model_dump(),
             "tone": "warm and supportive",
             "transparency_level": "high",
             "avpd_sensitivity": "maximum",
         }
 
-        return await self.process_with_transparency(synthesis_input)
+        result = await self.process_with_transparency(synthesis_input)
+
+        # Parse and validate the response
+        if result.get("success") and result.get("response"):
+            try:
+                output_dict = self.parse_json_response(result["response"])
+                # Validate the response matches our SynthesisOutput model
+                output = SynthesisOutput.model_validate(output_dict)
+                result["parsed_response"] = output
+            except Exception as e:
+                logger.error(f"Failed to validate synthesis output: {e}")
+                result["success"] = False
+                result["error"] = f"Invalid response format: {str(e)}"
+
+        return AgentResponse(**result)
 
     def format_transparency_block(self, techniques: list[str], reasoning: str) -> str:
         """Format transparency information for user display."""

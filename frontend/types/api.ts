@@ -1,26 +1,33 @@
 // API response types for re-frame
 
+// Transparency data structure
+export interface TransparencyData {
+  techniques_applied: string[];
+  reasoning_path: {
+    intake: Record<string, any>;
+    cbt: Record<string, any>;
+    synthesis: Record<string, any>;
+  };
+  stage: string;
+  key_points: string[];
+  techniques_explained: string;
+}
+
+// Main API response
 export interface ReframeResponse {
   success: boolean;
   response: string;
-  frameworks_used: string[];
-  transparency: {
-    agents_used: string[];
-    techniques_applied: string[];
-    framework_details: {
-      [framework: string]: {
-        techniques: string[];
-        confidence: number;
-        patterns_addressed: string[];
-      }
-    };
-    selection_rationale: string;
-  };
-  alternative_perspectives?: Array<{
-    framework: string;
-    perspective: string;
-  }>;
-  error?: string;
+  transparency: TransparencyData;
+  techniques_used: string[];
+  error?: string | null;
+  key_points: string[];
+  techniques_explained: string;
+}
+
+// Request type
+export interface ReframeRequest {
+  thought: string;
+  context?: string | null;
 }
 
 export type Framework = 'CBT' | 'DBT' | 'ACT' | 'Stoicism';

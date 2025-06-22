@@ -5,6 +5,7 @@ import Link from 'next/link'
 import ThoughtInputForm from '@/components/forms/ThoughtInputForm'
 import { FrameworkBadge } from '@/components/ui'
 import { ReframeResponse, Framework } from '@/types/api'
+import { reframeThought } from '@/lib/api'
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false)
@@ -14,35 +15,30 @@ export default function Home() {
     setIsLoading(true)
     setResponse(null)
     
-    // Simulate API call for now
-    // TODO: Replace with actual API call when backend is ready
-    console.log('Submitted thought:', thought)
-    setTimeout(() => {
-      setIsLoading(false)
-      // Mock response with multiple frameworks
+    try {
+      const data = await reframeThought(thought)
+      setResponse(data)
+    } catch (error) {
+      console.error('Error submitting thought:', error)
+      // Show error in UI
       setResponse({
-        success: true,
-        response: 'Your thought has been analyzed. Here are some alternative perspectives to consider based on therapeutic frameworks.',
-        frameworks_used: ['CBT', 'ACT'],
+        success: false,
+        response: error instanceof Error ? error.message : 'Something went wrong. Please try again.',
         transparency: {
-          agents_used: ['intake_agent', 'cbt_framework_agent', 'act_framework_agent', 'synthesis_agent'],
-          techniques_applied: ['Cognitive restructuring', 'Values clarification'],
-          framework_details: {
-            CBT: {
-              techniques: ['Cognitive restructuring', 'Identifying cognitive distortions'],
-              confidence: 0.85,
-              patterns_addressed: ['All-or-nothing thinking', 'Mind reading']
-            },
-            ACT: {
-              techniques: ['Values clarification', 'Defusion'],
-              confidence: 0.75,
-              patterns_addressed: ['Experiential avoidance']
-            }
-          },
-          selection_rationale: 'CBT and ACT were selected based on the cognitive patterns identified in your thought.'
-        }
+          techniques_applied: [],
+          reasoning_path: { intake: {}, cbt: {}, synthesis: {} },
+          stage: 'error',
+          key_points: [],
+          techniques_explained: ''
+        },
+        techniques_used: [],
+        key_points: [],
+        techniques_explained: '',
+        error: error instanceof Error ? error.message : 'Unknown error'
       })
-    }, 2000)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleClear = () => {
@@ -106,19 +102,57 @@ export default function Home() {
 
                 {response && (
                   <div className="mt-8 p-6 bg-[#2a2a2a] border border-[#3a3a3a] rounded-xl animate-fade-in">
-                    {/* Framework badges */}
-                    {response.frameworks_used.length > 0 && (
+                    {/* Framework badges - extract from transparency data */}
+                    {response.transparency?.frameworks_used && response.transparency.frameworks_used.length > 0 && (
                       <div className="flex gap-2 mb-4">
-                        {response.frameworks_used.map(fw => (
+                        {response.transparency.frameworks_used.map((fw: string) => (
                           <FrameworkBadge key={fw} framework={fw as Framework} />
                         ))}
                       </div>
                     )}
                     
                     {/* Main response */}
-                    <p className="text-sm text-[#EDEDED] leading-relaxed">
-                      {response.response}
-                    </p>
+                    <div className="space-y-4">
+                      <p className="text-sm text-[#EDEDED] leading-relaxed whitespace-pre-wrap">
+                        {response.response}
+                      </p>
+                      
+                      {/* Key points if available */}
+                      {response.key_points && response.key_points.length > 0 && (
+                        <div className="mt-4 pt-4 border-t border-[#3a3a3a]">
+                          <h4 className="text-xs font-semibold text-[#999999] uppercase tracking-wider mb-2">
+                            Key Points
+                          </h4>
+                          <ul className="space-y-1">
+                            {response.key_points.map((point, index) => (
+                              <li key={index} className="text-sm text-[#EDEDED] flex items-start">
+                                <span className="text-brand-green-400 mr-2">•</span>
+                                <span>{point}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      
+                      {/* Techniques explanation if available */}
+                      {response.techniques_explained && (
+                        <div className="mt-4 pt-4 border-t border-[#3a3a3a]">
+                          <h4 className="text-xs font-semibold text-[#999999] uppercase tracking-wider mb-2">
+                            Therapeutic Approach
+                          </h4>
+                          <p className="text-sm text-[#EDEDED] leading-relaxed">
+                            {response.techniques_explained}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Error message if any */}
+                    {!response.success && response.error && (
+                      <p className="text-sm text-red-400 mt-2">
+                        Error: {response.error}
+                      </p>
+                    )}
                   </div>
                 )}
 
