@@ -72,7 +72,7 @@ resource "google_billing_budget" "project_budget" {
 
   # Email notifications
   all_updates_rule {
-    monitoring_notification_channels = var.notification_channels
+    monitoring_notification_channels = [google_monitoring_notification_channel.email.id]
     schema_version                   = "1.0"
   }
 }
@@ -135,7 +135,7 @@ output "budget_amount" {
 # Output alert thresholds as a simple list to avoid Checkov parser issues
 output "alert_threshold_percentages" {
   value = [
-    for rule in google_billing_budget.project_budget.threshold_rules : 
+    for rule in google_billing_budget.project_budget.threshold_rules :
     rule.threshold_percent
   ]
   description = "List of alert threshold percentages"
@@ -143,7 +143,7 @@ output "alert_threshold_percentages" {
 
 output "alert_threshold_amounts" {
   value = [
-    for rule in google_billing_budget.project_budget.threshold_rules : 
+    for rule in google_billing_budget.project_budget.threshold_rules :
     floor(rule.threshold_percent * tonumber(var.budget_amount))
   ]
   description = "List of alert threshold amounts in USD"

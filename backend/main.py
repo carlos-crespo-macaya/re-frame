@@ -1,14 +1,15 @@
 """Main FastAPI application for re-frame backend."""
 
+import logging
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
-from contextlib import asynccontextmanager
-import logging
 
+from api import health, reframe
 from config.settings import get_settings
 from middleware import setup_cors, setup_logging, setup_rate_limiting
-from middleware.rate_limiting import limiter, get_rate_limit
-from api import health, reframe
+from middleware.rate_limiting import get_rate_limit, limiter
 
 # Configure logging before creating app
 logging.basicConfig(level=logging.INFO)
@@ -22,9 +23,9 @@ async def lifespan(app: FastAPI):
     logger.info("Starting re-frame API...")
     settings = get_settings()
     logger.info(f"Environment: {settings.api_title} v{settings.api_version}")
-    
+
     yield
-    
+
     # Shutdown
     logger.info("Shutting down re-frame API...")
 
@@ -69,8 +70,8 @@ async def root(request: Request):
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     """Global exception handler for unhandled errors."""
-    logger.error(f"Unhandled exception: {str(exc)}", exc_info=True)
-    
+    logger.error(f"Unhandled exception: {exc!s}", exc_info=True)
+
     return JSONResponse(
         status_code=500,
         content={
@@ -83,7 +84,7 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 if __name__ == "__main__":
     import uvicorn
-    
+
     uvicorn.run(
         "main:app",
         host="0.0.0.0",

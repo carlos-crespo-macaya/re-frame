@@ -1,19 +1,21 @@
 """Rate limiting middleware using slowapi."""
 
-from fastapi import FastAPI, Request, HTTPException
+import logging
+
+from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
+
 from config.settings import get_settings
-import logging
 
 logger = logging.getLogger(__name__)
 
 
 def get_rate_limit_key(request: Request) -> str:
     """Generate rate limit key from request.
-    
+
     Uses IP address for anonymous users.
     Could be extended to use user ID for authenticated users.
     """
@@ -27,13 +29,13 @@ limiter = Limiter(key_func=get_rate_limit_key)
 def setup_rate_limiting(app: FastAPI) -> None:
     """Configure rate limiting for the application."""
     settings = get_settings()
-    
+
     # Add limiter to app state
     app.state.limiter = limiter
-    
+
     # Add exception handler
     app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
-    
+
     # Create custom error handler with helpful message
     @app.exception_handler(RateLimitExceeded)
     async def custom_rate_limit_handler(request: Request, exc: RateLimitExceeded):
@@ -50,7 +52,7 @@ def setup_rate_limiting(app: FastAPI) -> None:
                 "X-RateLimit-Reset": str(exc.retry_after)
             }
         )
-    
+
     logger.info(f"Rate limiting configured: {settings.rate_limit_requests} requests per {settings.rate_limit_period} seconds")
 
 

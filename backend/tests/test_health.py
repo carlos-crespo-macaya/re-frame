@@ -1,7 +1,7 @@
 """Tests for health check endpoints."""
 
-import pytest
 from fastapi.testclient import TestClient
+
 from main import app
 
 client = TestClient(app)
@@ -35,7 +35,7 @@ def test_detailed_health_check():
     assert "status" in data
     assert "components" in data
     assert "configuration" in data
-    
+
     # Check component statuses
     components = data["components"]
     assert components["api"] == "healthy"

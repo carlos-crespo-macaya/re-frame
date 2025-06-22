@@ -17,10 +17,10 @@ jobs:
       with:
         script: |
           const title = context.payload.pull_request.title;
-          const taskIdPattern = /^\[(BE|FE|IF|ALL)-\d{3}\]/;
+          const taskIdPattern = /^\[(BE|FE|IF|INF|ALL)-\d{3}\]/;
           
           if (!taskIdPattern.test(title)) {
-            core.setFailed('PR title must start with a task ID like [BE-001], [FE-002], [IF-003], or [ALL-004]');
+            core.setFailed('PR title must start with a task ID like [BE-001], [FE-002], [IF-003], [INF-004], or [ALL-005]');
           } else {
             console.log(`✓ Valid task ID found in PR title: ${title}`);
           }
