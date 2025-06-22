@@ -12,3 +12,9 @@ variable "auth_domain" {
   description = "Firebase Auth domain"
   type        = string
 }
+
+variable "custom_domain" {
+  description = "Custom domain for Firebase Hosting (e.g., re-frame.social)"
+  type        = string
+  default     = ""
+}

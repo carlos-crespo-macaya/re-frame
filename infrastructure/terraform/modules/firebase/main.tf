@@ -64,7 +64,37 @@ resource "google_firebase_hosting_site" "default" {
   depends_on = [google_firebase_project.default]
 }
 
-# Firebase Hosting placeholder
+# Firebase Hosting custom domain
+# Note: This creates the custom domain mapping but requires manual DNS verification
+resource "google_firebase_hosting_custom_domain" "main" {
+  provider      = google-beta
+  project       = var.project_id
+  site_id       = google_firebase_hosting_site.default.site_id
+  custom_domain = var.custom_domain
+
+  count = var.custom_domain != "" ? 1 : 0
+
+  # Wait for manual DNS verification before creating
+  # DNS records must be added to your domain registrar
+  wait_dns_verification = false
+
+  depends_on = [google_firebase_hosting_site.default]
+}
+
+resource "google_firebase_hosting_custom_domain" "www" {
+  provider      = google-beta
+  project       = var.project_id
+  site_id       = google_firebase_hosting_site.default.site_id
+  custom_domain = "www.${var.custom_domain}"
+
+  count = var.custom_domain != "" ? 1 : 0
+
+  wait_dns_verification = false
+
+  depends_on = [google_firebase_hosting_site.default]
+}
+
+# Firebase Hosting deployment notes
 # Note: Firebase Hosting configuration will be managed via Firebase CLI
 # due to limitations in Terraform provider v5.x
 # 
