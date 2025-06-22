@@ -10,47 +10,47 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Soft sage green (calming, growth-oriented)
+        // Primary: Calm moss green (growth, stability)
         primary: {
-          50: '#f3f9f4',
-          100: '#e1f0e3',
-          200: '#c3e1c8',
-          300: '#94c89f',
-          400: '#5fa570',
-          500: '#3d8751',
-          600: '#2f6b40',
-          700: '#275536',
-          800: '#22442d',
-          900: '#1d3826',
-          950: '#0e1f13',
+          50: '#f5f7f5',
+          100: '#e8ede9',
+          200: '#d2dcd4',
+          300: '#afc0b3',
+          400: '#86a08c',
+          500: '#4A6B57', // Main brand color
+          600: '#3e5948',
+          700: '#34493b',
+          800: '#2b3b31',
+          900: '#243129',
+          950: '#131a16',
         },
-        // Warm lavender (comfort, safety)
+        // Secondary: Soft teal (hope, clarity)
         secondary: {
-          50: '#faf5fe',
-          100: '#f4e8fc',
-          200: '#e8d2f9',
-          300: '#d6aaf3',
-          400: '#bc78e9',
-          500: '#a14dd9',
-          600: '#8534ba',
-          700: '#6e2a97',
-          800: '#5b257c',
-          900: '#4c2165',
-          950: '#2f0d43',
+          50: '#f1faf8',
+          100: '#dcf2ed',
+          200: '#bce5dd',
+          300: '#8fd2c5',
+          400: '#5ab6a6',
+          500: '#54B4A0', // Main accent
+          600: '#328571',
+          700: '#2a6a5b',
+          800: '#26564a',
+          900: '#23473e',
+          950: '#0f2923',
         },
-        // Warm peach (optimism, gentleness)
+        // Accent: Deep charcoal (foundation, stability)
         accent: {
-          50: '#fef6f1',
-          100: '#fee9dd',
-          200: '#fcd0ba',
-          300: '#f9ad8d',
-          400: '#f47f58',
-          500: '#ed5a32',
-          600: '#db4022',
-          700: '#b6301c',
-          800: '#93291c',
-          900: '#77261b',
-          950: '#410f0a',
+          50: '#f6f6f6',
+          100: '#e7e7e7',
+          200: '#d1d1d1',
+          300: '#b0b0b0',
+          400: '#888888',
+          500: '#6d6d6d',
+          600: '#5d5d5d',
+          700: '#4f4f4f',
+          800: '#454545',
+          900: '#3d3d3d',
+          950: '#161616', // Main dark
         },
         // Gentle teal
         success: {
@@ -126,9 +126,8 @@ const config: Config = {
         'text-tertiary': 'var(--color-text-tertiary)',
       },
       fontFamily: {
-        sans: ['var(--font-geist-sans)', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: ['Inter', 'var(--font-geist-sans)', 'system-ui', '-apple-system', 'sans-serif'],
         mono: ['var(--font-geist-mono)', 'monospace'],
-        rounded: ['var(--font-geist-sans)', 'Rubik', 'Quicksand', 'system-ui', 'sans-serif'],
       },
       fontSize: {
         // Fluid typography scale
