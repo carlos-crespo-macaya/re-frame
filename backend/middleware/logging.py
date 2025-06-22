@@ -18,8 +18,7 @@ def setup_logging(app: FastAPI) -> None:
     # Configure JSON formatter
     log_handler = logging.StreamHandler(sys.stdout)
     formatter = jsonlogger.JsonFormatter(
-        fmt='%(asctime)s %(levelname)s %(name)s %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S'
+        fmt="%(asctime)s %(levelname)s %(name)s %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
     )
     log_handler.setFormatter(formatter)
 
@@ -41,8 +40,8 @@ def setup_logging(app: FastAPI) -> None:
                 "request_id": request_id,
                 "method": request.method,
                 "path": request.url.path,
-                "client_host": request.client.host if request.client else None
-            }
+                "client_host": request.client.host if request.client else None,
+            },
         )
 
         # Time the request
@@ -56,8 +55,8 @@ def setup_logging(app: FastAPI) -> None:
             extra={
                 "request_id": request_id,
                 "status_code": response.status_code,
-                "duration_seconds": round(duration, 3)
-            }
+                "duration_seconds": round(duration, 3),
+            },
         )
 
         # Add request ID to response headers

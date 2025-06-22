@@ -20,7 +20,7 @@ async def health_check(request: Request):
         "status": "healthy",
         "timestamp": datetime.now(UTC).isoformat(),
         "service": "re-frame API",
-        "version": get_settings().api_version
+        "version": get_settings().api_version,
     }
 
 
@@ -35,7 +35,7 @@ async def detailed_health_check(request: Request):
         "api": "healthy",
         "google_ai": "unknown",  # Will be checked when implemented
         "rate_limiting": "healthy",
-        "logging": "healthy"
+        "logging": "healthy",
     }
 
     # Check if Google AI API key is configured
@@ -44,10 +44,11 @@ async def detailed_health_check(request: Request):
     else:
         components["google_ai"] = "not_configured"
 
-    overall_status = "healthy" if all(
-        status in ["healthy", "configured"]
-        for status in components.values()
-    ) else "degraded"
+    overall_status = (
+        "healthy"
+        if all(status in ["healthy", "configured"] for status in components.values())
+        else "degraded"
+    )
 
     return {
         "status": overall_status,
@@ -58,6 +59,6 @@ async def detailed_health_check(request: Request):
         "configuration": {
             "model": settings.google_ai_model,
             "rate_limit": f"{settings.rate_limit_requests} requests per hour",
-            "cors_origins": settings.cors_origins
-        }
+            "cors_origins": settings.cors_origins,
+        },
     }

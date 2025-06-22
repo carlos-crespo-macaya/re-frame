@@ -50,10 +50,7 @@ Output format:
 
     def __init__(self):
         """Initialize the CBT Framework Agent."""
-        super().__init__(
-            name="CBTFrameworkAgent",
-            instructions=self.INSTRUCTIONS
-        )
+        super().__init__(name="CBTFrameworkAgent", instructions=self.INSTRUCTIONS)
 
     def _extract_reasoning_path(self, response: Any) -> dict[str, Any]:
         """Extract CBT reasoning for transparency."""
@@ -64,8 +61,8 @@ Output format:
                 "Selected appropriate CBT techniques",
                 "Generated balanced alternatives",
                 "Crafted gentle challenges",
-                "Proposed gradual action steps"
-            ]
+                "Proposed gradual action steps",
+            ],
         }
 
     async def apply_cbt_techniques(self, intake_data: dict[str, Any]) -> dict[str, Any]:
@@ -77,8 +74,8 @@ Output format:
             "techniques_priority": [
                 "cognitive_restructuring",
                 "evidence_examination",
-                "gradual_exposure"
-            ]
+                "gradual_exposure",
+            ],
         }
 
         return await self.process_with_transparency(cbt_input)
@@ -91,5 +88,5 @@ Output format:
             "Gradual social exposure planning",
             "Fear of criticism analysis",
             "Perfectionism challenging",
-            "Social situation reframing"
+            "Social situation reframing",
         ]

@@ -1,6 +1,7 @@
 """
 Rate limiting middleware to prevent abuse
 """
+
 import hashlib
 import logging
 import time
@@ -75,7 +76,8 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
     def _cleanup_cache(self, current_time: float):
         """Remove expired entries from cache"""
         expired_keys = [
-            key for key, (_, window_start) in self.cache.items()
+            key
+            for key, (_, window_start) in self.cache.items()
             if current_time - window_start > self.window
         ]
         for key in expired_keys:
@@ -95,13 +97,13 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                 content={
                     "error": "Rate limit exceeded",
                     "message": "Too many requests. Please try again later.",
-                    "retry_after": self.window
+                    "retry_after": self.window,
                 },
                 headers={
                     "Retry-After": str(self.window),
                     "X-RateLimit-Limit": str(self.rate_limit),
-                    "X-RateLimit-Window": str(self.window)
-                }
+                    "X-RateLimit-Window": str(self.window),
+                },
             )
 
         response = await call_next(request)

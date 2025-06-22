@@ -2,12 +2,13 @@
 Synthesis Agent - Processes raw LLM output into responses
 To be implemented in future tasks
 """
+
 from typing import Any
 
-from .base import BaseAgent
+from .base import ReFrameAgent
 
 
-class SynthesisAgent(BaseAgent):
+class SynthesisAgent(ReFrameAgent):
     """
     Agent responsible for synthesizing and formatting final responses
     """
