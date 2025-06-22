@@ -48,7 +48,12 @@ def get_client_ip(request: Request) -> str:
 
 
 class RateLimiter:
-    """Rate limiter using sliding window algorithm."""
+    """Rate limiter using sliding window algorithm.
+    
+    Note: This implementation uses in-memory storage and is suitable for 
+    single-instance deployments. For production with multiple instances,
+    consider using Redis-based distributed rate limiting.
+    """
 
     def __init__(self, max_requests: int, window_seconds: int):
         """Initialize rate limiter.
@@ -59,6 +64,7 @@ class RateLimiter:
         """
         self.max_requests = max_requests
         self.window_seconds = window_seconds
+        # TODO: Replace with Redis for distributed deployment
         self.requests: dict[str, deque[float]] = defaultdict(deque)
 
     def _cleanup_old_requests(self, client_id: str, current_time: float) -> None:
