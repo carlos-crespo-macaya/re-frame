@@ -27,7 +27,7 @@ provider "google" {
 variable "project_id" {
   description = "GCP Project ID"
   type        = string
-  default     = "gen-lang-client-0135194996"
+  # No default - must be provided via terraform.tfvars or -var flag
 }
 
 variable "region" {
@@ -39,7 +39,7 @@ variable "region" {
 variable "billing_account_id" {
   description = "Billing account ID"
   type        = string
-  default     = "01FB26-BC3BF1-C9A591"
+  # No default - must be provided via terraform.tfvars or -var flag
 }
 
 variable "budget_alert_email" {
