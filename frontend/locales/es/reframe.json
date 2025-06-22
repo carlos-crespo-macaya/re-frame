@@ -1,43 +1,43 @@
 {
   "page": {
-    "title": "Reestructure sus pensamientos",
-    "description": "Comparta lo que está en su mente, y le ayudaremos a explorar diferentes perspectivas."
+    "title": "Cambiemos la forma de ver las cosas",
+    "description": "Cuéntame qué está rondando tu mente, y exploraremos juntos otras perspectivas."
   },
   "form": {
     "thoughtInput": {
-      "label": "¿Qué pensamiento le está preocupando?",
-      "placeholder": "¿Qué sucedió? ¿Cómo se sintió?",
-      "helperText": "Tómese su tiempo. No hay prisa ni juicios aquí.",
-      "ariaLabel": "Ingrese su pensamiento preocupante",
+      "label": "¿Qué pensamiento te está dando vueltas?",
+      "placeholder": "¿Qué pasó? ¿Cómo te sentiste?",
+      "helperText": "Tómate tu tiempo. Aquí no hay prisa ni juicios.",
+      "ariaLabel": "Escribe tu pensamiento",
       "status": {
-        "short": "Continúe si desea agregar más contexto.",
-        "good": "Buena cantidad de detalle.",
-        "comprehensive": "Descripción completa.",
-        "maximum": "Máximo detalle capturado."
+        "short": "Si quieres, puedes agregar más detalles.",
+        "good": "Perfecto, ya tengo suficiente contexto.",
+        "comprehensive": "Genial, me has dado mucha información.",
+        "maximum": "¡Wow! Me has contado todo con lujo de detalles."
       }
     },
     "context": {
-      "label": "Contexto (Opcional)",
-      "placeholder": "Cualquier contexto adicional que pueda ayudarnos a entender mejor",
-      "helperText": "Comparta tanto o tan poco como se sienta cómodo.",
-      "ariaLabel": "Proporcione contexto adicional"
+      "label": "¿Algo más que quieras compartir? (Opcional)",
+      "placeholder": "Cualquier detalle que me ayude a entenderte mejor",
+      "helperText": "Comparte solo lo que te sientas cómodo/a compartiendo.",
+      "ariaLabel": "Agrega más contexto si quieres"
     },
     "submit": {
-      "idle": "Generar perspectiva",
-      "loading": "Procesando...",
-      "disabled": "Por favor, ingrese un pensamiento primero"
+      "idle": "Veamos otra perspectiva",
+      "loading": "Pensando...",
+      "disabled": "Primero cuéntame qué te preocupa"
     },
     "characterCount": "{count} / {max}",
     "keyboardShortcut": "para enviar",
     "validation": {
-      "required": "Por favor, comparta un pensamiento para reestructurar",
-      "tooShort": "Por favor, proporcione un poco más de detalle (mínimo 10 caracteres)",
-      "tooLong": "Por favor, mantenga su pensamiento bajo 1000 caracteres"
+      "required": "Cuéntame qué te preocupa para poder ayudarte",
+      "tooShort": "¿Podrías contarme un poco más? (mínimo 10 caracteres)",
+      "tooLong": "Ups, eso es mucho texto. ¿Podrías resumir un poco? (máximo 1000 caracteres)"
     }
   },
   "response": {
-    "title": "Aquí hay una perspectiva diferente",
-    "processing": "Tomando un momento para considerar su pensamiento...",
+    "title": "Mira, aquí hay otra forma de verlo",
+    "processing": "Dame un momento para pensar en lo que me contaste...",
     "frameworks": {
       "cbt": "Terapia Cognitivo Conductual",
       "dbt": "Terapia Dialéctica Conductual",
@@ -45,36 +45,36 @@
       "stoic": "Filosofía estoica"
     },
     "sections": {
-      "reframe": "Perspectiva reestructurada",
-      "evidence": "Evidencia de apoyo",
-      "action": "Próximos pasos suaves",
-      "reflection": "Preguntas para reflexionar"
+      "reframe": "Una nueva perspectiva",
+      "evidence": "¿Por qué podría ser cierto?",
+      "action": "Pequeños pasos que puedes dar",
+      "reflection": "Para reflexionar"
     },
     "actions": {
-      "tryAnother": "Probar otro pensamiento",
-      "save": "Guardar esta reestructuración",
-      "share": "Compartir (anónimo)",
+      "tryAnother": "Quiero trabajar otro pensamiento",
+      "save": "Guardar esto para después",
+      "share": "Compartir (siempre anónimo)",
       "feedback": {
-        "helpful": "Esto fue útil",
-        "notHelpful": "No fue exactamente lo que necesitaba"
+        "helpful": "¡Esto me ayudó!",
+        "notHelpful": "Mmm, no me resonó tanto"
       }
     }
   },
   "privacy": {
-    "notice": "Su privacidad importa. Este pensamiento no será almacenado ni vinculado a usted de ninguna manera.",
-    "anonymous": "Todas las interacciones son completamente anónimas"
+    "notice": "Tu privacidad es lo más importante. No guardo este pensamiento ni lo vinculo contigo de ninguna forma.",
+    "anonymous": "Todo aquí es 100% anónimo, siempre"
   },
   "tips": {
-    "title": "Consejos para una reestructuración efectiva",
+    "title": "Tips para aprovechar al máximo",
     "list": [
-      "Sea específico sobre la situación",
-      "Enfóquese en un pensamiento a la vez",
-      "Sea honesto sobre cómo se siente",
-      "Recuerde: no hay una forma 'incorrecta' de expresarse"
+      "Sé específico/a sobre lo que pasó",
+      "Enfócate en un solo pensamiento por vez",
+      "Sé honesto/a con cómo te sientes",
+      "Recuerda: no hay forma 'incorrecta' de expresarte"
     ]
   },
   "rateLimit": {
-    "message": "Ha utilizado todas sus reestructuraciones por esta hora. Por favor, regrese en {minutes} minutos.",
-    "explanation": "Limitamos el uso para asegurar que todos tengan acceso a este servicio gratuito."
+    "message": "Ya trabajaste bastante por ahora. Descansa y vuelve en {minutes} minutos.",
+    "explanation": "Limitamos el uso para que todos puedan acceder a este servicio gratuito."
   }
 }

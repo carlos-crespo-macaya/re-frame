@@ -31,16 +31,16 @@
     "info": "Información"
   },
   "errors": {
-    "generic": "Algo salió mal. Por favor, inténtelo de nuevo.",
-    "network": "Error de conexión. Por favor, verifique su conexión a internet.",
-    "validation": "Por favor, revise su información e inténtelo nuevamente.",
-    "notFound": "Página no encontrada",
-    "unauthorized": "No está autorizado para ver esta página.",
-    "rateLimit": "Demasiadas solicitudes. Por favor, espere antes de intentarlo nuevamente."
+    "generic": "Ups, algo no salió como esperábamos. ¿Intentamos de nuevo?",
+    "network": "Parece que hay un problema con la conexión. ¿Podrías revisar tu internet?",
+    "validation": "Hmm, parece que algo no está bien. ¿Le echas otro vistazo?",
+    "notFound": "No encontramos esta página",
+    "unauthorized": "Lo siento, no puedes acceder a esta página ahora mismo.",
+    "rateLimit": "Has estado muy activo/a. Descansa un momento y vuelve en unos minutos."
   },
   "footer": {
-    "copyright": "© 2024 re-frame.social. Todos los derechos reservados.",
-    "tagline": "Un espacio de apoyo para la reestructuración cognitiva"
+    "copyright": "© 2024 re-frame.social. Hecho con cariño.",
+    "tagline": "Tu espacio seguro para pensar diferente"
   },
   "language": {
     "selectLanguage": "Seleccionar idioma",

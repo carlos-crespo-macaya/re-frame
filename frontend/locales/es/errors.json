@@ -1,17 +1,17 @@
 {
   "404": {
-    "title": "Página no encontrada",
-    "description": "No pudimos encontrar la página que está buscando.",
+    "title": "Ups, esta página no existe",
+    "description": "No encontramos la página que buscas.",
     "action": "Volver al inicio"
   },
   "500": {
-    "title": "Algo salió mal",
-    "description": "Estamos teniendo dificultades técnicas. Por favor, inténtelo más tarde.",
-    "action": "Intentar de nuevo"
+    "title": "Ay, algo falló",
+    "description": "Estamos teniendo problemas técnicos. ¿Intentas más tarde?",
+    "action": "Intentar otra vez"
   },
   "offline": {
-    "title": "Está sin conexión",
-    "description": "Por favor, verifique su conexión a internet e inténtelo de nuevo.",
+    "title": "Parece que no hay internet",
+    "description": "Revisa tu conexión e intenta de nuevo.",
     "action": "Reintentar"
   },
   "form": {

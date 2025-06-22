@@ -1,64 +1,64 @@
 {
   "hero": {
-    "title": "Explore una nueva perspectiva",
-    "subtitle": "Utilizaremos la reestructuración cognitiva basada en TCC para identificar patrones de pensamiento y sugerir perspectivas más amables.",
-    "cta": "Comience su viaje"
+    "title": "Descubre una nueva forma de ver las cosas",
+    "subtitle": "Te ayudaré a identificar patrones de pensamiento y encontrar perspectivas más amables, usando técnicas de TCC.",
+    "cta": "Empecemos juntos"
   },
   "intro": {
-    "heading": "Cuéntenos sobre la situación",
-    "description": "Unas pocas oraciones son suficientes — comparta lo que sienta correcto.",
+    "heading": "Cuéntame qué está pasando",
+    "description": "No necesitas escribir mucho — solo lo que sientas cómodo compartiendo.",
     "features": {
       "private": {
-        "title": "Completamente privado",
-        "description": "Sesión privada — no almacenamos datos personales."
+        "title": "Tu privacidad es sagrada",
+        "description": "Esta es tu sesión privada — no guardamos nada personal."
       },
       "evidence": {
-        "title": "Basado en evidencia",
-        "description": "Esta herramienta utiliza técnicas de TCC basadas en evidencia. Su privacidad está protegida - no almacenamos ninguna información personal."
+        "title": "Técnicas que funcionan",
+        "description": "Uso técnicas de TCC respaldadas por la ciencia. Y tranquilo/a, tu privacidad siempre está protegida."
       },
       "supportive": {
-        "title": "Siempre con apoyo",
-        "description": "Reciba orientación amable y alentadora sin juicios ni presión."
+        "title": "Siempre de tu lado",
+        "description": "Aquí encontrarás apoyo gentil y comprensivo, sin juicios ni presiones."
       }
     }
   },
   "howItWorks": {
-    "title": "Cómo funciona re-frame",
+    "title": "Así es como te ayudo",
     "steps": {
       "share": {
         "number": "1",
-        "title": "Cuéntenos qué sucedió",
-        "description": "Use sus propias palabras. Tómese el tiempo que necesite."
+        "title": "Cuéntame qué pasó",
+        "description": "Con tus propias palabras. Sin prisa, tómate tu tiempo."
       },
       "receive": {
         "number": "2",
-        "title": "Identifique patrones de pensamiento",
-        "description": "Aplicaremos principios de TCC para resaltar perspectivas alternativas."
+        "title": "Identificamos juntos los patrones",
+        "description": "Usaré TCC para mostrarte otras formas de ver la situación."
       },
       "practice": {
         "number": "3",
-        "title": "Elija una perspectiva que sienta verdadera",
-        "description": "Seleccione entre formas alternativas de ver su situación."
+        "title": "Elige lo que resuene contigo",
+        "description": "Tú decides qué perspectiva se siente más verdadera para ti."
       }
     }
   },
   "benefits": {
-    "title": "Diseñado para personas que viven con TPE y ansiedad social",
+    "title": "Pensado especialmente para personas con TPE y ansiedad social",
     "list": [
-      "Reduce la intensidad de la ansiedad social con el tiempo",
-      "Desarrolla autocompasión y pensamiento realista",
-      "Ayuda a identificar y desafiar patrones de pensamiento negativos",
-      "Proporciona un espacio seguro para practicar antes de situaciones reales"
+      "Te ayuda a sentir menos intensidad en la ansiedad social poco a poco",
+      "Aprenderás a tratarte con más cariño y ver las cosas de forma más realista",
+      "Descubrirás y cuestionarás esos pensamientos que te hacen daño",
+      "Tendrás un espacio seguro para practicar antes de enfrentar situaciones reales"
     ]
   },
   "testimonial": {
-    "quote": "Esta herramienta me ha ayudado a ver que mis pensamientos no siempre son la realidad. Estoy aprendiendo a ser más amable conmigo mismo.",
-    "author": "Usuario anónimo"
+    "quote": "Me está ayudando a darme cuenta de que mis pensamientos no siempre son la realidad. Poco a poco aprendo a tratarme con más cariño.",
+    "author": "Alguien como tú"
   },
   "cta": {
-    "ready": "¿Está listo para probar una perspectiva diferente?",
-    "button": "Comenzar a reestructurar",
-    "learn": "¿Tiene curiosidad sobre la TCC?",
-    "learnMore": "Aprenda lo básico en 2 minutos ↗"
+    "ready": "¿Te animas a ver las cosas de otra manera?",
+    "button": "Vamos a intentarlo",
+    "learn": "¿Quieres saber más sobre la TCC?",
+    "learnMore": "Te lo explico en 2 minutos ↗"
   }
 }
