@@ -59,6 +59,32 @@ variable "auth_domain" {
   default     = "re-frame-social.firebaseapp.com"
 }
 
+# Domain Configuration
+variable "domain" {
+  description = "Primary domain for the application"
+  type        = string
+  default     = "re-frame.social"
+}
+
+variable "enable_cloud_dns" {
+  description = "Enable Google Cloud DNS management (alternative to name.com)"
+  type        = bool
+  default     = false
+}
+
+variable "enable_email_forwarding" {
+  description = "Enable email forwarding DNS records"
+  type        = bool
+  default     = false
+}
+
+variable "firebase_domain_verification" {
+  description = "Firebase domain verification TXT record (provided by Firebase)"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
 # API Keys (sensitive)
 variable "gemini_api_key" {
   description = "Google AI Studio API key for Gemini"

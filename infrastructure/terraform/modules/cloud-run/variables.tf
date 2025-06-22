@@ -56,3 +56,9 @@ variable "secret_environment_variables" {
   }))
   default = {}
 }
+
+variable "custom_domain" {
+  description = "Custom domain for the API (e.g., re-frame.social)"
+  type        = string
+  default     = ""
+}
