@@ -1,95 +1,95 @@
 {
   "page": {
-    "title": "Learn About CBT",
-    "subtitle": "Understanding Cognitive Behavioral Therapy and how it can help with social anxiety"
+    "title": "Aprende sobre TCC",
+    "subtitle": "Entendiendo la Terapia Cognitivo Conductual y cómo puede ayudarte con la ansiedad social"
   },
   "intro": {
-    "title": "What is Cognitive Behavioral Therapy?",
-    "content": "Cognitive Behavioral Therapy (CBT) is a well-researched, evidence-based approach that helps people identify and change unhelpful thought patterns and behaviors. For those with AvPD and social anxiety, CBT can be particularly effective in challenging the negative assumptions we make about ourselves and others."
+    "title": "¿Qué es la Terapia Cognitivo Conductual?",
+    "content": "La Terapia Cognitivo Conductual (TCC) es un enfoque basado en evidencia que ayuda a identificar y cambiar patrones de pensamiento y comportamientos que no te ayudan. Para personas con TPE y ansiedad social, la TCC puede ser especialmente efectiva para cuestionar las suposiciones negativas que hacemos sobre nosotros mismos y los demás."
   },
   "howItWorks": {
-    "title": "How CBT Works",
-    "description": "CBT is based on the idea that our thoughts, feelings, and behaviors are interconnected:",
+    "title": "Cómo funciona la TCC",
+    "description": "La TCC se basa en la idea de que nuestros pensamientos, sentimientos y comportamientos están conectados:",
     "cycle": {
-      "thought": "Thought: \"Everyone will judge me\"",
-      "feeling": "Feeling: Anxiety, fear",
-      "behavior": "Behavior: Avoiding social situations",
-      "result": "Result: Missed connections, reinforced fears"
+      "thought": "Pensamiento: \"Todos me van a juzgar\"",
+      "feeling": "Sentimiento: Ansiedad, miedo",
+      "behavior": "Comportamiento: Evitar situaciones sociales",
+      "result": "Resultado: Conexiones perdidas, miedos reforzados"
     },
-    "breakingCycle": "By changing our thoughts, we can influence our feelings and behaviors, breaking this negative cycle."
+    "breakingCycle": "Al cambiar nuestros pensamientos, podemos influir en nuestros sentimientos y comportamientos, rompiendo este ciclo negativo."
   },
   "techniques": {
-    "title": "Key CBT Techniques We Use",
+    "title": "Técnicas clave de TCC que usamos",
     "list": {
       "cognitive": {
-        "title": "Cognitive Restructuring",
-        "description": "Identifying and challenging negative thought patterns to develop more balanced perspectives."
+        "title": "Reestructuración Cognitiva",
+        "description": "Identificar y cuestionar patrones de pensamiento negativos para desarrollar perspectivas más equilibradas."
       },
       "evidence": {
-        "title": "Evidence Examination",
-        "description": "Looking at the facts for and against our anxious thoughts to see if they're really true."
+        "title": "Examen de Evidencia",
+        "description": "Mirar los hechos a favor y en contra de nuestros pensamientos ansiosos para ver si realmente son ciertos."
       },
       "behavioral": {
-        "title": "Behavioral Experiments",
-        "description": "Testing our fears in safe, gradual ways to see if our predictions come true."
+        "title": "Experimentos Conductuales",
+        "description": "Poner a prueba nuestros miedos de formas seguras y graduales para ver si nuestras predicciones se cumplen."
       },
       "mindfulness": {
-        "title": "Mindfulness Integration",
-        "description": "Observing thoughts without judgment, reducing their power over us."
+        "title": "Integración de Mindfulness",
+        "description": "Observar los pensamientos sin juzgarlos, reduciendo su poder sobre nosotros."
       }
     }
   },
   "distortions": {
-    "title": "Common Thought Distortions in Social Anxiety",
-    "description": "Recognizing these patterns is the first step to changing them:",
+    "title": "Distorsiones comunes del pensamiento en la ansiedad social",
+    "description": "Reconocer estos patrones es el primer paso para cambiarlos:",
     "list": {
       "mindReading": {
-        "title": "Mind Reading",
-        "description": "Assuming we know what others are thinking about us (usually negative)."
+        "title": "Lectura de Mente",
+        "description": "Asumir que sabemos lo que otros piensan de nosotros (generalmente negativo)."
       },
       "catastrophizing": {
-        "title": "Catastrophizing",
-        "description": "Expecting the worst possible outcome in social situations."
+        "title": "Catastrofización",
+        "description": "Esperar el peor resultado posible en situaciones sociales."
       },
       "allOrNothing": {
-        "title": "All-or-Nothing Thinking",
-        "description": "Seeing social interactions as complete successes or total failures."
+        "title": "Pensamiento Todo o Nada",
+        "description": "Ver las interacciones sociales como éxitos completos o fracasos totales."
       },
       "personalization": {
-        "title": "Personalization",
-        "description": "Taking responsibility for others' moods or reactions."
+        "title": "Personalización",
+        "description": "Tomar responsabilidad por los estados de ánimo o reacciones de otros."
       },
       "filtering": {
-        "title": "Mental Filtering",
-        "description": "Focusing only on negative aspects while ignoring positives."
+        "title": "Filtro Mental",
+        "description": "Enfocarse solo en aspectos negativos mientras se ignoran los positivos."
       }
     }
   },
   "benefits": {
-    "title": "Benefits of CBT for AvPD",
+    "title": "Beneficios de la TCC para TPE",
     "list": [
-      "Reduces anxiety in social situations",
-      "Improves self-esteem and self-compassion",
-      "Helps build more realistic thinking patterns",
-      "Provides practical tools for daily challenges",
-      "Can be practiced independently with guidance"
+      "Reduce la ansiedad en situaciones sociales",
+      "Mejora la autoestima y autocompasión",
+      "Ayuda a construir patrones de pensamiento más realistas",
+      "Proporciona herramientas prácticas para desafíos diarios",
+      "Se puede practicar independientemente con guía"
     ]
   },
   "gettingStarted": {
-    "title": "Getting Started with re-frame",
-    "content": "Our tool makes it easy to practice CBT techniques on your own. Simply share a thought that's troubling you, and we'll guide you through the process of examining and reframing it. Remember, change takes time and practice - be patient and kind with yourself.",
-    "cta": "Try Reframing a Thought"
+    "title": "Empezando con re-frame",
+    "content": "Nuestra herramienta hace fácil practicar técnicas de TCC por tu cuenta. Simplemente comparte un pensamiento que te esté molestando, y te guiaremos a través del proceso de examinarlo y reenmarcarlo. Recuerda, el cambio toma tiempo y práctica - sé paciente y amable contigo mismo/a.",
+    "cta": "Intenta Reenmarcar un Pensamiento"
   },
   "resources": {
-    "title": "Additional Resources",
+    "title": "Recursos Adicionales",
     "books": {
-      "title": "Recommended Books",
+      "title": "Libros Recomendados",
       "list": [
-        "\"Feeling Good\" by David Burns",
-        "\"Mind Over Mood\" by Dennis Greenberger",
-        "\"The Shyness and Social Anxiety Workbook\" by Martin Antony"
+        "\"Sentirse Bien\" de David Burns",
+        "\"Mente sobre Estado de Ánimo\" de Dennis Greenberger",
+        "\"El Manual de Timidez y Ansiedad Social\" de Martin Antony"
       ]
     },
-    "note": "While re-frame is a helpful tool, it's not a replacement for professional therapy. If you're struggling, please consider reaching out to a mental health professional."
+    "note": "Aunque re-frame es una herramienta útil, no reemplaza la terapia profesional. Si estás luchando, por favor considera contactar a un profesional de salud mental."
   }
 }

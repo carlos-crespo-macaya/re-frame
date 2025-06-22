@@ -1,132 +1,132 @@
 {
   "page": {
-    "title": "Support & Resources",
-    "subtitle": "You're not alone. Here are resources that can help."
+    "title": "Apoyo y Recursos",
+    "subtitle": "No estás solo/a. Aquí hay recursos que pueden ayudarte."
   },
   "crisis": {
-    "title": "Need Immediate Help?",
-    "content": "If you're in crisis or having thoughts of self-harm, please reach out for help immediately:",
+    "title": "¿Necesitas Ayuda Inmediata?",
+    "content": "Si estás en crisis o tienes pensamientos de autolesión, por favor busca ayuda inmediatamente:",
     "hotlines": {
-      "title": "Crisis Hotlines",
+      "title": "Líneas de Crisis por País",
       "us": {
-        "name": "National Suicide Prevention Lifeline",
+        "name": "Estados Unidos - Línea Nacional de Prevención del Suicidio",
         "number": "988",
-        "description": "24/7 free and confidential support"
+        "description": "Apoyo gratuito y confidencial 24/7 (solo en EE.UU.)"
       },
       "text": {
-        "name": "Crisis Text Line",
-        "number": "Text HOME to 741741",
-        "description": "24/7 text-based crisis support"
+        "name": "Estados Unidos - Línea de Texto de Crisis",
+        "number": "Envía HOME al 741741",
+        "description": "Apoyo de crisis por texto 24/7 (solo en EE.UU.)"
       },
       "international": {
-        "name": "International Crisis Lines",
+        "name": "Otros Países - Encuentra tu Línea de Crisis Local",
         "link": "findahelpline.com",
-        "description": "Find crisis support in your country"
+        "description": "Directorio mundial de líneas de ayuda por país"
       }
     }
   },
   "therapy": {
-    "title": "Finding Professional Help",
-    "content": "While re-frame is a helpful tool, working with a therapist can provide personalized support:",
+    "title": "Encontrar Ayuda Profesional",
+    "content": "Aunque re-frame es una herramienta útil, trabajar con un terapeuta puede proporcionar apoyo personalizado:",
     "options": {
       "inPerson": {
-        "title": "In-Person Therapy",
-        "description": "Face-to-face sessions with a licensed therapist in your area."
+        "title": "Terapia Presencial",
+        "description": "Sesiones cara a cara con un terapeuta licenciado en tu área."
       },
       "online": {
-        "title": "Online Therapy",
-        "description": "Video sessions from the comfort of your home - great for those with social anxiety."
+        "title": "Terapia en Línea",
+        "description": "Sesiones por video desde la comodidad de tu hogar - genial para quienes tienen ansiedad social."
       },
       "group": {
-        "title": "Support Groups",
-        "description": "Connect with others who understand what you're going through."
+        "title": "Grupos de Apoyo",
+        "description": "Conecta con otros que entienden por lo que estás pasando."
       }
     },
     "findingHelp": {
-      "title": "How to Find a Therapist",
+      "title": "Cómo Encontrar un Terapeuta",
       "tips": [
-        "Ask your primary care doctor for referrals",
-        "Check with your insurance for covered providers",
-        "Look for therapists who specialize in social anxiety or AvPD",
-        "Consider therapists who offer CBT, DBT, or ACT",
-        "Many therapists offer free consultations"
+        "Pide referencias a tu médico de cabecera",
+        "Consulta con tu seguro sobre proveedores cubiertos",
+        "Busca terapeutas que se especialicen en ansiedad social o TPE",
+        "Considera terapeutas que ofrezcan TCC, TDC o TAC",
+        "Muchos terapeutas ofrecen consultas gratuitas"
       ]
     }
   },
   "selfHelp": {
-    "title": "Self-Help Resources",
+    "title": "Recursos de Autoayuda",
     "books": {
-      "title": "Recommended Reading",
+      "title": "Lectura Recomendada",
       "list": [
         {
-          "title": "The Shyness and Social Anxiety Workbook",
-          "author": "Martin Antony & Richard Swinson",
-          "description": "Practical CBT exercises for social anxiety"
+          "title": "El Manual de Timidez y Ansiedad Social",
+          "author": "Martin Antony y Richard Swinson",
+          "description": "Ejercicios prácticos de TCC para ansiedad social"
         },
         {
-          "title": "Self-Compassion",
+          "title": "Autocompasión",
           "author": "Kristin Neff",
-          "description": "Learning to be kind to yourself"
+          "description": "Aprender a ser amable contigo mismo/a"
         },
         {
-          "title": "Daring Greatly",
+          "title": "El Poder de Ser Vulnerable",
           "author": "Brené Brown",
-          "description": "The courage to be vulnerable"
+          "description": "El valor de ser vulnerable"
         }
       ]
     },
     "apps": {
-      "title": "Helpful Apps",
+      "title": "Apps Útiles",
       "list": [
         {
           "name": "Headspace",
-          "description": "Guided meditation and mindfulness"
+          "description": "Meditación guiada y mindfulness"
         },
         {
           "name": "Calm",
-          "description": "Relaxation and sleep support"
+          "description": "Relajación y apoyo para dormir"
         },
         {
           "name": "Sanvello",
-          "description": "Mood tracking and coping tools"
+          "description": "Seguimiento del estado de ánimo y herramientas de afrontamiento"
         }
       ]
     }
   },
   "community": {
-    "title": "Online Communities",
-    "content": "Connect with others who understand:",
+    "title": "Comunidades en Línea",
+    "content": "Conecta con otros que entienden:",
     "list": [
       {
         "name": "r/AvPD",
         "platform": "Reddit",
-        "description": "Supportive community for those with AvPD"
+        "description": "Comunidad de apoyo para personas con TPE"
       },
       {
-        "name": "Social Anxiety Support Forum",
+        "name": "Foro de Apoyo para Ansiedad Social",
         "platform": "socialanxietysupport.com",
-        "description": "Long-standing community with helpful resources"
+        "description": "Comunidad establecida con recursos útiles"
       },
       {
         "name": "7 Cups",
         "platform": "7cups.com",
-        "description": "Free emotional support from trained listeners"
+        "description": "Apoyo emocional gratuito de oyentes entrenados"
       }
     ]
   },
   "tips": {
-    "title": "Daily Coping Strategies",
+    "title": "Estrategias Diarias de Afrontamiento",
     "list": [
-      "Practice self-compassion - treat yourself like a good friend",
-      "Take small steps - progress is progress, no matter how small",
-      "Use grounding techniques when anxious (5-4-3-2-1 senses)",
-      "Maintain a routine that includes self-care",
-      "Celebrate small victories - they add up",
-      "Remember: recovery is not linear"
+      "Practica la autocompasión - trátate como a un buen amigo",
+      "Da pasos pequeños - el progreso es progreso, sin importar cuán pequeño",
+      "Usa técnicas de anclaje cuando sientas ansiedad (5-4-3-2-1 sentidos)",
+      "Mantén una rutina que incluya autocuidado",
+      "Celebra las pequeñas victorias - se suman",
+      "Recuerda: la recuperación no es lineal"
     ]
   },
   "reminder": {
-    "title": "Remember",
-    "content": "Seeking help is a sign of strength, not weakness. You deserve support and compassion on your journey."
+    "title": "Recuerda",
+    "content": "Buscar ayuda es una señal de fortaleza, no de debilidad. Mereces apoyo y compasión en tu camino."
   }
 }

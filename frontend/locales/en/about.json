@@ -1,55 +1,31 @@
 {
+  "header": {
+    "title": "re-frame",
+    "subtitle": "Cognitive reframing support"
+  },
   "page": {
-    "title": "About re-frame",
-    "subtitle": "Our mission is to make cognitive reframing accessible to everyone with social anxiety"
+    "title": "ℹ️ About re-frame",
+    "mission": "Mission",
+    "missionText": "give people who struggle with avoidant patterns a gentle way to challenge harsh thoughts—without shame, ads, or data mining."
   },
-  "mission": {
-    "title": "Our Mission",
-    "content": "re-frame.social was created to provide a safe, supportive space for people with Avoidant Personality Disorder (AvPD) and social anxiety to practice cognitive reframing techniques. We believe everyone deserves access to mental health tools that can help them build confidence and challenge negative thought patterns."
-  },
-  "approach": {
-    "title": "Our Approach",
-    "values": {
-      "privacy": {
-        "title": "Privacy First",
-        "description": "We don't store personal information or track your thoughts. Your privacy is paramount."
-      },
-      "evidence": {
-        "title": "Evidence-Based",
-        "description": "Our techniques are grounded in proven therapeutic approaches like CBT, DBT, and ACT."
-      },
-      "accessible": {
-        "title": "Accessible to All",
-        "description": "Free to use, with a simple interface designed for those who may feel overwhelmed by complex apps."
-      },
-      "respectful": {
-        "title": "Respectful & Gentle",
-        "description": "We understand the courage it takes to challenge your thoughts. Our responses are always supportive."
-      }
-    }
-  },
-  "story": {
-    "title": "Why We Built This",
-    "content": "We understand the daily challenges of living with AvPD and social anxiety. The fear of judgment, the overwhelming self-criticism, the missed opportunities due to avoidance - we know how isolating it can feel. That's why we created re-frame: to offer a judgment-free space where you can practice seeing situations differently, at your own pace, without pressure."
-  },
-  "team": {
-    "title": "Built with Care",
-    "content": "re-frame is developed by a team that includes mental health advocates, therapists, and individuals with lived experience of social anxiety. We're committed to creating tools that truly help."
-  },
-  "commitment": {
-    "title": "Our Commitment to You",
-    "list": [
-      "Your thoughts are never stored or shared",
-      "No accounts or personal information required",
-      "Always free for basic use",
-      "Continuously improved based on user feedback",
-      "Designed with trauma-informed principles"
-    ]
+  "list": {
+    "whatItIs": "What it is:",
+    "whatItIsText": "a CBT-informed cognitive-restructuring tool that spots thinking traps (catastrophising, mind-reading, etc.) and offers kinder perspectives.",
+    "whatItIsnt": "What it isn't:",
+    "whatItIsntText": "full psychotherapy, medical advice, or a crisis service.",
+    "whoBuilds": "Who builds it:",
+    "whoBuildsText": "just me—Carlos, a software engineer who's lived with AvPD for years and is investing my own time, skills, and will to create the tool I wish I'd had.",
+    "whyOpenSource": "Why open source:",
+    "whyOpenSourceText": "transparency builds trust; anyone can inspect or improve the code.",
+    "roadmap": "Roadmap:",
+    "roadmapText": "opt-in community peer support, progress journaling, therapist hand-off export."
   },
   "contact": {
-    "title": "Get in Touch",
-    "content": "We'd love to hear from you. Whether you have feedback, suggestions, or just want to share your experience, please reach out.",
-    "email": "Email us at",
-    "feedback": "Send Feedback"
+    "text": "Questions? Reach me at",
+    "email": "hello@re-frame.social"
+  },
+  "footer": {
+    "return": "← Return to re-frame",
+    "copyright": "© 2024 re-frame.social"
   }
 }

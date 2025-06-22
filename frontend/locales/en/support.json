@@ -7,21 +7,21 @@
     "title": "Need Immediate Help?",
     "content": "If you're in crisis or having thoughts of self-harm, please reach out for help immediately:",
     "hotlines": {
-      "title": "Crisis Hotlines",
+      "title": "Crisis Hotlines by Country",
       "us": {
-        "name": "National Suicide Prevention Lifeline",
+        "name": "United States - National Suicide Prevention Lifeline",
         "number": "988",
-        "description": "24/7 free and confidential support"
+        "description": "24/7 free and confidential support (U.S. only)"
       },
       "text": {
-        "name": "Crisis Text Line",
+        "name": "United States - Crisis Text Line",
         "number": "Text HOME to 741741",
-        "description": "24/7 text-based crisis support"
+        "description": "24/7 text-based crisis support (U.S. only)"
       },
       "international": {
-        "name": "International Crisis Lines",
+        "name": "Other Countries - Find Your Local Crisis Line",
         "link": "findahelpline.com",
-        "description": "Find crisis support in your country"
+        "description": "Worldwide directory of helplines by country"
       }
     }
   },

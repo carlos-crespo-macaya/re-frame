@@ -1,106 +1,106 @@
 {
   "page": {
-    "title": "Privacy Policy",
-    "subtitle": "Your privacy is fundamental to our mission",
-    "lastUpdated": "Last updated: {date}"
+    "title": "Política de Privacidad",
+    "subtitle": "Tu privacidad es fundamental para nuestra misión",
+    "lastUpdated": "Última actualización: {date}"
   },
   "intro": {
-    "title": "Our Privacy Commitment",
-    "content": "At re-frame.social, we understand that privacy is especially important for people with social anxiety. We've designed our service with your privacy as the top priority."
+    "title": "Nuestro Compromiso de Privacidad",
+    "content": "En re-frame.social, entendemos que la privacidad es especialmente importante para personas con ansiedad social. Hemos diseñado nuestro servicio con tu privacidad como prioridad principal."
   },
   "principles": {
-    "title": "Core Privacy Principles",
+    "title": "Principios Fundamentales de Privacidad",
     "list": [
-      "We don't require accounts or logins",
-      "We don't store your thoughts or personal information",
-      "We don't use cookies for tracking",
-      "We don't share data with third parties",
-      "We don't display ads or use your data for marketing"
+      "No requerimos cuentas o inicios de sesión",
+      "No guardamos tus pensamientos o información personal",
+      "No usamos cookies para rastreo",
+      "No compartimos datos con terceros",
+      "No mostramos anuncios ni usamos tus datos para marketing"
     ]
   },
   "dataCollection": {
-    "title": "What We Collect",
+    "title": "Qué Recopilamos",
     "anonymous": {
-      "title": "Anonymous Usage Data",
-      "description": "To improve our service, we collect minimal anonymous data:",
+      "title": "Datos de Uso Anónimos",
+      "description": "Para mejorar nuestro servicio, recopilamos datos anónimos mínimos:",
       "list": [
-        "General usage patterns (pages visited, features used)",
-        "Technical information (browser type, device type)",
-        "Error reports to fix bugs",
-        "Aggregate feedback ratings (helpful/not helpful)"
+        "Patrones generales de uso (páginas visitadas, funciones usadas)",
+        "Información técnica (tipo de navegador, tipo de dispositivo)",
+        "Reportes de errores para arreglar problemas",
+        "Calificaciones agregadas de retroalimentación (útil/no útil)"
       ]
     },
     "temporary": {
-      "title": "Temporary Session Data",
-      "description": "During your session, we temporarily process:",
+      "title": "Datos Temporales de Sesión",
+      "description": "Durante tu sesión, procesamos temporalmente:",
       "list": [
-        "The thoughts you submit for reframing (deleted immediately after processing)",
-        "Your language preference (stored in your browser only)",
-        "Rate limiting counters (reset hourly)"
+        "Los pensamientos que envías para reenmarcar (eliminados inmediatamente después de procesar)",
+        "Tu preferencia de idioma (guardada solo en tu navegador)",
+        "Contadores de límite de uso (se reinician cada hora)"
       ]
     }
   },
   "dataStorage": {
-    "title": "How We Handle Your Data",
+    "title": "Cómo Manejamos Tus Datos",
     "thoughts": {
-      "title": "Your Thoughts",
-      "content": "The thoughts you share are processed in real-time and immediately deleted. They are never stored in our databases or logs."
+      "title": "Tus Pensamientos",
+      "content": "Los pensamientos que compartes se procesan en tiempo real y se eliminan inmediatamente. Nunca se guardan en nuestras bases de datos o registros."
     },
     "analytics": {
-      "title": "Analytics",
-      "content": "We use privacy-focused analytics that don't track individual users. All data is aggregated and anonymized."
+      "title": "Analíticas",
+      "content": "Usamos analíticas enfocadas en privacidad que no rastrean usuarios individuales. Todos los datos están agregados y anonimizados."
     },
     "security": {
-      "title": "Security Measures",
-      "content": "All connections are encrypted using HTTPS. We follow industry best practices for security."
+      "title": "Medidas de Seguridad",
+      "content": "Todas las conexiones están encriptadas usando HTTPS. Seguimos las mejores prácticas de la industria para seguridad."
     }
   },
   "thirdParties": {
-    "title": "Third-Party Services",
-    "content": "We use minimal third-party services:",
+    "title": "Servicios de Terceros",
+    "content": "Usamos servicios mínimos de terceros:",
     "list": [
       {
         "name": "Google Cloud Platform",
-        "purpose": "Hosting and AI processing",
-        "data": "Processes thoughts in real-time, no storage"
+        "purpose": "Alojamiento y procesamiento de IA",
+        "data": "Procesa pensamientos en tiempo real, sin almacenamiento"
       },
       {
         "name": "Cloudflare",
-        "purpose": "Security and performance",
-        "data": "Basic traffic protection, no personal data"
+        "purpose": "Seguridad y rendimiento",
+        "data": "Protección básica de tráfico, sin datos personales"
       }
     ]
   },
   "rights": {
-    "title": "Your Rights",
-    "content": "Since we don't store personal data, there's nothing to request or delete. You always have the right to:",
+    "title": "Tus Derechos",
+    "content": "Como no guardamos datos personales, no hay nada que solicitar o eliminar. Siempre tienes derecho a:",
     "list": [
-      "Use our service anonymously",
-      "Clear your browser data to reset your session",
-      "Contact us with any privacy concerns"
+      "Usar nuestro servicio anónimamente",
+      "Limpiar los datos de tu navegador para reiniciar tu sesión",
+      "Contactarnos con cualquier preocupación de privacidad"
     ]
   },
   "cookies": {
     "title": "Cookies",
-    "content": "We use only essential cookies:",
+    "content": "Usamos solo cookies esenciales:",
     "list": [
-      "Language preference (your choice of language)",
-      "Rate limiting (to ensure fair usage)",
-      "No tracking cookies",
-      "No advertising cookies"
+      "Preferencia de idioma (tu elección de idioma)",
+      "Límite de uso (para asegurar uso justo)",
+      "Sin cookies de rastreo",
+      "Sin cookies de publicidad"
     ]
   },
   "contact": {
-    "title": "Privacy Questions?",
-    "content": "If you have any questions about our privacy practices, please contact us:",
+    "title": "¿Preguntas sobre Privacidad?",
+    "content": "Si tienes preguntas sobre nuestras prácticas de privacidad, por favor contáctanos:",
     "email": "privacy@re-frame.social"
   },
   "changes": {
-    "title": "Changes to This Policy",
-    "content": "If we make changes to this policy, we'll notify users through a prominent notice on our site. We'll never reduce your privacy rights without clear consent."
+    "title": "Cambios a Esta Política",
+    "content": "Si hacemos cambios a esta política, notificaremos a los usuarios a través de un aviso prominente en nuestro sitio. Nunca reduciremos tus derechos de privacidad sin consentimiento claro."
   },
   "compliance": {
-    "title": "Legal Compliance",
-    "content": "We comply with applicable privacy laws including GDPR and CCPA. We operate with privacy-by-design principles."
+    "title": "Cumplimiento Legal",
+    "content": "Cumplimos con las leyes de privacidad aplicables incluyendo GDPR y CCPA. Operamos con principios de privacidad por diseño."
   }
 }

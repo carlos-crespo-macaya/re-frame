@@ -1,8 +1,11 @@
 'use client'
 
-import Link from 'next/link'
+import { useTranslations } from 'next-intl'
+import { Link } from '@/i18n/routing'
 
 export default function About() {
+  const t = useTranslations('about')
+  
   return (
     <>
       {/* Header */}
@@ -12,11 +15,11 @@ export default function About() {
             <div>
               <Link href="/" className="inline-block">
                 <h1 className="text-2xl font-heading font-semibold text-brand-green-400 hover:text-brand-green-300 transition-colors">
-                  re-frame
+                  {t('header.title')}
                 </h1>
               </Link>
               <p className="text-sm text-[#999999] mt-1">
-                Cognitive reframing support
+                {t('header.subtitle')}
               </p>
             </div>
           </div>
@@ -28,43 +31,43 @@ export default function About() {
         <div className="container-safe py-8 md:py-12">
           <article className="max-w-3xl mx-auto">
             <h1 className="text-[32px] font-semibold text-[#EDEDED] mb-8">
-              ℹ️ About re-frame
+              {t('page.title')}
             </h1>
             
             <p className="text-lg text-[#999999] leading-relaxed mb-8">
-              <strong className="text-[#EDEDED]">Mission</strong> – give people who struggle with avoidant patterns a gentle way to challenge harsh thoughts—without shame, ads, or data mining.
+              <strong className="text-[#EDEDED]">{t('page.mission')}</strong> – {t('page.missionText')}
             </p>
 
             <ul className="space-y-3 text-[#999999] mb-8">
               <li className="flex items-start">
                 <span className="mr-2">•</span>
-                <div><strong className="text-[#EDEDED]">What it is:</strong> a CBT-informed cognitive-restructuring tool that spots thinking traps (catastrophising, mind-reading, etc.) and offers kinder perspectives.</div>
+                <div><strong className="text-[#EDEDED]">{t('list.whatItIs')}</strong> {t('list.whatItIsText')}</div>
               </li>
               <li className="flex items-start">
                 <span className="mr-2">•</span>
-                <div><strong className="text-[#EDEDED]">What it isn&apos;t:</strong> full psychotherapy, medical advice, or a crisis service.</div>
+                <div><strong className="text-[#EDEDED]">{t('list.whatItIsnt')}</strong> {t('list.whatItIsntText')}</div>
               </li>
               <li className="flex items-start">
                 <span className="mr-2">•</span>
-                <div><strong className="text-[#EDEDED]">Who builds it:</strong> just me—<strong className="text-[#EDEDED]">Carlos</strong>, a software engineer who&apos;s lived with AvPD for years and is investing my own time, skills, and will to create the tool I wish I&apos;d had.</div>
+                <div><strong className="text-[#EDEDED]">{t('list.whoBuilds')}</strong> {t('list.whoBuildsText')}<strong className="text-[#EDEDED]">{t('list.carlos')}</strong>{t('list.whoBuildsTextEnd')}</div>
               </li>
               <li className="flex items-start">
                 <span className="mr-2">•</span>
-                <div><strong className="text-[#EDEDED]">Why open source:</strong> transparency builds trust; anyone can inspect or improve the code.</div>
+                <div><strong className="text-[#EDEDED]">{t('list.whyOpenSource')}</strong> {t('list.whyOpenSourceText')}</div>
               </li>
               <li className="flex items-start">
                 <span className="mr-2">•</span>
-                <div><strong className="text-[#EDEDED]">Roadmap:</strong> opt-in community peer support, progress journaling, therapist hand-off export.</div>
+                <div><strong className="text-[#EDEDED]">{t('list.roadmap')}</strong> {t('list.roadmapText')}</div>
               </li>
             </ul>
 
             <p className="text-base text-[#999999] leading-relaxed">
-              Questions? Reach me at <a href="mailto:macayaven@gmail.com" className="text-[#EDEDED] hover:text-brand-green-400 underline">macayaven@gmail.com</a> or view the roadmap on GitHub → <a href="https://github.com/macayaven/re-frame" className="text-brand-green-400 hover:text-brand-green-300 underline" target="_blank" rel="noopener noreferrer">https://github.com/macayaven/re-frame</a>
+              {t('contact.text')} <a href={`mailto:${t('contact.email')}`} className="text-[#EDEDED] hover:text-brand-green-400 underline">{t('contact.email')}</a>
             </p>
 
             <div className="mt-12 text-center">
               <Link href="/" className="inline-flex items-center gap-2 text-brand-green-400 hover:text-brand-green-300 underline">
-                ← Return to re-frame
+                {t('footer.return')}
               </Link>
             </div>
           </article>
@@ -76,10 +79,10 @@ export default function About() {
         <div className="container-safe py-8">
           <div className="flex flex-col items-center gap-4">
             <h2 className="text-xl font-heading font-semibold text-brand-green-400">
-              re-frame
+              {t('header.title')}
             </h2>
             <p className="text-xs text-[#999999]">
-              © 2024 re-frame.social
+              {t('footer.copyright')}
             </p>
           </div>
         </div>

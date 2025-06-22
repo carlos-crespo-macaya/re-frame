@@ -1,8 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
 import { useTranslations } from 'next-intl'
+import { Link } from '@/i18n/routing'
 import ThoughtInputForm from '@/components/forms/ThoughtInputForm'
 import LanguageSwitcher from '@/components/ui/LanguageSwitcher'
 

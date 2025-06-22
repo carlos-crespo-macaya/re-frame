@@ -1,4 +1,8 @@
 {
+  "site": {
+    "name": "re-frame",
+    "tagline": "Apoyo de reencuadre cognitivo"
+  },
   "navigation": {
     "home": "Inicio",
     "about": "Acerca de",

@@ -1,4 +1,8 @@
 {
+  "site": {
+    "name": "re-frame",
+    "tagline": "Cognitive reframing support"
+  },
   "navigation": {
     "home": "Home",
     "about": "About",
