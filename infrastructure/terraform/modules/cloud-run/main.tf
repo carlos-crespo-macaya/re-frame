@@ -116,3 +116,21 @@ resource "google_cloud_run_service_iam_member" "public_access" {
   role     = "roles/run.invoker"
   member   = "allUsers"
 }
+
+# Domain mapping for custom domain
+resource "google_cloud_run_domain_mapping" "api" {
+  count = var.custom_domain != "" ? 1 : 0
+
+  location = google_cloud_run_service.backend.location
+  name     = "api.${var.custom_domain}"
+
+  metadata {
+    namespace = var.project_id
+  }
+
+  spec {
+    route_name = google_cloud_run_service.backend.name
+  }
+
+  depends_on = [google_cloud_run_service.backend]
+}

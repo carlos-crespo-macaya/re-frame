@@ -73,10 +73,11 @@ resource "google_secret_manager_secret_version" "gemini_api_key" {
 module "cloud_run" {
   source = "./modules/cloud-run"
 
-  project_id   = var.project_id
-  region       = var.region
-  service_name = var.cloud_run_service_name
-  image_url    = var.backend_image_url
+  project_id    = var.project_id
+  region        = var.region
+  service_name  = var.cloud_run_service_name
+  image_url     = var.backend_image_url
+  custom_domain = var.domain
 
   # Cost-saving measures
   min_instances = 0 # Scale to zero
@@ -119,9 +120,30 @@ module "firebase" {
   project_id      = var.project_id
   hosting_site_id = var.firebase_hosting_site_id
   auth_domain     = var.auth_domain
+  custom_domain   = var.domain
 
   depends_on = [google_project_service.required_apis]
 }
+
+# Cloud DNS Module (Optional - only if using Google Cloud DNS)
+# Uncomment this block if you want to manage DNS through Google Cloud DNS
+# instead of name.com
+# module "cloud_dns" {
+#   source = "./modules/cloud-dns"
+#
+#   project_id              = var.project_id
+#   domain                  = var.domain
+#   firebase_site_id        = var.firebase_hosting_site_id
+#   cloud_run_url          = module.cloud_run.service_url
+#   enable_email           = var.enable_email_forwarding
+#   domain_verification_record = var.firebase_domain_verification
+#
+#   depends_on = [
+#     google_project_service.required_apis,
+#     module.cloud_run,
+#     module.firebase
+#   ]
+# }
 
 # Cloud Armor Module
 module "cloud_armor" {
