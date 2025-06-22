@@ -111,12 +111,21 @@ Output format:
         # Parse the response and validate it matches our expected structure
         if result.get("success") and result.get("response"):
             try:
+                logger.debug(f"Raw response from Gemini: {result['response'][:200]}...")
                 analysis_dict = self.parse_json_response(result["response"])
+                logger.debug(f"Parsed JSON: {analysis_dict}")
                 # Validate the response matches our IntakeAnalysis model
                 analysis = IntakeAnalysis.model_validate(analysis_dict)
                 result["parsed_response"] = analysis
+                logger.info("Successfully validated intake analysis")
+            except json.JSONDecodeError as e:
+                logger.error(f"Failed to parse JSON: {e}")
+                logger.error(f"Raw response: {result['response']}")
+                result["success"] = False
+                result["error"] = f"Invalid JSON format: {str(e)}"
             except Exception as e:
                 logger.error(f"Failed to validate intake analysis: {e}")
+                logger.error(f"Parsed dict: {analysis_dict if 'analysis_dict' in locals() else 'Not parsed'}")
                 result["success"] = False
                 result["error"] = f"Invalid response format: {str(e)}"
 

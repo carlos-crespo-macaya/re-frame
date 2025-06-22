@@ -108,6 +108,7 @@ class AgentResponse(BaseModel):
     model_used: str
     error: str | None = None
     error_type: str | None = None
+    parsed_response: Any | None = None  # The parsed and validated response object
 
 
 # Session Manager Models
