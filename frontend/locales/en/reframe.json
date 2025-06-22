@@ -1,0 +1,80 @@
+{
+  "page": {
+    "title": "Reframe Your Thoughts",
+    "description": "Share what's on your mind, and we'll help you explore different perspectives."
+  },
+  "form": {
+    "thoughtInput": {
+      "label": "What thought is troubling you?",
+      "placeholder": "What happened? How did it feel?",
+      "helperText": "Take your time. There's no rush, and no judgment here.",
+      "ariaLabel": "Enter your troubling thought",
+      "status": {
+        "short": "Continue if you'd like to add more context.",
+        "good": "Good amount of detail.",
+        "comprehensive": "Comprehensive description.",
+        "maximum": "Maximum detail captured."
+      }
+    },
+    "context": {
+      "label": "Context (Optional)",
+      "placeholder": "Any additional context that might help us understand better",
+      "helperText": "Share as much or as little as you feel comfortable with.",
+      "ariaLabel": "Provide additional context"
+    },
+    "submit": {
+      "idle": "Generate perspective",
+      "loading": "Processing...",
+      "disabled": "Please enter a thought first"
+    },
+    "characterCount": "{count} / {max}",
+    "keyboardShortcut": "to submit",
+    "validation": {
+      "required": "Please share a thought to reframe",
+      "tooShort": "Please provide a bit more detail (minimum 10 characters)",
+      "tooLong": "Please keep your thought under 1000 characters"
+    }
+  },
+  "response": {
+    "title": "Here's a Different Perspective",
+    "processing": "Taking a moment to consider your thought...",
+    "frameworks": {
+      "cbt": "Cognitive Behavioral Therapy",
+      "dbt": "Dialectical Behavior Therapy",
+      "act": "Acceptance and Commitment Therapy",
+      "stoic": "Stoic Philosophy"
+    },
+    "sections": {
+      "reframe": "Reframed Perspective",
+      "evidence": "Supporting Evidence",
+      "action": "Gentle Next Steps",
+      "reflection": "Questions for Reflection"
+    },
+    "actions": {
+      "tryAnother": "Try Another Thought",
+      "save": "Save This Reframe",
+      "share": "Share (Anonymous)",
+      "feedback": {
+        "helpful": "This was helpful",
+        "notHelpful": "Not quite what I needed"
+      }
+    }
+  },
+  "privacy": {
+    "notice": "Your privacy matters. This thought will not be stored or linked to you in any way.",
+    "anonymous": "All interactions are completely anonymous"
+  },
+  "tips": {
+    "title": "Tips for Effective Reframing",
+    "list": [
+      "Be specific about the situation",
+      "Focus on one thought at a time",
+      "Be honest about how you're feeling",
+      "Remember: there's no 'wrong' way to express yourself"
+    ]
+  },
+  "rateLimit": {
+    "message": "You've used all your reframes for this hour. Please come back in {minutes} minutes.",
+    "explanation": "We limit usage to ensure everyone has access to this free service."
+  }
+}

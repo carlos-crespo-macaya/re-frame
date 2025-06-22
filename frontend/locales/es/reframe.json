@@ -1,0 +1,80 @@
+{
+  "page": {
+    "title": "Reestructure sus pensamientos",
+    "description": "Comparta lo que está en su mente, y le ayudaremos a explorar diferentes perspectivas."
+  },
+  "form": {
+    "thoughtInput": {
+      "label": "¿Qué pensamiento le está preocupando?",
+      "placeholder": "¿Qué sucedió? ¿Cómo se sintió?",
+      "helperText": "Tómese su tiempo. No hay prisa ni juicios aquí.",
+      "ariaLabel": "Ingrese su pensamiento preocupante",
+      "status": {
+        "short": "Continúe si desea agregar más contexto.",
+        "good": "Buena cantidad de detalle.",
+        "comprehensive": "Descripción completa.",
+        "maximum": "Máximo detalle capturado."
+      }
+    },
+    "context": {
+      "label": "Contexto (Opcional)",
+      "placeholder": "Cualquier contexto adicional que pueda ayudarnos a entender mejor",
+      "helperText": "Comparta tanto o tan poco como se sienta cómodo.",
+      "ariaLabel": "Proporcione contexto adicional"
+    },
+    "submit": {
+      "idle": "Generar perspectiva",
+      "loading": "Procesando...",
+      "disabled": "Por favor, ingrese un pensamiento primero"
+    },
+    "characterCount": "{count} / {max}",
+    "keyboardShortcut": "para enviar",
+    "validation": {
+      "required": "Por favor, comparta un pensamiento para reestructurar",
+      "tooShort": "Por favor, proporcione un poco más de detalle (mínimo 10 caracteres)",
+      "tooLong": "Por favor, mantenga su pensamiento bajo 1000 caracteres"
+    }
+  },
+  "response": {
+    "title": "Aquí hay una perspectiva diferente",
+    "processing": "Tomando un momento para considerar su pensamiento...",
+    "frameworks": {
+      "cbt": "Terapia Cognitivo Conductual",
+      "dbt": "Terapia Dialéctica Conductual",
+      "act": "Terapia de Aceptación y Compromiso",
+      "stoic": "Filosofía estoica"
+    },
+    "sections": {
+      "reframe": "Perspectiva reestructurada",
+      "evidence": "Evidencia de apoyo",
+      "action": "Próximos pasos suaves",
+      "reflection": "Preguntas para reflexionar"
+    },
+    "actions": {
+      "tryAnother": "Probar otro pensamiento",
+      "save": "Guardar esta reestructuración",
+      "share": "Compartir (anónimo)",
+      "feedback": {
+        "helpful": "Esto fue útil",
+        "notHelpful": "No fue exactamente lo que necesitaba"
+      }
+    }
+  },
+  "privacy": {
+    "notice": "Su privacidad importa. Este pensamiento no será almacenado ni vinculado a usted de ninguna manera.",
+    "anonymous": "Todas las interacciones son completamente anónimas"
+  },
+  "tips": {
+    "title": "Consejos para una reestructuración efectiva",
+    "list": [
+      "Sea específico sobre la situación",
+      "Enfóquese en un pensamiento a la vez",
+      "Sea honesto sobre cómo se siente",
+      "Recuerde: no hay una forma 'incorrecta' de expresarse"
+    ]
+  },
+  "rateLimit": {
+    "message": "Ha utilizado todas sus reestructuraciones por esta hora. Por favor, regrese en {minutes} minutos.",
+    "explanation": "Limitamos el uso para asegurar que todos tengan acceso a este servicio gratuito."
+  }
+}

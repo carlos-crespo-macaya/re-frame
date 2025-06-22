@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, FormEvent, KeyboardEvent } from 'react'
+import { useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui'
 
@@ -15,6 +16,8 @@ export default function ThoughtInputForm({
   onClear, 
   isLoading = false 
 }: ThoughtInputFormProps) {
+  const t = useTranslations('reframe.form')
+  const tActions = useTranslations('common.actions')
   const [thought, setThought] = useState('')
   const maxLength = 1000
 
@@ -44,10 +47,10 @@ export default function ThoughtInputForm({
   // Status messages based on input length
   const getStatusMessage = () => {
     if (thought.length === 0) return ""
-    if (thought.length < 50) return "Continue if you'd like to add more context."
-    if (thought.length < 200) return "Good amount of detail."
-    if (thought.length < 500) return "Comprehensive description."
-    return "Maximum detail captured."
+    if (thought.length < 50) return t('thoughtInput.status.short')
+    if (thought.length < 200) return t('thoughtInput.status.good')
+    if (thought.length < 500) return t('thoughtInput.status.comprehensive')
+    return t('thoughtInput.status.maximum')
   }
 
   return (
@@ -59,7 +62,7 @@ export default function ThoughtInputForm({
             value={thought}
             onChange={(e) => setThought(e.target.value.slice(0, maxLength))}
             onKeyDown={handleKeyDown}
-            placeholder="What happened? How did it feel?"
+            placeholder={t('thoughtInput.placeholder')}
             className={cn(
               "w-full min-h-[140px] resize-y rounded-xl",
               "bg-white",
@@ -94,7 +97,7 @@ export default function ThoughtInputForm({
             className="text-sm text-neutral-500"
             aria-live="polite"
           >
-            {thought.length} / {maxLength}
+            {t('characterCount', { count: thought.length, max: maxLength })}
           </div>
         </div>
       </div>
@@ -109,9 +112,9 @@ export default function ThoughtInputForm({
           className="w-full sm:w-auto group relative overflow-hidden"
         >
           {isLoading ? (
-              <span>Processing...</span>
+              <span>{t('submit.loading')}</span>
             ) : (
-              <span>Generate perspective</span>
+              <span>{t('submit.idle')}</span>
             )}
         </Button>
         <Button
@@ -126,7 +129,7 @@ export default function ThoughtInputForm({
             <span className="group-hover:rotate-180 transition-transform duration-300">
               ↻
             </span>
-            <span>Clear</span>
+            <span>{tActions('clear')}</span>
           </span>
         </Button>
       </div>
@@ -143,7 +146,7 @@ export default function ThoughtInputForm({
             <span className="inline-block w-2 h-2 bg-accent-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
           </div>
           <p className="text-sm text-neutral-600">
-            Analyzing your input...
+            {t('submit.loading')}
           </p>
         </div>
       )}
@@ -152,7 +155,7 @@ export default function ThoughtInputForm({
       <p className="text-xs text-neutral-500 text-center">
         <kbd className="px-2 py-1 bg-neutral-100 rounded text-xs">Ctrl</kbd> + 
         <kbd className="px-2 py-1 bg-neutral-100 rounded text-xs ml-1">Enter</kbd>
-        <span className="ml-2">to submit</span>
+        <span className="ml-2">{t('keyboardShortcut')}</span>
       </p>
     </form>
   )

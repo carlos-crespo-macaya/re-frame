@@ -1,0 +1,35 @@
+{
+  "404": {
+    "title": "Page Not Found",
+    "description": "We couldn't find the page you're looking for.",
+    "action": "Return Home"
+  },
+  "500": {
+    "title": "Something Went Wrong",
+    "description": "We're having technical difficulties. Please try again later.",
+    "action": "Try Again"
+  },
+  "offline": {
+    "title": "You're Offline",
+    "description": "Please check your internet connection and try again.",
+    "action": "Retry"
+  },
+  "form": {
+    "required": "This field is required",
+    "email": "Please enter a valid email address",
+    "minLength": "Must be at least {min} characters",
+    "maxLength": "Must be no more than {max} characters",
+    "pattern": "Please match the required format"
+  },
+  "api": {
+    "timeout": "Request timed out. Please try again.",
+    "server": "Server error. Our team has been notified.",
+    "unknown": "An unexpected error occurred."
+  },
+  "boundaries": {
+    "title": "Oops! Something went wrong",
+    "description": "We've encountered an unexpected error. Don't worry, your data is safe.",
+    "action": "Refresh Page",
+    "report": "Report Issue"
+  }
+}

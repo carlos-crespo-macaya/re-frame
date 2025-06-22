@@ -1,0 +1,64 @@
+{
+  "hero": {
+    "title": "Explore una nueva perspectiva",
+    "subtitle": "Utilizaremos la reestructuración cognitiva basada en TCC para identificar patrones de pensamiento y sugerir perspectivas más amables.",
+    "cta": "Comience su viaje"
+  },
+  "intro": {
+    "heading": "Cuéntenos sobre la situación",
+    "description": "Unas pocas oraciones son suficientes — comparta lo que sienta correcto.",
+    "features": {
+      "private": {
+        "title": "Completamente privado",
+        "description": "Sesión privada — no almacenamos datos personales."
+      },
+      "evidence": {
+        "title": "Basado en evidencia",
+        "description": "Esta herramienta utiliza técnicas de TCC basadas en evidencia. Su privacidad está protegida - no almacenamos ninguna información personal."
+      },
+      "supportive": {
+        "title": "Siempre con apoyo",
+        "description": "Reciba orientación amable y alentadora sin juicios ni presión."
+      }
+    }
+  },
+  "howItWorks": {
+    "title": "Cómo funciona re-frame",
+    "steps": {
+      "share": {
+        "number": "1",
+        "title": "Cuéntenos qué sucedió",
+        "description": "Use sus propias palabras. Tómese el tiempo que necesite."
+      },
+      "receive": {
+        "number": "2",
+        "title": "Identifique patrones de pensamiento",
+        "description": "Aplicaremos principios de TCC para resaltar perspectivas alternativas."
+      },
+      "practice": {
+        "number": "3",
+        "title": "Elija una perspectiva que sienta verdadera",
+        "description": "Seleccione entre formas alternativas de ver su situación."
+      }
+    }
+  },
+  "benefits": {
+    "title": "Diseñado para personas que viven con TPE y ansiedad social",
+    "list": [
+      "Reduce la intensidad de la ansiedad social con el tiempo",
+      "Desarrolla autocompasión y pensamiento realista",
+      "Ayuda a identificar y desafiar patrones de pensamiento negativos",
+      "Proporciona un espacio seguro para practicar antes de situaciones reales"
+    ]
+  },
+  "testimonial": {
+    "quote": "Esta herramienta me ha ayudado a ver que mis pensamientos no siempre son la realidad. Estoy aprendiendo a ser más amable conmigo mismo.",
+    "author": "Usuario anónimo"
+  },
+  "cta": {
+    "ready": "¿Está listo para probar una perspectiva diferente?",
+    "button": "Comenzar a reestructurar",
+    "learn": "¿Tiene curiosidad sobre la TCC?",
+    "learnMore": "Aprenda lo básico en 2 minutos ↗"
+  }
+}

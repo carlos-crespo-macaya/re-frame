@@ -1,0 +1,106 @@
+{
+  "page": {
+    "title": "Privacy Policy",
+    "subtitle": "Your privacy is fundamental to our mission",
+    "lastUpdated": "Last updated: {date}"
+  },
+  "intro": {
+    "title": "Our Privacy Commitment",
+    "content": "At re-frame.social, we understand that privacy is especially important for people with social anxiety. We've designed our service with your privacy as the top priority."
+  },
+  "principles": {
+    "title": "Core Privacy Principles",
+    "list": [
+      "We don't require accounts or logins",
+      "We don't store your thoughts or personal information",
+      "We don't use cookies for tracking",
+      "We don't share data with third parties",
+      "We don't display ads or use your data for marketing"
+    ]
+  },
+  "dataCollection": {
+    "title": "What We Collect",
+    "anonymous": {
+      "title": "Anonymous Usage Data",
+      "description": "To improve our service, we collect minimal anonymous data:",
+      "list": [
+        "General usage patterns (pages visited, features used)",
+        "Technical information (browser type, device type)",
+        "Error reports to fix bugs",
+        "Aggregate feedback ratings (helpful/not helpful)"
+      ]
+    },
+    "temporary": {
+      "title": "Temporary Session Data",
+      "description": "During your session, we temporarily process:",
+      "list": [
+        "The thoughts you submit for reframing (deleted immediately after processing)",
+        "Your language preference (stored in your browser only)",
+        "Rate limiting counters (reset hourly)"
+      ]
+    }
+  },
+  "dataStorage": {
+    "title": "How We Handle Your Data",
+    "thoughts": {
+      "title": "Your Thoughts",
+      "content": "The thoughts you share are processed in real-time and immediately deleted. They are never stored in our databases or logs."
+    },
+    "analytics": {
+      "title": "Analytics",
+      "content": "We use privacy-focused analytics that don't track individual users. All data is aggregated and anonymized."
+    },
+    "security": {
+      "title": "Security Measures",
+      "content": "All connections are encrypted using HTTPS. We follow industry best practices for security."
+    }
+  },
+  "thirdParties": {
+    "title": "Third-Party Services",
+    "content": "We use minimal third-party services:",
+    "list": [
+      {
+        "name": "Google Cloud Platform",
+        "purpose": "Hosting and AI processing",
+        "data": "Processes thoughts in real-time, no storage"
+      },
+      {
+        "name": "Cloudflare",
+        "purpose": "Security and performance",
+        "data": "Basic traffic protection, no personal data"
+      }
+    ]
+  },
+  "rights": {
+    "title": "Your Rights",
+    "content": "Since we don't store personal data, there's nothing to request or delete. You always have the right to:",
+    "list": [
+      "Use our service anonymously",
+      "Clear your browser data to reset your session",
+      "Contact us with any privacy concerns"
+    ]
+  },
+  "cookies": {
+    "title": "Cookies",
+    "content": "We use only essential cookies:",
+    "list": [
+      "Language preference (your choice of language)",
+      "Rate limiting (to ensure fair usage)",
+      "No tracking cookies",
+      "No advertising cookies"
+    ]
+  },
+  "contact": {
+    "title": "Privacy Questions?",
+    "content": "If you have any questions about our privacy practices, please contact us:",
+    "email": "privacy@re-frame.social"
+  },
+  "changes": {
+    "title": "Changes to This Policy",
+    "content": "If we make changes to this policy, we'll notify users through a prominent notice on our site. We'll never reduce your privacy rights without clear consent."
+  },
+  "compliance": {
+    "title": "Legal Compliance",
+    "content": "We comply with applicable privacy laws including GDPR and CCPA. We operate with privacy-by-design principles."
+  }
+}

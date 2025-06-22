@@ -1,0 +1,95 @@
+{
+  "page": {
+    "title": "Learn About CBT",
+    "subtitle": "Understanding Cognitive Behavioral Therapy and how it can help with social anxiety"
+  },
+  "intro": {
+    "title": "What is Cognitive Behavioral Therapy?",
+    "content": "Cognitive Behavioral Therapy (CBT) is a well-researched, evidence-based approach that helps people identify and change unhelpful thought patterns and behaviors. For those with AvPD and social anxiety, CBT can be particularly effective in challenging the negative assumptions we make about ourselves and others."
+  },
+  "howItWorks": {
+    "title": "How CBT Works",
+    "description": "CBT is based on the idea that our thoughts, feelings, and behaviors are interconnected:",
+    "cycle": {
+      "thought": "Thought: \"Everyone will judge me\"",
+      "feeling": "Feeling: Anxiety, fear",
+      "behavior": "Behavior: Avoiding social situations",
+      "result": "Result: Missed connections, reinforced fears"
+    },
+    "breakingCycle": "By changing our thoughts, we can influence our feelings and behaviors, breaking this negative cycle."
+  },
+  "techniques": {
+    "title": "Key CBT Techniques We Use",
+    "list": {
+      "cognitive": {
+        "title": "Cognitive Restructuring",
+        "description": "Identifying and challenging negative thought patterns to develop more balanced perspectives."
+      },
+      "evidence": {
+        "title": "Evidence Examination",
+        "description": "Looking at the facts for and against our anxious thoughts to see if they're really true."
+      },
+      "behavioral": {
+        "title": "Behavioral Experiments",
+        "description": "Testing our fears in safe, gradual ways to see if our predictions come true."
+      },
+      "mindfulness": {
+        "title": "Mindfulness Integration",
+        "description": "Observing thoughts without judgment, reducing their power over us."
+      }
+    }
+  },
+  "distortions": {
+    "title": "Common Thought Distortions in Social Anxiety",
+    "description": "Recognizing these patterns is the first step to changing them:",
+    "list": {
+      "mindReading": {
+        "title": "Mind Reading",
+        "description": "Assuming we know what others are thinking about us (usually negative)."
+      },
+      "catastrophizing": {
+        "title": "Catastrophizing",
+        "description": "Expecting the worst possible outcome in social situations."
+      },
+      "allOrNothing": {
+        "title": "All-or-Nothing Thinking",
+        "description": "Seeing social interactions as complete successes or total failures."
+      },
+      "personalization": {
+        "title": "Personalization",
+        "description": "Taking responsibility for others' moods or reactions."
+      },
+      "filtering": {
+        "title": "Mental Filtering",
+        "description": "Focusing only on negative aspects while ignoring positives."
+      }
+    }
+  },
+  "benefits": {
+    "title": "Benefits of CBT for AvPD",
+    "list": [
+      "Reduces anxiety in social situations",
+      "Improves self-esteem and self-compassion",
+      "Helps build more realistic thinking patterns",
+      "Provides practical tools for daily challenges",
+      "Can be practiced independently with guidance"
+    ]
+  },
+  "gettingStarted": {
+    "title": "Getting Started with re-frame",
+    "content": "Our tool makes it easy to practice CBT techniques on your own. Simply share a thought that's troubling you, and we'll guide you through the process of examining and reframing it. Remember, change takes time and practice - be patient and kind with yourself.",
+    "cta": "Try Reframing a Thought"
+  },
+  "resources": {
+    "title": "Additional Resources",
+    "books": {
+      "title": "Recommended Books",
+      "list": [
+        "\"Feeling Good\" by David Burns",
+        "\"Mind Over Mood\" by Dennis Greenberger",
+        "\"The Shyness and Social Anxiety Workbook\" by Martin Antony"
+      ]
+    },
+    "note": "While re-frame is a helpful tool, it's not a replacement for professional therapy. If you're struggling, please consider reaching out to a mental health professional."
+  }
+}

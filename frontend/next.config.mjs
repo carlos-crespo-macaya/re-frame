@@ -1,6 +1,9 @@
+import createNextIntlPlugin from 'next-intl/plugin';
+
+const withNextIntl = createNextIntlPlugin('./i18n.ts');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
   images: {
     unoptimized: true,
   },
@@ -11,4 +14,4 @@ const nextConfig = {
   reactStrictMode: true,
 };
 
-export default nextConfig;
+export default withNextIntl(nextConfig);

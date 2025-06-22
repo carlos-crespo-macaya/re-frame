@@ -1,0 +1,132 @@
+{
+  "page": {
+    "title": "Support & Resources",
+    "subtitle": "You're not alone. Here are resources that can help."
+  },
+  "crisis": {
+    "title": "Need Immediate Help?",
+    "content": "If you're in crisis or having thoughts of self-harm, please reach out for help immediately:",
+    "hotlines": {
+      "title": "Crisis Hotlines",
+      "us": {
+        "name": "National Suicide Prevention Lifeline",
+        "number": "988",
+        "description": "24/7 free and confidential support"
+      },
+      "text": {
+        "name": "Crisis Text Line",
+        "number": "Text HOME to 741741",
+        "description": "24/7 text-based crisis support"
+      },
+      "international": {
+        "name": "International Crisis Lines",
+        "link": "findahelpline.com",
+        "description": "Find crisis support in your country"
+      }
+    }
+  },
+  "therapy": {
+    "title": "Finding Professional Help",
+    "content": "While re-frame is a helpful tool, working with a therapist can provide personalized support:",
+    "options": {
+      "inPerson": {
+        "title": "In-Person Therapy",
+        "description": "Face-to-face sessions with a licensed therapist in your area."
+      },
+      "online": {
+        "title": "Online Therapy",
+        "description": "Video sessions from the comfort of your home - great for those with social anxiety."
+      },
+      "group": {
+        "title": "Support Groups",
+        "description": "Connect with others who understand what you're going through."
+      }
+    },
+    "findingHelp": {
+      "title": "How to Find a Therapist",
+      "tips": [
+        "Ask your primary care doctor for referrals",
+        "Check with your insurance for covered providers",
+        "Look for therapists who specialize in social anxiety or AvPD",
+        "Consider therapists who offer CBT, DBT, or ACT",
+        "Many therapists offer free consultations"
+      ]
+    }
+  },
+  "selfHelp": {
+    "title": "Self-Help Resources",
+    "books": {
+      "title": "Recommended Reading",
+      "list": [
+        {
+          "title": "The Shyness and Social Anxiety Workbook",
+          "author": "Martin Antony & Richard Swinson",
+          "description": "Practical CBT exercises for social anxiety"
+        },
+        {
+          "title": "Self-Compassion",
+          "author": "Kristin Neff",
+          "description": "Learning to be kind to yourself"
+        },
+        {
+          "title": "Daring Greatly",
+          "author": "Brené Brown",
+          "description": "The courage to be vulnerable"
+        }
+      ]
+    },
+    "apps": {
+      "title": "Helpful Apps",
+      "list": [
+        {
+          "name": "Headspace",
+          "description": "Guided meditation and mindfulness"
+        },
+        {
+          "name": "Calm",
+          "description": "Relaxation and sleep support"
+        },
+        {
+          "name": "Sanvello",
+          "description": "Mood tracking and coping tools"
+        }
+      ]
+    }
+  },
+  "community": {
+    "title": "Online Communities",
+    "content": "Connect with others who understand:",
+    "list": [
+      {
+        "name": "r/AvPD",
+        "platform": "Reddit",
+        "description": "Supportive community for those with AvPD"
+      },
+      {
+        "name": "Social Anxiety Support Forum",
+        "platform": "socialanxietysupport.com",
+        "description": "Long-standing community with helpful resources"
+      },
+      {
+        "name": "7 Cups",
+        "platform": "7cups.com",
+        "description": "Free emotional support from trained listeners"
+      }
+    ]
+  },
+  "tips": {
+    "title": "Daily Coping Strategies",
+    "list": [
+      "Practice self-compassion - treat yourself like a good friend",
+      "Take small steps - progress is progress, no matter how small",
+      "Use grounding techniques when anxious (5-4-3-2-1 senses)",
+      "Maintain a routine that includes self-care",
+      "Celebrate small victories - they add up",
+      "Remember: recovery is not linear"
+    ]
+  },
+  "reminder": {
+    "title": "Remember",
+    "content": "Seeking help is a sign of strength, not weakness. You deserve support and compassion on your journey."
+  }
+}

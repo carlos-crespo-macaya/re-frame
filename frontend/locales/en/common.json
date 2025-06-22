@@ -1,0 +1,50 @@
+{
+  "navigation": {
+    "home": "Home",
+    "about": "About",
+    "learn-cbt": "Learn CBT",
+    "support": "Support",
+    "privacy": "Privacy"
+  },
+  "actions": {
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "clear": "Clear",
+    "back": "Back",
+    "next": "Next",
+    "continue": "Continue",
+    "start": "Start",
+    "finish": "Finish",
+    "retry": "Retry"
+  },
+  "status": {
+    "loading": "Loading...",
+    "saving": "Saving...",
+    "processing": "Processing...",
+    "success": "Success",
+    "error": "Error",
+    "warning": "Warning",
+    "info": "Information"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "network": "Network error. Please check your connection.",
+    "validation": "Please check your input and try again.",
+    "notFound": "Page not found",
+    "unauthorized": "You are not authorized to view this page.",
+    "rateLimit": "Too many requests. Please wait before trying again."
+  },
+  "footer": {
+    "copyright": "© 2024 re-frame.social. All rights reserved.",
+    "tagline": "A supportive space for cognitive reframing"
+  },
+  "language": {
+    "selectLanguage": "Select Language",
+    "english": "English",
+    "spanish": "Español"
+  }
+}

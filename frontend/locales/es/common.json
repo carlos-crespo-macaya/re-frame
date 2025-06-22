@@ -1,0 +1,50 @@
+{
+  "navigation": {
+    "home": "Inicio",
+    "about": "Acerca de",
+    "learn-cbt": "Aprender TCC",
+    "support": "Apoyo",
+    "privacy": "Privacidad"
+  },
+  "actions": {
+    "submit": "Enviar",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "close": "Cerrar",
+    "clear": "Limpiar",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "continue": "Continuar",
+    "start": "Comenzar",
+    "finish": "Finalizar",
+    "retry": "Reintentar"
+  },
+  "status": {
+    "loading": "Cargando...",
+    "saving": "Guardando...",
+    "processing": "Procesando...",
+    "success": "Éxito",
+    "error": "Error",
+    "warning": "Advertencia",
+    "info": "Información"
+  },
+  "errors": {
+    "generic": "Algo salió mal. Por favor, inténtelo de nuevo.",
+    "network": "Error de conexión. Por favor, verifique su conexión a internet.",
+    "validation": "Por favor, revise su información e inténtelo nuevamente.",
+    "notFound": "Página no encontrada",
+    "unauthorized": "No está autorizado para ver esta página.",
+    "rateLimit": "Demasiadas solicitudes. Por favor, espere antes de intentarlo nuevamente."
+  },
+  "footer": {
+    "copyright": "© 2024 re-frame.social. Todos los derechos reservados.",
+    "tagline": "Un espacio de apoyo para la reestructuración cognitiva"
+  },
+  "language": {
+    "selectLanguage": "Seleccionar idioma",
+    "english": "English",
+    "spanish": "Español"
+  }
+}

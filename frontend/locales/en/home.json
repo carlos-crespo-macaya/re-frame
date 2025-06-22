@@ -1,0 +1,64 @@
+{
+  "hero": {
+    "title": "Explore a new perspective",
+    "subtitle": "We'll use CBT-informed cognitive restructuring to spot thinking patterns and suggest gentler perspectives.",
+    "cta": "Start Your Journey"
+  },
+  "intro": {
+    "heading": "Tell us about the situation",
+    "description": "A few sentences are enough — share what feels right.",
+    "features": {
+      "private": {
+        "title": "Completely Private",
+        "description": "Private session — we don't store personal data."
+      },
+      "evidence": {
+        "title": "Evidence-Based",
+        "description": "This tool uses evidence-based CBT techniques. Your privacy is protected - we don't store any personal information."
+      },
+      "supportive": {
+        "title": "Always Supportive",
+        "description": "Receive gentle, encouraging guidance without judgment or pressure."
+      }
+    }
+  },
+  "howItWorks": {
+    "title": "How re-frame works",
+    "steps": {
+      "share": {
+        "number": "1",
+        "title": "Tell us what happened",
+        "description": "Use your own words. Take the time you need."
+      },
+      "receive": {
+        "number": "2",
+        "title": "Notice thinking patterns",
+        "description": "We'll apply CBT principles to highlight alternative perspectives."
+      },
+      "practice": {
+        "number": "3",
+        "title": "Pick a perspective that feels true",
+        "description": "Select from alternative ways to view your situation."
+      }
+    }
+  },
+  "benefits": {
+    "title": "Designed for people living with AvPD & social anxiety",
+    "list": [
+      "Reduces the intensity of social anxiety over time",
+      "Builds self-compassion and realistic thinking",
+      "Helps identify and challenge negative thought patterns",
+      "Provides a safe space to practice before real-world situations"
+    ]
+  },
+  "testimonial": {
+    "quote": "This tool has helped me see that my thoughts aren't always reality. I'm learning to be kinder to myself.",
+    "author": "Anonymous User"
+  },
+  "cta": {
+    "ready": "Ready to try a different perspective?",
+    "button": "Begin Reframing",
+    "learn": "Curious about CBT?",
+    "learnMore": "Learn the basics in 2 minutes ↗"
+  }
+}
