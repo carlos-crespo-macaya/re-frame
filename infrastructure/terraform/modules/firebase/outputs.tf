@@ -12,3 +12,19 @@ output "auth_domain" {
   description = "Firebase Auth domain"
   value       = var.auth_domain
 }
+
+output "web_app_id" {
+  description = "Firebase Web App ID"
+  value       = google_firebase_web_app.default.app_id
+}
+
+output "firebase_config" {
+  description = "Firebase SDK configuration"
+  value = {
+    projectId     = var.project_id
+    appId         = google_firebase_web_app.default.app_id
+    authDomain    = var.auth_domain
+    storageBucket = "${var.project_id}.appspot.com"
+  }
+  sensitive = true
+}
