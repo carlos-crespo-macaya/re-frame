@@ -3,10 +3,12 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import ThoughtInputForm from '@/components/forms/ThoughtInputForm'
+import { FrameworkBadge } from '@/components/ui'
+import { ReframeResponse, Framework } from '@/types/api'
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false)
-  const [response, setResponse] = useState<string | null>(null)
+  const [response, setResponse] = useState<ReframeResponse | null>(null)
 
   const handleSubmit = async (thought: string) => {
     setIsLoading(true)
@@ -17,7 +19,29 @@ export default function Home() {
     console.log('Submitted thought:', thought)
     setTimeout(() => {
       setIsLoading(false)
-      setResponse('Your thought has been analyzed. Here are some alternative perspectives to consider based on CBT principles.')
+      // Mock response with multiple frameworks
+      setResponse({
+        success: true,
+        response: 'Your thought has been analyzed. Here are some alternative perspectives to consider based on therapeutic frameworks.',
+        frameworks_used: ['CBT', 'ACT'],
+        transparency: {
+          agents_used: ['intake_agent', 'cbt_framework_agent', 'act_framework_agent', 'synthesis_agent'],
+          techniques_applied: ['Cognitive restructuring', 'Values clarification'],
+          framework_details: {
+            CBT: {
+              techniques: ['Cognitive restructuring', 'Identifying cognitive distortions'],
+              confidence: 0.85,
+              patterns_addressed: ['All-or-nothing thinking', 'Mind reading']
+            },
+            ACT: {
+              techniques: ['Values clarification', 'Defusion'],
+              confidence: 0.75,
+              patterns_addressed: ['Experiential avoidance']
+            }
+          },
+          selection_rationale: 'CBT and ACT were selected based on the cognitive patterns identified in your thought.'
+        }
+      })
     }, 2000)
   }
 
@@ -52,10 +76,10 @@ export default function Home() {
               Explore a new perspective
             </h2>
             <p className="text-lg text-[#999999] mb-4 leading-relaxed">
-              We'll use <strong>CBT</strong>-informed cognitive restructuring to spot thinking patterns and suggest gentler perspectives.
+              We&apos;ll use evidence-based therapeutic techniques to spot thinking patterns and suggest gentler perspectives.
             </p>
             <p className="text-[#999999] max-w-2xl mx-auto">
-              <span className="text-sm">Curious about CBT? <a href="/learn-cbt" className="text-brand-green-400 underline hover:text-brand-green-300">Learn the basics in 2 minutes ↗</a></span>
+              <span className="text-sm">Learn about <a href="/learn-cbt" className="text-brand-green-400 underline hover:text-brand-green-300">therapeutic frameworks in 2 minutes ↗</a></span>
             </p>
           </section>
 
@@ -82,14 +106,24 @@ export default function Home() {
 
                 {response && (
                   <div className="mt-8 p-6 bg-[#2a2a2a] border border-[#3a3a3a] rounded-xl animate-fade-in">
+                    {/* Framework badges */}
+                    {response.frameworks_used.length > 0 && (
+                      <div className="flex gap-2 mb-4">
+                        {response.frameworks_used.map(fw => (
+                          <FrameworkBadge key={fw} framework={fw as Framework} />
+                        ))}
+                      </div>
+                    )}
+                    
+                    {/* Main response */}
                     <p className="text-sm text-[#EDEDED] leading-relaxed">
-                      {response}
+                      {response.response}
                     </p>
                   </div>
                 )}
 
                 <p className="mt-6 text-sm text-neutral-500 text-center">
-                  Private session — we don't store personal data.
+                  Private session — we don&apos;t store personal data.
                 </p>
               </div>
             </div>
@@ -128,7 +162,7 @@ export default function Home() {
                     Notice thinking patterns
                   </h4>
                   <p className="text-base text-[#999999] leading-relaxed">
-                    We&apos;ll apply CBT principles to highlight alternative perspectives.
+                    We&apos;ll apply therapeutic frameworks to highlight alternative perspectives.
                   </p>
                 </div>
 
@@ -157,7 +191,7 @@ export default function Home() {
                   <span className="block text-lg font-heading font-medium text-brand-green-400 mb-3">
                     Designed for people living with AvPD & social anxiety
                   </span>
-                  This tool uses evidence-based CBT techniques. Your privacy is protected - 
+                  This tool uses evidence-based therapeutic techniques. Your privacy is protected - 
                   we don&apos;t store any personal information.
                 </p>
               </div>
