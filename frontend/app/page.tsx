@@ -27,16 +27,9 @@ export default function Home() {
 
   return (
     <>
-      {/* Header with organic wave shape */}
-      <header className="relative bg-gradient-to-br from-primary-50 via-secondary-50 to-accent-50 dark:from-surface dark:via-surface-raised dark:to-surface">
-        {/* Organic wave SVG */}
-        <div className="absolute bottom-0 left-0 right-0 overflow-hidden">
-          <svg viewBox="0 0 1440 120" className="w-full h-16 md:h-24 fill-background">
-            <path d="M0,64 C240,96 480,32 720,48 C960,64 1200,96 1440,64 L1440,120 L0,120 Z" />
-          </svg>
-        </div>
-        
-        <div className="container-safe py-8 relative z-10">
+      {/* Header */}
+      <header className="relative bg-gradient-to-b from-ui-bg-100 to-transparent dark:from-ui-bg-900 dark:to-transparent">
+        <div className="container-safe py-8">
           <div className="flex items-start justify-between">
             <div>
               <h1 className="text-2xl font-heading font-semibold text-brand-green-700 dark:text-brand-green-400">
@@ -60,10 +53,10 @@ export default function Home() {
               Reframe your thoughts
             </h2>
             <p className="text-lg text-neutral-600 dark:text-neutral-300 mb-4 leading-relaxed">
-              This tool uses CBT principles to help you examine thoughts from different perspectives.
+              We use <strong>CBT</strong> (Cognitive Behavioural Therapy) techniques to highlight unhelpful thought patterns.
             </p>
             <p className="text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto">
-              Share a thought that&apos;s troubling you, and we&apos;ll work through it together using evidence-based techniques.
+              <span className="text-sm">New to CBT? <a href="/learn-cbt" className="text-brand-green-600 dark:text-brand-green-400 underline hover:text-brand-green-700 dark:hover:text-brand-green-300">Get a 2-minute overview</a>.</span>
             </p>
           </section>
 
@@ -71,7 +64,10 @@ export default function Home() {
           <section className="max-w-2xl mx-auto">
             <div className="relative">
               
-              <div className="relative bg-surface dark:bg-surface rounded-2xl shadow-lg border border-border-light dark:border-border-dark p-8 md:p-10">
+              <div className="relative bg-surface dark:bg-surface rounded-2xl shadow-lg border border-border-light dark:border-border-dark p-8 md:p-10" style={{ 
+                boxShadow: '0 0 24px rgba(74, 107, 87, 0.1)',
+                animation: 'fadeIn 250ms cubic-bezier(0.25, 0.1, 0.25, 1)'
+              }}>
                 <h3 className="text-xl font-heading font-medium text-neutral-800 dark:text-neutral-100 mb-2">
                   Share your thought
                 </h3>
@@ -106,18 +102,18 @@ export default function Home() {
               <h3 className="text-2xl font-heading font-medium text-neutral-800 dark:text-neutral-100 mb-12">
                 How re-frame works
               </h3>
-              <div className="grid md:grid-cols-3 gap-8">
+              <div className="grid md:grid-cols-3 gap-8 mt-6">
                 {/* Step 1 */}
                 <div className="group">
                   <div className="mb-6">
-                    <div className="w-16 h-16 mx-auto bg-brand-green-500 dark:bg-brand-green-600 rounded-full flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                    <div className="w-16 h-16 mx-auto bg-brand-green-500 dark:bg-brand-green-600 rounded-full flex items-center justify-center">
                       <span className="text-white font-semibold">1</span>
                     </div>
                   </div>
-                  <h4 className="font-heading font-medium text-neutral-800 dark:text-neutral-100 mb-3">
+                  <h4 className="font-heading font-medium text-base text-neutral-800 dark:text-neutral-100 mb-3">
                     Describe what happened
                   </h4>
-                  <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                  <p className="text-base text-neutral-600 dark:text-neutral-400 leading-relaxed">
                     Use your own words. Take the time you need.
                   </p>
                 </div>
@@ -125,14 +121,14 @@ export default function Home() {
                 {/* Step 2 */}
                 <div className="group">
                   <div className="mb-6">
-                    <div className="w-16 h-16 mx-auto bg-brand-green-500 dark:bg-brand-green-600 rounded-full flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                    <div className="w-16 h-16 mx-auto bg-brand-green-500 dark:bg-brand-green-600 rounded-full flex items-center justify-center">
                       <span className="text-white font-semibold">2</span>
                     </div>
                   </div>
-                  <h4 className="font-heading font-medium text-neutral-800 dark:text-neutral-100 mb-3">
+                  <h4 className="font-heading font-medium text-base text-neutral-800 dark:text-neutral-100 mb-3">
                     Spot common thinking traps
                   </h4>
-                  <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                  <p className="text-base text-neutral-600 dark:text-neutral-400 leading-relaxed">
                     We&apos;ll apply CBT principles to highlight alternative perspectives.
                   </p>
                 </div>
@@ -140,14 +136,14 @@ export default function Home() {
                 {/* Step 3 */}
                 <div className="group">
                   <div className="mb-6">
-                    <div className="w-16 h-16 mx-auto bg-brand-green-500 dark:bg-brand-green-600 rounded-full flex items-center justify-center group-hover:scale-105 transition-transform duration-300">
+                    <div className="w-16 h-16 mx-auto bg-brand-green-500 dark:bg-brand-green-600 rounded-full flex items-center justify-center">
                       <span className="text-white font-semibold">3</span>
                     </div>
                   </div>
-                  <h4 className="font-heading font-medium text-neutral-800 dark:text-neutral-100 mb-3">
+                  <h4 className="font-heading font-medium text-base text-neutral-800 dark:text-neutral-100 mb-3">
                     Choose a perspective that feels true
                   </h4>
-                  <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                  <p className="text-base text-neutral-600 dark:text-neutral-400 leading-relaxed">
                     Select from alternative ways to view your situation.
                   </p>
                 </div>
