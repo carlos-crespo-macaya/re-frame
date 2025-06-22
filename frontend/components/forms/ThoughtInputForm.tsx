@@ -41,13 +41,13 @@ export default function ThoughtInputForm({
 
   const isSubmitDisabled = !thought.trim() || isLoading
 
-  // Encouraging messages based on input length
-  const getEncouragingMessage = () => {
-    if (thought.length === 0) return "Take your time. We're here when you're ready. 🌸"
-    if (thought.length < 50) return "You're doing great. Keep going if there's more to share. 💚"
-    if (thought.length < 200) return "Thank you for sharing. Every word matters. 🌟"
-    if (thought.length < 500) return "We hear you. Your feelings are valid. 💜"
-    return "Your story is important. We're honored you're sharing it with us. 🌈"
+  // Status messages based on input length
+  const getStatusMessage = () => {
+    if (thought.length === 0) return ""
+    if (thought.length < 50) return "Continue if you'd like to add more context."
+    if (thought.length < 200) return "Good amount of detail."
+    if (thought.length < 500) return "Comprehensive description."
+    return "Maximum detail captured."
   }
 
   return (
@@ -57,7 +57,7 @@ export default function ThoughtInputForm({
           htmlFor="thought-input" 
           className="block text-base font-rounded font-medium text-neutral-700 dark:text-neutral-200"
         >
-          Tell us what&apos;s weighing on your mind
+          Describe your thought
         </label>
         <div className="relative">
           <textarea
@@ -65,7 +65,7 @@ export default function ThoughtInputForm({
             value={thought}
             onChange={(e) => setThought(e.target.value.slice(0, maxLength))}
             onKeyDown={handleKeyDown}
-            placeholder="Take a deep breath... and share whatever feels right. There's no wrong way to express yourself here."
+            placeholder="What situation or thought would you like to examine?"
             className={cn(
               "w-full min-h-[140px] resize-y rounded-xl",
               "bg-white dark:bg-neutral-900",
@@ -93,7 +93,7 @@ export default function ThoughtInputForm({
             className="text-sm text-neutral-600 dark:text-neutral-400 italic"
             aria-live="polite"
           >
-            {getEncouragingMessage()}
+            {getStatusMessage()}
           </p>
           <div 
             id="character-count" 
@@ -115,17 +115,9 @@ export default function ThoughtInputForm({
           className="flex-1 sm:flex-none group relative overflow-hidden"
         >
           {isLoading ? (
-              <>
-                <span className="animate-pulse">✨</span>
-                <span>Creating a safe space...</span>
-              </>
+              <span>Processing...</span>
             ) : (
-              <>
-                <span className="group-hover:animate-bounce" style={{ animationDuration: '1s' }}>
-                  🌱
-                </span>
-                <span>Let&apos;s explore together</span>
-              </>
+              <span>Generate reframing</span>
             )}
         </Button>
         <Button
@@ -140,7 +132,7 @@ export default function ThoughtInputForm({
             <span className="group-hover:rotate-180 transition-transform duration-300">
               ↻
             </span>
-            <span>Start fresh</span>
+            <span>Clear</span>
           </span>
         </Button>
       </div>
@@ -157,7 +149,7 @@ export default function ThoughtInputForm({
             <span className="inline-block w-2 h-2 bg-accent-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
           </div>
           <p className="text-sm text-neutral-600 dark:text-neutral-400">
-            We&apos;re carefully considering your thoughts...
+            Analyzing your input...
           </p>
         </div>
       )}
