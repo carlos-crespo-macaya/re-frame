@@ -39,3 +39,27 @@ output "estimated_monthly_cost" {
     total         = "< $15/month"
   }
 }
+
+# DNS Configuration Instructions
+output "dns_configuration" {
+  description = "DNS configuration instructions for name.com"
+  value = {
+    instructions = "Configure these DNS records in name.com:"
+    a_records = [
+      "Type: A | Name: @ | Value: 151.101.1.195",
+      "Type: A | Name: @ | Value: 151.101.65.195"
+    ]
+    cname_records = [
+      "Type: CNAME | Name: www | Value: ${var.firebase_hosting_site_id}.web.app",
+      "Type: CNAME | Name: api | Value: ${replace(module.cloud_run.service_url, "https://", "")}"
+    ]
+    verification = "Add Firebase verification TXT record when prompted in Firebase Console"
+    note         = "DNS propagation can take up to 48 hours"
+  }
+}
+
+# Optional: Cloud DNS nameservers (if using Google Cloud DNS)
+# output "cloud_dns_nameservers" {
+#   description = "Cloud DNS nameservers (if enabled)"
+#   value       = var.enable_cloud_dns ? module.cloud_dns[0].name_servers : ["Using name.com DNS"]
+# }
