@@ -15,5 +15,11 @@ cloud_run_memory       = "512Mi"
 firebase_hosting_site_id = "your-firebase-site-id"
 auth_domain             = "your-project.firebaseapp.com"
 
+# Billing configuration (CRITICAL - SET UP FIRST!)
+# Get your billing account ID: gcloud billing accounts list
+billing_account_id = "XXXXXX-XXXXXX-XXXXXX"     # Replace with actual billing account ID
+budget_amount      = "300"                       # Total budget in USD (as string)
+budget_alert_email = "your-email@example.com"   # Email for budget alerts
+
 # Sensitive variables (set as environment variables)
 # export TF_VAR_gemini_api_key="your-google-ai-studio-api-key"

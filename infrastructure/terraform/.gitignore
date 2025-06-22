@@ -25,4 +25,8 @@ terraform.tfvars
 
 # OS files
 .DS_Store
-Thumbs.db
+Thumbs.db*.tfvars
+!*.tfvars.example
+.terraform/
+*.tfstate*
+.terraform.lock.hcl

@@ -34,7 +34,10 @@ resource "google_project_service" "required_apis" {
     "cloudbuild.googleapis.com",
     "containerregistry.googleapis.com",
     "compute.googleapis.com",
-    "cloudarmor.googleapis.com"
+    "cloudarmor.googleapis.com",
+    "billingbudgets.googleapis.com",
+    "monitoring.googleapis.com",
+    "cloudresourcemanager.googleapis.com"
   ])
 
   service            = each.value
