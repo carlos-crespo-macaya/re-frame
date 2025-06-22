@@ -10,35 +10,79 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Primary: Calm moss green (growth, stability)
+        // Brand colors
+        'brand': {
+          'green': {
+            50: '#f5f7f5',
+            100: '#e8ede9',
+            200: '#d2dcd4',
+            300: '#afc0b3',
+            400: '#86a08c',
+            500: '#4A6B57', // Main brand color
+            600: '#3e5948',
+            700: '#34493b',
+            800: '#2b3b31',
+            900: '#243129',
+            950: '#131a16',
+          },
+          'teal': {
+            50: '#f1faf8',
+            100: '#dcf2ed',
+            200: '#bce5dd',
+            300: '#8fd2c5',
+            400: '#5ab6a6',
+            500: '#54B4A0', // Main accent
+            600: '#328571',
+            700: '#2a6a5b',
+            800: '#26564a',
+            900: '#23473e',
+            950: '#0f2923',
+          },
+        },
+        // UI colors
+        'ui': {
+          'bg': {
+            50: '#fafafa',
+            100: '#f5f5f4',
+            200: '#e7e5e4',
+            300: '#d6d3d1',
+            800: '#292524',
+            900: '#1c1917',
+            950: '#0c0a09',
+          },
+          'border': {
+            light: '#e5e5e5',
+            DEFAULT: '#d4d4d4',
+            dark: '#404040',
+          },
+        },
+        // Keep existing colors for backward compatibility
         primary: {
           50: '#f5f7f5',
           100: '#e8ede9',
           200: '#d2dcd4',
           300: '#afc0b3',
           400: '#86a08c',
-          500: '#4A6B57', // Main brand color
+          500: '#4A6B57',
           600: '#3e5948',
           700: '#34493b',
           800: '#2b3b31',
           900: '#243129',
           950: '#131a16',
         },
-        // Secondary: Soft teal (hope, clarity)
         secondary: {
           50: '#f1faf8',
           100: '#dcf2ed',
           200: '#bce5dd',
           300: '#8fd2c5',
           400: '#5ab6a6',
-          500: '#54B4A0', // Main accent
+          500: '#54B4A0',
           600: '#328571',
           700: '#2a6a5b',
           800: '#26564a',
           900: '#23473e',
           950: '#0f2923',
         },
-        // Accent: Deep charcoal (foundation, stability)
         accent: {
           50: '#f6f6f6',
           100: '#e7e7e7',
@@ -50,7 +94,7 @@ const config: Config = {
           700: '#4f4f4f',
           800: '#454545',
           900: '#3d3d3d',
-          950: '#161616', // Main dark
+          950: '#161616',
         },
         // Gentle teal
         success: {
@@ -126,7 +170,8 @@ const config: Config = {
         'text-tertiary': 'var(--color-text-tertiary)',
       },
       fontFamily: {
-        sans: ['Inter', 'var(--font-geist-sans)', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: ['var(--font-geist-sans)', 'system-ui', '-apple-system', 'sans-serif'],
+        heading: ['var(--font-inter)', 'system-ui', '-apple-system', 'sans-serif'],
         mono: ['var(--font-geist-mono)', 'monospace'],
       },
       fontSize: {
