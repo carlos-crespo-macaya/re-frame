@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: re-frame-backend:latest
+    container_name: re-frame-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - PORT=8000
+      - LOG_LEVEL=INFO
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 40s
+    volumes:
+      # Mount credentials if using service account
+      # - ./credentials.json:/app/credentials.json:ro
+      - ./.env:/app/.env:ro
+    restart: unless-stopped

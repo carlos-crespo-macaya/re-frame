@@ -6,7 +6,7 @@ import logging
 
 import google.generativeai as genai
 
-from .settings import get_settings
+from .settings import settings
 
 logger = logging.getLogger(__name__)
 
@@ -30,8 +30,6 @@ class GeminiConfig:
             return
 
         try:
-            settings = get_settings()
-
             # Configure API key
             genai.configure(api_key=settings.google_ai_api_key)
 
@@ -52,7 +50,7 @@ class GeminiConfig:
             logger.error(f"Failed to initialize Gemini: {e!s}")
             raise
 
-    def get_model(self) -> genai.GenerativeModel | None:
+    def get_model(self) -> genai.GenerativeModel:
         """
         Get the initialized Gemini model
         """
@@ -60,7 +58,7 @@ class GeminiConfig:
             self.initialize()
         return self.model
 
-    def get_generation_config(self) -> genai.GenerationConfig | None:
+    def get_generation_config(self) -> genai.GenerationConfig:
         """
         Get the generation configuration
         """
@@ -74,8 +72,6 @@ class GeminiConfig:
         """
         try:
             model = self.get_model()
-            if model is None:
-                return False
             response = await model.generate_content_async(
                 "Say 'OK' if you can hear me.", generation_config=self.get_generation_config()
             )
