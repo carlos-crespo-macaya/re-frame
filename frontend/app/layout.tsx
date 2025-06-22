@@ -1,9 +1,16 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import RootErrorBoundary from "@/components/error/RootErrorBoundary";
 import { ThemeProvider } from "@/lib/theme/ThemeContext";
 import { themeScript } from "@/lib/theme/theme-script";
+
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+});
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -72,7 +79,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased min-h-screen`}
+        className={`${inter.variable} ${geistSans.variable} ${geistMono.variable} font-sans antialiased min-h-screen`}
         suppressHydrationWarning
       >
         {/* Skip to main content link for screen readers */}
