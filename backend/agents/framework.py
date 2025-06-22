@@ -2,12 +2,13 @@
 Framework Agent - Applies CBT techniques for reframing
 To be implemented in future tasks
 """
+
 from typing import Any
 
-from .base import BaseAgent
+from .base import ReFrameAgent
 
 
-class FrameworkAgent(BaseAgent):
+class FrameworkAgent(ReFrameAgent):
     """
     Agent responsible for applying CBT/ACT frameworks to reframe thoughts
     """

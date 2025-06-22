@@ -40,10 +40,7 @@ Output format:
 
     def __init__(self):
         """Initialize the Intake Agent."""
-        super().__init__(
-            name="IntakeAgent",
-            instructions=self.INSTRUCTIONS
-        )
+        super().__init__(name="IntakeAgent", instructions=self.INSTRUCTIONS)
 
     def _extract_reasoning_path(self, response: Any) -> dict[str, Any]:
         """Extract intake reasoning for transparency."""
@@ -53,8 +50,8 @@ Output format:
                 "Content validation and safety check",
                 "Thought pattern identification",
                 "Emotion and behavior extraction",
-                "AvPD-specific pattern recognition"
-            ]
+                "AvPD-specific pattern recognition",
+            ],
         }
 
     def _validate_input_length(self, text: str) -> bool:
@@ -64,29 +61,23 @@ Output format:
 
     def _check_for_urls(self, text: str) -> bool:
         """Check if input contains URLs (potential spam)."""
-        url_pattern = r'https?://\S+|www\.\S+'
+        url_pattern = r"https?://\S+|www\.\S+"
         return bool(re.search(url_pattern, text))
 
     async def process_user_input(self, user_input: str) -> dict[str, Any]:
         """Process and validate user input."""
         # Basic validation
         if not self._validate_input_length(user_input):
-            return {
-                "success": False,
-                "error": "Input must be between 5 and 500 words."
-            }
+            return {"success": False, "error": "Input must be between 5 and 500 words."}
 
         if self._check_for_urls(user_input):
-            return {
-                "success": False,
-                "error": "URLs are not allowed in thoughts."
-            }
+            return {"success": False, "error": "URLs are not allowed in thoughts."}
 
         # Process with agent
         input_data = {
             "user_thought": user_input,
             "timestamp": "current",
-            "context": "initial_intake"
+            "context": "initial_intake",
         }
 
         return await self.process_with_transparency(input_data)

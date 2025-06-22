@@ -38,7 +38,7 @@ app = FastAPI(
     lifespan=lifespan,
     docs_url="/api/docs",
     redoc_url="/api/redoc",
-    openapi_url="/api/openapi.json"
+    openapi_url="/api/openapi.json",
 )
 
 # Configure middleware
@@ -59,11 +59,7 @@ async def root(request: Request):
         "service": "re-frame API",
         "version": get_settings().api_version,
         "description": "AI-assisted cognitive reframing support for AvPD",
-        "endpoints": {
-            "health": "/api/health",
-            "docs": "/api/docs",
-            "reframe": "/api/reframe"
-        }
+        "endpoints": {"health": "/api/health", "docs": "/api/docs", "reframe": "/api/reframe"},
     }
 
 
@@ -77,8 +73,8 @@ async def global_exception_handler(request: Request, exc: Exception):
         content={
             "error": "Internal server error",
             "message": "An unexpected error occurred. Please try again later.",
-            "request_id": getattr(request.state, "request_id", "unknown")
-        }
+            "request_id": getattr(request.state, "request_id", "unknown"),
+        },
     )
 
 
@@ -90,5 +86,5 @@ if __name__ == "__main__":
         host="0.0.0.0",
         port=8000,
         reload=True,
-        log_config=None  # Use our custom logging
+        log_config=None,  # Use our custom logging
     )
