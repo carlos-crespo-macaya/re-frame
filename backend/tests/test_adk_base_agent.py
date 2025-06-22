@@ -38,12 +38,12 @@ def mock_lite_llm():
 class TestADKReFrameAgentInitialization:
     """Test ADK agent initialization."""
 
-    def test_agent_initializes_with_adk_components(self, mock_settings, mock_llm_agent, mock_lite_llm):
+    def test_agent_initializes_with_adk_components(
+        self, mock_settings, mock_llm_agent, mock_lite_llm
+    ):
         """Test agent initializes with ADK LlmAgent and LiteLlm."""
         agent = ADKReFrameAgent(
-            name="TestAgent",
-            instructions="Test instructions",
-            description="Test description"
+            name="TestAgent", instructions="Test instructions", description="Test description"
         )
 
         # Verify LiteLlm was configured with Gemini
@@ -60,11 +60,9 @@ class TestADKReFrameAgentInitialization:
     def test_agent_uses_custom_tools(self, mock_settings, mock_llm_agent, mock_lite_llm):
         """Test agent accepts custom tools."""
         mock_tools = [MagicMock(), MagicMock()]
-        
+
         agent = ADKReFrameAgent(
-            name="TestAgent",
-            instructions="Test instructions",
-            tools=mock_tools
+            name="TestAgent", instructions="Test instructions", tools=mock_tools
         )
 
         # Tools should be passed to the ADK agent (we can't easily verify this with mocks,
@@ -76,7 +74,9 @@ class TestADKReFrameAgentRun:
     """Test ADK agent run method."""
 
     @pytest.mark.asyncio
-    async def test_run_formats_prompt_and_calls_adk_agent(self, mock_settings, mock_llm_agent, mock_lite_llm):
+    async def test_run_formats_prompt_and_calls_adk_agent(
+        self, mock_settings, mock_llm_agent, mock_lite_llm
+    ):
         """Test run method formats prompt and calls ADK agent."""
         agent = ADKReFrameAgent(name="TestAgent", instructions="Test instructions")
 
@@ -95,7 +95,7 @@ class TestADKReFrameAgentRun:
         # Verify ADK agent was called
         mock_llm_agent.run_async.assert_called_once()
         call_args = mock_llm_agent.run_async.call_args[0][0]
-        
+
         # Verify the content contains our formatted prompt
         assert call_args.role == "user"
         assert len(call_args.parts) == 1
@@ -134,7 +134,9 @@ class TestADKReFrameAgentProcessWithTransparency:
     """Test process_with_transparency method."""
 
     @pytest.mark.asyncio
-    async def test_process_returns_success_response(self, mock_settings, mock_llm_agent, mock_lite_llm):
+    async def test_process_returns_success_response(
+        self, mock_settings, mock_llm_agent, mock_lite_llm
+    ):
         """Test process_with_transparency returns success response with transparency data."""
         agent = ADKReFrameAgent(name="TestAgent", instructions="Test instructions")
 
@@ -158,7 +160,9 @@ class TestADKReFrameAgentProcessWithTransparency:
         assert result.transparency_data.model_used == "gemini-1.5-flash"
 
     @pytest.mark.asyncio
-    async def test_process_handles_errors_gracefully(self, mock_settings, mock_llm_agent, mock_lite_llm):
+    async def test_process_handles_errors_gracefully(
+        self, mock_settings, mock_llm_agent, mock_lite_llm
+    ):
         """Test process_with_transparency handles errors and returns error response."""
         agent = ADKReFrameAgent(name="TestAgent", instructions="Test instructions")
 
@@ -174,7 +178,9 @@ class TestADKReFrameAgentProcessWithTransparency:
         assert result.transparency_data is not None
 
     @pytest.mark.asyncio
-    async def test_process_classifies_error_types(self, mock_settings, mock_llm_agent, mock_lite_llm):
+    async def test_process_classifies_error_types(
+        self, mock_settings, mock_llm_agent, mock_lite_llm
+    ):
         """Test process_with_transparency classifies different error types."""
         agent = ADKReFrameAgent(name="TestAgent", instructions="Test instructions")
 
@@ -182,7 +188,7 @@ class TestADKReFrameAgentProcessWithTransparency:
         mock_llm_agent.run_async.side_effect = Exception("Rate limit exceeded")
         result = await agent.process_with_transparency({"thought": "test"})
         assert result.error_type == "rate_limit"
-        assert "Rate limit exceeded. Please try again later." == result.error
+        assert result.error == "Rate limit exceeded. Please try again later."
 
         # Test timeout error
         mock_llm_agent.run_async.side_effect = Exception("Request timeout")
@@ -208,7 +214,9 @@ class TestADKReFrameAgentJSONParsing:
         assert parsed["result"] == "success"
         assert parsed["value"] == 42
 
-    def test_parse_json_response_with_markdown_fence(self, mock_settings, mock_llm_agent, mock_lite_llm):
+    def test_parse_json_response_with_markdown_fence(
+        self, mock_settings, mock_llm_agent, mock_lite_llm
+    ):
         """Test parsing JSON wrapped in markdown code fence."""
         agent = ADKReFrameAgent(name="TestAgent", instructions="Test")
 
@@ -251,7 +259,9 @@ class TestADKReFrameAgentJSONParsing:
 class TestADKReFrameAgentErrorClassification:
     """Test error classification methods."""
 
-    def test_classify_error_identifies_rate_limit(self, mock_settings, mock_llm_agent, mock_lite_llm):
+    def test_classify_error_identifies_rate_limit(
+        self, mock_settings, mock_llm_agent, mock_lite_llm
+    ):
         """Test error classification identifies rate limit errors."""
         agent = ADKReFrameAgent(name="TestAgent", instructions="Test")
 
@@ -299,7 +309,7 @@ class TestReFrameTransparencyData:
             model_used="gemini-1.5-flash",
             reasoning_path={"step1": "analysis", "step2": "synthesis"},
             raw_response="test response",
-            techniques_used=["cbt", "validation"]
+            techniques_used=["cbt", "validation"],
         )
 
         assert data.agent_name == "TestAgent"
@@ -313,7 +323,7 @@ class TestReFrameTransparencyData:
             agent_name="TestAgent",
             model_used="gemini-1.5-flash",
             reasoning_path={},
-            raw_response=""
+            raw_response="",
         )
 
         assert data.techniques_used == []
@@ -328,13 +338,11 @@ class TestReFrameResponse:
             agent_name="TestAgent",
             model_used="gemini-1.5-flash",
             reasoning_path={},
-            raw_response="test"
+            raw_response="test",
         )
-        
+
         response = ReFrameResponse(
-            success=True,
-            response="Successful processing",
-            transparency_data=transparency_data
+            success=True, response="Successful processing", transparency_data=transparency_data
         )
 
         assert response.success is True
@@ -344,11 +352,7 @@ class TestReFrameResponse:
 
     def test_error_response_creation(self):
         """Test creating error response."""
-        response = ReFrameResponse(
-            success=False,
-            error="Processing failed",
-            error_type="timeout"
-        )
+        response = ReFrameResponse(success=False, error="Processing failed", error_type="timeout")
 
         assert response.success is False
         assert response.error == "Processing failed"

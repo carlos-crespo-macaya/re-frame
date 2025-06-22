@@ -1,6 +1,6 @@
 """ADK-based Synthesis Agent for creating user-friendly responses."""
 
-from typing import Any, Dict, List
+from typing import Any
 
 from .adk_base import ADKReFrameAgent, ReFrameResponse
 
@@ -48,7 +48,7 @@ Output format:
             description="Synthesis agent for creating warm, supportive responses from CBT analysis for AvPD users",
         )
 
-    def _extract_reasoning_path(self, response: str) -> Dict[str, Any]:
+    def _extract_reasoning_path(self, response: str) -> dict[str, Any]:
         """Extract synthesis reasoning for transparency."""
         return {
             "raw_response": response,
@@ -64,11 +64,11 @@ Output format:
             "communication_style": "warm_validating_non_judgmental",
         }
 
-    def _extract_techniques_used(self, response: str) -> List[str]:
+    def _extract_techniques_used(self, response: str) -> list[str]:
         """Extract communication and therapeutic techniques used."""
         techniques = ["supportive_communication", "transparency_provision"]
         response_lower = response.lower()
-        
+
         # Communication techniques mapping
         technique_mapping = {
             "validation": "emotional_validation",
@@ -82,14 +82,14 @@ Output format:
             "technique": "technique_explanation",
             "progress": "progress_orientation",
         }
-        
+
         for phrase, technique in technique_mapping.items():
             if phrase in response_lower:
                 techniques.append(technique)
-        
+
         return techniques
 
-    async def create_user_response(self, cbt_data: Dict[str, Any]) -> ReFrameResponse:
+    async def create_user_response(self, cbt_data: dict[str, Any]) -> ReFrameResponse:
         """Create final user-facing response from CBT analysis."""
         # Prepare synthesis input
         synthesis_input = {
@@ -103,7 +103,7 @@ Output format:
 
         return await self.process_with_transparency(synthesis_input)
 
-    def format_transparency_block(self, techniques: List[str], reasoning: str) -> str:
+    def format_transparency_block(self, techniques: list[str], reasoning: str) -> str:
         """Format transparency information for user display."""
         return f"""
 🔍 **How I processed your thought:**
@@ -112,7 +112,7 @@ Output format:
 - Note: I'm an AI using evidence-based CBT techniques to offer perspectives.
 """
 
-    async def create_crisis_response(self, crisis_data: Dict[str, Any]) -> ReFrameResponse:
+    async def create_crisis_response(self, crisis_data: dict[str, Any]) -> ReFrameResponse:
         """Create specialized response for crisis situations."""
         crisis_input = {
             "crisis_indicators": crisis_data,
@@ -121,10 +121,10 @@ Output format:
             "tone": "caring_and_urgent",
             "referral_needed": True,
         }
-        
+
         return await self.process_with_transparency(crisis_input)
 
-    def get_communication_guidelines(self) -> Dict[str, Any]:
+    def get_communication_guidelines(self) -> dict[str, Any]:
         """Return communication guidelines used by this agent."""
         return {
             "tone": "warm_validating_supportive",
@@ -139,10 +139,10 @@ Output format:
                 "minimize_shame": True,
                 "respect_pace": True,
                 "validate_difficulty": True,
-            }
+            },
         }
 
-    def get_response_components(self) -> List[str]:
+    def get_response_components(self) -> list[str]:
         """Return standard components included in responses."""
         return [
             "emotional_validation",
@@ -155,10 +155,10 @@ Output format:
         ]
 
     async def synthesize_multi_agent_output(
-        self, 
-        intake_output: Dict[str, Any],
-        cbt_output: Dict[str, Any],
-        additional_context: Dict[str, Any] = None
+        self,
+        intake_output: dict[str, Any],
+        cbt_output: dict[str, Any],
+        additional_context: dict[str, Any] = None,
     ) -> ReFrameResponse:
         """Synthesize output from multiple agents into coherent user response."""
         synthesis_input = {
@@ -169,25 +169,25 @@ Output format:
             "coherence_priority": "high",
             "user_experience_focus": "seamless_and_supportive",
         }
-        
+
         return await self.process_with_transparency(synthesis_input)
 
-    def get_tone_variations(self) -> Dict[str, str]:
+    def get_tone_variations(self) -> dict[str, str]:
         """Return different tone variations for different situations."""
         return {
             "standard": "warm, supportive, and encouraging",
             "crisis": "caring, urgent, and safety-focused",
-            "progress": "celebrating, affirming, and motivating", 
+            "progress": "celebrating, affirming, and motivating",
             "setback": "understanding, validating, and hopeful",
             "first_time": "welcoming, explanatory, and reassuring",
             "returning": "familiar, building on progress, and consistent",
         }
 
-    def get_transparency_levels(self) -> Dict[str, str]:
+    def get_transparency_levels(self) -> dict[str, str]:
         """Return different levels of transparency disclosure."""
         return {
             "minimal": "Basic AI disclosure",
-            "standard": "AI disclosure with technique overview", 
+            "standard": "AI disclosure with technique overview",
             "detailed": "Full technique explanation and reasoning process",
             "educational": "Teaching-focused with CBT education",
         }
