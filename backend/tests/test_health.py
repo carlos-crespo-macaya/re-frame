@@ -1,4 +1,5 @@
 """Tests for health check endpoints."""
+
 import sys
 from pathlib import Path
 
