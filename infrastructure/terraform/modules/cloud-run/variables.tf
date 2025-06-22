@@ -47,3 +47,12 @@ variable "environment_variables" {
   type        = map(string)
   default     = {}
 }
+
+variable "secret_environment_variables" {
+  description = "Secret environment variables from Secret Manager"
+  type = map(object({
+    secret_name    = string
+    secret_version = string
+  }))
+  default = {}
+}
