@@ -46,7 +46,7 @@ firebase-admin==6.9.0
     # via re-frame-backend (pyproject.toml)
 google-adk==1.4.2
     # via re-frame-backend (pyproject.toml)
-google-ai-generativelanguage==0.6.15
+google-ai-generativelanguage==0.6.18
     # via google-generativeai
 google-api-core==2.25.1
     # via
