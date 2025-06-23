@@ -325,7 +325,7 @@ starlette==0.46.2
     #   fastapi
     #   google-adk
     #   mcp
-tenacity==8.5.0
+tenacity==9.1.2
     # via google-genai
 tqdm==4.67.1
     # via google-generativeai
