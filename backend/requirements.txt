@@ -15,7 +15,7 @@ authlib==1.6.0
     # via google-adk
 cachecontrol==0.14.3
     # via firebase-admin
-cachetools==5.5.2
+cachetools==6.1.0
     # via google-auth
 certifi==2025.6.15
     # via
