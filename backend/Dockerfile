@@ -2,7 +2,7 @@
 # Optimized for Google Cloud Run deployment
 
 # Stage 1: Builder
-FROM python:3.12-slim AS builder
+FROM python:3.13-slim AS builder
 
 # Set working directory
 WORKDIR /app
@@ -26,7 +26,7 @@ RUN pip install --no-cache-dir --upgrade pip && \
     find /opt/venv -type f -name "*.pyc" -delete
 
 # Stage 2: Runtime
-FROM python:3.12-slim AS runtime
+FROM python:3.13-slim AS runtime
 
 # Install only runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
