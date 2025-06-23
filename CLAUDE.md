@@ -182,35 +182,69 @@ re-frame/
 
 **SINGLE SOURCE OF TRUTH**: GitHub Project "re-frame" (ID: 3)
 
+### Parallel Workstreams Architecture
+
+**NEW**: The project now operates with 3 independent workstreams that can execute in parallel. See `/docs/PARALLEL_WORKSTREAMS_ARCHITECTURE.md` for full details.
+
+#### Workstream Assignment
+- **Workstream A (Frontend)**: FE-XXX tasks - Next.js, React, UI/UX
+- **Workstream B (Backend)**: BE-XXX tasks - APIs, Agents, Services  
+- **Workstream C (Infrastructure)**: INF-XXX tasks - GCP, Terraform, CI/CD
+
+#### Parallel Execution Protocol
+1. **Independent Development**
+   - Each workstream works autonomously
+   - Use mocks for external dependencies
+   - Feature flags for integration points
+   - No blocking between workstreams
+
+2. **API Contracts First**
+   - Define OpenAPI specs upfront
+   - Use contract tests
+   - Mock implementations for development
+   - Version all API changes
+
+3. **Daily Coordination**
+   - 15-min sync to report blockers only
+   - Async communication preferred
+   - Integration issues tracked in GitHub
+
+4. **Weekly Integration**
+   - Deploy all services to staging
+   - Run E2E test suite
+   - Address integration issues
+   - Update feature flags
+
 ### Project Management Protocol
 
 **CRITICAL**: The GitHub project board is the ONLY place to track tasks, status, and progress. No local files or todo lists.
 
 1. **Start of Session**: 
    - Check GitHub Project board: `gh project view 3 --owner macayaven`
-   - Review open issues and their status
-   - Check assigned tasks and priorities
+   - Review your workstream's tasks
+   - Check integration dependencies
 
 2. **During Work**:
    - Update issue status on GitHub project board
-   - Reference issue numbers in all commits (e.g., `[BE-001] Add health check #7`)
-   - Comment on issues with progress updates
-   - Use GitHub issue comments for any blockers or questions
+   - Reference issue numbers in all commits
+   - Work independently within your workstream
+   - Use mocks for external dependencies
 
 3. **End of Session**:
    - Update issue status on GitHub project board
    - Comment on issues with work completed
+   - Note any integration points needed
    - Create PR linked to the issue
 
 4. **Task References**:
    - Always include issue number in commits: `[BE-001] Add health check endpoint #7`
    - Link PRs to issues using GitHub keywords: `Fixes #7` or `Closes #7`
-   - All task tracking happens in GitHub issues/project
+   - Tag integration dependencies
 
 5. **Important Decisions**:
    - Document architectural decisions in issue comments
-   - Use issue labels for categorization
-   - Create new issues for discovered tasks
+   - Use issue labels for workstream assignment
+   - Create integration issues when needed
    - No hidden decisions - everything tracked in GitHub
 
 ### Task Management Reminders
@@ -220,40 +254,47 @@ re-frame/
 - Branch naming convention: `feature/BE-001-description` auto-populates task IDs
 - GitHub Actions will comment on stale tasks (>24h without update)
 
-#### Task ID Format
-- **INF-XXX**: Infrastructure tasks (Terraform, GCP, CI/CD)
-- **BE-XXX**: Backend tasks (FastAPI, ADK agents, integrations)
-- **FE-XXX**: Frontend tasks (Next.js, components, UX)
-- **ALL-XXX**: Cross-team tasks (integration, testing, docs)
+#### Task ID Format by Workstream
+- **FE-XXX**: Workstream A - Frontend tasks
+- **BE-XXX**: Workstream B - Backend tasks  
+- **INF-XXX**: Workstream C - Infrastructure tasks
+- **INT-XXX**: Integration tasks (cross-workstream)
 
 #### Daily Checklist
-- [ ] Morning: Check `/claude/project-management-plan.md` for assigned tasks
-- [ ] Before coding: Update task to "in_progress" with `TodoWrite`
+- [ ] Morning: Check your workstream's tasks
+- [ ] Before coding: Update task to "in_progress"
 - [ ] During coding: Reference task ID in ALL commits
-- [ ] After coding: Update task status and log actual time
-- [ ] End of day: Note blockers and tomorrow's priorities
+- [ ] After coding: Update task status
+- [ ] End of day: Note integration dependencies
 
-#### Weekly Milestones
-- **Monday**: Sprint planning, assign tasks from backlog
-- **Wednesday**: Mid-week sync, address blockers
-- **Friday**: Integration checkpoint, update project board
+#### Parallel Development Rules
+1. **Never wait for another workstream** - use mocks
+2. **Define contracts early** - OpenAPI/GraphQL schemas
+3. **Test with mocks first** - real integration later
+4. **Feature flag everything** - gradual rollout
+5. **Communicate async** - minimize meetings
+
+#### Integration Checkpoints
+- **Monday**: Workstream planning (separate)
+- **Wednesday**: Integration sync (15 min)
+- **Friday**: Deploy to staging, run E2E tests
 
 #### Critical Path Awareness
-Always prioritize tasks that:
-1. Block other teams (API contracts, data models)
-2. Have external dependencies (GCP setup, domain config)
-3. Impact user-facing features directly
-4. Relate to security or cost controls
+Prioritize tasks that:
+1. Define API contracts (enables parallel work)
+2. Create shared types/schemas
+3. Set up CI/CD pipelines
+4. Implement auth (cross-cutting)
 
 #### Cost & Quality Gates
 Before marking any task complete:
-- [ ] Verify no increase in GCP costs beyond plan
-- [ ] Confirm all tests pass
-- [ ] Check that documentation is updated
-- [ ] Ensure security best practices followed
-- [ ] Validate against success metrics
+- [ ] Unit tests pass (workstream-specific)
+- [ ] Integration tests pass (if applicable)
+- [ ] No increase in GCP costs beyond plan
+- [ ] Documentation updated
+- [ ] Security best practices followed
 
-Remember: Each phase must deliver a **complete, usable product**. No task is done until it contributes to a deployable feature.
+Remember: Each workstream delivers **independently deployable components**. Integration happens through well-defined contracts and feature flags.
 
 ## Multi-Agent AI System
 
