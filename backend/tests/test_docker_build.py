@@ -14,7 +14,7 @@ def test_dockerfile_exists():
 def test_dockerfile_has_health_check():
     """Test that Dockerfile includes HEALTHCHECK instruction."""
     dockerfile_path = os.path.join(os.path.dirname(__file__), "..", "Dockerfile")
-    with open(dockerfile_path) as f:
+    with open(dockerfile_path, encoding="utf-8") as f:
         content = f.read()
     assert "HEALTHCHECK" in content, "Dockerfile should include HEALTHCHECK"
 
@@ -22,7 +22,7 @@ def test_dockerfile_has_health_check():
 def test_dockerfile_uses_python_312():
     """Test that Dockerfile uses Python 3.12 slim image."""
     dockerfile_path = os.path.join(os.path.dirname(__file__), "..", "Dockerfile")
-    with open(dockerfile_path) as f:
+    with open(dockerfile_path, encoding="utf-8") as f:
         content = f.read()
     assert "python:3.12-slim" in content, "Dockerfile should use python:3.12-slim"
 
@@ -30,7 +30,7 @@ def test_dockerfile_uses_python_312():
 def test_dockerfile_is_multistage():
     """Test that Dockerfile uses multi-stage build."""
     dockerfile_path = os.path.join(os.path.dirname(__file__), "..", "Dockerfile")
-    with open(dockerfile_path) as f:
+    with open(dockerfile_path, encoding="utf-8") as f:
         content = f.read()
     # Check for multiple FROM statements indicating multi-stage
     from_count = content.count("FROM")
@@ -40,7 +40,7 @@ def test_dockerfile_is_multistage():
 def test_dockerfile_sets_port_env():
     """Test that Dockerfile sets PORT environment variable."""
     dockerfile_path = os.path.join(os.path.dirname(__file__), "..", "Dockerfile")
-    with open(dockerfile_path) as f:
+    with open(dockerfile_path, encoding="utf-8") as f:
         content = f.read()
     assert "ENV PORT" in content or "EXPOSE" in content, "Dockerfile should set PORT for Cloud Run"
 
@@ -48,7 +48,7 @@ def test_dockerfile_sets_port_env():
 def test_dockerfile_runs_as_nonroot():
     """Test that Dockerfile creates and uses non-root user."""
     dockerfile_path = os.path.join(os.path.dirname(__file__), "..", "Dockerfile")
-    with open(dockerfile_path) as f:
+    with open(dockerfile_path, encoding="utf-8") as f:
         content = f.read()
     assert "USER" in content, "Dockerfile should run as non-root user"
     assert "useradd" in content or "adduser" in content, "Dockerfile should create a user"

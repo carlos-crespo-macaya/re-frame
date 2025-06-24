@@ -1,7 +1,7 @@
 [project]
-name = "re-frame-backend"
+name = "re-frame-agentic-workflow"
 version = "0.1.0"
-description = "Backend API for re-frame.social - AI-assisted cognitive reframing for AvPD"
+description = "Agentic workflow for re-frame.social - AI-assisted cognitive reframing for AvPD"
 authors = [{name = "re-frame team"}]
 readme = "README.md"
 requires-python = ">=3.12"
@@ -16,6 +16,8 @@ dependencies = [
     "httpx>=0.26.0",
     "python-multipart>=0.0.6",
     "pytest>=8.4.1",
+    "google-cloud-aiplatform[adk,agent-engines]>=1.98.0",
+    "langfuse>=3.0.4",
 ]
 
 [project.optional-dependencies]
