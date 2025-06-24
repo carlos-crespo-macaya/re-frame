@@ -2,7 +2,7 @@ import asyncio
 import os
 import uuid
 
-from google.adk.agents import LoopAgent
+from google.adk.agents import LoopAgent, SequentialAgent
 from google.adk.runners import Runner
 from google.adk.sessions import DatabaseSessionService
 from langfuse import Langfuse
@@ -21,14 +21,13 @@ langfuse = Langfuse(
 os.environ["OTEL_EXPORTER_OTLP_ENDPOINT"] = settings.langfuse_host + "/api/public/otel"
 os.environ["OTEL_EXPORTER_OTLP_HEADERS"] = f"Authorization=Basic {settings.langfuse_bearer_token}"
 
-user_id = f"Anonymous_{uuid.uuid4()}"
+USER_ID = f"Anonymous_{uuid.uuid4()}"
 session_id = uuid.uuid4()
 
 prompt = langfuse.get_prompt("intake-agent-adk-instructions")
 
-root_agent = LoopAgent(
-    name=prompt.config.get("name",""),
-    model=prompt.config.get("model","gemini-2.0-flash"),
+root_agent = SequentialAgent(
+    name="ReframeSequentialPipeline",
     description=prompt.prompt,
     max_iterations=10,
 )
@@ -44,7 +43,7 @@ initial_state = ConversationState(
 
 stateful_session = session_service.create_session(
     app_name=settings.app_name,
-    user_id=user_id,
+    user_id=USER_ID,
     session_id=str(session_id),
     state=initial_state.model_dump(),
 )
