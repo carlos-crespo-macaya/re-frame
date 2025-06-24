@@ -5,7 +5,7 @@ import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from config.settings import get_settings
+from backend.config.settings import get_settings
 
 logger = logging.getLogger(__name__)
 

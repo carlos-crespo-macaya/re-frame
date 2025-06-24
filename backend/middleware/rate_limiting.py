@@ -1,8 +1,8 @@
 """Rate limiting middleware for FastAPI."""
 
+from collections import defaultdict, deque
 import logging
 import time
-from collections import defaultdict, deque
 
 from fastapi import HTTPException, Request
 from fastapi.responses import Response
@@ -237,19 +237,19 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
     # Paths exempt from rate limiting
     EXEMPT_PATHS = {
         "/",
-        "/health", 
+        "/health",
         "/api/health",
         "/api/health/detailed",
         "/api/health/live",
-        "/api/health/ready", 
+        "/api/health/ready",
         "/api/health/startup",
         "/api/v1/health",
         "/docs",
         "/api/docs",
-        "/api/redoc", 
+        "/api/redoc",
         "/openapi.json",
         "/api/openapi.json",
-        "/favicon.ico"
+        "/favicon.ico",
     }
 
     def __init__(self, app: ASGIApp, max_requests: int = 10, window_seconds: int = 3600):
@@ -274,7 +274,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         # Skip rate limiting for exempt paths
         if request.url.path in self.EXEMPT_PATHS:
             return await call_next(request)
-            
+
         # Skip rate limiting for test environments
         if request.base_url.hostname in ["testserver", "localhost", "127.0.0.1"]:
             # Process request without rate limiting but add headers for testing

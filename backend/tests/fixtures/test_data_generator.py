@@ -2,6 +2,7 @@
 
 import random
 from typing import Any
+
 from faker import Faker
 
 fake = Faker()
@@ -9,7 +10,7 @@ fake = Faker()
 
 class ThoughtGenerator:
     """Generate realistic test thoughts for AvPD scenarios."""
-    
+
     # Thought patterns common in AvPD
     CATASTROPHIZING_TEMPLATES = [
         "Everyone will {negative_outcome} if I {action}",
@@ -18,7 +19,7 @@ class ThoughtGenerator:
         "{social_group} will all {rejection_verb} me",
         "I know I'll {embarrassing_action} and everyone will {judge_verb}",
     ]
-    
+
     MIND_READING_TEMPLATES = [
         "They must think I'm {negative_trait}",
         "Everyone can see that I'm {inadequacy}",
@@ -26,7 +27,7 @@ class ThoughtGenerator:
         "I bet they're thinking '{negative_thought}'",
         "They obviously {negative_assumption} about me",
     ]
-    
+
     AVOIDANCE_TEMPLATES = [
         "I should just {avoidance_action} to avoid {feared_outcome}",
         "It's safer if I don't {social_action}",
@@ -34,7 +35,7 @@ class ThoughtGenerator:
         "Maybe I should cancel {event} because {fear}",
         "I can't handle {situation}, I need to {escape}",
     ]
-    
+
     ALL_OR_NOTHING_TEMPLATES = [
         "I'm completely {absolute_negative}",
         "I never {positive_action} right",
@@ -42,33 +43,78 @@ class ThoughtGenerator:
         "Nothing ever {positive_outcome} for me",
         "I'm totally {inadequacy} at everything",
     ]
-    
+
     # Word banks
     NEGATIVE_OUTCOMES = ["judge me", "laugh at me", "reject me", "hate me", "mock me", "abandon me"]
-    ACTIONS = ["speak up", "attend the meeting", "go to the party", "share my opinion", "try something new"]
+    ACTIONS = [
+        "speak up",
+        "attend the meeting",
+        "go to the party",
+        "share my opinion",
+        "try something new",
+    ]
     FAILURES = ["mess up", "fail", "embarrass myself", "say something stupid", "make mistakes"]
-    CONSEQUENCES = ["everyone will know", "I'll be humiliated", "they'll never respect me", "I'll be alone forever"]
+    CONSEQUENCES = [
+        "everyone will know",
+        "I'll be humiliated",
+        "they'll never respect me",
+        "I'll be alone forever",
+    ]
     DISASTER_WORDS = ["disaster", "catastrophe", "nightmare", "failure", "embarrassment"]
-    SOCIAL_GROUPS = ["My coworkers", "Everyone at the party", "The whole team", "All my friends", "The entire class"]
+    SOCIAL_GROUPS = [
+        "My coworkers",
+        "Everyone at the party",
+        "The whole team",
+        "All my friends",
+        "The entire class",
+    ]
     REJECTION_VERBS = ["reject", "abandon", "exclude", "ignore", "laugh at", "judge"]
-    NEGATIVE_TRAITS = ["stupid", "worthless", "incompetent", "boring", "weird", "pathetic", "inadequate"]
+    NEGATIVE_TRAITS = [
+        "stupid",
+        "worthless",
+        "incompetent",
+        "boring",
+        "weird",
+        "pathetic",
+        "inadequate",
+    ]
     INADEQUACIES = ["failing", "not good enough", "incompetent", "a fraud", "worthless"]
     JUDGING_ACTIONS = ["laughing at me", "talking about me", "judging me", "criticizing me"]
-    NEGATIVE_THOUGHTS = ["What a loser", "They don't belong here", "How pathetic", "What's wrong with them"]
+    NEGATIVE_THOUGHTS = [
+        "What a loser",
+        "They don't belong here",
+        "How pathetic",
+        "What's wrong with them",
+    ]
     NEGATIVE_ASSUMPTIONS = ["hate me", "think I'm stupid", "want me to leave", "regret inviting me"]
     AVOIDANCE_ACTIONS = ["stay home", "make an excuse", "cancel", "hide", "leave early"]
     FEARED_OUTCOMES = ["rejection", "embarrassment", "judgment", "criticism", "failure"]
-    SOCIAL_ACTIONS = ["go to the event", "speak in the meeting", "join the conversation", "make new friends"]
-    ISOLATION_BEHAVIORS = ["stay in my room", "work from home forever", "avoid everyone", "eat lunch alone"]
+    SOCIAL_ACTIONS = [
+        "go to the event",
+        "speak in the meeting",
+        "join the conversation",
+        "make new friends",
+    ]
+    ISOLATION_BEHAVIORS = [
+        "stay in my room",
+        "work from home forever",
+        "avoid everyone",
+        "eat lunch alone",
+    ]
     EVENTS = ["the meeting", "the party", "the presentation", "the date", "the interview"]
-    FEARS = ["I might say something wrong", "they'll judge me", "I'll have a panic attack", "I won't know what to say"]
+    FEARS = [
+        "I might say something wrong",
+        "they'll judge me",
+        "I'll have a panic attack",
+        "I won't know what to say",
+    ]
     SITUATIONS = ["social events", "meetings", "phone calls", "group discussions", "presentations"]
     ESCAPES = ["leave", "make an excuse", "hide in the bathroom", "pretend to be sick"]
     ABSOLUTE_NEGATIVES = ["worthless", "hopeless", "useless", "pathetic", "incompetent"]
     POSITIVE_ACTIONS = ["do anything", "say anything", "get anything", "succeed at anything"]
     NEGATIVE_BEHAVIORS = ["rejects", "judges", "criticizes", "ignores", "dislikes"]
     POSITIVE_OUTCOMES = ["works out", "goes well", "succeeds", "turns out okay"]
-    
+
     @classmethod
     def generate_catastrophizing_thought(cls) -> str:
         """Generate a catastrophizing thought."""
@@ -84,7 +130,7 @@ class ThoughtGenerator:
             embarrassing_action=random.choice(cls.FAILURES),
             judge_verb=random.choice(cls.REJECTION_VERBS),
         )
-    
+
     @classmethod
     def generate_mind_reading_thought(cls) -> str:
         """Generate a mind-reading thought."""
@@ -96,7 +142,7 @@ class ThoughtGenerator:
             negative_thought=random.choice(cls.NEGATIVE_THOUGHTS),
             negative_assumption=random.choice(cls.NEGATIVE_ASSUMPTIONS),
         )
-    
+
     @classmethod
     def generate_avoidance_thought(cls) -> str:
         """Generate an avoidance-focused thought."""
@@ -111,7 +157,7 @@ class ThoughtGenerator:
             situation=random.choice(cls.SITUATIONS),
             escape=random.choice(cls.ESCAPES),
         )
-    
+
     @classmethod
     def generate_all_or_nothing_thought(cls) -> str:
         """Generate an all-or-nothing thought."""
@@ -123,7 +169,7 @@ class ThoughtGenerator:
             positive_outcome=random.choice(cls.POSITIVE_OUTCOMES),
             inadequacy=random.choice(cls.INADEQUACIES),
         )
-    
+
     @classmethod
     def generate_random_thought(cls) -> str:
         """Generate a random AvPD-related thought."""
@@ -134,7 +180,7 @@ class ThoughtGenerator:
             cls.generate_all_or_nothing_thought,
         ]
         return random.choice(generators)()
-    
+
     @classmethod
     def generate_crisis_thought(cls) -> str:
         """Generate a thought that should trigger crisis detection."""
@@ -147,7 +193,7 @@ class ThoughtGenerator:
             "There's no point in continuing",
         ]
         return random.choice(crisis_phrases)
-    
+
     @classmethod
     def generate_with_context(cls) -> dict[str, str]:
         """Generate a thought with context."""
@@ -160,15 +206,12 @@ class ThoughtGenerator:
             "This started after the incident at work",
             f"I'm {fake.random_int(20, 50)} years old and still struggling with this",
         ]
-        return {
-            "thought": thought,
-            "context": random.choice(contexts)
-        }
+        return {"thought": thought, "context": random.choice(contexts)}
 
 
 class ResponseGenerator:
     """Generate expected API responses."""
-    
+
     TECHNIQUES = [
         "cognitive_restructuring",
         "evidence_analysis",
@@ -176,7 +219,7 @@ class ResponseGenerator:
         "behavioral_experiments",
         "self_compassion",
     ]
-    
+
     @classmethod
     def generate_success_response(cls, thought: str) -> dict[str, Any]:
         """Generate a successful reframe response."""
@@ -188,13 +231,13 @@ class ResponseGenerator:
                 "reasoning_path": [
                     "Identified cognitive distortion",
                     "Applied balanced thinking",
-                    "Suggested alternative perspective"
+                    "Suggested alternative perspective",
                 ],
                 "confidence": random.uniform(0.7, 0.95),
             },
             "techniques_used": random.sample(cls.TECHNIQUES, k=random.randint(1, 3)),
         }
-    
+
     @classmethod
     def generate_error_response(cls, error_type: str = "processing") -> dict[str, Any]:
         """Generate an error response."""
@@ -204,7 +247,7 @@ class ResponseGenerator:
             "rate_limit": "Rate limit exceeded",
             "toxic_content": "Content flagged as potentially harmful",
         }
-        
+
         return {
             "success": False,
             "response": "I wasn't able to process your thought. Please try rephrasing it.",
@@ -215,7 +258,7 @@ class ResponseGenerator:
             "techniques_used": [],
             "error": error_messages.get(error_type, "Unknown error"),
         }
-    
+
     @classmethod
     def generate_crisis_response(cls) -> dict[str, Any]:
         """Generate a crisis detection response."""
@@ -232,29 +275,31 @@ class ResponseGenerator:
 
 class SessionDataGenerator:
     """Generate session-related test data."""
-    
+
     @classmethod
     def generate_session_id(cls) -> str:
         """Generate a realistic session ID."""
         return f"session-{fake.uuid4()}"
-    
+
     @classmethod
     def generate_session_history(cls, num_interactions: int = 3) -> dict[str, Any]:
         """Generate session history data."""
         session_id = cls.generate_session_id()
         interactions = []
-        
+
         for i in range(num_interactions):
             thought = ThoughtGenerator.generate_random_thought()
             response = ResponseGenerator.generate_success_response(thought)
-            
-            interactions.append({
-                "timestamp": fake.date_time_this_month().isoformat(),
-                "thought": thought,
-                "response": response["response"],
-                "techniques_used": response["techniques_used"],
-            })
-        
+
+            interactions.append(
+                {
+                    "timestamp": fake.date_time_this_month().isoformat(),
+                    "thought": thought,
+                    "response": response["response"],
+                    "techniques_used": response["techniques_used"],
+                }
+            )
+
         return {
             "session_id": session_id,
             "created_at": fake.date_time_this_month().isoformat(),
@@ -266,7 +311,7 @@ class SessionDataGenerator:
 
 class PerformanceDataGenerator:
     """Generate performance metrics test data."""
-    
+
     @classmethod
     def generate_performance_metrics(cls) -> dict[str, Any]:
         """Generate realistic performance metrics."""
@@ -281,7 +326,7 @@ class PerformanceDataGenerator:
             "active_sessions": random.randint(0, 100),
             "cache_hit_rate": random.uniform(0.6, 0.9),
         }
-    
+
     @classmethod
     def generate_error_analysis(cls) -> dict[str, Any]:
         """Generate error analysis data."""
@@ -289,10 +334,7 @@ class PerformanceDataGenerator:
         return {
             "total_errors": random.randint(10, 100),
             "error_rate": random.uniform(0.01, 0.05),
-            "errors_by_type": {
-                error_type: random.randint(0, 30)
-                for error_type in error_types
-            },
+            "errors_by_type": {error_type: random.randint(0, 30) for error_type in error_types},
             "common_errors": [
                 {
                     "error": "Rate limit exceeded",
@@ -319,9 +361,8 @@ def generate_test_request() -> dict[str, str]:
     """Generate a complete test request."""
     if random.random() < 0.8:
         return {"thought": generate_test_thought()}
-    else:
-        data = ThoughtGenerator.generate_with_context()
-        return {"thought": data["thought"], "context": data["context"]}
+    data = ThoughtGenerator.generate_with_context()
+    return {"thought": data["thought"], "context": data["context"]}
 
 
 def generate_batch_requests(count: int) -> list[dict[str, str]]:
