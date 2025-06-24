@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, patch
 from fastapi import FastAPI, Request
 from fastapi.testclient import TestClient
 
-from middleware.abuse_prevention import (
+from backend.middleware.abuse_prevention import (
     AbuseDetector,
     AbusePreventionMiddleware,
     ContentFilter,

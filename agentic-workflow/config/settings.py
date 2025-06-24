@@ -1,7 +1,7 @@
 """Configuration settings for re-frame backend."""
 
-from functools import lru_cache
 import base64
+from functools import lru_cache
 
 from pydantic import Field
 from pydantic_settings import BaseSettings
@@ -10,13 +10,16 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
 
+    # App Configuration
+    app_name: str = "state_app"
+
     # API Configuration
     api_title: str = "re-frame API"
     api_version: str = "0.1.0"
     api_description: str = "AI-assisted cognitive reframing support tool for AvPD"
 
     # Google AI Configuration
-    google_ai_api_key: str = Field(alias="GOOGLE_API_KEY")  # Maps from Doppler env var
+    google_ai_api_key: str = Field(default="", alias="GOOGLE_API_KEY")  # Maps from Doppler env var
     google_ai_model: str = "gemini-1.5-flash"
     google_ai_temperature: float = 0.7
     google_ai_max_tokens: int = 2048
@@ -43,10 +46,10 @@ class Settings(BaseSettings):
     toxicity_threshold: float = 0.7
 
     # Supabase Configuration
-    supabase_connection_string: str = Field(alias="SUPABASE_CONNECTION_STRING")
+    supabase_connection_string: str = Field(default="", alias="SUPABASE_CONNECTION_STRING")
 
     # Langfuse Configuration
-    langfuse_host: str = Field(alias="LANGFUSE_HOST")
+    langfuse_host: str = Field(default="", alias="LANGFUSE_HOST")
     langfuse_public_key: str = Field(default="", alias="LANGFUSE_PUBLIC_KEY")
     langfuse_secret_key: str = Field(default="", alias="LANGFUSE_SECRET_KEY")
 

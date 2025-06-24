@@ -7,7 +7,7 @@ import uuid
 
 from fastapi import FastAPI, Request
 
-from config.settings import get_settings
+from backend.config.settings import get_settings
 
 
 def setup_logging(app: FastAPI) -> None:

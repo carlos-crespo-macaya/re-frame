@@ -1,13 +1,13 @@
 """Health check endpoints."""
 
-import logging
 from datetime import UTC, datetime
+import logging
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter
 import google.generativeai as genai
 
+from REDACTED, HealthStatus
 from config.settings import get_settings
-from REDACTED, DependencyHealth
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -22,17 +22,16 @@ def check_google_ai_health() -> dict:
         settings = get_settings()
         if not settings.google_ai_api_key:
             return {"status": "error", "error": "API key not configured"}
-        
+
         # Quick model availability check
         genai.configure(api_key=settings.google_ai_api_key)
         models = genai.list_models()
         model_names = [m.name for m in models]
-        
+
         if f"models/{settings.google_ai_model}" in model_names:
             return {"status": "ok", "model": settings.google_ai_model, "available": True}
-        else:
-            return {"status": "error", "error": f"Model {settings.google_ai_model} not available"}
-            
+        return {"status": "error", "error": f"Model {settings.google_ai_model} not available"}
+
     except Exception as e:
         logger.error(f"Google AI health check failed: {e}")
         return {"status": "error", "error": str(e)}
@@ -64,10 +63,10 @@ async def health_check():
 async def detailed_health_check():
     """Detailed health check with component status."""
     settings = get_settings()
-    
+
     # Check dependencies
     checks = {}
-    
+
     # Google AI check
     try:
         ai_health = check_google_ai_health()
@@ -81,11 +80,11 @@ async def detailed_health_check():
             status="error",
             error=str(e),
         )
-    
+
     # Overall status
     all_ok = all(check.status == "ok" for check in checks.values())
     overall_status = "ok" if all_ok else "degraded"
-    
+
     return DetailedHealthStatus(
         status=overall_status,
         timestamp=datetime.now(UTC).isoformat(),
@@ -119,17 +118,19 @@ async def liveness_probe():
 async def readiness_probe():
     """Kubernetes readiness probe - checks if service is ready to accept requests."""
     from fastapi import Response
-    
+
     # Check if all critical dependencies are available
     ai_health = check_google_ai_health()
-    
+
     if ai_health["status"] != "ok":
         return Response(
-            content='{"status": "not_ready", "reason": "Dependencies not available", "details": {"google_ai": ' + str(ai_health).replace("'", '"') + '}}',
+            content='{"status": "not_ready", "reason": "Dependencies not available", "details": {"google_ai": '
+            + str(ai_health).replace("'", '"')
+            + "}}",
             status_code=503,
-            media_type="application/json"
+            media_type="application/json",
         )
-    
+
     return {"status": "ready"}
 
 
@@ -142,18 +143,18 @@ async def readiness_probe():
 async def startup_probe():
     """Kubernetes startup probe - used during initial startup."""
     from fastapi import Response
-    
+
     uptime = (datetime.now(UTC) - STARTUP_TIME).total_seconds()
-    
+
     # Consider started after 0.1 seconds for tests, 5 seconds for production
     startup_threshold = 0.1 if uptime < 10 else 5
     if uptime < startup_threshold:
         return Response(
-            content='{"status": "starting", "uptime_seconds": ' + str(uptime) + '}',
+            content='{"status": "starting", "uptime_seconds": ' + str(uptime) + "}",
             status_code=503,
-            media_type="application/json"
+            media_type="application/json",
         )
-    
+
     return {
         "status": "started",
         "startup_time": STARTUP_TIME.isoformat(),

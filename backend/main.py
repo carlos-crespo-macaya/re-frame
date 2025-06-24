@@ -1,12 +1,12 @@
 """Main FastAPI application for re-frame backend."""
 
-import logging
 from contextlib import asynccontextmanager
+import logging
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
-from api import health, reframe
+from api import health
 from config.settings import get_settings
 from middleware import AbusePreventionMiddleware, setup_cors, setup_logging, setup_rate_limiting
 
@@ -91,7 +91,6 @@ app.add_middleware(
 
 # Include routers
 app.include_router(health.router, prefix="/api/health", tags=["health"])
-app.include_router(reframe.router, prefix="/api/reframe", tags=["reframe"])
 
 
 @app.get("/")
@@ -101,7 +100,7 @@ async def root():
         "service": "re-frame API",
         "version": get_settings().api_version,
         "description": "AI-assisted cognitive reframing support for AvPD",
-        "endpoints": {"health": "/api/health", "docs": "/api/docs", "reframe": "/api/reframe"},
+        "endpoints": {"health": "/api/health", "docs": "/api/docs"},
     }
 
 

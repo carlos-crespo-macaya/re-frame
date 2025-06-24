@@ -1,13 +1,13 @@
 """Abuse prevention and content filtering middleware."""
 
+from collections import defaultdict, deque
 import logging
 import re
 import time
-from collections import defaultdict, deque
 
-import httpx
 from fastapi import HTTPException, Request
 from fastapi.responses import Response
+import httpx
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.types import ASGIApp
 
@@ -285,15 +285,15 @@ class AbusePreventionMiddleware(BaseHTTPMiddleware):
 
     # Paths exempt from abuse checks
     EXEMPT_PATHS = {
-        "/", 
-        "/health", 
-        "/api/health", 
+        "/",
+        "/health",
+        "/api/health",
         "/api/health/detailed",
         "/api/health/live",
         "/api/health/ready",
         "/api/health/startup",
-        "/api/v1/health", 
-        "/docs", 
+        "/api/v1/health",
+        "/docs",
         "/api/docs",
         "/api/redoc",
         "/openapi.json",
@@ -358,12 +358,19 @@ class AbusePreventionMiddleware(BaseHTTPMiddleware):
         """Process request with abuse prevention checks."""
         # Skip checks for exempt paths
         path = request.url.path
-        if path in self.EXEMPT_PATHS or any(path.startswith(exempt) for exempt in [
-            "/api/health", "/api/docs", "/api/redoc", "/api/openapi",
-            "/api/reframe/session", "/api/reframe/observability"
-        ]):
+        if path in self.EXEMPT_PATHS or any(
+            path.startswith(exempt)
+            for exempt in [
+                "/api/health",
+                "/api/docs",
+                "/api/redoc",
+                "/api/openapi",
+                "/api/reframe/session",
+                "/api/reframe/observability",
+            ]
+        ):
             return await call_next(request)
-            
+
         # Skip abuse checks for test client
         if request.base_url.hostname in ["testserver", "localhost", "127.0.0.1"]:
             return await call_next(request)
