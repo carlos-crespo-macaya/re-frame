@@ -147,3 +147,4 @@ worktrees/
 # Claude directory (local documentation and scripts)
 claude/
 
+agentic_workflow/docs/*.pdf
