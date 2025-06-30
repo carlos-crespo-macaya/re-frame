@@ -65,7 +65,7 @@ google-api-core==2.25.1
     #   google-cloud-storage
     #   google-cloud-trace
     #   google-generativeai
-google-api-python-client==2.173.0
+google-api-python-client==2.174.0
     # via
     #   firebase-admin
     #   google-adk
@@ -91,7 +91,7 @@ google-auth==2.40.3
     #   google-generativeai
 google-auth-httplib2==0.2.0
     # via google-api-python-client
-google-cloud-aiplatform==1.98.0
+google-cloud-aiplatform==1.100.0
     # via google-adk
 google-cloud-appengine-logging==1.6.2
     # via google-cloud-logging
@@ -115,7 +115,7 @@ google-cloud-secret-manager==2.24.0
     # via google-adk
 google-cloud-speech==2.33.0
     # via google-adk
-google-cloud-storage==2.19.0
+google-cloud-storage==3.1.1
     # via
     #   firebase-admin
     #   google-adk
