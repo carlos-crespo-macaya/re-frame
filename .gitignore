@@ -1,149 +1,36 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-share/python-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-.pytest_cache/
-.coverage
-.coverage.*
-coverage.xml
-*.cover
-*.log
-.mypy_cache/
-.dmypy.json
-dmypy.json
-.pyre/
-.pytype/
-.ruff_cache/
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# Node.js / Next.js
-node_modules/
-.next/
-out/
-.cache/
-.parcel-cache/
-.turbo/
-.vercel/
-*.tsbuildinfo
-next-env.d.ts
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+.yarn/install-state.gz
 
-# Frontend
-frontend/node_modules/
-frontend/.next/
-frontend/out/
-frontend/.env.local
-frontend/.env.*.local
+# testing
+/coverage
 
-# Backend
-backend/.venv/
-backend/__pycache__/
-backend/*.pyc
-backend/.pytest_cache/
-backend/.mypy_cache/
-backend/.ruff_cache/
-backend/htmlcov/
-backend/.coverage
-backend/*.egg-info/
+# next.js
+/.next/
+/out/
 
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
+# production
+/build
 
-# OS
+# misc
 .DS_Store
-Thumbs.db
+*.pem
 
-# Terraform
-**/.terraform/*
-*.tfstate
-*.tfstate.*
-crash.log
-crash.*.log
-*.tfvars
-*.tfvars.json
-override.tf
-override.tf.json
-*_override.tf
-*_override.tf.json
-.terraformrc
-terraform.rc
-.terraform.lock.hcl
-
-# Firebase
-.firebase/
-firebase-debug.log
-firestore-debug.log
-firestore.rules
-firestore.indexes.json
-
-# Google Cloud
-.gcloudignore
-app.yaml
-
-# Testing
-htmlcov/
-.tox/
-.nox/
-.hypothesis/
-coverage/
-.nyc_output/
-
-# Environment
-.env
-.env.local
-.env.*.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# Logs
-logs/
-*.log
+# debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
 
-# Temporary files
-*.tmp
-*.temp
-.tmp/
-.temp/
+# local env files
+.env*.local
 
-# Misc
-.serena/
-worktrees/
-.mcp.json
+# vercel
+.vercel
 
-# Claude directory (local documentation and scripts)
-claude/
-
+# typescript
+*.tsbuildinfo
+next-env.d.ts
