@@ -38,10 +38,10 @@ export class AudioRecorder {
       })
       
       // Load worklet modules using configured paths
-      const { getRecordingConfig } = await import('./audio-config')
-      const config = getRecordingConfig()
-      await this.audioContext.audioWorklet.addModule(config.worklets.processorPath)
-      await this.audioContext.audioWorklet.addModule(config.worklets.recorderPath)
+      const { getWorkletConfig } = await import('./audio-config')
+      const workletConfig = getWorkletConfig()
+      await this.audioContext.audioWorklet.addModule(workletConfig.processorPath)
+      await this.audioContext.audioWorklet.addModule(workletConfig.recorderPath)
       
       // Request microphone access
       this.mediaStream = await navigator.mediaDevices.getUserMedia({

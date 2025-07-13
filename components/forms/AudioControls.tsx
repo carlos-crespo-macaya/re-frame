@@ -12,6 +12,7 @@ interface AudioControlsProps {
   onTranscriptionEdit?: (text: string) => void;
   onTranscriptionAccept?: () => void;
   onReRecord?: () => void;
+  onPermissionDenied?: () => void;
   disabled?: boolean;
   className?: string;
 }
@@ -24,6 +25,7 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
   onTranscriptionEdit,
   onTranscriptionAccept,
   onReRecord,
+  onPermissionDenied,
   disabled = false,
   className = ''
 }) => {
@@ -92,7 +94,7 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
             <button 
               type="button" 
               className="audio-controls__button audio-controls__button--secondary"
-              onClick={() => {/* Handle decline */}}
+              onClick={() => onPermissionDenied?.()}
             >
               Stay with typing
             </button>

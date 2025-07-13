@@ -181,6 +181,27 @@ export function useAudioRecorder(options: UseAudioRecorderOptions = {}) {
     }
   }, [])
   
+  // Manual cleanup
+  const cleanup = useCallback(() => {
+    if (recorderRef.current) {
+      recorderRef.current.cleanup()
+      recorderRef.current = null
+    }
+    if (audioUrlRef.current) {
+      URL.revokeObjectURL(audioUrlRef.current)
+      audioUrlRef.current = null
+    }
+    setState({
+      isRecording: false,
+      isProcessing: false,
+      micPermission: 'prompt',
+      error: null,
+      audioBlob: null,
+      audioUrl: null,
+      isGateOpen: false
+    })
+  }, [])
+  
   // Cleanup on unmount
   useEffect(() => {
     return () => {
@@ -198,6 +219,7 @@ export function useAudioRecorder(options: UseAudioRecorderOptions = {}) {
     startRecording,
     stopRecording,
     checkMicPermission,
-    setNoiseGateThreshold
+    setNoiseGateThreshold,
+    cleanup
   }
 }

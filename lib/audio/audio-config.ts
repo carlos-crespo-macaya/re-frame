@@ -74,6 +74,13 @@ export function getPlaybackConfig(): PlaybackConfig {
 }
 
 /**
+ * Get a copy of the worklet configuration
+ */
+export function getWorkletConfig(): WorkletConfig {
+  return { ...AUDIO_CONFIG.worklets };
+}
+
+/**
  * Validate audio configuration
  * @throws Error if configuration is invalid
  */

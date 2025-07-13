@@ -45,16 +45,18 @@ export default function ThoughtInputForm({
     if (thought.trim() && !isLoading) {
       onSubmit(thought.trim())
       setThought('')
-      // Reset audio state after submission
+      // Reset audio state and cleanup recorder after submission
       setAudioState(createDefaultAudioState())
+      audioRecorder.cleanup()
     }
   }
 
   const handleClear = () => {
     setThought('')
     onClear()
-    // Reset audio state
+    // Reset audio state and cleanup recorder
     setAudioState(createDefaultAudioState())
+    audioRecorder.cleanup()
   }
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -181,6 +183,7 @@ export default function ThoughtInputForm({
             onTranscriptionEdit={handleTranscriptionEdit}
             onTranscriptionAccept={handleTranscriptionAccept}
             onReRecord={handleReRecord}
+            onPermissionDenied={() => setAudioState(prev => ({ ...prev, micPermission: 'denied' }))}
             disabled={isLoading}
             className="audio-controls--in-textarea"
           />
