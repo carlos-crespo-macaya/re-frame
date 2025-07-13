@@ -1,0 +1,73 @@
+name: Cleanup Preview Deployment
+
+on:
+  pull_request:
+    types: [closed]
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  REGION: us-central1
+
+jobs:
+  cleanup:
+    name: Cleanup Preview
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+
+      - name: Delete preview service
+        run: |
+          PR_NUMBER=${{ github.event.pull_request.number }}
+          PREVIEW_SERVICE="re-frame-preview-pr-${PR_NUMBER}"
+          
+          # Check if service exists
+          if gcloud run services describe $PREVIEW_SERVICE --region ${{ env.REGION }} --quiet 2>/dev/null; then
+            echo "Deleting preview service: $PREVIEW_SERVICE"
+            gcloud run services delete $PREVIEW_SERVICE --region ${{ env.REGION }} --quiet
+            echo "Preview service deleted successfully"
+          else
+            echo "Preview service $PREVIEW_SERVICE not found, skipping deletion"
+          fi
+
+      - name: Clean up container images
+        run: |
+          PR_NUMBER=${{ github.event.pull_request.number }}
+          PREVIEW_SERVICE="re-frame-preview-pr-${PR_NUMBER}"
+          
+          # List and delete images for this PR
+          echo "Cleaning up container images for $PREVIEW_SERVICE"
+          
+          # Get all digests for this service
+          DIGESTS=$(gcloud container images list-tags gcr.io/${{ env.PROJECT_ID }}/$PREVIEW_SERVICE \
+            --format="get(digest)" 2>/dev/null || true)
+          
+          if [ -n "$DIGESTS" ]; then
+            for DIGEST in $DIGESTS; do
+              echo "Deleting image: gcr.io/${{ env.PROJECT_ID }}/$PREVIEW_SERVICE@$DIGEST"
+              gcloud container images delete "gcr.io/${{ env.PROJECT_ID }}/$PREVIEW_SERVICE@$DIGEST" --quiet --force-delete-tags || true
+            done
+          else
+            echo "No images found for $PREVIEW_SERVICE"
+          fi
+
+      - name: Create cleanup summary
+        run: |
+          echo "## 🧹 Preview Cleanup Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **PR**: #${{ github.event.pull_request.number }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Service**: re-frame-preview-pr-${{ github.event.pull_request.number }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: Cleaned up" >> $GITHUB_STEP_SUMMARY
+          echo "- **Time**: $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_STEP_SUMMARY
