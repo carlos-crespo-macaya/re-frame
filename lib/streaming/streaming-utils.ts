@@ -100,6 +100,8 @@ export class MessageAssembler {
 export class RateLimiter {
   private queue: ClientMessage[] = [];
   private processing = false;
+  private retryAttempts = new Map<ClientMessage, number>();
+  private maxRetries = 3;
   
   constructor(
     private rateMs: number = 100,
@@ -131,12 +133,23 @@ export class RateLimiter {
       
       try {
         await sendFn(message);
+        // Clean up retry count on success
+        this.retryAttempts.delete(message);
         await this.delay(this.rateMs);
       } catch (error) {
-        console.error('Failed to send rate-limited message:', error);
-        // Re-queue on error
-        this.queue.unshift(message);
-        await this.delay(this.rateMs * 2); // Back off on error
+        const retries = this.retryAttempts.get(message) || 0;
+        
+        if (retries < this.maxRetries) {
+          console.warn(`Failed to send rate-limited message (attempt ${retries + 1}/${this.maxRetries}):`, error);
+          // Increment retry count and re-queue
+          this.retryAttempts.set(message, retries + 1);
+          this.queue.unshift(message);
+          await this.delay(this.rateMs * Math.pow(2, retries + 1)); // Exponential backoff
+        } else {
+          console.error(`Failed to send rate-limited message after ${this.maxRetries} attempts:`, error);
+          // Clean up and drop the message
+          this.retryAttempts.delete(message);
+        }
       }
     }
     
@@ -149,6 +162,7 @@ export class RateLimiter {
   
   clear(): void {
     this.queue = [];
+    this.retryAttempts.clear();
   }
 }
 

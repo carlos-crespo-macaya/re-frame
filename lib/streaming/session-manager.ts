@@ -18,14 +18,28 @@ export class SessionManager {
   
   /**
    * Create a new session
+   * @param sessionIdOrMetadata - Either a specific session ID string or metadata object
+   * @param metadata - Metadata object when first parameter is session ID
    */
-  createSession(metadata?: Record<string, any>): Session {
+  createSession(sessionIdOrMetadata?: string | Record<string, any>, metadata?: Record<string, any>): Session {
+    let sessionId: string;
+    let sessionMetadata: Record<string, any> | undefined;
+    
+    // Handle overloaded parameters
+    if (typeof sessionIdOrMetadata === 'string') {
+      sessionId = sessionIdOrMetadata;
+      sessionMetadata = metadata;
+    } else {
+      sessionId = uuidv4();
+      sessionMetadata = sessionIdOrMetadata;
+    }
+    
     const session: Session = {
-      id: uuidv4(),
+      id: sessionId,
       createdAt: new Date(),
       lastActivity: new Date(),
       isActive: true,
-      metadata
+      metadata: sessionMetadata
     };
     
     this.sessions.set(session.id, session);

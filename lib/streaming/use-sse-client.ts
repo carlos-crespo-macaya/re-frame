@@ -101,7 +101,7 @@ export function useSSEClient(options: UseSSEClientOptions = {}) {
     return () => {
       client.disconnect();
     };
-  }, []); // Only run once on mount
+  }, [sseOptions, autoConnect]); // Re-create client when options change
   
   // Connect to SSE
   const connect = useCallback(async (sessionId?: string) => {
