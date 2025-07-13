@@ -15,8 +15,8 @@ describe('Audio Types', () => {
   describe('Type Guards', () => {
     describe('isValidAudioMode', () => {
       it('should return true for valid audio modes', () => {
-        expect(isValidAudioMode('review')).toBe(true);
-        expect(isValidAudioMode('conversation')).toBe(true);
+        expect(isValidAudioMode('instant')).toBe(true);
+        expect(isValidAudioMode('manual')).toBe(true);
       });
 
       it('should return false for invalid audio modes', () => {
@@ -52,7 +52,7 @@ describe('Audio Types', () => {
         expect(state.micPermission).toBe('prompt');
         expect(state.transcription).toBe('');
         expect(state.audioLevel).toBe(0);
-        expect(state.mode).toBe('review');
+        expect(state.mode).toBe('instant');
         expect(state.error).toBeNull();
       });
     });
@@ -170,11 +170,11 @@ describe('Audio Types', () => {
 
   describe('Type Definitions', () => {
     it('should enforce AudioMode type', () => {
-      const validMode: AudioMode = 'review';
-      const validMode2: AudioMode = 'conversation';
+      const validMode: AudioMode = 'instant';
+      const validMode2: AudioMode = 'manual';
       
-      expect(validMode).toBe('review');
-      expect(validMode2).toBe('conversation');
+      expect(validMode).toBe('instant');
+      expect(validMode2).toBe('manual');
     });
 
     it('should enforce MicPermissionState type', () => {
@@ -195,25 +195,25 @@ describe('Audio Types', () => {
         micPermission: 'granted',
         transcription: 'Test transcription',
         audioLevel: 0.5,
-        mode: 'conversation',
+        mode: 'manual',
         error: null
       };
 
       expect(state.isRecording).toBe(true);
-      expect(state.mode).toBe('conversation');
+      expect(state.mode).toBe('manual');
     });
 
     it('should enforce AudioSessionConfig structure', () => {
       const config: AudioSessionConfig = {
         sessionId: 'session-123',
-        mode: 'review',
+        mode: 'instant',
         autoSend: false,
         enableTranscription: true,
         maxDuration: 300000
       };
 
       expect(config.sessionId).toBe('session-123');
-      expect(config.mode).toBe('review');
+      expect(config.mode).toBe('instant');
     });
   });
 });
