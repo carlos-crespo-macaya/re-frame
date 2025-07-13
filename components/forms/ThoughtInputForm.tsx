@@ -1,8 +1,10 @@
 'use client'
 
-import { useState, FormEvent, KeyboardEvent } from 'react'
+import { useState, FormEvent, KeyboardEvent, useCallback, useEffect } from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui'
+import { AudioControls } from './AudioControls'
+import { createDefaultAudioState, AudioMode, AudioState, useAudioRecorder } from '@/lib/audio'
 
 interface ThoughtInputFormProps {
   onSubmit: (thought: string) => void
@@ -16,19 +18,45 @@ export default function ThoughtInputForm({
   isLoading = false 
 }: ThoughtInputFormProps) {
   const [thought, setThought] = useState('')
+  const [audioState, setAudioState] = useState<AudioState>(createDefaultAudioState())
   const maxLength = 1000
+  
+  // Initialize audio recorder
+  const audioRecorder = useAudioRecorder({
+    onTranscription: (text) => {
+      setAudioState(prev => ({
+        ...prev,
+        transcription: text,
+        isProcessing: false
+      }))
+    },
+    onError: (error) => {
+      setAudioState(prev => ({
+        ...prev,
+        error: error,
+        isProcessing: false,
+        isRecording: false
+      }))
+    }
+  })
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (thought.trim() && !isLoading) {
       onSubmit(thought.trim())
       setThought('')
+      // Reset audio state and cleanup recorder after submission
+      setAudioState(createDefaultAudioState())
+      audioRecorder.cleanup()
     }
   }
 
   const handleClear = () => {
     setThought('')
     onClear()
+    // Reset audio state and cleanup recorder
+    setAudioState(createDefaultAudioState())
+    audioRecorder.cleanup()
   }
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -38,6 +66,74 @@ export default function ThoughtInputForm({
       setThought('')
     }
   }
+
+  // Update audio state from recorder
+  useEffect(() => {
+    setAudioState(prev => ({
+      ...prev,
+      isRecording: audioRecorder.isRecording,
+      isProcessing: audioRecorder.isProcessing,
+      micPermission: audioRecorder.micPermission,
+      error: audioRecorder.error,
+      audioLevel: audioRecorder.isGateOpen ? 0.7 : 0.1 // Simulate audio level
+    }))
+  }, [
+    audioRecorder.isRecording,
+    audioRecorder.isProcessing,
+    audioRecorder.micPermission,
+    audioRecorder.error,
+    audioRecorder.isGateOpen
+  ])
+  
+  // Audio handlers
+  const handleStartRecording = useCallback(async () => {
+    try {
+      setAudioState(prev => ({ ...prev, error: null }))
+      await audioRecorder.startRecording()
+    } catch (error) {
+      console.error('Failed to start recording:', error)
+    }
+  }, [audioRecorder])
+
+  const handleStopRecording = useCallback(async () => {
+    try {
+      setAudioState(prev => ({ ...prev, isProcessing: true }))
+      await audioRecorder.stopRecording()
+    } catch (error) {
+      console.error('Failed to stop recording:', error)
+    }
+  }, [audioRecorder])
+
+  const handleModeChange = useCallback((mode: AudioMode) => {
+    setAudioState(prev => ({
+      ...prev,
+      mode
+    }))
+  }, [])
+
+  const handleTranscriptionEdit = useCallback((text: string) => {
+    setAudioState(prev => ({
+      ...prev,
+      transcription: text
+    }))
+    setThought(text)
+  }, [])
+
+  const handleTranscriptionAccept = useCallback(() => {
+    setThought(audioState.transcription)
+    setAudioState(prev => ({
+      ...prev,
+      transcription: ''
+    }))
+  }, [audioState.transcription])
+
+  const handleReRecord = useCallback(() => {
+    setAudioState(prev => ({
+      ...prev,
+      transcription: ''
+    }))
+    handleStartRecording()
+  }, [handleStartRecording])
 
   const isSubmitDisabled = !thought.trim() || isLoading
 
@@ -66,7 +162,7 @@ export default function ThoughtInputForm({
               "border-2 border-neutral-200",
               "focus:border-primary-400",
               "focus:ring-4 focus:ring-primary-400/20",
-              "px-5 py-4",
+              "px-5 py-4 pr-16", // Added right padding for audio button
               "text-base text-neutral-800",
               "placeholder:text-neutral-400",
               "transition-all duration-200",
@@ -77,6 +173,21 @@ export default function ThoughtInputForm({
             aria-describedby="character-count encouraging-message"
             required
           />
+          
+          {/* Audio Controls - positioned inside textarea */}
+          <AudioControls
+            audioState={audioState}
+            onStartRecording={handleStartRecording}
+            onStopRecording={handleStopRecording}
+            onModeChange={handleModeChange}
+            onTranscriptionEdit={handleTranscriptionEdit}
+            onTranscriptionAccept={handleTranscriptionAccept}
+            onReRecord={handleReRecord}
+            onPermissionDenied={() => setAudioState(prev => ({ ...prev, micPermission: 'denied' }))}
+            disabled={isLoading}
+            className="audio-controls--in-textarea"
+          />
+          
           {/* Decorative element */}
           <div className="absolute -bottom-2 -right-2 w-16 h-16 bg-gradient-to-br from-primary-200/30 to-secondary-200/30 rounded-full blur-xl pointer-events-none" />
         </div>
