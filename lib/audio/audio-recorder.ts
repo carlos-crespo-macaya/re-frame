@@ -37,9 +37,11 @@ export class AudioRecorder {
         sampleRate: this.options.sampleRate || 48000
       })
       
-      // Load worklet modules
-      await this.audioContext.audioWorklet.addModule('/worklets/noise-gate-processor.js')
-      await this.audioContext.audioWorklet.addModule('/worklets/audio-recorder-processor.js')
+      // Load worklet modules using configured paths
+      const { getRecordingConfig } = await import('./audio-config')
+      const config = getRecordingConfig()
+      await this.audioContext.audioWorklet.addModule(config.worklets.processorPath)
+      await this.audioContext.audioWorklet.addModule(config.worklets.recorderPath)
       
       // Request microphone access
       this.mediaStream = await navigator.mediaDevices.getUserMedia({
