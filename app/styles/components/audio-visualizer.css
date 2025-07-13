@@ -1,0 +1,39 @@
+.audio-visualizer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.audio-visualizer__canvas {
+  display: block;
+}
+
+/* Waveform variant */
+.audio-visualizer--waveform {
+  width: 120px;
+  height: 40px;
+}
+
+.audio-visualizer--waveform .audio-visualizer__canvas {
+  width: 100%;
+  height: 100%;
+}
+
+/* Dots variant */
+.audio-visualizer--dots {
+  width: 60px;
+  height: 20px;
+}
+
+.audio-visualizer--dots .audio-visualizer__canvas {
+  width: 100%;
+  height: 100%;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .audio-visualizer__canvas {
+    /* Show static visualization for reduced motion */
+    opacity: 0.5;
+  }
+}
