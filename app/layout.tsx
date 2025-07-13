@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { Inter } from "next/font/google";
-import "./globals.css";
+import "./styles/globals.css";
 import RootErrorBoundary from "@/components/error/RootErrorBoundary";
 import { ThemeProvider } from "@/lib/theme/ThemeContext";
 import { themeScript } from "@/lib/theme/theme-script";
