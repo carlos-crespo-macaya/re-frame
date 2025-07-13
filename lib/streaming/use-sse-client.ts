@@ -145,7 +145,11 @@ export function useSSEClient(options: UseSSEClientOptions = {}) {
   const sendMessage = useCallback(async (
     data: string,
     mimeType: 'text/plain' | 'audio/pcm' = 'text/plain',
-    options: Partial<ClientMessage> = {}
+    options: Partial<{
+      messageType: 'thought' | 'response' | 'transcription';
+      turnComplete?: boolean;
+      interrupted?: boolean;
+    }> = {}
   ) => {
     if (!clientRef.current || !state.sessionId) {
       throw new Error('Not connected to SSE');
@@ -154,9 +158,10 @@ export function useSSEClient(options: UseSSEClientOptions = {}) {
     const message = createClientMessage({
       data,
       mimeType,
-      messageType: 'thought',
+      messageType: options.messageType || 'thought',
       sessionId: state.sessionId,
-      ...options
+      turnComplete: options.turnComplete,
+      interrupted: options.interrupted
     });
     
     if (enableRateLimit) {
@@ -172,16 +177,16 @@ export function useSSEClient(options: UseSSEClientOptions = {}) {
   // Send text message
   const sendText = useCallback((text: string, turnComplete = true) => {
     return sendMessage(text, 'text/plain', {
-      message_type: 'thought',
-      turn_complete: turnComplete
+      messageType: 'thought',
+      turnComplete: turnComplete
     });
   }, [sendMessage]);
   
   // Send audio message
   const sendAudio = useCallback((audioData: string, turnComplete = false) => {
     return sendMessage(audioData, 'audio/pcm', {
-      message_type: 'thought',
-      turn_complete: turnComplete
+      messageType: 'thought',
+      turnComplete: turnComplete
     });
   }, [sendMessage]);
   
