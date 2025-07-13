@@ -81,6 +81,8 @@
   --color-error-700: #be123c;
   --color-error-800: #9f1239;
   --color-error-900: #881337;
+  --color-error-rgb: 244, 63, 94;
+  --color-error-dark: #dc2626;
   
   /* Neutral - Warm grays */
   --color-neutral-50: #fafaf9;
@@ -101,6 +103,12 @@
   --color-surface-raised: #ffffff;
   --color-surface-overlay: rgba(0, 0, 0, 0.03);
   
+  /* Component backgrounds */
+  --color-bg-primary: #161616;
+  --color-bg-secondary: #212121;
+  --color-bg-tertiary: #2a2a2a;
+  --color-bg-hover: #333333;
+  
   /* Special therapeutic colors */
   --color-calm-blue: #cbd5e1;
   --color-breathing-mint: #a7f3d0;
@@ -118,6 +126,11 @@
   --color-border-light: #2a2a2a;
   --color-border-default: #3a3a3a;
   --color-border-dark: #4a4a4a;
+  --color-border: var(--color-border-default);
+  
+  /* Audio-specific colors */
+  --color-primary: var(--color-primary-500);
+  --color-primary-dark: var(--color-primary-600);
   
   /* ===== Typography Tokens ===== */
   
