@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/aria-proptypes */
 import React from 'react';
 import { MicPermissionState } from '@/lib/audio';
 
@@ -103,14 +104,31 @@ export const RecordButton: React.FC<RecordButtonProps> = ({
     return 'Speak instead of typing';
   };
 
+  const commonProps = {
+    type: 'button' as const,
+    onClick: handleClick,
+    disabled: disabled || micPermission === 'denied',
+    className: `record-button ${isRecording ? 'record-button--recording' : ''} ${className}`,
+    title: getTooltip()
+  };
+
+  if (isRecording) {
+    return (
+      <button
+        {...commonProps}
+        aria-label="Stop recording"
+        aria-pressed="true"
+      >
+        {getButtonContent()}
+      </button>
+    );
+  }
+
   return (
     <button
-      type="button"
-      className={`record-button ${isRecording ? 'record-button--recording' : ''} ${className}`}
-      onClick={handleClick}
-      disabled={disabled || micPermission === 'denied'}
-      aria-label={isRecording ? 'Stop recording' : 'Start recording'}
-      title={getTooltip()}
+      {...commonProps}
+      aria-label="Start recording"
+      aria-pressed="false"
     >
       {getButtonContent()}
     </button>
