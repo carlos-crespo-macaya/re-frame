@@ -1,0 +1,367 @@
+import { render, screen, act, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import ThoughtInputForm from '../ThoughtInputForm'
+import { AudioRecorder } from '@/lib/audio/audio-recorder'
+import { SSEClient } from '@/lib/streaming/sse-client'
+import * as AudioUtils from '@/lib/audio/audio-utils'
+import { useAudioRecorder } from '@/lib/audio/use-audio-recorder'
+import { useSSEClient } from '@/lib/streaming/use-sse-client'
+
+// Mock the audio modules
+jest.mock('@/lib/audio/audio-recorder')
+jest.mock('@/lib/streaming/sse-client')
+jest.mock('@/lib/audio/audio-utils')
+jest.mock('@/lib/audio/use-audio-recorder')
+jest.mock('@/lib/streaming/use-sse-client')
+
+// Mock canvas for AudioVisualizer
+HTMLCanvasElement.prototype.getContext = jest.fn(() => ({
+  clearRect: jest.fn(),
+  fillRect: jest.fn(),
+  fillStyle: '',
+  strokeStyle: '',
+  beginPath: jest.fn(),
+  moveTo: jest.fn(),
+  lineTo: jest.fn(),
+  stroke: jest.fn(),
+  arc: jest.fn(),
+  fill: jest.fn(),
+  scale: jest.fn(),
+  save: jest.fn(),
+  restore: jest.fn(),
+  translate: jest.fn()
+})) as any
+
+// Mock window.devicePixelRatio
+Object.defineProperty(window, 'devicePixelRatio', {
+  value: 1,
+  writable: true
+})
+
+describe('ThoughtInputForm - Audio Integration', () => {
+  let mockAudioRecorder: any
+  let mockSSEClient: any
+  let mockStartRecording: jest.Mock
+  let mockStopRecording: jest.Mock
+  let mockConnect: jest.Mock
+  let mockDisconnect: jest.Mock
+  let mockSendAudio: jest.Mock
+  let onTranscriptionCallback: ((text: string) => void) | undefined
+  let onDataAvailableCallback: ((data: Float32Array) => void) | undefined
+  
+  beforeEach(() => {
+    // Reset all mocks
+    jest.clearAllMocks()
+    
+    // Setup mock functions
+    mockStartRecording = jest.fn()
+    mockStopRecording = jest.fn()
+    mockConnect = jest.fn()
+    mockDisconnect = jest.fn()
+    mockSendAudio = jest.fn()
+    
+    // Mock useAudioRecorder hook
+    mockAudioRecorder = {
+      isRecording: false,
+      isProcessing: false,
+      micPermission: 'prompt',
+      error: null,
+      isGateOpen: false,
+      startRecording: mockStartRecording,
+      stopRecording: mockStopRecording,
+      cleanup: jest.fn()
+    };
+    
+    // Capture the callbacks from useAudioRecorder
+    (useAudioRecorder as jest.Mock).mockImplementation((options) => {
+      onTranscriptionCallback = options?.onTranscription
+      onDataAvailableCallback = options?.onDataAvailable
+      return mockAudioRecorder
+    })
+    
+    // Mock useSSEClient hook
+    mockSSEClient = {
+      isConnected: false,
+      connectionState: 'disconnected',
+      error: null,
+      messages: [],
+      sessionId: null,
+      connect: mockConnect,
+      disconnect: mockDisconnect,
+      sendMessage: jest.fn(),
+      sendAudio: mockSendAudio,
+      clearMessages: jest.fn(),
+      getLatestMessage: jest.fn(),
+      getMessagesByType: jest.fn().mockReturnValue([])
+    };
+    
+    (useSSEClient as jest.Mock).mockReturnValue(mockSSEClient)
+  })
+  
+  it('should show record button when audio is supported', () => {
+    // Mock audio support
+    jest.spyOn(AudioUtils, 'checkAudioSupport').mockReturnValue({
+      audioContext: true,
+      audioWorklet: true,
+      getUserMedia: true
+    })
+    
+    render(<ThoughtInputForm onSubmit={jest.fn()} onClear={jest.fn()} />)
+    
+    // The record button is inside AudioControls which is positioned inside the textarea
+    const audioControls = screen.getByTestId('audio-controls')
+    expect(audioControls).toBeInTheDocument()
+  })
+  
+  it('should not show record button when audio is not supported', () => {
+    jest.spyOn(AudioUtils, 'checkAudioSupport').mockReturnValue({
+      audioContext: false,
+      audioWorklet: false,
+      getUserMedia: false
+    })
+    
+    render(<ThoughtInputForm onSubmit={jest.fn()} onClear={jest.fn()} />)
+    expect(screen.queryByTestId('audio-controls')).not.toBeInTheDocument()
+  })
+  
+  it('should start recording when record button is clicked', async () => {
+    const user = userEvent.setup()
+    jest.spyOn(AudioUtils, 'checkAudioSupport').mockReturnValue({
+      audioContext: true,
+      audioWorklet: true,
+      getUserMedia: true
+    })
+    
+    render(<ThoughtInputForm onSubmit={jest.fn()} onClear={jest.fn()} />)
+    
+    const recordButton = screen.getByRole('button', { name: /start recording/i })
+    await user.click(recordButton)
+    
+    expect(mockStartRecording).toHaveBeenCalled()
+    expect(mockConnect).toHaveBeenCalled()
+  })
+  
+  it('should show transcription in real-time from SSE', async () => {
+    const mockOnSubmit = jest.fn()
+    
+    jest.spyOn(AudioUtils, 'checkAudioSupport').mockReturnValue({
+      audioContext: true,
+      audioWorklet: true,
+      getUserMedia: true
+    })
+    
+    // Mock SSE client as connected with transcription messages
+    const connectedSSEClient = {
+      ...mockSSEClient,
+      isConnected: true,
+      getMessagesByType: jest.fn().mockReturnValue([
+        { data: 'I am feeling anxious', message_type: 'transcription' }
+      ])
+    };
+    (useSSEClient as jest.Mock).mockReturnValue(connectedSSEClient)
+    
+    // Mock audio recorder as recording
+    const recordingAudioRecorder = {
+      ...mockAudioRecorder,
+      isRecording: true,
+      micPermission: 'granted'
+    };
+    (useAudioRecorder as jest.Mock).mockReturnValue(recordingAudioRecorder)
+    
+    const { rerender } = render(<ThoughtInputForm onSubmit={mockOnSubmit} onClear={jest.fn()} />)
+    
+    // Force a re-render to trigger the SSE message effect
+    rerender(<ThoughtInputForm onSubmit={mockOnSubmit} onClear={jest.fn()} />)
+    
+    await waitFor(() => {
+      expect(screen.getByText(/I am feeling anxious/)).toBeInTheDocument()
+    })
+  })
+  
+  it('should auto-submit in instant mode after stopping recording', async () => {
+    const user = userEvent.setup()
+    const mockOnSubmit = jest.fn()
+    
+    jest.spyOn(AudioUtils, 'checkAudioSupport').mockReturnValue({
+      audioContext: true,
+      audioWorklet: true,
+      getUserMedia: true
+    })
+    
+    // Start with recording state and instant mode
+    const recordingState = {
+      ...mockAudioRecorder,
+      isRecording: true,
+      micPermission: 'granted'
+    };
+    (useAudioRecorder as jest.Mock).mockReturnValue(recordingState)
+    
+    render(<ThoughtInputForm onSubmit={mockOnSubmit} onClear={jest.fn()} />)
+    
+    // Stop recording button
+    const stopButton = screen.getByRole('button', { name: /done/i })
+    
+    // Simulate having a transcription in instant mode
+    act(() => {
+      if (onTranscriptionCallback) {
+        onTranscriptionCallback('Quick thought')
+      }
+    })
+    
+    await user.click(stopButton)
+    
+    expect(mockStopRecording).toHaveBeenCalled()
+  })
+  
+  it('should buffer audio data before sending', async () => {
+    jest.useFakeTimers()
+    const user = userEvent.setup({ delay: null })
+    
+    jest.spyOn(AudioUtils, 'checkAudioSupport').mockReturnValue({
+      audioContext: true,
+      audioWorklet: true,
+      getUserMedia: true
+    })
+    
+    // Mock as connected
+    const connectedSSEClient = {
+      ...mockSSEClient,
+      isConnected: true
+    };
+    (useSSEClient as jest.Mock).mockReturnValue(connectedSSEClient)
+    
+    // Mock audio utilities
+    jest.spyOn(AudioUtils, 'arrayBufferToBase64').mockReturnValue('base64data')
+    jest.spyOn(AudioUtils, 'float32ToPcm16').mockImplementation((float32) => {
+      // Return a mock Int16Array with proper buffer
+      return new Int16Array(float32.length)
+    })
+    
+    render(<ThoughtInputForm onSubmit={jest.fn()} onClear={jest.fn()} />)
+    
+    // Start recording
+    const recordButton = screen.getByRole('button', { name: /start recording/i })
+    await user.click(recordButton)
+    
+    // Simulate audio data chunks
+    const audioData1 = new Float32Array([1, 2, 3])
+    const audioData2 = new Float32Array([4, 5, 6])
+    
+    act(() => {
+      // Simulate audio data events
+      if (onDataAvailableCallback) {
+        onDataAvailableCallback(audioData1)
+        onDataAvailableCallback(audioData2)
+      }
+    })
+    
+    // Should not send immediately
+    expect(mockSendAudio).not.toHaveBeenCalled()
+    
+    // Advance timer to trigger buffer send (200ms)
+    act(() => {
+      jest.advanceTimersByTime(200)
+    })
+    
+    // Should have sent buffered audio data
+    await waitFor(() => {
+      expect(mockSendAudio).toHaveBeenCalledWith('base64data', false)
+    })
+    
+    jest.useRealTimers()
+  })
+  
+  it('should handle permission denied gracefully', async () => {
+    const user = userEvent.setup()
+    
+    jest.spyOn(AudioUtils, 'checkAudioSupport').mockReturnValue({
+      audioContext: true,
+      audioWorklet: true,
+      getUserMedia: true
+    })
+    
+    render(<ThoughtInputForm onSubmit={jest.fn()} onClear={jest.fn()} />)
+    
+    // Should have audio controls initially
+    expect(screen.getByTestId('audio-controls')).toBeInTheDocument()
+    
+    // Find the permission denied button
+    const permissionButtons = screen.getAllByRole('button')
+    const denyButton = permissionButtons.find(btn => 
+      btn.textContent?.includes('Stay with typing')
+    )
+    
+    if (denyButton) {
+      await user.click(denyButton)
+      
+      // Audio controls should be hidden after permission denied
+      await waitFor(() => {
+        expect(screen.queryByTestId('audio-controls')).not.toBeInTheDocument()
+      })
+    }
+  })
+  
+  it('should integrate with SSE client for streaming', async () => {
+    const user = userEvent.setup()
+    
+    jest.spyOn(AudioUtils, 'checkAudioSupport').mockReturnValue({
+      audioContext: true,
+      audioWorklet: true,
+      getUserMedia: true
+    })
+    
+    render(<ThoughtInputForm onSubmit={jest.fn()} onClear={jest.fn()} />)
+    
+    // Should connect to SSE when starting recording
+    const recordButton = screen.getByRole('button', { name: /start recording/i })
+    await user.click(recordButton)
+    
+    await waitFor(() => {
+      expect(mockConnect).toHaveBeenCalled()
+    })
+    
+    // Update to recording state
+    const recordingState = {
+      ...mockAudioRecorder,
+      isRecording: true,
+      micPermission: 'granted'
+    };
+    (useAudioRecorder as jest.Mock).mockReturnValue(recordingState)
+    
+    // Should disconnect when form is cleared
+    const clearButton = screen.getByRole('button', { name: /clear/i })
+    await user.click(clearButton)
+    
+    await waitFor(() => {
+      expect(mockDisconnect).toHaveBeenCalled()
+    })
+  })
+  
+  it('should show review mode UI after recording in manual mode', async () => {
+    const user = userEvent.setup()
+    
+    jest.spyOn(AudioUtils, 'checkAudioSupport').mockReturnValue({
+      audioContext: true,
+      audioWorklet: true,
+      getUserMedia: true
+    })
+    
+    // Mock recording state with manual mode
+    const recordingState = {
+      ...mockAudioRecorder,
+      isRecording: true,
+      micPermission: 'granted'
+    };
+    (useAudioRecorder as jest.Mock).mockReturnValue(recordingState)
+    
+    render(<ThoughtInputForm onSubmit={jest.fn()} onClear={jest.fn()} />)
+    
+    // Find done button in recording UI
+    const doneButton = screen.getByRole('button', { name: /done/i })
+    
+    // Stop recording
+    await user.click(doneButton)
+    
+    expect(mockStopRecording).toHaveBeenCalled()
+  })
+})

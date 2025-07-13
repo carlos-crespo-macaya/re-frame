@@ -5,6 +5,7 @@ import { MicPermissionState } from './audio-types'
 export interface UseAudioRecorderOptions extends AudioRecorderOptions {
   onTranscription?: (text: string) => void
   onError?: (error: Error) => void
+  onDataAvailable?: (data: Float32Array) => void
 }
 
 export interface AudioRecorderState {
@@ -67,7 +68,8 @@ export function useAudioRecorder(options: UseAudioRecorderOptions = {}) {
         },
         onStop: (audioBlob) => {
           setState(prev => ({ ...prev, audioBlob }))
-        }
+        },
+        onDataAvailable: options.onDataAvailable
       })
       
       await recorder.initialize()
