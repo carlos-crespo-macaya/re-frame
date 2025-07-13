@@ -91,6 +91,14 @@ export function validateAudioConfig(
   if (type === 'recording') {
     const recordingConfig = config as Partial<RecordingConfig>;
     
+    // Check for required fields for recording
+    const requiredFields: (keyof RecordingConfig)[] = ['sampleRate', 'channels', 'bitDepth', 'bufferInterval'];
+    for (const field of requiredFields) {
+      if (recordingConfig[field] === undefined) {
+        throw new Error(`Missing required field: ${field}`);
+      }
+    }
+    
     if (recordingConfig.sampleRate !== undefined && recordingConfig.sampleRate <= 0) {
       throw new Error(`Invalid sample rate: ${recordingConfig.sampleRate}`);
     }
@@ -110,6 +118,14 @@ export function validateAudioConfig(
     }
   } else {
     const playbackConfig = config as Partial<PlaybackConfig>;
+    
+    // Check for required fields for playback
+    const requiredFields: (keyof PlaybackConfig)[] = ['sampleRate', 'channels', 'bufferSize'];
+    for (const field of requiredFields) {
+      if (playbackConfig[field] === undefined) {
+        throw new Error(`Missing required field: ${field}`);
+      }
+    }
     
     if (playbackConfig.sampleRate !== undefined && playbackConfig.sampleRate <= 0) {
       throw new Error(`Invalid sample rate: ${playbackConfig.sampleRate}`);
