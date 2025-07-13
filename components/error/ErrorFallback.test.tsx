@@ -43,7 +43,10 @@ describe('ErrorFallback', () => {
 
   it('shows error details in development mode', () => {
     const originalEnv = process.env.NODE_ENV
-    process.env.NODE_ENV = 'development'
+    Object.defineProperty(process.env, 'NODE_ENV', {
+      configurable: true,
+      value: 'development'
+    })
     
     render(<ErrorFallback error={mockError} reset={mockReset} />)
     
@@ -56,23 +59,35 @@ describe('ErrorFallback', () => {
     })
     expect(preElement).toBeInTheDocument()
     
-    process.env.NODE_ENV = originalEnv
+    Object.defineProperty(process.env, 'NODE_ENV', {
+      configurable: true,
+      value: originalEnv
+    })
   })
 
   it('hides error details in production mode', () => {
     const originalEnv = process.env.NODE_ENV
-    process.env.NODE_ENV = 'production'
+    Object.defineProperty(process.env, 'NODE_ENV', {
+      configurable: true,
+      value: 'production'
+    })
     
     render(<ErrorFallback error={mockError} reset={mockReset} />)
     
     expect(screen.queryByText(/error details/i)).not.toBeInTheDocument()
     
-    process.env.NODE_ENV = originalEnv
+    Object.defineProperty(process.env, 'NODE_ENV', {
+      configurable: true,
+      value: originalEnv
+    })
   })
 
   it('handles errors with stack traces', () => {
     const originalEnv = process.env.NODE_ENV
-    process.env.NODE_ENV = 'development'
+    Object.defineProperty(process.env, 'NODE_ENV', {
+      configurable: true,
+      value: 'development'
+    })
     
     const errorWithStack = new Error('Test error')
     errorWithStack.stack = 'Error: Test error\n    at TestComponent'
@@ -81,7 +96,10 @@ describe('ErrorFallback', () => {
     
     expect(screen.getByText(/at TestComponent/)).toBeInTheDocument()
     
-    process.env.NODE_ENV = originalEnv
+    Object.defineProperty(process.env, 'NODE_ENV', {
+      configurable: true,
+      value: originalEnv
+    })
   })
 
   it('is accessible with proper ARIA attributes', () => {
