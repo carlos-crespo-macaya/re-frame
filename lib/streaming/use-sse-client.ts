@@ -2,7 +2,7 @@
  * React hook for SSE client integration
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { 
   SSEClient, 
   type SSEClientOptions 
@@ -50,10 +50,18 @@ export function useSSEClient(options: UseSSEClientOptions = {}) {
   const assemblerRef = useRef(new MessageAssembler());
   const rateLimiterRef = useRef(new RateLimiter(rateLimitMs));
   
+  // Memoize SSE options to prevent unnecessary re-renders
+  const memoizedSseOptions = useMemo(() => sseOptions, [
+    sseOptions.baseUrl,
+    sseOptions.reconnectInterval,
+    sseOptions.maxReconnectAttempts,
+    sseOptions.heartbeatInterval
+  ]);
+  
   // Initialize SSE client
   useEffect(() => {
     const client = new SSEClient({
-      ...sseOptions,
+      ...memoizedSseOptions,
       onMessage: (message: ServerMessage) => {
         // Try to assemble chunked messages
         const complete = assemblerRef.current.addChunk(message);
@@ -101,7 +109,7 @@ export function useSSEClient(options: UseSSEClientOptions = {}) {
     return () => {
       client.disconnect();
     };
-  }, [sseOptions, autoConnect]); // Re-create client when options change
+  }, [memoizedSseOptions, autoConnect]); // Re-create client when options change
   
   // Connect to SSE
   const connect = useCallback(async (sessionId?: string) => {
