@@ -62,7 +62,7 @@ class AudioRecorderProcessor extends AudioWorkletProcessor {
     this.port.postMessage({
       type: 'AUDIO_DATA',
       audioData: dataToSend,
-      timestamp: currentTime
+      timestamp: this.currentTime
     })
   }
 }
