@@ -25,10 +25,10 @@ export function pcmToText(pcmData: string): Promise<string> {
 }
 
 /**
- * Encode PCM audio buffer to base64
+ * Encode Int16 PCM audio buffer to base64
  */
-export function encodePCM(buffer: Float32Array | Int16Array): string {
-  const bytes = new Uint8Array(buffer.buffer);
+export function encodePCM16(buffer: Int16Array): string {
+  const bytes = new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength);
   let binary = '';
   
   for (let i = 0; i < bytes.byteLength; i++) {
@@ -39,9 +39,22 @@ export function encodePCM(buffer: Float32Array | Int16Array): string {
 }
 
 /**
- * Decode base64 to PCM audio buffer
+ * Encode Float32 PCM audio buffer to base64 (converts to Int16 first)
  */
-export function decodePCM(base64: string): Int16Array {
+export function encodePCM32(buffer: Float32Array): string {
+  // Convert Float32 to Int16 first
+  const int16Buffer = new Int16Array(buffer.length);
+  for (let i = 0; i < buffer.length; i++) {
+    const clamped = Math.max(-1, Math.min(1, buffer[i]));
+    int16Buffer[i] = Math.round(clamped * 32767);
+  }
+  return encodePCM16(int16Buffer);
+}
+
+/**
+ * Decode base64 to Int16 PCM audio buffer
+ */
+export function decodePCM16(base64: string): Int16Array {
   const binary = atob(base64);
   const bytes = new Uint8Array(binary.length);
   
@@ -50,6 +63,26 @@ export function decodePCM(base64: string): Int16Array {
   }
   
   return new Int16Array(bytes.buffer);
+}
+
+/**
+ * Legacy function for backward compatibility
+ * @deprecated Use encodePCM16 or encodePCM32 instead
+ */
+export function encodePCM(buffer: Float32Array | Int16Array): string {
+  if (buffer instanceof Float32Array) {
+    return encodePCM32(buffer);
+  } else {
+    return encodePCM16(buffer);
+  }
+}
+
+/**
+ * Legacy function for backward compatibility
+ * @deprecated Use decodePCM16 instead
+ */
+export function decodePCM(base64: string): Int16Array {
+  return decodePCM16(base64);
 }
 
 /**
