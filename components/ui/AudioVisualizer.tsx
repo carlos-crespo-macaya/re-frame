@@ -76,8 +76,9 @@ export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({
       const x = index * barWidth + barGap / 2;
       const y = (height - barHeight) / 2;
 
-      ctx.fillStyle = getComputedStyle(document.documentElement)
-        .getPropertyValue('--color-text-secondary');
+      const textSecondaryColor = getComputedStyle(document.documentElement)
+        .getPropertyValue('--color-text-secondary').trim() || '#6b7280'; // Fallback gray-500
+      ctx.fillStyle = textSecondaryColor;
       ctx.fillRect(x, y, barWidth - barGap, barHeight);
     });
   };
@@ -95,8 +96,9 @@ export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({
       const scale = isActive ? 0.5 + audioLevel * 0.5 : 0.3;
       const opacity = isActive ? 0.4 + audioLevel * 0.6 : 0.3;
 
-      ctx.fillStyle = getComputedStyle(document.documentElement)
-        .getPropertyValue('--color-primary');
+      const primaryColor = getComputedStyle(document.documentElement)
+        .getPropertyValue('--color-primary').trim() || '#3b82f6'; // Fallback blue-500
+      ctx.fillStyle = primaryColor;
       ctx.globalAlpha = opacity;
       
       ctx.beginPath();
