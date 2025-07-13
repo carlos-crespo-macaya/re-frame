@@ -24,8 +24,9 @@ describe('Audio Configuration', () => {
 
     it('should have valid worklet configuration', () => {
       expect(AUDIO_CONFIG.worklets).toBeDefined();
-      expect(AUDIO_CONFIG.worklets.recorderPath).toBe('/audio-worklets/pcm-recorder.js');
-      expect(AUDIO_CONFIG.worklets.playerPath).toBe('/audio-worklets/pcm-player.js');
+      expect(AUDIO_CONFIG.worklets.recorderPath).toBe('/worklets/audio-recorder-processor.js');
+      expect(AUDIO_CONFIG.worklets.playerPath).toBe('/worklets/noise-gate-processor.js');
+      expect(AUDIO_CONFIG.worklets.processorPath).toBe('/worklets/noise-gate-processor.js');
     });
 
     it('should have valid constraints configuration', () => {

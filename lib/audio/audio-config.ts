@@ -19,6 +19,7 @@ export interface PlaybackConfig {
 export interface WorkletConfig {
   recorderPath: string;
   playerPath: string;
+  processorPath: string;
 }
 
 export interface ConstraintsConfig {
@@ -47,8 +48,9 @@ export const AUDIO_CONFIG: AudioConfiguration = {
     bufferSize: 180       // 180 seconds ring buffer
   },
   worklets: {
-    recorderPath: '/audio-worklets/pcm-recorder.js',
-    playerPath: '/audio-worklets/pcm-player.js'
+    recorderPath: '/worklets/audio-recorder-processor.js',
+    playerPath: '/worklets/noise-gate-processor.js',
+    processorPath: '/worklets/noise-gate-processor.js'
   },
   constraints: {
     maxRecordingDuration: 300000,  // 5 minutes max recording
