@@ -191,6 +191,7 @@ describe('Audio Types', () => {
       const state: AudioState = {
         isRecording: true,
         isPlaying: false,
+        isProcessing: false,
         audioEnabled: true,
         micPermission: 'granted',
         transcription: 'Test transcription',

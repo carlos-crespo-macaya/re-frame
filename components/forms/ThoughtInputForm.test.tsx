@@ -2,6 +2,47 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import ThoughtInputForm from './ThoughtInputForm'
 
+// Mock audio modules
+jest.mock('@/lib/audio/use-audio-recorder', () => ({
+  useAudioRecorder: () => ({
+    isRecording: false,
+    isProcessing: false,
+    micPermission: 'prompt',
+    error: null,
+    isGateOpen: false,
+    startRecording: jest.fn(),
+    stopRecording: jest.fn(),
+    cleanup: jest.fn()
+  })
+}))
+
+jest.mock('@/lib/streaming/use-sse-client', () => ({
+  useSSEClient: () => ({
+    isConnected: false,
+    connectionState: 'disconnected',
+    error: null,
+    messages: [],
+    sessionId: null,
+    connect: jest.fn(),
+    disconnect: jest.fn(),
+    sendMessage: jest.fn(),
+    sendAudio: jest.fn(),
+    clearMessages: jest.fn(),
+    getLatestMessage: jest.fn(),
+    getMessagesByType: jest.fn().mockReturnValue([])
+  })
+}))
+
+jest.mock('@/lib/audio/audio-utils', () => ({
+  checkAudioSupport: () => ({
+    audioContext: false,
+    audioWorklet: false,
+    getUserMedia: false
+  }),
+  arrayBufferToBase64: jest.fn(),
+  float32ToPcm16: jest.fn()
+}))
+
 describe('ThoughtInputForm', () => {
   const mockOnSubmit = jest.fn()
   const mockOnClear = jest.fn()
@@ -13,9 +54,8 @@ describe('ThoughtInputForm', () => {
   it('renders form with all required elements', () => {
     render(<ThoughtInputForm onSubmit={mockOnSubmit} onClear={mockOnClear} />)
     
-    expect(screen.getByLabelText(/describe your thought/i)).toBeInTheDocument()
-    expect(screen.getByPlaceholderText(/what situation or thought would you like to examine/i)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /reframe this thought/i })).toBeInTheDocument()
+    expect(screen.getByPlaceholderText(/what happened\? how did it feel\?/i)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /generate perspective/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /clear/i })).toBeInTheDocument()
   })
 
@@ -23,7 +63,7 @@ describe('ThoughtInputForm', () => {
     const user = userEvent.setup()
     render(<ThoughtInputForm onSubmit={mockOnSubmit} onClear={mockOnClear} />)
     
-    const textarea = screen.getByLabelText(/describe your thought/i)
+    const textarea = screen.getByPlaceholderText(/what happened\? how did it feel\?/i)
     await user.type(textarea, 'I feel anxious about the meeting')
     
     expect(textarea).toHaveValue('I feel anxious about the meeting')
@@ -33,8 +73,8 @@ describe('ThoughtInputForm', () => {
     const user = userEvent.setup()
     render(<ThoughtInputForm onSubmit={mockOnSubmit} onClear={mockOnClear} />)
     
-    const textarea = screen.getByLabelText(/describe your thought/i)
-    const submitButton = screen.getByRole('button', { name: /reframe this thought/i })
+    const textarea = screen.getByPlaceholderText(/what happened\? how did it feel\?/i)
+    const submitButton = screen.getByRole('button', { name: /generate perspective/i })
     
     await user.type(textarea, 'I feel anxious about the meeting')
     await user.click(submitButton)
@@ -47,7 +87,7 @@ describe('ThoughtInputForm', () => {
     const user = userEvent.setup()
     render(<ThoughtInputForm onSubmit={mockOnSubmit} onClear={mockOnClear} />)
     
-    const textarea = screen.getByLabelText(/describe your thought/i)
+    const textarea = screen.getByPlaceholderText(/what happened\? how did it feel\?/i)
     const clearButton = screen.getByRole('button', { name: /clear/i })
     
     await user.type(textarea, 'Some text')
@@ -60,7 +100,7 @@ describe('ThoughtInputForm', () => {
   it('disables submit button when textarea is empty', () => {
     render(<ThoughtInputForm onSubmit={mockOnSubmit} onClear={mockOnClear} />)
     
-    const submitButton = screen.getByRole('button', { name: /reframe this thought/i })
+    const submitButton = screen.getByRole('button', { name: /generate perspective/i })
     expect(submitButton).toBeDisabled()
   })
 
@@ -68,8 +108,8 @@ describe('ThoughtInputForm', () => {
     const user = userEvent.setup()
     render(<ThoughtInputForm onSubmit={mockOnSubmit} onClear={mockOnClear} />)
     
-    const textarea = screen.getByLabelText(/describe your thought/i)
-    const submitButton = screen.getByRole('button', { name: /reframe this thought/i })
+    const textarea = screen.getByPlaceholderText(/what happened\? how did it feel\?/i)
+    const submitButton = screen.getByRole('button', { name: /generate perspective/i })
     
     await user.type(textarea, 'Some thought')
     expect(submitButton).toBeEnabled()
@@ -85,7 +125,7 @@ describe('ThoughtInputForm', () => {
     const user = userEvent.setup()
     render(<ThoughtInputForm onSubmit={mockOnSubmit} onClear={mockOnClear} />)
     
-    const textarea = screen.getByLabelText(/describe your thought/i)
+    const textarea = screen.getByPlaceholderText(/what happened\? how did it feel\?/i)
     await user.type(textarea, 'Hello')
     
     expect(screen.getByText(/5 \/ 1000/i)).toBeInTheDocument()
@@ -95,7 +135,7 @@ describe('ThoughtInputForm', () => {
     const user = userEvent.setup()
     render(<ThoughtInputForm onSubmit={mockOnSubmit} onClear={mockOnClear} />)
     
-    const textarea = screen.getByLabelText(/describe your thought/i) as HTMLTextAreaElement
+    const textarea = screen.getByPlaceholderText(/what happened\? how did it feel\?/i) as HTMLTextAreaElement
     const longText = 'a'.repeat(1001)
     
     await user.type(textarea, longText)
@@ -107,8 +147,8 @@ describe('ThoughtInputForm', () => {
     const user = userEvent.setup()
     render(<ThoughtInputForm onSubmit={mockOnSubmit} onClear={mockOnClear} />)
     
-    const textarea = screen.getByLabelText(/describe your thought/i)
-    const submitButton = screen.getByRole('button', { name: /reframe this thought/i })
+    const textarea = screen.getByPlaceholderText(/what happened\? how did it feel\?/i)
+    const submitButton = screen.getByRole('button', { name: /generate perspective/i })
     
     await user.type(textarea, 'My thought')
     await user.click(submitButton)
@@ -120,7 +160,7 @@ describe('ThoughtInputForm', () => {
     render(<ThoughtInputForm onSubmit={mockOnSubmit} onClear={mockOnClear} isLoading />)
     
     const submitButton = screen.getByRole('button', { name: /processing/i })
-    const textarea = screen.getByLabelText(/describe your thought/i)
+    const textarea = screen.getByPlaceholderText(/what happened\? how did it feel\?/i)
     
     expect(submitButton).toBeDisabled()
     expect(textarea).toBeDisabled()
@@ -132,12 +172,12 @@ describe('ThoughtInputForm', () => {
     render(<ThoughtInputForm onSubmit={mockOnSubmit} onClear={mockOnClear} />)
     
     await user.tab()
-    expect(screen.getByLabelText(/describe your thought/i)).toHaveFocus()
+    expect(screen.getByPlaceholderText(/what happened\? how did it feel\?/i)).toHaveFocus()
     
-    await user.type(screen.getByLabelText(/describe your thought/i), 'Test')
+    await user.type(screen.getByPlaceholderText(/what happened\? how did it feel\?/i), 'Test')
     
     await user.tab()
-    expect(screen.getByRole('button', { name: /reframe this thought/i })).toHaveFocus()
+    expect(screen.getByRole('button', { name: /generate perspective/i })).toHaveFocus()
     
     await user.tab()
     expect(screen.getByRole('button', { name: /clear/i })).toHaveFocus()
@@ -147,7 +187,7 @@ describe('ThoughtInputForm', () => {
     const user = userEvent.setup()
     render(<ThoughtInputForm onSubmit={mockOnSubmit} onClear={mockOnClear} />)
     
-    const textarea = screen.getByLabelText(/describe your thought/i)
+    const textarea = screen.getByPlaceholderText(/what happened\? how did it feel\?/i)
     await user.type(textarea, 'My thought')
     await user.keyboard('{Control>}{Enter}{/Control}')
     
@@ -159,7 +199,7 @@ describe('ThoughtInputForm', () => {
     render(<ThoughtInputForm onSubmit={mockOnSubmit} onClear={mockOnClear} />)
     
     // Initial state - empty message
-    const textarea = screen.getByLabelText(/describe your thought/i)
+    const textarea = screen.getByPlaceholderText(/what happened\? how did it feel\?/i)
     
     // Short input
     await user.type(textarea, 'Hello')

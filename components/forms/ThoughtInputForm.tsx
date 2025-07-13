@@ -1,10 +1,12 @@
 'use client'
 
-import { useState, FormEvent, KeyboardEvent, useCallback, useEffect } from 'react'
+import { useState, FormEvent, KeyboardEvent, useCallback, useEffect, useRef } from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui'
 import { AudioControls } from './AudioControls'
 import { createDefaultAudioState, AudioMode, AudioState, useAudioRecorder } from '@/lib/audio'
+import { useSSEClient } from '@/lib/streaming/use-sse-client'
+import { checkAudioSupport, arrayBufferToBase64, float32ToPcm16 } from '@/lib/audio/audio-utils'
 
 interface ThoughtInputFormProps {
   onSubmit: (thought: string) => void
@@ -19,7 +21,18 @@ export default function ThoughtInputForm({
 }: ThoughtInputFormProps) {
   const [thought, setThought] = useState('')
   const [audioState, setAudioState] = useState<AudioState>(createDefaultAudioState())
+  const [audioSupported, setAudioSupported] = useState(false)
   const maxLength = 1000
+  const audioBufferRef = useRef<Float32Array[]>([])
+  const bufferTimeoutRef = useRef<NodeJS.Timeout>()
+  
+  // Initialize SSE client
+  const sseClient = useSSEClient({
+    baseUrl: process.env.NEXT_PUBLIC_API_URL || '/api/sse',
+    autoConnect: false,
+    enableRateLimit: true,
+    rateLimitMs: 100
+  })
   
   // Initialize audio recorder
   const audioRecorder = useAudioRecorder({
@@ -37,9 +50,75 @@ export default function ThoughtInputForm({
         isProcessing: false,
         isRecording: false
       }))
+    },
+    onDataAvailable: (audioData) => {
+      // Buffer audio data
+      audioBufferRef.current.push(audioData)
+      
+      // Clear existing timeout
+      if (bufferTimeoutRef.current) {
+        clearTimeout(bufferTimeoutRef.current)
+      }
+      
+      // Set new timeout to send buffered data after 200ms
+      bufferTimeoutRef.current = setTimeout(() => {
+        sendBufferedAudio()
+      }, 200)
     }
   })
 
+  // Check audio support on mount
+  useEffect(() => {
+    const support = checkAudioSupport()
+    setAudioSupported(support.audioContext && support.audioWorklet && support.getUserMedia)
+  }, [])
+  
+  // Listen for SSE messages
+  useEffect(() => {
+    if (sseClient.isConnected) {
+      const transcriptionMessages = sseClient.getMessagesByType('transcription')
+      const latestTranscription = transcriptionMessages[transcriptionMessages.length - 1]
+      
+      if (latestTranscription) {
+        setAudioState(prev => ({
+          ...prev,
+          transcription: latestTranscription.data,
+          isProcessing: false
+        }))
+      }
+    }
+  }, [sseClient.messages, sseClient.isConnected])
+  
+  // Send buffered audio data
+  const sendBufferedAudio = useCallback(async () => {
+    if (audioBufferRef.current.length === 0 || !sseClient.isConnected) return
+    
+    try {
+      // Merge all audio chunks
+      const totalLength = audioBufferRef.current.reduce((acc, chunk) => acc + chunk.length, 0)
+      const mergedAudio = new Float32Array(totalLength)
+      let offset = 0
+      
+      for (const chunk of audioBufferRef.current) {
+        mergedAudio.set(chunk, offset)
+        offset += chunk.length
+      }
+      
+      // Convert to 16-bit PCM and base64
+      const pcm16 = float32ToPcm16(mergedAudio)
+      const arrayBuffer = pcm16.buffer.slice(pcm16.byteOffset, pcm16.byteOffset + pcm16.byteLength)
+      const base64Audio = arrayBufferToBase64(arrayBuffer)
+      
+      // Send via SSE
+      await sseClient.sendAudio(base64Audio, false)
+      
+      // Clear buffer
+      audioBufferRef.current = []
+    } catch (error) {
+      console.error('Failed to send audio buffer:', error)
+    }
+  }, [sseClient])
+  
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (thought.trim() && !isLoading) {
@@ -48,6 +127,7 @@ export default function ThoughtInputForm({
       // Reset audio state and cleanup recorder after submission
       setAudioState(createDefaultAudioState())
       audioRecorder.cleanup()
+      sseClient.disconnect()
     }
   }
 
@@ -57,6 +137,11 @@ export default function ThoughtInputForm({
     // Reset audio state and cleanup recorder
     setAudioState(createDefaultAudioState())
     audioRecorder.cleanup()
+    sseClient.disconnect()
+    audioBufferRef.current = []
+    if (bufferTimeoutRef.current) {
+      clearTimeout(bufferTimeoutRef.current)
+    }
   }
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -88,21 +173,40 @@ export default function ThoughtInputForm({
   // Audio handlers
   const handleStartRecording = useCallback(async () => {
     try {
-      setAudioState(prev => ({ ...prev, error: null }))
+      setAudioState(prev => ({ ...prev, error: null, audioEnabled: true }))
+      
+      // Connect to SSE for streaming
+      await sseClient.connect()
+      
       await audioRecorder.startRecording()
     } catch (error) {
       console.error('Failed to start recording:', error)
+      setAudioState(prev => ({ ...prev, error: error as Error }))
     }
-  }, [audioRecorder])
+  }, [audioRecorder, sseClient])
 
   const handleStopRecording = useCallback(async () => {
     try {
       setAudioState(prev => ({ ...prev, isProcessing: true }))
+      
+      // Send any remaining buffered audio
+      if (audioBufferRef.current.length > 0) {
+        await sendBufferedAudio()
+      }
+      
       await audioRecorder.stopRecording()
+      
+      // In instant mode, auto-submit after recording
+      if (audioState.mode === 'instant' && audioState.transcription) {
+        onSubmit(audioState.transcription)
+        setThought('')
+        setAudioState(createDefaultAudioState())
+        sseClient.disconnect()
+      }
     } catch (error) {
       console.error('Failed to stop recording:', error)
     }
-  }, [audioRecorder])
+  }, [audioRecorder, audioState.mode, audioState.transcription, onSubmit, sendBufferedAudio, sseClient])
 
   const handleModeChange = useCallback((mode: AudioMode) => {
     setAudioState(prev => ({
@@ -175,18 +279,25 @@ export default function ThoughtInputForm({
           />
           
           {/* Audio Controls - positioned inside textarea */}
-          <AudioControls
-            audioState={audioState}
-            onStartRecording={handleStartRecording}
-            onStopRecording={handleStopRecording}
-            onModeChange={handleModeChange}
-            onTranscriptionEdit={handleTranscriptionEdit}
-            onTranscriptionAccept={handleTranscriptionAccept}
-            onReRecord={handleReRecord}
-            onPermissionDenied={() => setAudioState(prev => ({ ...prev, micPermission: 'denied' }))}
-            disabled={isLoading}
-            className="audio-controls--in-textarea"
-          />
+          {audioSupported && audioState.micPermission !== 'denied' && (
+            <div data-testid="audio-controls">
+              <AudioControls
+                audioState={audioState}
+                onStartRecording={handleStartRecording}
+                onStopRecording={handleStopRecording}
+                onModeChange={handleModeChange}
+                onTranscriptionEdit={handleTranscriptionEdit}
+                onTranscriptionAccept={handleTranscriptionAccept}
+                onReRecord={handleReRecord}
+                onPermissionDenied={() => {
+                  setAudioState(prev => ({ ...prev, micPermission: 'denied', audioEnabled: false }))
+                  setAudioSupported(false)
+                }}
+                disabled={isLoading}
+                className="audio-controls--in-textarea"
+              />
+            </div>
+          )}
           
           {/* Decorative element */}
           <div className="absolute -bottom-2 -right-2 w-16 h-16 bg-gradient-to-br from-primary-200/30 to-secondary-200/30 rounded-full blur-xl pointer-events-none" />

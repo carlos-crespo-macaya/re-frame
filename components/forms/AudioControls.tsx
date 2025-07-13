@@ -107,7 +107,7 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
   // Recording state
   if (audioState.isRecording) {
     return (
-      <div className={`audio-controls audio-controls--recording ${className}`}>
+      <div className={`audio-controls audio-controls--recording ${className}`} data-recording="true">
         <div className="audio-controls__header">
           <span className="audio-controls__status">
             <span className="audio-controls__status-dot" />
