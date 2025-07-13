@@ -4,6 +4,12 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Component-specific styles */
+@import './components/record-button.css';
+@import './components/audio-visualizer.css';
+@import './components/playback-controls.css';
+@import './components/audio-controls.css';
+
 /* ===== Font Imports ===== */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
