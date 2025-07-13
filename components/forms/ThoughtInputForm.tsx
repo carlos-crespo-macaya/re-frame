@@ -106,7 +106,7 @@ export default function ThoughtInputForm({
       
       // Convert to 16-bit PCM and base64
       const pcm16 = float32ToPcm16(mergedAudio)
-      const arrayBuffer = pcm16.buffer.slice(pcm16.byteOffset, pcm16.byteOffset + pcm16.byteLength)
+      const arrayBuffer = pcm16.buffer.slice(pcm16.byteOffset, pcm16.byteOffset + pcm16.byteLength) as ArrayBuffer
       const base64Audio = arrayBufferToBase64(arrayBuffer)
       
       // Send via SSE
