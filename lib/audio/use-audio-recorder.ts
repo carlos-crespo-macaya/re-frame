@@ -1,7 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { AudioRecorder, AudioRecorderOptions } from './audio-recorder'
-
-export type MicPermissionState = 'prompt' | 'granted' | 'denied' | 'checking'
+import { MicPermissionState } from './audio-types'
 
 export interface UseAudioRecorderOptions extends AudioRecorderOptions {
   onTranscription?: (text: string) => void
