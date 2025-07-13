@@ -179,3 +179,31 @@ export function getAudioConstraints(sampleRate: number = 16000): MediaStreamCons
     video: false
   };
 }
+
+/**
+ * Check detailed audio support in the browser
+ */
+export function checkAudioSupport(): {
+  audioContext: boolean;
+  audioWorklet: boolean;
+  getUserMedia: boolean;
+} {
+  if (typeof window === 'undefined') {
+    return {
+      audioContext: false,
+      audioWorklet: false,
+      getUserMedia: false
+    };
+  }
+  
+  const AudioContextClass = (window as any).AudioContext || (window as any).webkitAudioContext;
+  const hasAudioContext = !!AudioContextClass;
+  const hasAudioWorklet = hasAudioContext && AudioContextClass.prototype && 'audioWorklet' in AudioContextClass.prototype;
+  const hasGetUserMedia = !!(navigator?.mediaDevices?.getUserMedia);
+  
+  return {
+    audioContext: hasAudioContext,
+    audioWorklet: hasAudioWorklet,
+    getUserMedia: hasGetUserMedia
+  };
+}
