@@ -1,0 +1,70 @@
+# Add 'frontend' label to any changes within 'app', 'components', 'lib' folders
+frontend:
+  - changed-files:
+    - any-glob-to-any-file:
+      - app/**
+      - components/**
+      - lib/**
+      - '*.tsx'
+      - '*.ts'
+      - '*.css'
+
+# Add 'testing' label to any test file changes
+testing:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '**/*.test.ts'
+      - '**/*.test.tsx'
+      - '**/__tests__/**'
+      - jest.config.js
+
+# Add 'documentation' label to any markdown file changes
+documentation:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '**/*.md'
+      - docs/**
+
+# Add 'infrastructure' label to CI/CD and config changes
+infrastructure:
+  - changed-files:
+    - any-glob-to-any-file:
+      - .github/**
+      - firebase.json
+      - .firebaserc
+      - package.json
+      - pnpm-lock.yaml
+      - tsconfig.json
+      - next.config.js
+
+# Add 'accessibility' label to accessibility-related changes
+accessibility:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '**/accessibility/**'
+      - '**/*a11y*'
+      - '**/*aria*'
+
+# Add 'audio' label to audio-related changes
+audio:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '**/audio/**'
+      - '**/*audio*'
+      - '**/*recording*'
+      - '**/*voice*'
+
+# Add 'ui' label to UI component changes
+ui:
+  - changed-files:
+    - any-glob-to-any-file:
+      - components/ui/**
+      - app/styles/**
+
+# Add 'performance' label to performance-related changes
+performance:
+  - changed-files:
+    - any-glob-to-any-file:
+      - '**/*performance*'
+      - '**/*optimize*'
+      - '**/*lazy*'
