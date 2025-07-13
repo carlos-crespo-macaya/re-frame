@@ -69,9 +69,12 @@ export function* chunkMessage(
  */
 export class MessageAssembler {
   private chunks: Map<string, string[]> = new Map();
+  private messageCounter = 0;
   
   addChunk(message: ServerMessage): string | null {
-    const key = `${message.session_id}-${message.timestamp}`;
+    // Use timestamp if available, otherwise use chunk_id or a counter
+    const timestamp = message.timestamp || message.chunk_id || `msg-${this.messageCounter++}`;
+    const key = `${message.session_id}-${timestamp}`;
     
     if (!this.chunks.has(key)) {
       this.chunks.set(key, []);
@@ -91,6 +94,7 @@ export class MessageAssembler {
   
   clear(): void {
     this.chunks.clear();
+    this.messageCounter = 0;
   }
 }
 
