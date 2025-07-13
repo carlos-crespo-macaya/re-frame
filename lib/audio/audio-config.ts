@@ -104,24 +104,9 @@ export function validateAudioConfig(
       throw new Error(`Invalid bit depth: ${recordingConfig.bitDepth}`);
     }
     
-    // Check required fields for full config
-    if ('sampleRate' in config && 'channels' in config && 
-        'bitDepth' in config && 'bufferInterval' in config) {
-      const fullConfig = config as RecordingConfig;
-      if (!fullConfig.bitDepth) {
-        throw new Error('Missing required field: bitDepth');
-      }
-      if (!fullConfig.bufferInterval) {
-        throw new Error('Missing required field: bufferInterval');
-      }
-    } else if (type === 'recording') {
-      // Check if any required field is missing when validating a partial config
-      const requiredFields = ['sampleRate', 'channels', 'bitDepth', 'bufferInterval'];
-      for (const field of requiredFields) {
-        if (!(field in config)) {
-          throw new Error(`Missing required field: ${field}`);
-        }
-      }
+    // For recording config, validate bufferInterval if present
+    if (recordingConfig.bufferInterval !== undefined && recordingConfig.bufferInterval <= 0) {
+      throw new Error(`Invalid buffer interval: ${recordingConfig.bufferInterval}`);
     }
   } else {
     const playbackConfig = config as Partial<PlaybackConfig>;

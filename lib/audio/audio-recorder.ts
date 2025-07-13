@@ -76,9 +76,9 @@ export class AudioRecorder {
       }
       
       // Connect audio graph
+      // Note: Do NOT connect to audioContext.destination to avoid feedback loop
       this.source.connect(this.noiseGate)
       this.noiseGate.connect(this.recorder)
-      this.recorder.connect(this.audioContext.destination)
       
     } catch (error) {
       this.cleanup()
