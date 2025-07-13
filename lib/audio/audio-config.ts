@@ -86,10 +86,10 @@ export function getWorkletConfig(): WorkletConfig {
  */
 export function validateAudioConfig(
   type: 'recording' | 'playback',
-  config: Partial<RecordingConfig | PlaybackConfig>
+  config: RecordingConfig | PlaybackConfig
 ): void {
   if (type === 'recording') {
-    const recordingConfig = config as Partial<RecordingConfig>;
+    const recordingConfig = config as RecordingConfig;
     
     // Check for required fields for recording
     const requiredFields: (keyof RecordingConfig)[] = ['sampleRate', 'channels', 'bitDepth', 'bufferInterval'];
@@ -117,7 +117,7 @@ export function validateAudioConfig(
       throw new Error(`Invalid buffer interval: ${recordingConfig.bufferInterval}`);
     }
   } else {
-    const playbackConfig = config as Partial<PlaybackConfig>;
+    const playbackConfig = config as PlaybackConfig;
     
     // Check for required fields for playback
     const requiredFields: (keyof PlaybackConfig)[] = ['sampleRate', 'channels', 'bufferSize'];
