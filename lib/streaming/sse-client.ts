@@ -62,9 +62,9 @@ export class SSEClient {
     this.isConnecting = true;
     
     try {
-      // Use provided session or create new one
+      // Use provided session or create new one with specified ID
       if (sessionId) {
-        this.session = sessionManager.getSession(sessionId) || sessionManager.createSession();
+        this.session = sessionManager.getSession(sessionId) || sessionManager.createSession(sessionId);
       } else {
         this.session = sessionManager.createSession();
       }
