@@ -136,7 +136,10 @@ describe('RootErrorBoundary', () => {
   })
 
   it('logs error to console in development', () => {
-    process.env.NODE_ENV = 'development'
+    Object.defineProperty(process.env, 'NODE_ENV', {
+      configurable: true,
+      value: 'development'
+    })
 
     render(
       <RootErrorBoundary>
