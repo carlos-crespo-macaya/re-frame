@@ -86,7 +86,7 @@ export function ConversationView({
         {isRecording && (
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-red-600">🔴 Listening...</span>
-            <AudioVisualizer />
+            <AudioVisualizer audioLevel={0.5} isActive={true} />
           </div>
         )}
         {isAISpeaking && (
