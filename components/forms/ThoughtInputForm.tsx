@@ -3,7 +3,7 @@
 import { useState, FormEvent, KeyboardEvent, useCallback, useEffect, useRef } from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui'
-import { AudioControls } from './AudioControls'
+import dynamic from 'next/dynamic'
 import { createDefaultAudioState, AudioMode, AudioState, useAudioRecorder } from '@/lib/audio'
 import { useSSEClient } from '@/lib/streaming/use-sse-client'
 import { checkAudioSupport, arrayBufferToBase64, float32ToPcm16 } from '@/lib/audio/audio-utils'
@@ -13,6 +13,14 @@ interface ThoughtInputFormProps {
   onClear: () => void
   isLoading?: boolean
 }
+
+// Lazy-load heavy audio UI only when needed (client-side)
+// Disable SSR because WebAudio APIs are browser-only.
+const AudioControls = dynamic(() => import('./AudioControls'), {
+  ssr: false,
+  // Render nothing while the chunk is loading – visually identical to previous state
+  loading: () => null
+})
 
 export default function ThoughtInputForm({ 
   onSubmit, 
@@ -106,7 +114,10 @@ export default function ThoughtInputForm({
       
       // Convert to 16-bit PCM and base64
       const pcm16 = float32ToPcm16(mergedAudio)
-      const arrayBuffer = pcm16.buffer.slice(pcm16.byteOffset, pcm16.byteOffset + pcm16.byteLength)
+      const arrayBuffer = pcm16.buffer.slice(
+        pcm16.byteOffset,
+        pcm16.byteOffset + pcm16.byteLength
+      ) as ArrayBuffer
       const base64Audio = arrayBufferToBase64(arrayBuffer)
       
       // Send via SSE
