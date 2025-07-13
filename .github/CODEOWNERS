@@ -1,0 +1,30 @@
+# This file defines code ownership for automatic review assignment
+
+# Global owners
+* @macayaven
+
+# Frontend specific ownership
+/app/ @macayaven
+/components/ @macayaven
+/lib/ @macayaven
+/public/ @macayaven
+*.tsx @macayaven
+*.ts @macayaven
+*.css @macayaven
+
+# Infrastructure and CI/CD
+/.github/ @macayaven
+/firebase.json @macayaven
+/.firebaserc @macayaven
+/package.json @macayaven
+/tsconfig.json @macayaven
+/next.config.js @macayaven
+
+# Documentation
+*.md @macayaven
+/docs/ @macayaven
+
+# Audio feature ownership
+/lib/audio/ @macayaven
+/components/audio/ @macayaven
+/public/worklets/ @macayaven
