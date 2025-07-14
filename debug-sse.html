@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SSE Debug Test</title>
+</head>
+<body>
+    <h1>SSE Debug Test</h1>
+    <button onclick="testSSE()">Test SSE Connection</button>
+    <pre id="output"></pre>
+    
+    <script>
+        function testSSE() {
+            const output = document.getElementById('output');
+            const sessionId = crypto.randomUUID();
+            
+            output.textContent = `Connecting to session: ${sessionId}\n`;
+            
+            const eventSource = new EventSource(`http://localhost:8000/api/events/${sessionId}?language=en-US`);
+            
+            eventSource.onopen = () => {
+                output.textContent += 'Connection opened\n';
+            };
+            
+            eventSource.onmessage = (event) => {
+                output.textContent += `Message: ${event.data}\n`;
+            };
+            
+            eventSource.onerror = (error) => {
+                output.textContent += `Error: ${error}\n`;
+                eventSource.close();
+            };
+            
+            // Send a test message after connection
+            setTimeout(() => {
+                fetch(`http://localhost:8000/api/send/${sessionId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message_type: 'thought',
+                        data: 'Test message',
+                        mime_type: 'text/plain',
+                        session_id: sessionId,
+                        turn_complete: true
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    output.textContent += `Send response: ${JSON.stringify(data)}\n`;
+                })
+                .catch(err => {
+                    output.textContent += `Send error: ${err}\n`;
+                });
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
