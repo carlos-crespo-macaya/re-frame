@@ -45,6 +45,15 @@ All progress and current status should always be kept up to date in the issues c
 
 ## Development Workflow & CI/CD Strategy
 
+**CRITICAL: Always run checks before pushing**
+```bash
+uv run poe check  # Runs format check, lint, typecheck, and tests
+```
+If formatting fails, run:
+```bash
+uv run poe format  # Auto-fixes formatting issues
+```
+
 **Every feature must follow this workflow:**
 
 1. **Create Branch from Issue**
