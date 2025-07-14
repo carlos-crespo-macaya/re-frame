@@ -29,6 +29,10 @@ ENV NODE_ENV=development
 ENV HOSTNAME=0.0.0.0
 ENV PORT=3000
 
+# Health check for development
+HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3000/api/health', (res) => process.exit(res.statusCode === 200 ? 0 : 1))"
+
 # Development command
 CMD ["pnpm", "dev"]
 
@@ -75,7 +79,7 @@ RUN adduser -S nextjs -u 1001
 # Copy built application
 COPY --from=builder /app/package.json ./
 COPY --from=builder /app/pnpm-lock.yaml ./
-COPY --from=builder /app/next.config.js ./
+COPY --from=builder /app/next.config.mjs ./
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
@@ -92,6 +96,10 @@ EXPOSE 8080
 # Set environment variable for Cloud Run
 ENV PORT 8080
 ENV NODE_ENV production
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:${PORT:-8080}/api/health', (res) => process.exit(res.statusCode === 200 ? 0 : 1))"
 
 # Start the application
 CMD ["node", "server.js"]
