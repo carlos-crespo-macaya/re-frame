@@ -25,8 +25,8 @@ class TestCBTAssistant:
 
     def test_agent_uses_custom_model(self):
         """Test that agent can use custom model."""
-        agent = create_cbt_assistant(model="gemini-1.5-pro")
-        assert agent.model == "gemini-1.5-pro"
+        agent = create_cbt_assistant(model="gemini-2.0-flash-live-001")
+        assert agent.model == "gemini-2.0-flash-live-001"
 
     def test_agent_includes_base_context(self):
         """Test that agent instruction includes base CBT context."""
