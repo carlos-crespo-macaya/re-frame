@@ -140,7 +140,10 @@ if ENVIRONMENT == "production":
         "https://cbt-assistant-web-*.run.app",  # Cloud Run URLs
     ]
 else:
-    allowed_origins = ["*"]  # Allow all in development
+    allowed_origins = [
+        "http://localhost:3000",  # Frontend dev server
+        "http://frontend:3000",  # Docker service name
+    ]
 
 app.add_middleware(
     CORSMiddleware,
@@ -216,8 +219,6 @@ async def sse_endpoint(session_id: str, is_audio: str = "false"):
         headers={
             "Cache-Control": "no-cache",
             "Connection": "keep-alive",
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Headers": "Cache-Control",
         },
     )
 
