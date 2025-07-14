@@ -25,21 +25,7 @@ FRONTEND_ITEMS=(
   "Dockerfile"
 )
 
-# Files to keep in root
-ROOT_ITEMS=(
-  "README.md"
-  "SECURITY.md"
-  "CLAUDE.md"
-  ".git"
-  ".github"
-  "cloudbuild.yaml"
-  "docs"
-  "scripts"
-  "discussions"
-  "BACKEND_TEAM_KICKOFF.md"
-  "backend_team_message.txt"
-  "INTEGRATION_UNIFIED_ASSESSMENT.md"
-)
+# Files to keep in root (removed - not used in script)
 
 echo "📁 Moving frontend files to frontend/ directory..."
 
@@ -118,8 +104,25 @@ EOF
 
 echo "✅ README files created!"
 
-# Update root gitignore if needed
-if [ ! -f ".gitignore" ]; then
+# Update root gitignore
+if [ -f ".gitignore" ]; then
+  echo "📝 Updating existing .gitignore file..."
+  
+  # Check if monorepo entries already exist
+  if ! grep -q "# Monorepo" .gitignore; then
+    cat >> .gitignore << 'EOF'
+
+# Monorepo specific
+frontend/node_modules/
+backend/__pycache__/
+backend/venv/
+backend/.env
+frontend/.next/
+frontend/out/
+EOF
+  fi
+else
+  echo "📝 Creating new .gitignore file..."
   cat > .gitignore << 'EOF'
 # Dependencies
 node_modules/
@@ -147,6 +150,14 @@ Thumbs.db
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Monorepo specific
+frontend/node_modules/
+backend/__pycache__/
+backend/venv/
+backend/.env
+frontend/.next/
+frontend/out/
 EOF
 fi
 
