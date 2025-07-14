@@ -20,7 +20,7 @@ from datetime import datetime
 from pathlib import Path
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -341,14 +341,36 @@ async def list_sessions():
 
 @app.get("/api/pdf/{session_id}")
 async def download_pdf(session_id: str):
-    """Download PDF summary for a session"""
-    # TODO: Implement PDF generation using the pdf_generator utility
-    # For now, return a placeholder response
-    return {
-        "status": "not_implemented",
-        "message": "PDF generation will be implemented in Epic 1",
-        "session_id": session_id,
-    }
+    """Download PDF summary for a session - minimal implementation for local testing"""
+    from datetime import datetime
+
+    # For POC, return a simple text file as PDF
+    # In production, this would use pdf_generator utility
+    pdf_content = f"""Session Summary
+==================
+Session ID: {session_id}
+Date: {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}
+
+This is a mock PDF for local testing.
+In production, this would contain:
+- Session transcript
+- Key insights identified
+- Reframed perspectives
+- Resources mentioned
+
+Thank you for using re-frame.
+""".encode(
+        "utf-8"
+    )
+
+    return Response(
+        content=pdf_content,
+        media_type="text/plain",  # Using text/plain for POC
+        headers={
+            "Content-Disposition": f"attachment; filename=session-summary-{session_id}.txt",
+            "Content-Type": "text/plain",
+        },
+    )
 
 
 @app.post("/api/language/detect")
