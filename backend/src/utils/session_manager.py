@@ -1,9 +1,12 @@
 """Simple session management for POC."""
 
 import asyncio
+import logging
 import time
 from dataclasses import dataclass, field
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -46,7 +49,7 @@ class SessionManager:
         if not self._running:
             self._running = True
             self._cleanup_task = asyncio.create_task(self._periodic_cleanup())
-            print(f"Session manager started with {self.max_age_seconds}s max age")
+            logger.info(f"Session manager started with {self.max_age_seconds}s max age")
 
     async def stop(self):
         """Stop the session manager."""
@@ -57,7 +60,7 @@ class SessionManager:
                 await self._cleanup_task
             except asyncio.CancelledError:
                 pass
-        print("Session manager stopped")
+        logger.info("Session manager stopped")
 
     def create_session(
         self, session_id: str, user_id: str, request_queue: Any = None
@@ -67,7 +70,7 @@ class SessionManager:
             session_id=session_id, user_id=user_id, request_queue=request_queue
         )
         self.sessions[session_id] = session
-        print(f"Session created: {session_id} for user {user_id}")
+        logger.info(f"Session created: {session_id} for user {user_id}")
         return session
 
     def get_session(self, session_id: str) -> SessionInfo | None:
@@ -84,8 +87,12 @@ class SessionManager:
             # Clean up request queue if exists
             if session.request_queue:
                 session.request_queue.close()
-            print(f"Session removed: {session_id}")
+            logger.info(f"Session removed: {session_id}")
         return session
+
+    def get_session_readonly(self, session_id: str) -> SessionInfo | None:
+        """Get session by ID without updating activity (for debugging)."""
+        return self.sessions.get(session_id)
 
     def get_active_session_count(self) -> int:
         """Get count of active sessions."""
@@ -94,8 +101,8 @@ class SessionManager:
     async def _periodic_cleanup(self):
         """Periodically clean up expired sessions."""
         cleanup_interval = min(
-            300, self.max_age_seconds // 4
-        )  # Check every 5 min or 1/4 of max age
+            300, max(self.max_age_seconds / 4, 1)
+        )  # Check every 5 min or 1/4 of max age, with a minimum of 1 second
 
         while self._running:
             try:
@@ -112,17 +119,17 @@ class SessionManager:
                     self.remove_session(session_id)
 
                 if expired:
-                    print(f"Cleaned up {len(expired)} expired sessions")
+                    logger.info(f"Cleaned up {len(expired)} expired sessions")
 
                 # Log status
                 active_count = self.get_active_session_count()
                 if active_count > 0:
-                    print(f"Active sessions: {active_count}")
+                    logger.debug(f"Active sessions: {active_count}")
 
             except asyncio.CancelledError:
                 break
             except Exception as e:
-                print(f"Error in session cleanup: {e}")
+                logger.error(f"Error in session cleanup: {e}")
 
 
 # Global session manager instance

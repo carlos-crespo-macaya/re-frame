@@ -305,7 +305,7 @@ async def send_message_endpoint(session_id: str, request: Request):
 @app.get("/api/session/{session_id}")
 async def get_session_info(session_id: str):
     """Get session information for debugging."""
-    session = session_manager.get_session(session_id)
+    session = session_manager.get_session_readonly(session_id)
     if not session:
         return {"error": "Session not found"}
 
