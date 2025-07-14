@@ -31,8 +31,8 @@ jobs:
       - name: Get pnpm store directory
         id: pnpm-cache
         shell: bash
-        working-directory: frontend
         run: |
+          cd frontend
           echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
 
       - name: Setup pnpm cache
@@ -71,8 +71,8 @@ jobs:
       - name: Get pnpm store directory
         id: pnpm-cache
         shell: bash
-        working-directory: frontend
         run: |
+          cd frontend
           echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
 
       - name: Setup pnpm cache
@@ -111,8 +111,8 @@ jobs:
       - name: Get pnpm store directory
         id: pnpm-cache
         shell: bash
-        working-directory: frontend
         run: |
+          cd frontend
           echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
 
       - name: Setup pnpm cache
@@ -160,8 +160,8 @@ jobs:
       - name: Get pnpm store directory
         id: pnpm-cache
         shell: bash
-        working-directory: frontend
         run: |
+          cd frontend
           echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
 
       - name: Setup pnpm cache
