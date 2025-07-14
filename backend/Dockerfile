@@ -5,12 +5,13 @@ FROM python:3.12-slim
 ARG PYTHON_VERSION=3.12
 ARG UV_VERSION=0.4.15
 
-# Install system dependencies for audio processing
+# Install system dependencies for audio processing and healthcheck
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     python3-dev \
     libsndfile1 \
     ffmpeg \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Install uv
@@ -42,7 +43,7 @@ ENV PORT=8000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:8000/health')"
+    CMD curl -f http://localhost:8000/health || exit 1
 
 # Run the FastAPI application with uvicorn
 # Cloud Run will override PORT if needed
