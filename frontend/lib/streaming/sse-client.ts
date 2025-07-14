@@ -78,11 +78,13 @@ export class SSEClient {
       
       const url = `${this.options.baseUrl}/api/events/${this.session.id}${params.toString() ? '?' + params.toString() : ''}`;
       
+      console.log('Connecting to SSE:', url);
       this.updateStatus('connecting');
       
       this.eventSource = new EventSource(url);
       
       this.eventSource.onopen = () => {
+        console.log('SSE connection opened');
         this.isConnecting = false;
         this.reconnectAttempts = 0;
         this.updateStatus('connected');
@@ -90,6 +92,7 @@ export class SSEClient {
       };
       
       this.eventSource.onmessage = (event) => {
+        console.log('SSE message received:', event.data);
         this.handleMessage(event);
       };
       

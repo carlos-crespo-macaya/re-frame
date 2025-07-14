@@ -6,6 +6,7 @@ import ThoughtInputForm from '@/components/forms/ThoughtInputForm'
 import { FrameworkBadge, LanguageSelector } from '@/components/ui'
 import { ReframeResponse, Framework } from '@/types/api'
 import { useSSEClient } from '@/lib/streaming/use-sse-client'
+import ReactMarkdown from 'react-markdown'
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false)
@@ -37,23 +38,36 @@ export default function Home() {
     }
   }, [selectedLanguage])
   
+  // Track the start of current response
+  const [responseStartIndex, setResponseStartIndex] = useState(0)
+  
   // Process SSE messages
   useEffect(() => {
     if (!sseClient.isConnected) return
     
     // Get all messages and filter for text responses
     const allMessages = sseClient.messages
-    const textMessages = allMessages.filter(msg => 
-      msg.mime_type === 'text/plain' && msg.data && msg.data !== 'Okay'
+    
+    // Debug logging
+    if (allMessages.length > 0) {
+      console.log('All messages:', allMessages)
+    }
+    
+    // Only process messages from the current response
+    const currentMessages = allMessages.slice(responseStartIndex)
+    const textMessages = currentMessages.filter(msg => 
+      msg.mime_type === 'text/plain' && msg.data
     )
     
-    // Check for turn completion
-    const turnComplete = allMessages.some(msg => msg.turn_complete === true)
+    // Check for turn completion in current messages
+    const turnComplete = currentMessages.some(msg => msg.turn_complete === true)
     
-    if (textMessages.length > 0 && isLoading && turnComplete) {
-      setIsLoading(false)
-      // Combine all text messages
+    // Update response as messages arrive
+    if (textMessages.length > 0) {
+      // Combine text messages from current response only
       const fullResponse = textMessages.map(msg => msg.data).join('')
+      
+      console.log('Text messages found:', textMessages.length, 'Full response:', fullResponse)
       
       // Create response from backend message
       setResponse({
@@ -74,11 +88,20 @@ export default function Home() {
         }
       })
     }
-  }, [sseClient.messages, sseClient.isConnected, isLoading])
+    
+    // Clear loading state when turn is complete
+    if (turnComplete && isLoading) {
+      console.log('Turn complete, clearing loading state')
+      setIsLoading(false)
+    }
+  }, [sseClient.messages, sseClient.isConnected, isLoading, responseStartIndex])
 
   const handleSubmit = async (thought: string) => {
     setIsLoading(true)
     setResponse(null)
+    
+    // Mark where the new response will start
+    setResponseStartIndex(sseClient.messages.length)
     
     try {
       // Send text message to backend
@@ -166,10 +189,19 @@ export default function Home() {
                       </div>
                     )}
                     
-                    {/* Main response */}
-                    <p className="text-sm text-[#EDEDED] leading-relaxed">
-                      {response.response}
-                    </p>
+                    {/* Main response with markdown */}
+                    <div className="text-sm text-[#EDEDED] leading-relaxed prose prose-sm prose-invert max-w-none">
+                      <ReactMarkdown
+                        components={{
+                          p: ({children}) => <p className="mb-4">{children}</p>,
+                          ul: ({children}) => <ul className="list-disc list-inside mb-4 space-y-2">{children}</ul>,
+                          li: ({children}) => <li className="ml-4">{children}</li>,
+                          strong: ({children}) => <strong className="font-semibold text-[#FFFFFF]">{children}</strong>,
+                        }}
+                      >
+                        {response.response}
+                      </ReactMarkdown>
+                    </div>
                   </div>
                 )}
 
