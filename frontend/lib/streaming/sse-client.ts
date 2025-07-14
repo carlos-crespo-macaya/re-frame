@@ -39,7 +39,7 @@ export class SSEClient {
   
   constructor(options: SSEClientOptions = {}) {
     this.options = {
-      baseUrl: '/api',
+      baseUrl: '',
       reconnectInterval: 5000,
       maxReconnectAttempts: 5,
       heartbeatInterval: 30000,
@@ -76,7 +76,7 @@ export class SSEClient {
         params.append('language', language);
       }
       
-      const url = `${this.options.baseUrl}/events/${this.session.id}${params.toString() ? '?' + params.toString() : ''}`;
+      const url = `${this.options.baseUrl}/api/events/${this.session.id}${params.toString() ? '?' + params.toString() : ''}`;
       
       this.updateStatus('connecting');
       
@@ -147,7 +147,7 @@ export class SSEClient {
       throw new Error('No active session');
     }
     
-    const url = `${this.options.baseUrl}/send/${this.session.id}`;
+    const url = `${this.options.baseUrl}/api/send/${this.session.id}`;
     
     try {
       const response = await fetch(url, {
