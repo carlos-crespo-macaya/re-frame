@@ -1,49 +1,92 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import ThoughtInputForm from '@/components/forms/ThoughtInputForm'
 import { FrameworkBadge, LanguageSelector } from '@/components/ui'
 import { ReframeResponse, Framework } from '@/types/api'
+import { useSSEClient } from '@/lib/streaming/use-sse-client'
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false)
   const [response, setResponse] = useState<ReframeResponse | null>(null)
   const [selectedLanguage, setSelectedLanguage] = useState('en-US')
+  const [sessionId, setSessionId] = useState<string | null>(null)
+  
+  // Initialize SSE client
+  const sseClient = useSSEClient({
+    baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
+    autoConnect: false,
+  })
+  
+  // Connect on mount and when language changes
+  useEffect(() => {
+    const connect = async () => {
+      try {
+        await sseClient.connect(undefined, selectedLanguage)
+        setSessionId(sseClient.sessionId)
+      } catch (error) {
+        console.error('Failed to connect:', error)
+      }
+    }
+    
+    connect()
+    
+    return () => {
+      sseClient.disconnect()
+    }
+  }, [selectedLanguage])
+  
+  // Process SSE messages
+  useEffect(() => {
+    if (!sseClient.isConnected) return
+    
+    // Get all messages and filter for text responses
+    const allMessages = sseClient.messages
+    const textMessages = allMessages.filter(msg => 
+      msg.mime_type === 'text/plain' && msg.data && msg.data !== 'Okay'
+    )
+    
+    // Check for turn completion
+    const turnComplete = allMessages.some(msg => msg.turn_complete === true)
+    
+    if (textMessages.length > 0 && isLoading && turnComplete) {
+      setIsLoading(false)
+      // Combine all text messages
+      const fullResponse = textMessages.map(msg => msg.data).join('')
+      
+      // Create response from backend message
+      setResponse({
+        success: true,
+        response: fullResponse,
+        frameworks_used: ['CBT'],
+        transparency: {
+          agents_used: ['cbt_assistant'],
+          techniques_applied: ['Cognitive restructuring'],
+          framework_details: {
+            CBT: {
+              techniques: ['Cognitive restructuring'],
+              confidence: 0.85,
+              patterns_addressed: []
+            }
+          },
+          selection_rationale: 'CBT framework applied based on the thought pattern.'
+        }
+      })
+    }
+  }, [sseClient.messages, sseClient.isConnected, isLoading])
 
   const handleSubmit = async (thought: string) => {
     setIsLoading(true)
     setResponse(null)
     
-    // Simulate API call for now
-    // TODO: Replace with actual API call when backend is ready
-    console.log('Submitted thought:', thought)
-    setTimeout(() => {
+    try {
+      // Send text message to backend
+      await sseClient.sendText(thought)
+    } catch (error) {
+      console.error('Failed to send message:', error)
       setIsLoading(false)
-      // Mock response with multiple frameworks
-      setResponse({
-        success: true,
-        response: 'Your thought has been analyzed. Here are some alternative perspectives to consider based on therapeutic frameworks.',
-        frameworks_used: ['CBT', 'ACT'],
-        transparency: {
-          agents_used: ['intake_agent', 'cbt_framework_agent', 'act_framework_agent', 'synthesis_agent'],
-          techniques_applied: ['Cognitive restructuring', 'Values clarification'],
-          framework_details: {
-            CBT: {
-              techniques: ['Cognitive restructuring', 'Identifying cognitive distortions'],
-              confidence: 0.85,
-              patterns_addressed: ['All-or-nothing thinking', 'Mind reading']
-            },
-            ACT: {
-              techniques: ['Values clarification', 'Defusion'],
-              confidence: 0.75,
-              patterns_addressed: ['Experiential avoidance']
-            }
-          },
-          selection_rationale: 'CBT and ACT were selected based on the cognitive patterns identified in your thought.'
-        }
-      })
-    }, 2000)
+    }
   }
 
   const handleClear = () => {
