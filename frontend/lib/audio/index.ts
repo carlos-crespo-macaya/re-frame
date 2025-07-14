@@ -60,3 +60,13 @@ export {
   type UseAudioRecorderOptions,
   type AudioRecorderState
 } from './use-audio-recorder';
+
+// Debug utilities
+export {
+  AudioDebugger,
+  audioDebugConsole,
+  runAudioDiagnostics,
+  type AudioDebugInfo,
+  type AudioLevelInfo,
+  type DeviceInfo
+} from './audio-debug';
