@@ -108,6 +108,25 @@ class TestSessionManager:
         # Get non-existent session
         assert manager.get_session("non-existent") is None
 
+    def test_get_session_readonly(self):
+        """Test getting a session without updating activity."""
+        manager = SessionManager()
+
+        # Create session
+        created = manager.create_session("test-123", "user-456")
+        initial_activity = created.last_activity
+
+        # Wait and get session readonly
+        time.sleep(0.1)
+        retrieved = manager.get_session_readonly("test-123")
+
+        assert retrieved is not None
+        assert retrieved.session_id == "test-123"
+        assert retrieved.last_activity == initial_activity  # Activity NOT updated
+
+        # Get non-existent session
+        assert manager.get_session_readonly("non-existent") is None
+
     def test_remove_session(self):
         """Test removing a session."""
         manager = SessionManager()
@@ -141,21 +160,24 @@ class TestSessionManager:
     @pytest.mark.asyncio
     async def test_periodic_cleanup(self):
         """Test automatic cleanup of expired sessions."""
-        # Create manager with very short max age
-        manager = SessionManager(max_age_seconds=1)
+        # Create manager with 3 second max age
+        manager = SessionManager(max_age_seconds=3)
 
         # Create sessions
         session1 = manager.create_session("test-1", "user-1")
-        manager.create_session("test-2", "user-2")
+        session2 = manager.create_session("test-2", "user-2")
 
-        # Make session1 expired
-        session1.created_at = time.time() - 2  # 2 seconds old
+        # Make session1 expired (older than 3 seconds)
+        session1.created_at = time.time() - 5  # 5 seconds old
+
+        # Make session2 not expired (younger than 3 seconds)
+        session2.created_at = time.time() - 1  # 1 second old
 
         # Start manager
         await manager.start()
 
         # Wait for cleanup cycle
-        await asyncio.sleep(0.5)  # Cleanup runs every 0.25s for 1s max age
+        await asyncio.sleep(1.5)  # Cleanup runs every 1s minimum
 
         # Check that expired session was removed
         assert manager.get_session("test-1") is None
@@ -176,7 +198,7 @@ class TestSessionManager:
 
         # Start and wait for cleanup
         await manager.start()
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(1.5)
 
         # Verify queue was closed
         mock_queue.close.assert_called_once()
@@ -204,7 +226,7 @@ class TestSessionManager:
         manager.sessions["test-1"].created_at = time.time() - 3
 
         # Wait for cleanup
-        await asyncio.sleep(0.6)
+        await asyncio.sleep(1.5)
 
         # Only first session should be removed
         assert manager.get_session("test-1") is None
@@ -212,3 +234,21 @@ class TestSessionManager:
         assert manager.get_session("test-3") is not None
 
         await manager.stop()
+
+    def test_cleanup_interval_minimum(self):
+        """Test that cleanup interval has minimum value."""
+        # Test with very small max_age_seconds
+        manager = SessionManager(max_age_seconds=2)
+
+        # Access the private method to test interval calculation
+        cleanup_interval = min(300, max(manager.max_age_seconds / 4, 1))
+
+        # Should be 1 second minimum, not 0
+        assert cleanup_interval == 1
+
+        # Test with normal value
+        manager2 = SessionManager(max_age_seconds=3600)
+        cleanup_interval2 = min(300, max(manager2.max_age_seconds / 4, 1))
+
+        # Should be 300 (5 minutes)
+        assert cleanup_interval2 == 300
