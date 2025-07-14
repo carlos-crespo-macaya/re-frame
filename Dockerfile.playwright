@@ -1,0 +1,27 @@
+# Playwright test runner container
+FROM mcr.microsoft.com/playwright:v1.48.0-focal
+
+WORKDIR /app
+
+# Install pnpm
+RUN npm install -g pnpm@10.11.0
+
+# Copy package files
+COPY package.json pnpm-lock.yaml ./
+COPY frontend/package.json ./frontend/
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
+# Copy test files and configuration
+COPY playwright.config.ts ./
+COPY tests ./tests
+COPY frontend/tsconfig.json ./frontend/
+
+# Install Playwright browsers
+RUN cd frontend && pnpm playwright install chromium firefox webkit
+
+# Create directories for reports
+RUN mkdir -p /playwright-report /test-results
+
+CMD ["pnpm", "test:e2e"]
