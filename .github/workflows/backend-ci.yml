@@ -1,13 +1,20 @@
-name: CI
+name: Backend CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-ci.yml'
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/backend-ci.yml'
 
 jobs:
   test:
+    name: Backend Tests
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -23,26 +30,32 @@ jobs:
       run: uv python install ${{ matrix.python-version }}
 
     - name: Install dependencies
+      working-directory: backend
       run: |
         uv sync --all-extras
 
     - name: Check formatting with black and isort
+      working-directory: backend
       run: |
         uv run black --check .
         uv run isort --check-only .
 
     - name: Lint with ruff
+      working-directory: backend
       run: uv run ruff check .
 
     - name: Type check with mypy
+      working-directory: backend
       run: uv run mypy src
 
     - name: Test with pytest
+      working-directory: backend
       run: uv run pytest
 
     - name: Upload coverage reports
       uses: codecov/codecov-action@v4
       if: matrix.python-version == '3.12'
       with:
-        file: ./coverage.xml
+        file: ./backend/coverage.xml
         fail_ci_if_error: false
+        flags: backend

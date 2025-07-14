@@ -1,0 +1,71 @@
+# Development-specific overrides for docker-compose
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+version: '3.8'
+
+services:
+  backend:
+    build:
+      args:
+        - DEV_MODE=true
+    command: uv run uvicorn main:app --reload --host 0.0.0.0 --port 8000
+    environment:
+      - RELOAD=true
+      - DEBUG=true
+      - CORS_ORIGINS=http://localhost:3000,http://frontend:3000
+    volumes:
+      # Mount source code for hot reload
+      - ./backend/src:/app/src
+      - ./backend/tests:/app/tests
+      - ./backend/pyproject.toml:/app/pyproject.toml
+      - ./backend/uv.lock:/app/uv.lock
+
+  frontend:
+    build:
+      target: development
+    command: pnpm dev
+    environment:
+      - NEXT_TELEMETRY_DISABLED=1
+      - WATCHPACK_POLLING=true  # For hot reload in Docker
+    volumes:
+      # Ensure hot reload works properly
+      - ./frontend/app:/app/app
+      - ./frontend/components:/app/components
+      - ./frontend/lib:/app/lib
+      - ./frontend/public:/app/public
+      - ./frontend/types:/app/types
+      - ./frontend/next.config.mjs:/app/next.config.mjs
+      - ./frontend/tailwind.config.ts:/app/tailwind.config.ts
+      - ./frontend/tsconfig.json:/app/tsconfig.json
+      - frontend_node_modules:/app/node_modules
+      - frontend_next:/app/.next
+
+  # Additional development services
+  redis:
+    image: redis:7-alpine
+    container_name: cbt-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  mailhog:
+    image: mailhog/mailhog
+    container_name: cbt-mailhog
+    ports:
+      - "1025:1025"  # SMTP
+      - "8025:8025"  # Web UI
+
+# Volumes for development
+volumes:
+  frontend_node_modules:
+    driver: local
+  frontend_next:
+    driver: local
+  redis_data:
+    driver: local

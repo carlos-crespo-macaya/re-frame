@@ -14,7 +14,9 @@
 
 import base64
 import json
+import os
 import warnings
+from datetime import datetime
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -26,7 +28,9 @@ from google.adk.agents.live_request_queue import LiveRequestQueue
 from google.adk.agents.run_config import RunConfig
 from google.adk.runners import InMemoryRunner
 from google.genai.types import Blob, Content, Part, SpeechConfig
-from google_search_agent.agent import root_agent
+
+# Import CBT assistant instead of search agent
+from agents.cbt_assistant import create_cbt_assistant
 
 warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
 
@@ -37,16 +41,19 @@ warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
 # Load Gemini API Key
 load_dotenv()
 
-APP_NAME = "ADK Streaming example"
+APP_NAME = "CBT Reframing Assistant"
 
 
 async def start_agent_session(user_id, is_audio=False):
     """Starts an agent session"""
 
+    # Create the CBT assistant agent
+    cbt_agent = create_cbt_assistant()
+
     # Create a Runner
     runner = InMemoryRunner(
         app_name=APP_NAME,
-        agent=root_agent,
+        agent=cbt_agent,
     )
 
     # Create a Session
@@ -118,14 +125,30 @@ async def agent_to_client_sse(live_events):
 # FastAPI web app
 #
 
-app = FastAPI()
+app = FastAPI(
+    title="CBT Reframing Assistant API",
+    description="Cognitive Behavioral Therapy assistant powered by Google's ADK",
+    version="1.0.0",
+)
+
+# Configure CORS based on environment
+ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
+if ENVIRONMENT == "production":
+    allowed_origins = [
+        "https://re-frame.social",
+        "https://www.re-frame.social",
+        "https://cbt-assistant-web-*.run.app",  # Cloud Run URLs
+    ]
+else:
+    allowed_origins = ["*"]  # Allow all in development
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
+    expose_headers=["X-Session-Id", "X-Phase-Status"],
 )
 
 STATIC_DIR = Path("static")
@@ -141,25 +164,37 @@ async def root():
     return FileResponse(Path(STATIC_DIR) / "index.html")
 
 
-@app.get("/events/{user_id}")
-async def sse_endpoint(user_id: int, is_audio: str = "false"):
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for Cloud Run"""
+    return {
+        "status": "healthy",
+        "service": "cbt-assistant-api",
+        "version": "1.0.0",
+        "timestamp": datetime.utcnow().isoformat(),
+        "environment": ENVIRONMENT,
+    }
+
+
+@app.get("/api/events/{session_id}")
+async def sse_endpoint(session_id: str, is_audio: str = "false"):
     """SSE endpoint for agent to client communication"""
 
     # Start agent session
-    user_id_str = str(user_id)
+    # Use session_id as user_id for ADK
     live_events, live_request_queue = await start_agent_session(
-        user_id_str, is_audio == "true"
+        session_id, is_audio == "true"
     )
 
-    # Store the request queue for this user
-    active_sessions[user_id_str] = live_request_queue
+    # Store the request queue for this session
+    active_sessions[session_id] = live_request_queue
 
-    print(f"Client #{user_id} connected via SSE, audio mode: {is_audio}")
+    print(f"Client session {session_id} connected via SSE, audio mode: {is_audio}")
 
     def cleanup():
         live_request_queue.close()
-        active_sessions.pop(user_id_str, None)
-        print(f"Client #{user_id} disconnected from SSE")
+        active_sessions.pop(session_id, None)
+        print(f"Client session {session_id} disconnected from SSE")
 
     async def event_generator():
         try:
@@ -182,14 +217,12 @@ async def sse_endpoint(user_id: int, is_audio: str = "false"):
     )
 
 
-@app.post("/send/{user_id}")
-async def send_message_endpoint(user_id: int, request: Request):
+@app.post("/api/send/{session_id}")
+async def send_message_endpoint(session_id: str, request: Request):
     """HTTP endpoint for client to agent communication"""
 
-    user_id_str = str(user_id)
-
-    # Get the live request queue for this user
-    live_request_queue = active_sessions.get(user_id_str)
+    # Get the live request queue for this session
+    live_request_queue = active_sessions.get(session_id)
     if not live_request_queue:
         return {"error": "Session not found"}
 
@@ -211,3 +244,28 @@ async def send_message_endpoint(user_id: int, request: Request):
         return {"error": f"Mime type not supported: {mime_type}"}
 
     return {"status": "sent"}
+
+
+@app.get("/api/pdf/{session_id}")
+async def download_pdf(session_id: str):
+    """Download PDF summary for a session"""
+    # TODO: Implement PDF generation using the pdf_generator utility
+    # For now, return a placeholder response
+    return {
+        "status": "not_implemented",
+        "message": "PDF generation will be implemented in Epic 1",
+        "session_id": session_id,
+    }
+
+
+@app.post("/api/language/detect")
+async def detect_language(request: Request):
+    """Detect language from user input"""
+    # TODO: Implement language detection using the language_detection utility
+    # For now, return a placeholder response
+    data = await request.json()
+    return {
+        "status": "not_implemented",
+        "message": "Language detection will be implemented in Epic 1",
+        "text": data.get("text", ""),
+    }

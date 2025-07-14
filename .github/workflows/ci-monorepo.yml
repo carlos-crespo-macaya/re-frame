@@ -1,0 +1,60 @@
+name: Monorepo CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.changes.outputs.backend }}
+      frontend: ${{ steps.changes.outputs.frontend }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+              - '.github/workflows/backend-ci.yml'
+            frontend:
+              - 'frontend/**'
+              - '.github/workflows/frontend-ci.yml'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+
+  summary:
+    name: CI Summary
+    needs: changes
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Summary
+        run: |
+          echo "### Monorepo CI Status"
+          echo ""
+          echo "#### Changed Components:"
+          echo "- Backend: ${{ needs.changes.outputs.backend }}"
+          echo "- Frontend: ${{ needs.changes.outputs.frontend }}"
+          echo ""
+          if [[ "${{ needs.changes.outputs.backend }}" == "true" ]]; then
+            echo "✅ Backend CI workflow triggered"
+          fi
+          if [[ "${{ needs.changes.outputs.frontend }}" == "true" ]]; then
+            echo "✅ Frontend CI workflow triggered"
+          fi
+          if [[ "${{ needs.changes.outputs.backend }}" != "true" && "${{ needs.changes.outputs.frontend }}" != "true" ]]; then
+            echo "ℹ️ No component changes detected"
+          fi
