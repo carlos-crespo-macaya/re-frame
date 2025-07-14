@@ -32,6 +32,7 @@ export interface SessionSummary {
 export interface SessionEndViewProps {
   onNewSession?: () => void
   sessionSummary?: SessionSummary
+  sessionId?: string
 }
 
 export interface MessageListProps {
