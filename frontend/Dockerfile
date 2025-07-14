@@ -1,11 +1,39 @@
-# Build stage
-FROM node:18-alpine AS builder
+# Base stage with pnpm
+FROM node:18-alpine AS base
 
 # Install pnpm
 RUN corepack enable && corepack prepare pnpm@10.11.0 --activate
 
-# Set working directory
+# Add necessary build tools
+RUN apk add --no-cache libc6-compat
+
 WORKDIR /app
+
+# Development stage
+FROM base AS development
+
+# Copy package files
+COPY package.json pnpm-lock.yaml ./
+
+# Install all dependencies
+RUN pnpm install --frozen-lockfile
+
+# Copy source code
+COPY . .
+
+# Expose port for development
+EXPOSE 3000
+
+# Set environment for development
+ENV NODE_ENV=development
+ENV HOSTNAME=0.0.0.0
+ENV PORT=3000
+
+# Development command
+CMD ["pnpm", "dev"]
+
+# Build stage
+FROM base AS builder
 
 # Copy package files
 COPY package.json pnpm-lock.yaml ./
@@ -16,8 +44,18 @@ RUN pnpm install --frozen-lockfile
 # Copy source code
 COPY . .
 
-# Use Cloud Run specific config
-RUN mv next.config.cloudrun.mjs next.config.mjs
+# Build arguments for environment variables
+ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_ENVIRONMENT=production
+
+# Set build-time environment variables
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_ENVIRONMENT=$NEXT_PUBLIC_ENVIRONMENT
+
+# Use Cloud Run specific config if deploying to Cloud Run
+RUN if [ -f "next.config.cloudrun.mjs" ]; then \
+      mv next.config.cloudrun.mjs next.config.mjs; \
+    fi
 
 # Build the application
 RUN pnpm build
