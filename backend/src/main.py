@@ -207,10 +207,14 @@ async def sse_endpoint(session_id: str, is_audio: str = "false"):
 
     async def event_generator():
         try:
+            # Send initial connection event
+            yield f"data: {json.dumps({'type': 'connected', 'session_id': session_id})}\n\n"
+
             async for data in agent_to_client_sse(live_events):
                 yield data
         except Exception as e:
             print(f"Error in SSE stream: {e}")
+            yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
         finally:
             cleanup()
 
@@ -220,6 +224,7 @@ async def sse_endpoint(session_id: str, is_audio: str = "false"):
         headers={
             "Cache-Control": "no-cache",
             "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",  # Disable proxy buffering
         },
     )
 
