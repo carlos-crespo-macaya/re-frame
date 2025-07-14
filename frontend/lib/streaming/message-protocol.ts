@@ -88,10 +88,10 @@ export function isServerMessage(data: any): data is ServerMessage {
   }
   
   // Backend sends minimal format: just mime_type and data
-  // or turn_complete flag
+  // or turn_complete flag (with optional interrupted)
   return (
     ('mime_type' in data && 'data' in data) ||
-    ('turn_complete' in data)
+    ('turn_complete' in data && typeof data.turn_complete === 'boolean')
   );
 }
 
