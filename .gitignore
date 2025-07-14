@@ -67,3 +67,8 @@ pnpm-debug.log*
 
 # docker
 .dockerignore.local
+
+# playwright
+playwright-report/
+test-results/
+playwright/.cache/

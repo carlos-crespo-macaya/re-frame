@@ -3,12 +3,13 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import ThoughtInputForm from '@/components/forms/ThoughtInputForm'
-import { FrameworkBadge } from '@/components/ui'
+import { FrameworkBadge, LanguageSelector } from '@/components/ui'
 import { ReframeResponse, Framework } from '@/types/api'
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false)
   const [response, setResponse] = useState<ReframeResponse | null>(null)
+  const [selectedLanguage, setSelectedLanguage] = useState('en-US')
 
   const handleSubmit = async (thought: string) => {
     setIsLoading(true)
@@ -63,6 +64,12 @@ export default function Home() {
                 Cognitive reframing support
               </p>
             </div>
+            <div className="w-48">
+              <LanguageSelector 
+                value={selectedLanguage}
+                onChange={setSelectedLanguage}
+              />
+            </div>
           </div>
         </div>
       </header>
@@ -102,6 +109,7 @@ export default function Home() {
                 onSubmit={handleSubmit}
                 onClear={handleClear}
                 isLoading={isLoading}
+                language={selectedLanguage}
               />
 
                 {response && (
