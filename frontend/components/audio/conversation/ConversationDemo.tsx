@@ -3,6 +3,9 @@
 import { useState } from 'react'
 import { ConversationView, SessionEndView, useConversation } from '.'
 
+// Mock data for demo purposes
+const MOCK_SESSION_ID = 'demo-session-123'
+
 /**
  * Demo component showing how to integrate conversation mode with audio recording
  */
@@ -68,6 +71,7 @@ export function ConversationDemo() {
       <SessionEndView
         onNewSession={handleNewSession}
         sessionSummary={conversation.getSessionSummary() || undefined}
+        sessionId={MOCK_SESSION_ID} // Mock session ID for demo
       />
     )
   }
