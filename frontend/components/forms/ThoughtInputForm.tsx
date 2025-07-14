@@ -38,7 +38,7 @@ export default function ThoughtInputForm({
   
   // Initialize SSE client
   const sseClient = useSSEClient({
-    baseUrl: process.env.NEXT_PUBLIC_API_URL || '/api',
+    baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
     autoConnect: false,
     enableRateLimit: true,
     rateLimitMs: 100
