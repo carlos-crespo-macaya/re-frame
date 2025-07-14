@@ -91,14 +91,14 @@ export function ConversationIntegrated({ language = 'en-US' }: ConversationInteg
     
     // Process text responses
     const latestText = textMessages[textMessages.length - 1]
-    if (latestText) {
+    if (latestText && latestText.data) {
       conversation.addMessage('ai', latestText.data)
       conversation.setAISpeaking(false)
     }
     
     // Process transcriptions
     const latestTranscription = transcriptionMessages[transcriptionMessages.length - 1]
-    if (latestTranscription) {
+    if (latestTranscription && latestTranscription.data) {
       conversation.setCurrentTranscription(latestTranscription.data)
     }
   }, [sseClient.messages, sseClient.isConnected, conversation])
