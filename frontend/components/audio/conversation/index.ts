@@ -3,6 +3,8 @@ export { MessageList } from './MessageList'
 export { MessageBubble } from './MessageBubble'
 export { SessionEndView } from './SessionEndView'
 export { useConversation } from './useConversation'
+export { ConversationDemo } from './ConversationDemo'
+export { ConversationIntegrated } from './ConversationIntegrated'
 export type {
   ConversationMessage,
   ConversationState,
