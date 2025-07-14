@@ -195,7 +195,7 @@ export class AudioDebugger {
    * Create diagnostic report
    */
   static async createDiagnosticReport(): Promise<string> {
-    const report: string[] = ['Audio Diagnostic Report', '=' * 30, '']
+    const report: string[] = ['Audio Diagnostic Report', '='.repeat(30), '']
     
     // Browser support
     const support = this.checkBrowserSupport()
