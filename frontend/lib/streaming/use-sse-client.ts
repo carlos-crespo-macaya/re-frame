@@ -112,12 +112,12 @@ export function useSSEClient(options: UseSSEClientOptions = {}) {
   }, [memoizedSseOptions, autoConnect]); // Re-create client when options change
   
   // Connect to SSE
-  const connect = useCallback(async (sessionId?: string) => {
+  const connect = useCallback(async (sessionId?: string, language?: string) => {
     if (!clientRef.current) return;
     
     try {
       setState(prev => ({ ...prev, error: null }));
-      await clientRef.current.connect(sessionId);
+      await clientRef.current.connect(sessionId, language);
       
       const session = clientRef.current.getSession();
       setState(prev => ({

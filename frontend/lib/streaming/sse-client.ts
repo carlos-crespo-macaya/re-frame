@@ -35,10 +35,11 @@ export class SSEClient {
   private messageBuffer: ServerMessage[] = [];
   private isConnecting = false;
   private lastEventTime = Date.now();
+  private currentLanguage?: string;
   
   constructor(options: SSEClientOptions = {}) {
     this.options = {
-      baseUrl: '/api',
+      baseUrl: '',
       reconnectInterval: 5000,
       maxReconnectAttempts: 5,
       heartbeatInterval: 30000,
@@ -53,13 +54,14 @@ export class SSEClient {
   /**
    * Connect to SSE endpoint
    */
-  async connect(sessionId?: string): Promise<void> {
+  async connect(sessionId?: string, language?: string): Promise<void> {
     if (this.isConnecting || this.eventSource) {
       console.warn('SSE client is already connected or connecting');
       return;
     }
     
     this.isConnecting = true;
+    this.currentLanguage = language;
     
     try {
       // Use provided session or create new one with specified ID
@@ -69,7 +71,12 @@ export class SSEClient {
         this.session = sessionManager.createSession();
       }
       
-      const url = `${this.options.baseUrl}/events/${this.session.id}`;
+      const params = new URLSearchParams();
+      if (language) {
+        params.append('language', language);
+      }
+      
+      const url = `${this.options.baseUrl}/api/events/${this.session.id}${params.toString() ? '?' + params.toString() : ''}`;
       
       this.updateStatus('connecting');
       
@@ -140,7 +147,7 @@ export class SSEClient {
       throw new Error('No active session');
     }
     
-    const url = `${this.options.baseUrl}/send/${this.session.id}`;
+    const url = `${this.options.baseUrl}/api/send/${this.session.id}`;
     
     try {
       const response = await fetch(url, {
@@ -223,7 +230,7 @@ export class SSEClient {
     
     this.reconnectTimer = setTimeout(() => {
       if (this.session) {
-        this.connect(this.session.id).catch(console.error);
+        this.connect(this.session.id, this.currentLanguage).catch(console.error);
       }
     }, this.options.reconnectInterval);
   }

@@ -30,9 +30,9 @@ from google.adk.runners import InMemoryRunner
 from google.genai.types import Blob, Content, Part, SpeechConfig
 
 # Import CBT assistant instead of search agent
-from agents.cbt_assistant import create_cbt_assistant
-from utils.audio_converter import AudioConverter
-from utils.session_manager import session_manager
+from src.agents.cbt_assistant import create_cbt_assistant
+from src.utils.audio_converter import AudioConverter
+from src.utils.session_manager import session_manager
 
 warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
 
@@ -46,7 +46,7 @@ load_dotenv()
 APP_NAME = "CBT Reframing Assistant"
 
 
-async def start_agent_session(user_id, is_audio=False):
+async def start_agent_session(user_id, is_audio=False, language_code="en-US"):
     """Starts an agent session"""
 
     # Create the CBT assistant agent
@@ -68,7 +68,7 @@ async def start_agent_session(user_id, is_audio=False):
     modality = "AUDIO" if is_audio else "TEXT"
     run_config = RunConfig(
         response_modalities=[modality],
-        speech_config=SpeechConfig(language_code="es-ES"),
+        speech_config=SpeechConfig(language_code=language_code),
     )
 
     # Create a LiveRequestQueue for this session
@@ -144,6 +144,7 @@ if ENVIRONMENT == "production":
 else:
     allowed_origins = [
         "http://localhost:3000",  # Frontend dev server
+        "http://127.0.0.1:3000",  # Alternative localhost
         "http://frontend:3000",  # Docker service name
     ]
 
@@ -199,21 +200,24 @@ async def health_check():
 
 
 @app.get("/api/events/{session_id}")
-async def sse_endpoint(session_id: str, is_audio: str = "false"):
+async def sse_endpoint(
+    session_id: str, is_audio: str = "false", language: str = "en-US"
+):
     """SSE endpoint for agent to client communication"""
 
     # Start agent session
     # Use session_id as user_id for ADK
     live_events, live_request_queue = await start_agent_session(
-        session_id, is_audio == "true"
+        session_id, is_audio == "true", language
     )
 
     # Store the session with session manager
-    session_manager.create_session(
+    session_info = session_manager.create_session(
         session_id=session_id,
         user_id=session_id,  # Using session_id as user_id for POC
         request_queue=live_request_queue,
     )
+    session_info.metadata["language"] = language
 
     print(f"Client session {session_id} connected via SSE, audio mode: {is_audio}")
 
