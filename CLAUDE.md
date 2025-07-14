@@ -21,7 +21,41 @@ re-frame/
 └── docker-compose.yml # Local development setup
 ```
 
-## Key Commands
+## Project Management
+
+## GitHub Project Board
+- **All project management is done via GitHub Projects**: https://github.com/users/macayaven/projects/7
+- Work on issues in priority order: P0 (Critical) → P1 (High) → P2 (Medium)
+- Issues are organized by Epic (Epic 0: Migration, Epic 1: Local Docker, Epic 2: Cloud Run)
+
+## Git Workflow & Standards
+
+### Commit Message Format
+Commits MUST start with a task ID prefix:
+- `[BE-XXX]` for backend tasks
+- `[FE-XXX]` for frontend tasks  
+- `[ALL-XXX]` for shared/monorepo tasks
+- `[INF-XXX]` for infrastructure tasks
+
+Example: `[BE-141] Update CORS configuration for local API routes`
+
+### Pull Request Guidelines
+- Branch naming: `issue-{number}-{short-description}` (e.g., `issue-141-backend-api-routes`)
+- PR title should match commit format: `[BE-141] Update CORS configuration`
+- Always include `Closes #XXX` in PR description to auto-close issues
+- All CI checks must pass before merging
+
+### Pre-Push Checklist
+**ALWAYS run checks locally before pushing:**
+- Backend: `cd backend && uv run poe check`
+- Frontend: `cd frontend && pnpm run lint && pnpm run typecheck && pnpm run test`
+
+## Environment Variables
+- Use `GEMINI_API_KEY` (not `GOOGLE_AI_API_KEY`) for Google AI services
+- Docker uses `http://backend:8000` for service-to-service communication
+- Local development uses `http://localhost:8000`
+
+# Key Commands
 
 ### Frontend Development
 ```bash
@@ -70,6 +104,14 @@ npm run test:all        # Test everything
 - **Backend**: Google Cloud Run (containerized)
 - **CI/CD**: GitHub Actions with automated deployment
 
+## After Context Clear
+
+When resuming work, provide:
+1. Current issue number and description: "Working on issue #142 - Audio Conversion"
+2. Link to GitHub project: https://github.com/users/macayaven/projects/7
+3. Current branch: "We're on branch issue-142-audio-conversion"
+4. Work completed so far: "We've already implemented X and Y"
+
 ## Important Patterns
 
 1. **Monorepo Structure**: Frontend and backend are separate but coordinated
@@ -92,6 +134,7 @@ npm run test:all        # Test everything
 
 ## Key Files
 
+- `/backend/CLAUDE.md` - Backend-specific development guidelines
 - `/frontend/app/` - Next.js pages and routes
 - `/frontend/components/` - React components
 - `/frontend/lib/` - Core functionality
