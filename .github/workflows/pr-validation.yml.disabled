@@ -125,46 +125,11 @@ jobs:
           
           echo "✅ All commit messages are valid"
 
-  preview-deployment:
-    name: Preview Deployment
-    runs-on: ubuntu-latest
-    if: github.event.pull_request.head.repo.full_name == github.repository
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18.x'
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: '10.11.0'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Build application
-        run: pnpm build
-
-      - name: Deploy preview to Firebase
-        uses: FirebaseExtended/action-hosting-deploy@v0
-        with:
-          repoToken: '${{ secrets.GITHUB_TOKEN }}'
-          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
-          projectId: ${{ secrets.FIREBASE_PROJECT_ID }}
-          
-      - name: Comment preview URL
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const previewUrl = process.env.PREVIEW_URL;
-            
-            await github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `🔗 **Preview**: ${previewUrl}\n\nThis preview will be updated automatically as you push new commits.`
-            });
+  # Preview deployment disabled until Epic 2
+  # preview-deployment:
+  #   name: Preview Deployment
+  #   runs-on: ubuntu-latest
+  #   if: github.event.pull_request.head.repo.full_name == github.repository
+  #   steps:
+  #     - name: Skip preview deployment
+  #       run: echo "Preview deployment disabled until Epic 2 (Cloud Run deployment)"

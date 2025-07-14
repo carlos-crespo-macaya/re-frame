@@ -1,197 +1,134 @@
-# re-frame.social Frontend
+# CBT Assistant POC - Monorepo
 
-This is the frontend for re-frame.social, a transparent AI-assisted cognitive reframing tool designed for people with Avoidant Personality Disorder (AvPD) and social anxiety.
+This is the monorepo for the CBT Assistant Proof of Concept, combining the re-frame.social frontend and the reframe-agents backend into a unified codebase.
 
-## Tech Stack
-
-- **Framework**: Next.js 14 (App Router)
-- **Styling**: Tailwind CSS v3
-- **Language**: TypeScript
-- **Audio**: Web Audio API with AudioWorklets
-- **Real-time**: Server-Sent Events (SSE) for streaming
-- **Deployment**: Google Cloud Run (containerized)
-- **CI/CD**: GitHub Actions with automated testing and deployment
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js 18+ 
-- pnpm 10.11.0 (required)
-- Docker (for containerized deployment)
-
-### Installation
-
-1. Install dependencies:
-```bash
-pnpm install
-```
-
-2. Run the development server:
-```bash
-pnpm run dev
-```
-
-3. Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-### Build for Production
-
-```bash
-# Build for production
-pnpm run build
-
-# Build Docker image
-docker build -t re-frame-frontend .
-
-# Run locally
-docker run -p 8080:8080 re-frame-frontend
-```
-
-## Project Structure
+## 🏗️ Monorepo Structure
 
 ```
 re-frame/
-├── app/                  # Next.js App Router
-│   ├── layout.tsx       # Root layout with error boundary
-│   ├── page.tsx         # Landing page
-│   ├── demo/            # Demo page with audio features
-│   ├── learn-cbt/       # CBT educational content
-│   └── globals.css      # Global styles
-├── components/          # React components
-│   ├── audio/           # Audio components
-│   │   └── conversation/# Conversation mode UI
-│   ├── common/          # Shared components
-│   ├── error/           # Error handling components
-│   ├── forms/           # Form components with audio
-│   └── ui/              # UI primitives
-├── lib/                 # Core functionality
-│   ├── audio/           # Audio recording/playback
-│   │   ├── worklets/    # AudioWorklet processors
-│   │   └── hooks/       # Audio React hooks
-│   ├── streaming/       # SSE client implementation
-│   └── theme/           # Theme management
-├── .github/workflows/   # CI/CD pipelines
-├── Dockerfile           # Container configuration
-└── next.config.mjs      # Next.js configuration
+├── frontend/            # Next.js 14 frontend application
+│   ├── app/            # Next.js App Router
+│   ├── components/     # React components
+│   ├── lib/            # Core functionality
+│   └── package.json    # Frontend dependencies
+├── backend/            # FastAPI backend with ADK (to be merged)
+│   ├── app/            # FastAPI application
+│   ├── agents/         # ADK agents
+│   └── requirements.txt # Python dependencies
+├── docs/               # Shared documentation
+├── scripts/            # Utility scripts
+└── docker-compose.yml  # Local development setup
 ```
 
-## Key Features
+## 🚀 Quick Start
 
-- **Voice Input**: Speak your thoughts with real-time transcription
-- **Audio Modes**: 
-  - Review Mode: Record → Review/Edit → Send
-  - Conversation Mode: Natural back-and-forth dialogue
-- **Mobile-first design**: Optimized for mobile devices with responsive breakpoints
-- **Accessibility**: WCAG AA compliant with screen reader support and keyboard navigation
-- **Dark mode**: Automatic dark mode support based on system preferences
-- **Performance**: Lazy-loaded audio components, optimized bundle size
-- **Security**: CSP headers, no audio storage, privacy-focused
-- **Real-time Streaming**: Server-Sent Events for instant audio/text exchange
+### Prerequisites
 
-## Development Guidelines
+- Node.js 18+
+- pnpm 10.11.0+
+- Python 3.11+
+- Docker & Docker Compose
 
-### Accessibility
+### Development Setup
 
-- All interactive elements must have a minimum touch target of 44x44px
-- Use semantic HTML and ARIA labels where appropriate
-- Ensure color contrast ratios meet WCAG AA standards
-- Support keyboard navigation throughout the application
-
-### Styling
-
-- Use Tailwind CSS utility classes
-- Follow mobile-first approach
-- Use the custom color palette defined in `tailwind.config.ts`
-- Respect user's motion preferences with `prefers-reduced-motion`
-
-### Components
-
-- Keep components small and focused
-- Use TypeScript for type safety
-- Follow the established folder structure
-- Write accessible, semantic markup
-
-## Environment Variables
-
-```env
-# API Configuration
-NEXT_PUBLIC_API_URL=https://api.re-frame.social
-
-# Google Cloud Configuration (for deployment)
-GCP_PROJECT_ID=your-project-id
-GCP_REGION=us-central1
-```
-
-## Scripts
-
-- `pnpm run dev` - Start development server
-- `pnpm run build` - Build for production
-- `pnpm run start` - Start production server (for testing)
-- `pnpm run lint` - Run ESLint
-- `pnpm run test` - Run all tests
-- `pnpm run test:watch` - Run tests in watch mode
-- `pnpm run test:ci` - Run tests in CI mode with coverage
-
-## Deployment
-
-The application is deployed to Google Cloud Run:
-
-1. **Automatic Deployment**: Push to `main` branch triggers deployment via GitHub Actions
-2. **Manual Deployment**:
+1. **Clone the repository**
    ```bash
-   # Build and push to Artifact Registry
-   gcloud builds submit --tag gcr.io/PROJECT_ID/re-frame-frontend
-   
-   # Deploy to Cloud Run
-   gcloud run deploy re-frame-frontend --image gcr.io/PROJECT_ID/re-frame-frontend
+   git clone https://github.com/macayaven/re-frame.git
+   cd re-frame
    ```
-3. **Configuration**: The app runs on port 8080 with automatic scaling
 
-## Audio Features
+2. **Install dependencies**
+   ```bash
+   # Install root dependencies
+   npm install
 
-### Voice Input Capabilities
-- **Real-time transcription**: Speak naturally and see your words appear
-- **Push-to-talk**: Hold spacebar or button for conversation mode
-- **Audio feedback**: Hear AI responses with natural voice synthesis
-- **Privacy-first**: No audio is stored, only transcribed text
+   # Install frontend dependencies
+   cd frontend && pnpm install && cd ..
 
-### Browser Support
-- Chrome 90+ (recommended)
-- Firefox 88+
-- Safari 14+
-- Edge 90+
+   # Install backend dependencies (after merge)
+   cd backend && pip install -r requirements.txt && cd ..
+   ```
 
-### Technical Implementation
-- Web Audio API with AudioWorklets for low-latency processing
-- Server-Sent Events for real-time bidirectional streaming
-- Graceful fallback when audio features unavailable
-- Lazy loading for optimal performance
+3. **Run development servers**
+   ```bash
+   # Run frontend only
+   npm run dev:frontend
 
-## Testing
+   # Run backend only (after merge)
+   npm run dev:backend
+
+   # Run both frontend and backend
+   npm run dev:all
+   ```
+
+4. **Access the applications**
+   - Frontend: http://localhost:3000
+   - Backend API: http://localhost:8000
+   - API docs: http://localhost:8000/docs
+
+## 📚 Documentation
+
+- [Frontend README](./frontend/README.md) - Detailed frontend documentation
+- [Backend README](./backend/README.md) - Backend documentation (coming soon)
+- [Team Coordination Guide](./docs/TEAM_COORDINATION_GUIDE.md) - Development workflow
+- [Migration Checklist](./docs/MONOREPO_MIGRATION_CHECKLIST.md) - Monorepo setup progress
+
+## 🧪 Testing
 
 ```bash
 # Run all tests
-pnpm test
+npm run test:all
 
-# Run specific test file
-pnpm test ComponentName.test.tsx
+# Run frontend tests
+npm run test:frontend
 
-# Run with coverage
-pnpm test:ci
+# Run backend tests (after merge)
+npm run test:backend
 ```
 
-## Contributing
+## 🐳 Docker Development
 
-When making changes:
+```bash
+# Build and run with Docker Compose
+docker-compose up --build
 
-1. Follow Test-Driven Development (TDD) practices
-2. Ensure all changes maintain WCAG AA compliance
-3. Test on mobile devices and with keyboard navigation
-4. Test audio features across different browsers
-5. Consider the target audience (people with AvPD) in all UX decisions
-6. Keep the interface calm, non-judgmental, and supportive
-7. Run linting and tests before committing:
-   ```bash
-   pnpm lint
-   pnpm test
-   ```
+# Stop services
+docker-compose down
+```
+
+## 🚢 Deployment
+
+The application is deployed to Google Cloud Run:
+
+- **Frontend**: Deployed from `frontend/` directory
+- **Backend**: Deployed from `backend/` directory
+- **CI/CD**: GitHub Actions handles automated deployment on push to `main`
+
+## 🤝 Contributing
+
+1. Create a feature branch from `main`
+2. Make your changes following our coding standards
+3. Write/update tests as needed
+4. Submit a PR with a clear description
+5. Ensure all CI checks pass
+
+## 📋 Project Management
+
+- **Project Board**: [GitHub Projects](https://github.com/users/macayaven/projects/7)
+- **Issues**: [GitHub Issues](https://github.com/macayaven/re-frame/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/macayaven/re-frame/discussions)
+
+## 🔐 Security
+
+- No audio data is stored
+- All data transmission is encrypted
+- Regular security updates via Dependabot
+- CSP headers configured for production
+
+## 📄 License
+
+This project is proprietary. All rights reserved.
+
+---
+
+**Note**: This is an active monorepo migration. The backend code will be merged via git subtree from the reframe-agents repository.
