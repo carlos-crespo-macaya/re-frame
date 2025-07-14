@@ -366,7 +366,6 @@ Thank you for using re-frame.
         media_type="text/plain",  # Using text/plain for POC
         headers={
             "Content-Disposition": f"attachment; filename=session-summary-{session_id}.txt",
-            "Content-Type": "text/plain",
         },
     )
 
