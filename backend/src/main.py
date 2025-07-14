@@ -152,7 +152,9 @@ app.add_middleware(
 )
 
 STATIC_DIR = Path("static")
-app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+# Only mount static files if the directory exists
+if STATIC_DIR.exists():
+    app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 # Store active sessions
 active_sessions = {}
@@ -160,8 +162,11 @@ active_sessions = {}
 
 @app.get("/")
 async def root():
-    """Serves the index.html"""
-    return FileResponse(Path(STATIC_DIR) / "index.html")
+    """Serves the index.html or API info"""
+    index_path = Path(STATIC_DIR) / "index.html"
+    if index_path.exists():
+        return FileResponse(index_path)
+    return {"message": "CBT Assistant API", "docs": "/docs", "health": "/health"}
 
 
 @app.get("/health")

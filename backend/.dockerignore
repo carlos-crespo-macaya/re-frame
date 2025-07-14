@@ -1,0 +1,77 @@
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Development files
+.env
+.env.local
+*.log
+*.pid
+*.swp
+*.swo
+*~
+
+# Testing and coverage
+.coverage
+.pytest_cache/
+htmlcov/
+*.cover
+.hypothesis/
+tests/
+
+# Documentation
+docs/
+README.md
+CLAUDE.md
+
+# Development tools
+.mypy_cache/
+.ruff_cache/
+.vscode/
+.idea/
+*.code-workspace
+
+# Git
+.git/
+.gitignore
+
+# CI/CD
+.github/
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# Package managers
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Distribution / packaging
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Temporary files
+*.tmp
+.DS_Store
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose*.yml
