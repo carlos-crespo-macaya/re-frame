@@ -68,6 +68,7 @@ export function ConversationDemo() {
       <SessionEndView
         onNewSession={handleNewSession}
         sessionSummary={conversation.getSessionSummary() || undefined}
+        sessionId="demo-session-123" // Mock session ID for demo
       />
     )
   }
