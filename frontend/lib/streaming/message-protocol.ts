@@ -2,7 +2,7 @@
  * Message protocol types for SSE streaming communication
  */
 
-export type MimeType = 'text/plain' | 'audio/pcm';
+export type MimeType = 'text/plain' | 'audio/pcm' | 'audio/wav';
 export type MessageType = 'thought' | 'response' | 'transcription' | 'error' | 'status';
 export type ConnectionState = 'connecting' | 'connected' | 'disconnected' | 'error';
 
@@ -132,10 +132,31 @@ export function createClientMessage(params: {
 
 /**
  * Default audio configuration
+ * Note: Recording happens at 48kHz WAV, but this config is for streaming/transmission
  */
 export const DEFAULT_AUDIO_CONFIG: AudioStreamConfig = {
-  sampleRate: 16000,
-  channels: 1,
-  bitDepth: 16,
-  bufferInterval: 200
+  sampleRate: 16000,    // Target sample rate for backend processing
+  channels: 1,          // Mono audio
+  bitDepth: 16,         // 16-bit PCM
+  bufferInterval: 200   // 200ms chunks
+};
+
+/**
+ * Recording configuration (actual browser recording)
+ */
+export const RECORDING_CONFIG: AudioStreamConfig = {
+  sampleRate: 48000,    // 48kHz native browser recording
+  channels: 1,          // Mono
+  bitDepth: 16,         // 16-bit PCM in WAV format
+  bufferInterval: 200   // 200ms chunks
+};
+
+/**
+ * Playback configuration (TTS audio from backend)
+ */
+export const PLAYBACK_CONFIG: AudioStreamConfig = {
+  sampleRate: 24000,    // 24kHz for TTS playback
+  channels: 1,          // Mono
+  bitDepth: 16,         // 16-bit PCM
+  bufferInterval: 200   // Not applicable for playback
 };
