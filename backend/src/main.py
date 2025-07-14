@@ -32,6 +32,7 @@ from google.genai.types import Blob, Content, Part, SpeechConfig
 # Import CBT assistant instead of search agent
 from agents.cbt_assistant import create_cbt_assistant
 from utils.audio_converter import AudioConverter
+from utils.session_manager import session_manager
 
 warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
 
@@ -160,8 +161,20 @@ STATIC_DIR = Path("static")
 if STATIC_DIR.exists():
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
-# Store active sessions
-active_sessions = {}
+# Session manager will handle active sessions
+# active_sessions = {}  # Replaced by session_manager
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Start background tasks on startup."""
+    await session_manager.start()
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Clean up on shutdown."""
+    await session_manager.stop()
 
 
 @app.get("/")
@@ -195,14 +208,17 @@ async def sse_endpoint(session_id: str, is_audio: str = "false"):
         session_id, is_audio == "true"
     )
 
-    # Store the request queue for this session
-    active_sessions[session_id] = live_request_queue
+    # Store the session with session manager
+    session_manager.create_session(
+        session_id=session_id,
+        user_id=session_id,  # Using session_id as user_id for POC
+        request_queue=live_request_queue,
+    )
 
     print(f"Client session {session_id} connected via SSE, audio mode: {is_audio}")
 
     def cleanup():
-        live_request_queue.close()
-        active_sessions.pop(session_id, None)
+        session_manager.remove_session(session_id)
         print(f"Client session {session_id} disconnected from SSE")
 
     async def event_generator():
@@ -233,10 +249,12 @@ async def sse_endpoint(session_id: str, is_audio: str = "false"):
 async def send_message_endpoint(session_id: str, request: Request):
     """HTTP endpoint for client to agent communication"""
 
-    # Get the live request queue for this session
-    live_request_queue = active_sessions.get(session_id)
-    if not live_request_queue:
+    # Get the session from session manager
+    session = session_manager.get_session(session_id)
+    if not session or not session.request_queue:
         return {"error": "Session not found"}
+
+    live_request_queue = session.request_queue
 
     # Parse the message
     message = await request.json()
@@ -282,6 +300,43 @@ async def send_message_endpoint(session_id: str, request: Request):
         return {"error": f"Mime type not supported: {mime_type}"}
 
     return {"status": "sent"}
+
+
+@app.get("/api/session/{session_id}")
+async def get_session_info(session_id: str):
+    """Get session information for debugging."""
+    session = session_manager.get_session(session_id)
+    if not session:
+        return {"error": "Session not found"}
+
+    return {
+        "session_id": session.session_id,
+        "user_id": session.user_id,
+        "created_at": session.created_at,
+        "last_activity": session.last_activity,
+        "age_seconds": session.age_seconds,
+        "inactive_seconds": session.inactive_seconds,
+        "has_request_queue": session.request_queue is not None,
+    }
+
+
+@app.get("/api/sessions")
+async def list_sessions():
+    """List all active sessions for debugging."""
+    sessions = []
+    for session_id, session in session_manager.sessions.items():
+        sessions.append(
+            {
+                "session_id": session_id,
+                "age_seconds": session.age_seconds,
+                "inactive_seconds": session.inactive_seconds,
+            }
+        )
+
+    return {
+        "total_sessions": session_manager.get_active_session_count(),
+        "sessions": sessions,
+    }
 
 
 @app.get("/api/pdf/{session_id}")
