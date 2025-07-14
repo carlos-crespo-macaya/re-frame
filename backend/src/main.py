@@ -49,7 +49,7 @@ async def start_agent_session(user_id, is_audio=False):
 
     # Create the CBT assistant agent
     cbt_agent = create_cbt_assistant()
-    
+
     # Create a Runner
     runner = InMemoryRunner(
         app_name=APP_NAME,
@@ -265,7 +265,7 @@ async def detect_language(request: Request):
     # For now, return a placeholder response
     data = await request.json()
     return {
-        "status": "not_implemented", 
+        "status": "not_implemented",
         "message": "Language detection will be implemented in Epic 1",
         "text": data.get("text", ""),
     }
