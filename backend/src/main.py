@@ -359,9 +359,7 @@ In production, this would contain:
 - Resources mentioned
 
 Thank you for using re-frame.
-""".encode(
-        "utf-8"
-    )
+""".encode()
 
     return Response(
         content=pdf_content,

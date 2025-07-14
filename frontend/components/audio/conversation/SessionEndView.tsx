@@ -1,7 +1,6 @@
 'use client'
 
-import { Button } from '@/components/ui'
-import { PdfDownloadButton } from '@/components/ui/PdfDownloadButton'
+import { Button, PdfDownloadButton } from '@/components/ui'
 import type { SessionEndViewProps } from './types'
 
 export function SessionEndView({ onNewSession, sessionSummary, sessionId }: SessionEndViewProps) {

@@ -19,10 +19,10 @@ export function PdfDownloadButton({ sessionId, className, disabled }: PdfDownloa
 
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || '/api'
-      const response = await fetch(`${apiUrl}/api/pdf/${sessionId}`)
+      const response = await fetch(`${apiUrl}/pdf/${sessionId}`)
       
       if (!response.ok) {
-        throw new Error('Failed to download PDF')
+        throw new Error('Failed to download summary')
       }
 
       // Get the blob from the response
@@ -32,7 +32,7 @@ export function PdfDownloadButton({ sessionId, className, disabled }: PdfDownloa
       const url = window.URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      link.download = `session-summary-${sessionId}.pdf`
+      link.download = `session-summary-${sessionId}.txt`
       
       // Trigger download
       document.body.appendChild(link)
@@ -42,8 +42,8 @@ export function PdfDownloadButton({ sessionId, className, disabled }: PdfDownloa
       document.body.removeChild(link)
       window.URL.revokeObjectURL(url)
     } catch (err) {
-      setError('Failed to download PDF. Please try again.')
-      console.error('PDF download error:', err)
+      setError('Failed to download summary. Please try again.')
+      console.error('Summary download error:', err)
     } finally {
       setIsDownloading(false)
     }
@@ -56,7 +56,7 @@ export function PdfDownloadButton({ sessionId, className, disabled }: PdfDownloa
         disabled={disabled || isDownloading}
         variant="secondary"
         className={className}
-        aria-label={isDownloading ? 'Downloading PDF' : 'Download session summary as PDF'}
+        aria-label={isDownloading ? 'Downloading summary' : 'Download session summary as text file'}
         aria-busy={isDownloading}
       >
         {isDownloading ? (
@@ -67,7 +67,7 @@ export function PdfDownloadButton({ sessionId, className, disabled }: PdfDownloa
         ) : (
           <>
             <span className="mr-2" aria-hidden="true">📄</span>
-            Download PDF Summary
+            Download Summary (Text)
           </>
         )}
       </Button>
