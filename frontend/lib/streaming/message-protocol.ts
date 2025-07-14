@@ -31,6 +31,8 @@ export interface ClientMessage extends BaseMessage {
 export interface ServerMessage extends BaseMessage {
   chunk_id?: string;
   is_final?: boolean;
+  turn_complete?: boolean;
+  interrupted?: boolean;
 }
 
 /**

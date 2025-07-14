@@ -11,7 +11,7 @@ from src.agents.phase_manager import check_phase_transition, get_current_phase_i
 from src.knowledge.cbt_context import BASE_CBT_CONTEXT
 
 
-def create_cbt_assistant(model: str = "gemini-2.0-flash") -> LlmAgent:
+def create_cbt_assistant(model: str = "gemini-2.0-flash-live-001") -> LlmAgent:
     """
     Create a CBT Assistant agent with specified model.
 
