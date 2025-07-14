@@ -28,7 +28,12 @@ export interface ClientMessage extends BaseMessage {
 /**
  * Message received from server via SSE
  */
-export interface ServerMessage extends BaseMessage {
+export interface ServerMessage {
+  mime_type?: MimeType;
+  data?: string;
+  message_type?: MessageType;
+  session_id?: string;
+  timestamp?: number;
   chunk_id?: string;
   is_final?: boolean;
   turn_complete?: boolean;
@@ -82,11 +87,11 @@ export function isServerMessage(data: any): data is ServerMessage {
     return false;
   }
   
+  // Backend sends minimal format: just mime_type and data
+  // or turn_complete flag
   return (
-    'mime_type' in data &&
-    'data' in data &&
-    'message_type' in data &&
-    'session_id' in data
+    ('mime_type' in data && 'data' in data) ||
+    ('turn_complete' in data)
   );
 }
 
