@@ -114,7 +114,9 @@ export class MessageAssembler {
     }
     
     const chunks = this.chunks.get(key)!;
-    chunks.push(message.data);
+    if (message.data) {
+      chunks.push(message.data);
+    }
     
     if (message.is_final) {
       const complete = chunks.join('');

@@ -89,10 +89,10 @@ export default function ThoughtInputForm({
       const transcriptionMessages = sseClient.getMessagesByType('transcription')
       const latestTranscription = transcriptionMessages[transcriptionMessages.length - 1]
       
-      if (latestTranscription) {
+      if (latestTranscription && latestTranscription.data) {
         setAudioState(prev => ({
           ...prev,
-          transcription: latestTranscription.data,
+          transcription: latestTranscription.data || '',
           isProcessing: false
         }))
       }
