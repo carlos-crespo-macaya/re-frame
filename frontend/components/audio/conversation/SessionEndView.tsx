@@ -1,9 +1,9 @@
 'use client'
 
-import { Button } from '@/components/ui'
+import { Button, PdfDownloadButton } from '@/components/ui'
 import type { SessionEndViewProps } from './types'
 
-export function SessionEndView({ onNewSession, sessionSummary }: SessionEndViewProps) {
+export function SessionEndView({ onNewSession, sessionSummary, sessionId }: SessionEndViewProps) {
   const formatDuration = (seconds: number) => {
     const minutes = Math.floor(seconds / 60)
     return `${minutes} minute${minutes !== 1 ? 's' : ''}`
@@ -41,6 +41,13 @@ export function SessionEndView({ onNewSession, sessionSummary }: SessionEndViewP
               </ul>
             </div>
           )}
+        </div>
+      )}
+      
+      {/* PDF Download button - only show if sessionId is available */}
+      {sessionId && (
+        <div className="mb-6">
+          <PdfDownloadButton sessionId={sessionId} />
         </div>
       )}
       
