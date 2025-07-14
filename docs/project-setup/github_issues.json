@@ -1,0 +1,267 @@
+{
+  "milestones": [
+    {
+      "title": "Preliminary: Monorepo Migration",
+      "description": "Migrate to monorepo structure",
+      "due_on": "2025-01-20"
+    },
+    {
+      "title": "POC Epic 1: Local Docker",
+      "description": "Local Docker deployment for development",
+      "due_on": "2025-01-31"
+    },
+    {
+      "title": "POC Epic 2: Cloud Run",
+      "description": "Production deployment on Cloud Run",
+      "due_on": "2025-02-14"
+    }
+  ],
+  "labels": [
+    {"name": "epic-0-migration", "color": "6B46C1", "description": "Monorepo migration tasks"},
+    {"name": "epic-1-local", "color": "0052CC", "description": "Local Docker deployment"},
+    {"name": "epic-2-production", "color": "5319E7", "description": "Cloud Run production"},
+    {"name": "team-backend", "color": "0E8A16", "description": "Backend team tasks"},
+    {"name": "team-frontend", "color": "FB8C00", "description": "Frontend team tasks"},
+    {"name": "team-shared", "color": "FDD835", "description": "Shared team tasks"},
+    {"name": "team-devops", "color": "00ACC1", "description": "DevOps tasks"},
+    {"name": "priority-P0", "color": "D32F2F", "description": "Critical priority"},
+    {"name": "priority-P1", "color": "F57C00", "description": "High priority"},
+    {"name": "priority-P2", "color": "FBC02D", "description": "Medium priority"},
+    {"name": "size-1", "color": "E3F2FD", "description": "1 story point"},
+    {"name": "size-2", "color": "BBDEFB", "description": "2 story points"},
+    {"name": "size-3", "color": "90CAF9", "description": "3 story points"},
+    {"name": "size-5", "color": "64B5F6", "description": "5 story points"},
+    {"name": "type-feature", "color": "1D76DB", "description": "New feature"},
+    {"name": "type-infrastructure", "color": "C5DEF5", "description": "Infrastructure"},
+    {"name": "type-documentation", "color": "0075CA", "description": "Documentation"},
+    {"name": "type-testing", "color": "BFD4F2", "description": "Testing"},
+    {"name": "blocked", "color": "000000", "description": "Blocked by dependency"},
+    {"name": "needs-discussion", "color": "7B1FA2", "description": "Needs team discussion"}
+  ],
+  "issues": [
+    {
+      "title": "[Epic-0.1] [Frontend] Prepare re-frame repository structure",
+      "body": "**User Story**: As a developer, I want to restructure the re-frame repository to support monorepo architecture.\n\n**Acceptance Criteria**:\n- [ ] Create `frontend/` directory\n- [ ] Move all current files into `frontend/`\n- [ ] Create `backend/` directory\n- [ ] Update root `.gitignore`\n- [ ] Create root `docker-compose.yml`\n- [ ] Update root `README.md`\n\n**Definition of Done**:\n- Repository has clear frontend/backend structure\n- All existing functionality preserved\n- Clean git history maintained\n\n**Commands**:\n```bash\nmkdir frontend\ngit mv app components lib public src types *.json *.js *.ts frontend/\ngit mv .env.example frontend/\n```",
+      "labels": ["epic-0-migration", "team-frontend", "priority-P0", "size-2", "type-infrastructure"],
+      "milestone": "Preliminary: Monorepo Migration",
+      "assignee": null
+    },
+    {
+      "title": "[Epic-0.2] [DevOps] Merge backend code using git subtree",
+      "body": "**User Story**: As a developer, I want to merge the reframe-agents code into the monorepo while preserving history.\n\n**Acceptance Criteria**:\n- [ ] Add reframe-agents as remote\n- [ ] Fetch backend history\n- [ ] Merge using git subtree\n- [ ] Verify file structure\n- [ ] Test local docker-compose\n\n**Definition of Done**:\n- Backend code in `backend/` directory\n- Git history preserved\n- No merge conflicts\n- Local development works\n\n**Commands**:\n```bash\ngit remote add backend-origin https://github.com/[org]/reframe-agents\ngit fetch backend-origin\ngit subtree add --prefix=backend backend-origin/main --squash\n```\n\n**Dependencies**: [Epic-0.1]",
+      "labels": ["epic-0-migration", "team-devops", "priority-P0", "size-3", "type-infrastructure"],
+      "milestone": "Preliminary: Monorepo Migration",
+      "assignee": null
+    },
+    {
+      "title": "[Epic-0.3] [DevOps] Update CI/CD workflows for monorepo",
+      "body": "**User Story**: As a developer, I want CI/CD pipelines that work with the monorepo structure.\n\n**Acceptance Criteria**:\n- [ ] Update frontend workflows with path filters\n- [ ] Create backend deployment workflow\n- [ ] Add integration test workflow\n- [ ] Configure path-based triggers\n- [ ] Update deployment scripts\n\n**Definition of Done**:\n- Frontend changes trigger frontend deployment\n- Backend changes trigger backend deployment\n- Integration tests run on all PRs\n- All workflows tested\n\n**Dependencies**: [Epic-0.2]",
+      "labels": ["epic-0-migration", "team-devops", "priority-P0", "size-3", "type-infrastructure"],
+      "milestone": "Preliminary: Monorepo Migration",
+      "assignee": null
+    },
+    {
+      "title": "[Epic-0.4] [Shared] Create GitHub labels and milestones",
+      "body": "**User Story**: As a project manager, I want GitHub issues properly organized with labels and milestones.\n\n**Acceptance Criteria**:\n- [ ] Create all epic labels\n- [ ] Create team labels\n- [ ] Create priority labels\n- [ ] Create size labels\n- [ ] Create milestones with due dates\n- [ ] Create project board\n\n**Definition of Done**:\n- All labels created and color-coded\n- Milestones have clear deadlines\n- Project board configured\n- Automation rules set up",
+      "labels": ["epic-0-migration", "team-shared", "priority-P1", "size-1", "type-infrastructure"],
+      "milestone": "Preliminary: Monorepo Migration",
+      "assignee": null
+    },
+    {
+      "title": "[Epic-0.5] [Backend] Archive reframe-agents repository",
+      "body": "**User Story**: As a developer, I want the old repository archived to avoid confusion.\n\n**Acceptance Criteria**:\n- [ ] Add deprecation notice to README\n- [ ] Make repository read-only\n- [ ] Update any external links\n- [ ] Notify team members\n- [ ] Export any important data\n\n**Definition of Done**:\n- Repository clearly marked as archived\n- Deprecation notice points to new location\n- No active development possible\n- Team notified\n\n**Dependencies**: [Epic-0.2]",
+      "labels": ["epic-0-migration", "team-backend", "priority-P2", "size-1", "type-infrastructure"],
+      "milestone": "Preliminary: Monorepo Migration",
+      "assignee": null
+    },
+    {
+      "title": "[Epic-1.1] [Backend] Docker Configuration",
+      "body": "**User Story**: As a developer, I want to run the entire stack locally with docker-compose so I can test integration without cloud dependencies.\n\n**Acceptance Criteria**:\n- [ ] Dockerfile builds with all audio dependencies\n- [ ] docker-compose.yml orchestrates frontend and backend\n- [ ] Environment variables configurable via .env file\n- [ ] Services communicate over Docker network\n- [ ] Logs visible with `docker-compose logs`\n\n**Definition of Done**:\n- `docker-compose up` starts both services\n- Frontend can call backend APIs\n- No hardcoded credentials\n\n**Priority**: P0 (Critical)\n**Effort**: 3 story points",
+      "labels": ["epic-1-local", "team-backend", "priority-P0", "size-3", "type-feature"],
+      "milestone": "POC Epic 1: Local Docker",
+      "assignee": null
+    },
+    {
+      "title": "[Epic-1.2] [Backend] Local API Route Implementation",
+      "body": "**User Story**: As a frontend developer, I want the backend to accept requests at `/api/*` endpoints when running locally.\n\n**Acceptance Criteria**:\n- [ ] Routes accessible at `/api/events/{sessionId}`\n- [ ] Routes accessible at `/api/send/{sessionId}`\n- [ ] Session ID used consistently (not user_id)\n- [ ] CORS allows http://localhost:3000\n\n**Definition of Done**:\n- Frontend connects without CORS errors\n- All API routes return expected responses\n- Session management works across requests\n\n**Priority**: P0 (Critical)\n**Effort**: 3 story points",
+      "labels": ["epic-1-local", "team-backend", "priority-P0", "size-3", "type-feature"],
+      "milestone": "POC Epic 1: Local Docker",
+      "assignee": null
+    },
+    {
+      "title": "[Epic-1.3] [Backend] Audio Conversion for Local Testing",
+      "body": "**User Story**: As a developer testing locally, I want audio conversion to work without external dependencies.\n\n**Acceptance Criteria**:\n- [ ] Convert 48kHz WAV to 16kHz PCM\n- [ ] Handle various browser formats\n- [ ] Log conversion metrics\n- [ ] Graceful fallback on errors\n- [ ] No external API calls required\n\n**Definition of Done**:\n- Audio recorded in browser plays back correctly\n- Conversion time < 100ms for 5s audio\n- Error cases handled gracefully\n\n**Priority**: P0 (Critical)\n**Effort**: 5 story points",
+      "labels": ["epic-1-local", "team-backend", "priority-P0", "size-5", "type-feature"],
+      "milestone": "POC Epic 1: Local Docker",
+      "assignee": null
+    },
+    {
+      "title": "[Epic-1.4] [Backend] Simple Session Management",
+      "body": "**User Story**: As a developer, I want basic session management for the POC.\n\n**Acceptance Criteria**:\n- [ ] In-memory session storage\n- [ ] Session persistence across requests\n- [ ] Basic cleanup after 1 hour\n\n**Definition of Done**:\n- Sessions work for demo purposes\n- Basic functionality verified\n\n**Priority**: P1 (High)\n**Effort**: 1 story point",
+      "labels": ["epic-1-local", "team-backend", "priority-P1", "size-1", "type-feature"],
+      "milestone": "POC Epic 1: Local Docker",
+      "assignee": null
+    },
+    {
+      "title": "[Epic-1.5] [Backend] SSE Implementation for Local",
+      "body": "**User Story**: As a frontend developer, I want to receive typed SSE events when running locally.\n\n**Acceptance Criteria**:\n- [ ] Events sent with correct format\n- [ ] Event types: response, crisis_alert, phase_transition\n- [ ] Reconnection handled gracefully\n- [ ] No buffering issues\n\n**Definition of Done**:\n- Frontend receives all event types\n- Connection remains stable\n- Reconnection works after network interruption\n\n**Priority**: P0 (Critical)\n**Effort**: 3 story points",
+      "labels": ["epic-1-local", "team-backend", "priority-P0", "size-3", "type-feature"],
+      "milestone": "POC Epic 1: Local Docker",
+      "assignee": null
+    },
+    {
+      "title": "[Epic-1.6] [Backend] Local Integration Testing",
+      "body": "**User Story**: As a QA engineer, I want automated tests that verify the integration works locally.\n\n**Acceptance Criteria**:\n- [ ] End-to-end test script in docker-compose\n- [ ] Tests audio flow (record → convert → process)\n- [ ] Tests crisis detection flow\n- [ ] Tests session persistence\n- [ ] Generate test report\n\n**Definition of Done**:\n- `docker-compose run tests` passes\n- All critical paths covered\n- Results logged clearly\n\n**Priority**: P1 (High)\n**Effort**: 3 story points",
+      "labels": ["epic-1-local", "team-backend", "priority-P1", "size-3", "type-testing"],
+      "milestone": "POC Epic 1: Local Docker",
+      "assignee": null
+    },
+    {
+      "title": "[Epic-1.7] [Frontend] Frontend Docker Configuration",
+      "body": "**User Story**: As a frontend developer, I want to run the Next.js app in Docker alongside the backend.\n\n**Acceptance Criteria**:\n- [ ] Dockerfile for Next.js production build\n- [ ] Multi-stage build for smaller image size\n- [ ] Environment variables injected at runtime\n- [ ] Proper caching of dependencies\n- [ ] Health check endpoint configured\n\n**Definition of Done**:\n- Docker image builds successfully\n- Container starts without errors\n- Can access frontend at http://localhost:3000\n- API calls reach backend container\n\n**Priority**: P0 (Critical)\n**Effort**: 2 story points",
+      "labels": ["epic-1-local", "team-frontend", "priority-P0", "size-2", "type-feature"],
+      "milestone": "POC Epic 1: Local Docker",
+      "assignee": null
+    },
+    {
+      "title": "[Epic-1.8] [Frontend] Local Environment Configuration",
+      "body": "**User Story**: As a developer, I want the frontend to connect to the backend API when running locally.\n\n**Acceptance Criteria**:\n- [ ] Update `.env.local` template with correct values\n- [ ] Configure `NEXT_PUBLIC_API_URL` for Docker network\n- [ ] Add Docker network aliases for service discovery\n- [ ] Support hot reload in development mode\n\n**Definition of Done**:\n- Frontend finds backend at http://backend:8000\n- Environment variables documented\n- No hardcoded URLs in code\n\n**Priority**: P0 (Critical)\n**Effort**: 1 story point",
+      "labels": ["epic-1-local", "team-frontend", "priority-P0", "size-1", "type-feature"],
+      "milestone": "POC Epic 1: Local Docker",
+      "assignee": null
+    },
+    {
+      "title": "[Epic-1.9] [Frontend] SSE Client Enhancement",
+      "body": "**User Story**: As a user, I want to see real-time updates including crisis alerts and phase transitions.\n\n**Acceptance Criteria**:\n- [ ] Handle new event types: crisis_alert, phase_transition, pdf_ready\n- [ ] Implement reconnection with exponential backoff\n- [ ] Add event buffering during reconnection\n- [ ] Display connection status to user\n- [ ] Log events for debugging\n\n**Definition of Done**:\n- All event types handled correctly\n- Reconnection works smoothly\n- No duplicate events after reconnection\n- User sees connection status\n\n**Priority**: P0 (Critical)\n**Effort**: 3 story points",
+      "labels": ["epic-1-local", "team-frontend", "priority-P0", "size-3", "type-feature"],
+      "milestone": "POC Epic 1: Local Docker",
+      "assignee": null
+    },
+    {
+      "title": "[Epic-1.10] [Frontend] CBT UI Components",
+      "body": "**User Story**: As a user, I want to see CBT-specific features like crisis alerts and conversation progress.\n\n**Acceptance Criteria**:\n- [ ] Crisis alert modal with resource display\n- [ ] Phase progress indicator component\n- [ ] PDF download button with progress\n- [ ] Language detection on first message\n- [ ] Session summary display\n\n**Definition of Done**:\n- All components render correctly\n- Crisis alerts require acknowledgment\n- PDF downloads work locally\n- Components are accessible (WCAG AA)\n\n**Priority**: P1 (High)\n**Effort**: 5 story points",
+      "labels": ["epic-1-local", "team-frontend", "priority-P1", "size-5", "type-feature"],
+      "milestone": "POC Epic 1: Local Docker",
+      "assignee": null
+    },
+    {
+      "title": "[Epic-1.11] [Frontend] Audio Format Documentation",
+      "body": "**User Story**: As a developer, I want to understand the audio flow between frontend and backend.\n\n**Acceptance Criteria**:\n- [ ] Document actual recording format (48kHz WAV)\n- [ ] Update message protocol types\n- [ ] Add audio debugging utilities\n- [ ] Create troubleshooting guide\n- [ ] Add browser compatibility matrix\n\n**Definition of Done**:\n- Documentation in repo\n- Audio flow diagram created\n- Debugging steps documented\n- Known issues listed\n\n**Priority**: P1 (High)\n**Effort**: 2 story points",
+      "labels": ["epic-1-local", "team-frontend", "priority-P1", "size-2", "type-documentation"],
+      "milestone": "POC Epic 1: Local Docker",
+      "assignee": null
+    },
+    {
+      "title": "[Epic-1.12] [Frontend] Local Integration Tests",
+      "body": "**User Story**: As a QA engineer, I want automated tests for the frontend-backend integration.\n\n**Acceptance Criteria**:\n- [ ] E2E tests using Playwright\n- [ ] Test audio recording and playback\n- [ ] Test SSE connection and events\n- [ ] Test crisis alert flow\n- [ ] Test PDF generation\n- [ ] Run in Docker environment\n\n**Definition of Done**:\n- Tests run in CI pipeline\n- All critical paths covered\n- Tests are reliable (no flakes)\n- Clear test reports\n\n**Priority**: P1 (High)\n**Effort**: 3 story points",
+      "labels": ["epic-1-local", "team-frontend", "priority-P1", "size-3", "type-testing"],
+      "milestone": "POC Epic 1: Local Docker",
+      "assignee": null
+    },
+    {
+      "title": "[Epic-2.1] [Backend] Cloud Run Configuration",
+      "body": "**User Story**: As a DevOps engineer, I want to deploy the backend to Cloud Run with proper configuration.\n\n**Acceptance Criteria**:\n- [ ] Same Dockerfile works for Cloud Run\n- [ ] Environment variables from Secret Manager\n- [ ] Minimum 1, maximum 10 instances\n- [ ] CPU and memory limits configured\n- [ ] Health check endpoint working\n\n**Definition of Done**:\n- Deployment successful via GitHub Actions\n- Service scales based on load\n- Costs within budget\n\n**Priority**: P0 (Critical)\n**Effort**: 3 story points",
+      "labels": ["epic-2-production", "team-backend", "priority-P0", "size-3", "type-infrastructure"],
+      "milestone": "POC Epic 2: Cloud Run",
+      "assignee": null
+    },
+    {
+      "title": "[Epic-2.2] [Backend] Production Security Hardening",
+      "body": "**User Story**: As a security engineer, I want the production API to be secure against common attacks.\n\n**Acceptance Criteria**:\n- [ ] CORS restricted to production domains\n- [ ] Rate limiting implemented\n- [ ] Request size limits enforced\n- [ ] API key validation\n- [ ] HTTPS only\n\n**Definition of Done**:\n- Security scan passes\n- Penetration test findings addressed\n- No sensitive data in logs\n\n**Priority**: P0 (Critical)\n**Effort**: 5 story points",
+      "labels": ["epic-2-production", "team-backend", "priority-P0", "size-5", "type-feature"],
+      "milestone": "POC Epic 2: Cloud Run",
+      "assignee": null
+    },
+    {
+      "title": "[Epic-2.3] [Backend] Cloud Storage Integration",
+      "body": "**User Story**: As a system architect, I want to use Google Cloud services for production workloads.\n\n**Acceptance Criteria**:\n- [ ] Cloud Storage for PDF generation\n- [ ] Firestore for session management\n- [ ] Cloud Speech-to-Text API integrated\n- [ ] Proper IAM roles configured\n- [ ] Costs monitored\n\n**Definition of Done**:\n- All cloud services working\n- No hardcoded credentials\n- Costs tracked in dashboard\n\n**Priority**: P1 (High)\n**Effort**: 5 story points",
+      "labels": ["epic-2-production", "team-backend", "priority-P1", "size-5", "type-infrastructure"],
+      "milestone": "POC Epic 2: Cloud Run",
+      "assignee": null
+    },
+    {
+      "title": "[Epic-2.4] [Backend] Basic Monitoring",
+      "body": "**User Story**: As a developer, I want basic logging to debug issues.\n\n**Acceptance Criteria**:\n- [ ] Cloud Logging configured\n- [ ] Basic error logging\n- [ ] Request/response logging\n\n**Definition of Done**:\n- Logs visible in Cloud Console\n- Errors are trackable\n\n**Priority**: P1 (High)\n**Effort**: 1 story point",
+      "labels": ["epic-2-production", "team-backend", "priority-P1", "size-1", "type-infrastructure"],
+      "milestone": "POC Epic 2: Cloud Run",
+      "assignee": null
+    },
+    {
+      "title": "[Epic-2.5] [Backend] Basic Performance Verification",
+      "body": "**User Story**: As a user, I want reasonable response times for the POC.\n\n**Acceptance Criteria**:\n- [ ] Audio conversion works\n- [ ] API responds in reasonable time\n- [ ] Basic concurrent request handling\n\n**Definition of Done**:\n- POC performs acceptably for demo\n- No obvious performance issues\n\n**Priority**: P2 (Medium)\n**Effort**: 2 story points",
+      "labels": ["epic-2-production", "team-backend", "priority-P2", "size-2", "type-feature"],
+      "milestone": "POC Epic 2: Cloud Run",
+      "assignee": null
+    },
+    {
+      "title": "[Epic-2.6] [Backend] POC Deployment Verification",
+      "body": "**User Story**: As a product owner, I want to verify the POC works in production.\n\n**Acceptance Criteria**:\n- [ ] Deploy to Cloud Run\n- [ ] Test basic functionality\n- [ ] Document any issues\n\n**Definition of Done**:\n- POC accessible via URL\n- Basic demo flow works\n\n**Priority**: P0 (Critical)\n**Effort**: 2 story points",
+      "labels": ["epic-2-production", "team-backend", "priority-P0", "size-2", "type-testing"],
+      "milestone": "POC Epic 2: Cloud Run",
+      "assignee": null
+    },
+    {
+      "title": "[Epic-2.7] [Frontend] Production Build Optimization",
+      "body": "**User Story**: As a user, I want fast page loads and smooth performance in production.\n\n**Acceptance Criteria**:\n- [ ] Optimize Next.js build for Cloud Run\n- [ ] Implement code splitting for CBT components\n- [ ] Add image optimization with next/image\n- [ ] Configure CDN for static assets\n- [ ] Minimize JavaScript bundle size\n\n**Definition of Done**:\n- Lighthouse score > 90 for performance\n- First contentful paint < 1.5s\n- Time to interactive < 3s\n- Bundle size < 250KB gzipped\n\n**Priority**: P1 (High)\n**Effort**: 3 story points",
+      "labels": ["epic-2-production", "team-frontend", "priority-P1", "size-3", "type-feature"],
+      "milestone": "POC Epic 2: Cloud Run",
+      "assignee": null
+    },
+    {
+      "title": "[Epic-2.8] [Frontend] Production Environment Configuration",
+      "body": "**User Story**: As a DevOps engineer, I want secure and reliable frontend configuration for production.\n\n**Acceptance Criteria**:\n- [ ] Configure production API URL\n- [ ] Set up environment variables in Cloud Run\n- [ ] Configure security headers (CSP, HSTS, etc.)\n- [ ] Set up custom domain with SSL\n- [ ] Configure Cloud CDN\n\n**Definition of Done**:\n- All environment variables documented\n- Security headers score A+ on SecurityHeaders.com\n- Custom domain working with SSL\n- CDN caching configured\n\n**Priority**: P0 (Critical)\n**Effort**: 3 story points",
+      "labels": ["epic-2-production", "team-frontend", "priority-P0", "size-3", "type-infrastructure"],
+      "milestone": "POC Epic 2: Cloud Run",
+      "assignee": null
+    },
+    {
+      "title": "[Epic-2.9] [Frontend] Basic Error Handling (POC)",
+      "body": "**User Story**: As a developer, I want basic error handling for the POC.\n\n**Acceptance Criteria**:\n- [ ] Console error logging\n- [ ] Basic error pages (404, 500)\n- [ ] SSE reconnection on error\n- [ ] User-friendly error messages\n\n**Definition of Done**:\n- Errors logged to console\n- Error pages display correctly\n- SSE reconnects automatically\n\n**Priority**: P1 (High)\n**Effort**: 2 story points",
+      "labels": ["epic-2-production", "team-frontend", "priority-P1", "size-2", "type-feature"],
+      "milestone": "POC Epic 2: Cloud Run",
+      "assignee": null
+    },
+    {
+      "title": "[Epic-2.10] [Frontend] Basic Accessibility (POC)",
+      "body": "**User Story**: As a user, I want basic accessibility features in the POC.\n\n**Acceptance Criteria**:\n- [ ] Basic keyboard navigation\n- [ ] ARIA labels on key elements\n- [ ] Sufficient color contrast\n- [ ] Focus indicators visible\n\n**Definition of Done**:\n- Tab navigation works\n- Screen reader can navigate basic flow\n- No major accessibility blockers\n\n**Priority**: P2 (Medium)\n**Effort**: 2 story points",
+      "labels": ["epic-2-production", "team-frontend", "priority-P2", "size-2", "type-feature"],
+      "milestone": "POC Epic 2: Cloud Run",
+      "assignee": null
+    },
+    {
+      "title": "[Epic-2.11] [Frontend] Basic Performance Verification (POC)",
+      "body": "**User Story**: As a user, I want acceptable performance in the POC.\n\n**Acceptance Criteria**:\n- [ ] Page loads in reasonable time\n- [ ] Audio streaming works smoothly\n- [ ] No obvious performance issues\n- [ ] Basic caching headers set\n\n**Definition of Done**:\n- Pages load within 5 seconds\n- Audio plays without stuttering\n- No blocking operations\n\n**Priority**: P2 (Medium)\n**Effort**: 2 story points",
+      "labels": ["epic-2-production", "team-frontend", "priority-P2", "size-2", "type-feature"],
+      "milestone": "POC Epic 2: Cloud Run",
+      "assignee": null
+    },
+    {
+      "title": "[Epic-2.12] [Frontend] Production Deployment Pipeline",
+      "body": "**User Story**: As a developer, I want automated and safe deployments to production.\n\n**Acceptance Criteria**:\n- [ ] GitHub Actions workflow for Cloud Run\n- [ ] Staging environment deployment\n- [ ] Automated smoke tests post-deployment\n- [ ] Rollback capability\n- [ ] Deployment notifications\n\n**Definition of Done**:\n- Deployments complete in < 10 minutes\n- Zero-downtime deployments\n- Rollback tested and documented\n- Team notified of deployments\n\n**Priority**: P0 (Critical)\n**Effort**: 3 story points",
+      "labels": ["epic-2-production", "team-frontend", "priority-P0", "size-3", "type-infrastructure"],
+      "milestone": "POC Epic 2: Cloud Run",
+      "assignee": null
+    },
+    {
+      "title": "[Epic-S1] [Shared] Basic Integration Documentation",
+      "body": "**User Story**: As a developer from either team, I want comprehensive documentation of the integration.\n\n**Acceptance Criteria**:\n- [ ] API contract documentation (OpenAPI spec)\n- [ ] Audio format flow diagram\n- [ ] Deployment architecture diagram\n- [ ] Troubleshooting guide\n- [ ] Runbook for common issues\n\n**Definition of Done**:\n- Documentation reviewed by both teams\n- Diagrams checked into repo\n- Troubleshooting guide tested\n- Available in team wiki\n\n**Priority**: P1 (High)\n**Effort**: 3 story points\n**Team**: Both",
+      "labels": ["epic-1-local", "epic-2-production", "team-shared", "priority-P1", "size-3", "type-documentation"],
+      "milestone": "POC Epic 2: Cloud Run",
+      "assignee": null
+    },
+    {
+      "title": "[Epic-S2] [Shared] End-to-End Testing Framework",
+      "body": "**User Story**: As a QA engineer, I want automated tests that verify the complete user journey.\n\n**Acceptance Criteria**:\n- [ ] Test framework spans both frontend and backend\n- [ ] Tests run in CI/CD pipeline\n- [ ] Cover critical user journeys\n- [ ] Performance benchmarks included\n- [ ] Results dashboard available\n\n**Definition of Done**:\n- Tests run on every PR\n- < 5% flake rate\n- Results visible to all team members\n- Performance regressions detected\n\n**Priority**: P1 (High)\n**Effort**: 5 story points\n**Team**: Both",
+      "labels": ["epic-1-local", "epic-2-production", "team-shared", "priority-P1", "size-5", "type-testing"],
+      "milestone": "POC Epic 2: Cloud Run",
+      "assignee": null
+    },
+    {
+      "title": "[Epic-S3] [Shared] Security Review",
+      "body": "**User Story**: As a security engineer, I want to ensure the integrated system is secure.\n\n**Acceptance Criteria**:\n- [ ] Security audit of API endpoints\n- [ ] Review of data flow and storage\n- [ ] Penetration testing completed\n- [ ] OWASP top 10 addressed\n- [ ] Security documentation updated\n\n**Definition of Done**:\n- All critical findings remediated\n- Security scan integrated in CI\n- Documentation approved\n- Compliance requirements met\n\n**Priority**: P0 (Critical)\n**Effort**: 5 story points\n**Team**: Both",
+      "labels": ["epic-2-production", "team-shared", "priority-P0", "size-5", "type-feature"],
+      "milestone": "POC Epic 2: Cloud Run",
+      "assignee": null
+    }
+  ]
+}
