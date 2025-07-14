@@ -164,30 +164,39 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
         />
 
         <div className="audio-controls__recording-buttons">
-          <button
-            type="button"
-            className="audio-controls__button audio-controls__button--secondary"
-            onClick={() => {/* Handle pause */}}
-          >
-            ⏸ Pause
-          </button>
-          <button
-            type="button"
-            className="audio-controls__button audio-controls__button--primary"
-            onClick={onStopRecording}
-          >
-            ✓ Done
-          </button>
+          {audioState.mode === 'manual' ? (
+            <>
+              <button
+                type="button"
+                className="audio-controls__button audio-controls__button--secondary"
+                onClick={() => {/* Handle pause */}}
+              >
+                ⏸ Pause
+              </button>
+              <button
+                type="button"
+                className="audio-controls__button audio-controls__button--primary"
+                onClick={onStopRecording}
+              >
+                ✓ Done
+              </button>
+            </>
+          ) : (
+            <div className="audio-controls__instant-hint">
+              <span className="audio-controls__instant-icon">🎙️</span>
+              <span>Release to send...</span>
+            </div>
+          )}
         </div>
 
         {audioState.mode === 'manual' && (
           <p className="audio-controls__hint">
-            Space to pause • Enter to finish
+            Click Done when finished
           </p>
         )}
         {audioState.mode === 'instant' && (
           <p className="audio-controls__hint">
-            Hold Space to talk • Release to send
+            Click and hold to record • Release to send
           </p>
         )}
       </div>
@@ -259,17 +268,81 @@ export const AudioControls: React.FC<AudioControlsProps> = ({
     );
   }
 
-  // Default state - just the record button
+  // Default state - record button with mode-specific behavior
   return (
     <div className={`audio-controls ${className}`}>
-      <RecordButton
-        isRecording={audioState.isRecording}
-        micPermission={audioState.micPermission}
-        onStartRecording={onStartRecording}
-        onStopRecording={onStopRecording}
-        disabled={disabled}
-        className="audio-controls__record-button"
-      />
+      {audioState.mode === 'instant' ? (
+        <button
+          type="button"
+          className={`record-button ${audioState.isRecording ? 'record-button--recording' : ''} audio-controls__record-button`}
+          onMouseDown={(e) => {
+            e.preventDefault();
+            onStartRecording();
+          }}
+          onMouseUp={(e) => {
+            e.preventDefault();
+            if (audioState.isRecording) {
+              onStopRecording();
+            }
+          }}
+          onMouseLeave={() => {
+            if (audioState.isRecording) {
+              onStopRecording();
+            }
+          }}
+          onTouchStart={(e) => {
+            e.preventDefault();
+            onStartRecording();
+          }}
+          onTouchEnd={(e) => {
+            e.preventDefault();
+            if (audioState.isRecording) {
+              onStopRecording();
+            }
+          }}
+          disabled={disabled || audioState.micPermission === 'denied'}
+          title={audioState.isRecording ? 'Release to send' : 'Hold to record'}
+          aria-label={audioState.isRecording ? 'Recording - release to send' : 'Hold to record'}
+          aria-pressed={audioState.isRecording}
+        >
+          {audioState.isRecording ? (
+            <>
+              <span className="record-button__dot" />
+              <span className="sr-only">Recording</span>
+            </>
+          ) : (
+            <>
+              <svg 
+                className="record-button__icon" 
+                width="20" 
+                height="20" 
+                viewBox="0 0 24 24" 
+                fill="none"
+                aria-hidden="true"
+              >
+                <path 
+                  d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" 
+                  fill="currentColor"
+                />
+                <path 
+                  d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" 
+                  fill="currentColor"
+                />
+              </svg>
+              <span className="sr-only">Hold to record</span>
+            </>
+          )}
+        </button>
+      ) : (
+        <RecordButton
+          isRecording={audioState.isRecording}
+          micPermission={audioState.micPermission}
+          onStartRecording={onStartRecording}
+          onStopRecording={onStopRecording}
+          disabled={disabled}
+          className="audio-controls__record-button"
+        />
+      )}
     </div>
   );
 };

@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  frontend-test:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: development
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=test
+      - NEXT_PUBLIC_API_URL=http://backend-test:8000/api
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      backend-test:
+        condition: service_healthy
+    networks:
+      - test-network
+
+  backend-test:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=test
+      - LOG_LEVEL=DEBUG
+      - CORS_ORIGINS=http://localhost:3000,http://frontend-test:3000
+    volumes:
+      - ./backend:/app
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+    networks:
+      - test-network
+
+  playwright:
+    build:
+      context: .
+      dockerfile: Dockerfile.playwright
+    environment:
+      - PLAYWRIGHT_BASE_URL=http://frontend-test:3000
+      - API_BASE_URL=http://backend-test:8000
+    volumes:
+      - ./tests:/tests
+      - ./playwright-report:/playwright-report
+      - ./test-results:/test-results
+    depends_on:
+      - frontend-test
+      - backend-test
+    networks:
+      - test-network
+    command: ["pnpm", "playwright", "test"]
+
+networks:
+  test-network:
+    driver: bridge

@@ -12,6 +12,7 @@ interface ThoughtInputFormProps {
   onSubmit: (thought: string) => void
   onClear: () => void
   isLoading?: boolean
+  language?: string
 }
 
 // Lazy-load heavy audio UI only when needed (client-side)
@@ -25,7 +26,8 @@ const AudioControls = dynamic(() => import('./AudioControls'), {
 export default function ThoughtInputForm({ 
   onSubmit, 
   onClear, 
-  isLoading = false 
+  isLoading = false,
+  language = 'en-US'
 }: ThoughtInputFormProps) {
   const [thought, setThought] = useState('')
   const [audioState, setAudioState] = useState<AudioState>(createDefaultAudioState())
@@ -36,7 +38,7 @@ export default function ThoughtInputForm({
   
   // Initialize SSE client
   const sseClient = useSSEClient({
-    baseUrl: process.env.NEXT_PUBLIC_API_URL || '/api/sse',
+    baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
     autoConnect: false,
     enableRateLimit: true,
     rateLimitMs: 100
@@ -186,15 +188,15 @@ export default function ThoughtInputForm({
     try {
       setAudioState(prev => ({ ...prev, error: null, audioEnabled: true }))
       
-      // Connect to SSE for streaming
-      await sseClient.connect()
+      // Connect to SSE for streaming with selected language
+      await sseClient.connect(undefined, language)
       
       await audioRecorder.startRecording()
     } catch (error) {
       console.error('Failed to start recording:', error)
       setAudioState(prev => ({ ...prev, error: error as Error }))
     }
-  }, [audioRecorder, sseClient])
+  }, [audioRecorder, sseClient, language])
 
   const handleStopRecording = useCallback(async () => {
     try {
