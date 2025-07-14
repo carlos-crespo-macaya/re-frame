@@ -138,7 +138,9 @@ describe('ThoughtInputForm', () => {
     const textarea = screen.getByPlaceholderText(/what happened\? how did it feel\?/i) as HTMLTextAreaElement
     const longText = 'a'.repeat(1001)
     
-    await user.type(textarea, longText)
+    // Use paste instead of type for better performance with long text
+    await user.click(textarea)
+    await user.paste(longText)
     
     expect(textarea.value.length).toBe(1000)
   })
