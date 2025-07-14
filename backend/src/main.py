@@ -30,9 +30,9 @@ from google.adk.runners import InMemoryRunner
 from google.genai.types import Blob, Content, Part, SpeechConfig
 
 # Import CBT assistant instead of search agent
-from agents.cbt_assistant import create_cbt_assistant
-from utils.audio_converter import AudioConverter
-from utils.session_manager import session_manager
+from src.agents.cbt_assistant import create_cbt_assistant
+from src.utils.audio_converter import AudioConverter
+from src.utils.session_manager import session_manager
 
 warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
 
@@ -200,7 +200,9 @@ async def health_check():
 
 
 @app.get("/api/events/{session_id}")
-async def sse_endpoint(session_id: str, is_audio: str = "false", language: str = "en-US"):
+async def sse_endpoint(
+    session_id: str, is_audio: str = "false", language: str = "en-US"
+):
     """SSE endpoint for agent to client communication"""
 
     # Start agent session
