@@ -20,7 +20,7 @@ from datetime import datetime
 from pathlib import Path
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -275,31 +275,41 @@ async def send_message_endpoint(session_id: str, request: Request):
         live_request_queue.send_realtime(Blob(data=decoded_data, mime_type=mime_type))
         print(f"[CLIENT TO AGENT]: audio/pcm: {len(decoded_data)} bytes")
     elif mime_type in AudioConverter.SUPPORTED_INPUT_FORMATS:
-        # Convert audio to PCM format
-        decoded_data = base64.b64decode(data)
-        pcm_data, metrics = AudioConverter.convert_to_pcm(decoded_data, mime_type)
+        # For now, we need to properly convert audio to PCM
+        # ADK only accepts audio/pcm format
+        if mime_type == "audio/webm":
+            # WebM conversion is not implemented yet
+            # Return proper HTTP 400 error
+            raise HTTPException(
+                status_code=400,
+                detail="WebM audio conversion is not implemented. Please use WAV format or send PCM directly.",
+            )
+        else:
+            # Convert other audio formats to PCM
+            decoded_data = base64.b64decode(data)
+            pcm_data, metrics = AudioConverter.convert_to_pcm(decoded_data, mime_type)
 
-        # Log conversion metrics
-        print(
-            f"[AUDIO CONVERSION]: {mime_type} -> PCM in {metrics['conversion_time']:.1f}ms"
-        )
-        print(
-            f"[AUDIO CONVERSION]: {metrics['input_size']} -> {metrics['output_size']} bytes"
-        )
+            # Log conversion metrics
+            print(
+                f"[AUDIO CONVERSION]: {mime_type} -> PCM in {metrics['conversion_time']:.1f}ms"
+            )
+            print(
+                f"[AUDIO CONVERSION]: {metrics['input_size']} -> {metrics['output_size']} bytes"
+            )
 
-        if metrics.get("error"):
-            return {"error": f"Audio conversion failed: {metrics['error']}"}
+            if metrics.get("error"):
+                return {"error": f"Audio conversion failed: {metrics['error']}"}
 
-        if not pcm_data:
-            return {"error": "Audio conversion resulted in empty data"}
+            if not pcm_data:
+                return {"error": "Audio conversion resulted in empty data"}
 
-        # Validate PCM data
-        if not AudioConverter.validate_pcm_data(pcm_data):
-            return {"error": "Invalid PCM data after conversion"}
+            # Validate PCM data
+            if not AudioConverter.validate_pcm_data(pcm_data):
+                return {"error": "Invalid PCM data after conversion"}
 
-        # Send converted PCM to agent
-        live_request_queue.send_realtime(Blob(data=pcm_data, mime_type="audio/pcm"))
-        print(f"[CLIENT TO AGENT]: converted audio/pcm: {len(pcm_data)} bytes")
+            # Send converted PCM to agent
+            live_request_queue.send_realtime(Blob(data=pcm_data, mime_type="audio/pcm"))
+            print(f"[CLIENT TO AGENT]: converted audio/pcm: {len(pcm_data)} bytes")
     else:
         return {"error": f"Mime type not supported: {mime_type}"}
 

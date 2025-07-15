@@ -2,6 +2,14 @@
 
 This is the monorepo for the CBT Assistant Proof of Concept, combining the re-frame.social frontend and the reframe-agents backend into a unified codebase.
 
+## ✨ Features
+
+- **Text-based interaction**: Type your thoughts and receive gentle reframing suggestions
+- **Voice conversation**: Natural audio dialog with the AI assistant (NEW!)
+- **Real-time streaming**: Responses stream as they're generated
+- **Privacy-focused**: No audio storage, only transcriptions are kept
+- **Evidence-based**: Uses cognitive behavioral therapy techniques
+
 ## 🏗️ Monorepo Structure
 
 ```

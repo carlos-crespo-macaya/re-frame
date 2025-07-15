@@ -16,7 +16,6 @@ export interface AudioState {
   isProcessing: boolean;
   audioEnabled: boolean;
   micPermission: MicPermissionState;
-  transcription: string;
   audioLevel: number;
   mode: AudioMode;
   error: Error | null;
@@ -83,7 +82,6 @@ export function createDefaultAudioState(): AudioState {
     isProcessing: false,
     audioEnabled: false,
     micPermission: 'prompt',
-    transcription: '',
     audioLevel: 0,
     mode: 'instant',
     error: null
