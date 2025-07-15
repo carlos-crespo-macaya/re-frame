@@ -173,7 +173,7 @@ export function useSSEClient(options: UseSSEClientOptions = {}) {
     });
     
     // Debug logging
-    if (mimeType === 'audio/pcm') {
+    if (message.mime_type === 'audio/pcm') {
       console.log('Audio message payload:', {
         mime_type: message.mime_type,
         data_length: message.data.length,
@@ -201,7 +201,7 @@ export function useSSEClient(options: UseSSEClientOptions = {}) {
   }, [sendMessage]);
   
   // Send audio message
-  const sendAudio = useCallback((audioData: string, turnComplete = true) => {
+  const sendAudio = useCallback((audioData: string, turnComplete = false) => {
     console.log(`Sending audio/pcm data: ${audioData.length} chars, turnComplete: ${turnComplete}`);
     return sendMessage(audioData, 'audio/pcm', {
       messageType: 'thought',
