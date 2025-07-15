@@ -282,7 +282,7 @@ async def send_message_endpoint(session_id: str, request: Request):
             # Return proper HTTP 400 error
             raise HTTPException(
                 status_code=400,
-                detail="WebM audio conversion is not implemented. Please use WAV format or send PCM directly."
+                detail="WebM audio conversion is not implemented. Please use WAV format or send PCM directly.",
             )
         else:
             # Convert other audio formats to PCM
