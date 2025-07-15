@@ -1,10 +1,12 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { PCMPlayer } from './pcm-player'
 import { arrayBufferToBase64 } from './audio-utils'
+import { ApiClient, logApiError, EventSourceParams } from '../api'
+import { generateAudioSessionId } from '../utils/session'
+import { createClientMessage } from '../streaming/message-protocol'
 
 export interface UseNaturalConversationOptions {
   language?: string
-  apiUrl?: string
   onTranscription?: (text: string) => void
   onError?: (error: Error) => void
 }
@@ -18,7 +20,6 @@ export interface NaturalConversationState {
 export function useNaturalConversation(options: UseNaturalConversationOptions = {}) {
   const {
     language = 'en-US',
-    apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
     onTranscription,
     onError
   } = options
@@ -108,36 +109,40 @@ export function useNaturalConversation(options: UseNaturalConversationOptions = 
     return pcm16.buffer
   }
 
-  // Send turn complete signal
-  const sendTurnComplete = useCallback(async () => {
+  // Helper function to send audio messages
+  const sendAudioMessage = useCallback(async (
+    data: string,
+    turnComplete: boolean = false
+  ) => {
     if (!sessionIdRef.current) return
 
     try {
-      const response = await fetch(`${apiUrl}/api/messages`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Session-ID': sessionIdRef.current
-        },
-        body: JSON.stringify({
-          content: '',
-          mime_type: 'audio/pcm',
-          turn_complete: true
-        })
+      const message = createClientMessage({
+        mimeType: 'audio/pcm',
+        data,
+        messageType: 'thought',
+        sessionId: sessionIdRef.current,
+        turnComplete
       })
 
-      if (!response.ok) {
-        throw new Error(`Failed to send turn complete: ${response.statusText}`)
-      }
+      await ApiClient.sendMessage(sessionIdRef.current, message)
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Failed to send turn complete:', error)
-      }
+      logApiError(error, `sendAudioMessage(${sessionIdRef.current})`)
       if (onError) {
         onError(error as Error)
       }
+      throw error
     }
-  }, [apiUrl, onError])
+  }, [onError])
+
+  // Send turn complete signal
+  const sendTurnComplete = useCallback(async () => {
+    try {
+      await sendAudioMessage('', true)
+    } catch {
+      // Error already handled in sendAudioMessage
+    }
+  }, [sendAudioMessage])
 
   // Send buffered audio data every 0.2 seconds
   const sendBufferedAudio = useCallback(async () => {
@@ -172,31 +177,12 @@ export function useNaturalConversation(options: UseNaturalConversationOptions = 
     // Convert to base64
     const base64Audio = arrayBufferToBase64(mergedBuffer.buffer)
 
-    // Send to API
+    // Send to API using the centralized client
     try {
-      const response = await fetch(`${apiUrl}/api/messages`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Session-ID': sessionIdRef.current
-        },
-        body: JSON.stringify({
-          content: base64Audio,
-          mime_type: 'audio/pcm',
-          turn_complete: false
-        })
-      })
-
-      if (!response.ok) {
-        throw new Error(`Failed to send audio: ${response.statusText}`)
-      }
-    } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Failed to send audio:', error)
-      }
-      if (onError) {
-        onError(error as Error)
-      }
+      await sendAudioMessage(base64Audio, false)
+    } catch {
+      // Error already handled in sendAudioMessage
+      return
     }
 
     // Detect silence (1.5 seconds)
@@ -216,13 +202,16 @@ export function useNaturalConversation(options: UseNaturalConversationOptions = 
         silenceTimerRef.current = null
       }
     }
-  }, [apiUrl, onError, sendTurnComplete])
+  }, [sendTurnComplete, sendAudioMessage])
 
   // Setup SSE connection
   const setupSSEConnection = useCallback((sessionId: string) => {
-    const eventSource = new EventSource(
-      `${apiUrl}/api/events/${sessionId}?is_audio=true&language=${language}`
-    )
+    const params: EventSourceParams = {
+      is_audio: true,
+      language
+    }
+    
+    const eventSource = ApiClient.createEventSource(sessionId, params)
 
     eventSource.onopen = () => {
       if (process.env.NODE_ENV === 'development') {
@@ -272,7 +261,7 @@ export function useNaturalConversation(options: UseNaturalConversationOptions = 
     }
 
     eventSourceRef.current = eventSource
-  }, [apiUrl, language, onTranscription, onError])
+  }, [language, onTranscription, onError])
 
   // Setup audio recording
   const setupAudioRecording = useCallback(async () => {
@@ -367,8 +356,8 @@ export function useNaturalConversation(options: UseNaturalConversationOptions = 
       const testStream = await navigator.mediaDevices.getUserMedia({ audio: true })
       testStream.getTracks().forEach(track => track.stop())
 
-      // Generate session ID
-      const sessionId = `audio-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+      // Generate session ID using centralized utility
+      const sessionId = generateAudioSessionId()
       sessionIdRef.current = sessionId
 
       // Setup SSE connection

@@ -31,7 +31,6 @@ export default function ThoughtInputForm({
   
   // Initialize SSE client for audio mode only - ensure only one instance
   const sseClient = useSSEClient({
-    baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
     autoConnect: false,
     enableRateLimit: false  // Disable rate limiting for audio
   })
