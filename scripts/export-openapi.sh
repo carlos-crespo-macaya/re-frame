@@ -12,7 +12,7 @@ OUTPUT_DIR=$(dirname "$OUTPUT_PATH")
 mkdir -p "$OUTPUT_DIR"
 
 # Change to backend directory
-cd /app/backend
+cd /app
 
 # Export OpenAPI schema
 uv run python -c "from src.main import app; import json; print(json.dumps(app.openapi(), indent=2))" > "$OUTPUT_PATH"
