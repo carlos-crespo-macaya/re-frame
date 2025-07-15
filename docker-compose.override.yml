@@ -6,6 +6,7 @@ services:
   backend:
     volumes:
       - ./backend/src:/app/src:ro
+      - ./scripts:/app/scripts:ro  # Mount scripts directory
       - openapi-schema:/app/exports  # Shared volume for OpenAPI schema
     # Add command to export schema after startup
     command: >
@@ -18,9 +19,9 @@ services:
         echo 'Waiting for server to start...'
         sleep 5
         
-        # Export OpenAPI schema
+        # Export OpenAPI schema using script
         echo 'Exporting OpenAPI schema...'
-        uv run python -c \"from src.main import app; import json; print(json.dumps(app.openapi(), indent=2))\" > /app/exports/openapi.json
+        sh /app/scripts/export-openapi.sh > /app/exports/openapi.json
         
         # Keep the server running
         wait $$SERVER_PID

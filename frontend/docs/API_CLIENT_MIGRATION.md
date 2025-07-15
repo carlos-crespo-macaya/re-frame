@@ -20,7 +20,7 @@ When you make API changes in the backend:
 cd backend
 # Make your API changes...
 # Export the updated OpenAPI schema
-uv run poe export-openapi
+uv run python -c "from src.main import app; import json; print(json.dumps(app.openapi(), indent=2))" > ../frontend/openapi.json
 ```
 
 ### 2. Frontend Generation

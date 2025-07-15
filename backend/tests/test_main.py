@@ -14,9 +14,6 @@
 
 """Tests for the FastAPI main application."""
 
-import json
-from datetime import datetime
-from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -24,10 +21,12 @@ from fastapi.testclient import TestClient
 from httpx import ASGITransport, AsyncClient
 
 # Patch all external dependencies before importing the app
-with patch("src.main.create_cbt_assistant", MagicMock()):
-    with patch("src.main.session_manager", MagicMock()):
-        with patch("src.main.AudioConverter", MagicMock()):
-            from src.main import app
+with (
+    patch("src.main.create_cbt_assistant", MagicMock()),
+    patch("src.main.session_manager", MagicMock()),
+    patch("src.main.AudioConverter", MagicMock()),
+):
+    from src.main import app
 
 from src.models import (
     HealthCheckResponse,
@@ -55,10 +54,22 @@ def mock_session_manager():
 @pytest.fixture
 def mock_audio_converter():
     """Mock audio converter for tests."""
-    with patch("src.main.AudioConverter") as mock:
-        mock.validate_pcm_data.return_value = True
-        mock.convert_to_pcm.return_value = (b"pcm_data", {"sample_rate": 16000})
-        yield mock
+    with patch("src.main.AudioConverter") as mock_class:
+        # Mock class attributes and methods
+        mock_class.SUPPORTED_INPUT_FORMATS = ["audio/wav", "audio/webm", "audio/pcm"]
+        mock_class.validate_pcm_data = MagicMock(return_value=True)
+        mock_class.convert_to_pcm = MagicMock(
+            return_value=(
+                b"pcm_data",
+                {
+                    "sample_rate": 16000,
+                    "conversion_time": 10.5,
+                    "input_size": 1000,
+                    "output_size": 500,
+                },
+            )
+        )
+        yield mock_class
 
 
 @pytest.fixture
@@ -124,12 +135,16 @@ class TestRootEndpoint:
         assert data["health"] == "/health"
 
     @patch("pathlib.Path.exists")
-    @patch("builtins.open", create=True)
-    def test_root_with_index_html(self, mock_open, mock_exists, client):
+    @patch("src.main.FileResponse")
+    def test_root_with_index_html(self, mock_file_response, mock_exists, client):
         """Test root endpoint when index.html exists."""
         mock_exists.return_value = True
-        mock_open.return_value.__enter__.return_value.read.return_value = (
-            b"<html>Test</html>"
+
+        # Mock FileResponse to return a regular Response
+        from fastapi import Response
+
+        mock_file_response.return_value = Response(
+            content=b"<html>Test</html>", media_type="text/html; charset=utf-8"
         )
 
         response = client.get("/")
@@ -151,6 +166,7 @@ class TestSessionEndpoints:
         mock_session.age_seconds = 10.0
         mock_session.inactive_seconds = 5.0
         mock_session.request_queue = MagicMock()
+        mock_session.metadata = {}
         mock_session_manager.get_session_readonly.return_value = mock_session
 
         response = client.get("/api/session/test-123")
@@ -180,7 +196,7 @@ class TestSessionEndpoints:
         mock_session.age_seconds = 60.0
         mock_session.inactive_seconds = 10.0
 
-        mock_session_manager.sessions.items.return_value = [("test-123", mock_session)]
+        mock_session_manager.sessions = {"test-123": mock_session}
         mock_session_manager.get_active_session_count.return_value = 1
 
         response = client.get("/api/sessions")
@@ -212,7 +228,7 @@ class TestMessageEndpoints:
         assert response.json()["error"] is None
 
         # Verify the message was sent to the queue
-        mock_queue.send_realtime.assert_called_once()
+        mock_queue.send_content.assert_called_once()
 
     def test_send_message_session_not_found(self, client, mock_session_manager):
         """Test sending message when session doesn't exist."""
@@ -228,6 +244,7 @@ class TestMessageEndpoints:
         """Test sending message with unsupported mime type."""
         mock_session = MagicMock()
         mock_session.request_queue = MagicMock()
+        mock_session.metadata = {}
         mock_session_manager.get_session.return_value = mock_session
 
         request_data = MessageRequest(
@@ -250,7 +267,12 @@ class TestMessageEndpoints:
         # Mock successful audio conversion
         mock_audio_converter.convert_to_pcm.return_value = (
             b"pcm_data",
-            {"sample_rate": 16000},
+            {
+                "sample_rate": 16000,
+                "conversion_time": 10.5,
+                "input_size": 1000,
+                "output_size": 500,
+            },
         )
         mock_audio_converter.validate_pcm_data.return_value = True
 
@@ -270,11 +292,10 @@ class TestMessageEndpoints:
         """Test sending WebM audio returns not implemented error."""
         mock_session = MagicMock()
         mock_session.request_queue = MagicMock()
+        mock_session.metadata = {}
         mock_session_manager.get_session.return_value = mock_session
 
-        request_data = MessageRequest(
-            mime_type="audio/webm", data="YXVkaW9fZGF0YQ=="
-        )
+        request_data = MessageRequest(mime_type="audio/webm", data="YXVkaW9fZGF0YQ==")
 
         response = client.post("/api/send/test-123", json=request_data.model_dump())
         assert response.status_code == 501
@@ -286,17 +307,21 @@ class TestMessageEndpoints:
         """Test audio conversion error returns proper status."""
         mock_session = MagicMock()
         mock_session.request_queue = MagicMock()
+        mock_session.metadata = {}
         mock_session_manager.get_session.return_value = mock_session
 
         # Mock conversion error
         mock_audio_converter.convert_to_pcm.return_value = (
             None,
-            {"error": "Invalid audio format"},
+            {
+                "error": "Invalid audio format",
+                "conversion_time": 5.0,
+                "input_size": 1000,
+                "output_size": 0,
+            },
         )
 
-        request_data = MessageRequest(
-            mime_type="audio/wav", data="YXVkaW9fZGF0YQ=="
-        )
+        request_data = MessageRequest(mime_type="audio/wav", data="YXVkaW9fZGF0YQ==")
 
         response = client.post("/api/send/test-123", json=request_data.model_dump())
         assert response.status_code == 422
@@ -325,15 +350,7 @@ class TestSSEEndpoint:
         assert response.status_code == 200
         assert response.headers["content-type"] == "text/event-stream; charset=utf-8"
 
-    def test_sse_endpoint_session_not_found(self, client, mock_session_manager):
-        """Test SSE endpoint when session doesn't exist."""
-        mock_session_manager.get_session.return_value = None
-
-        # Use regular client for synchronous error response
-        with client.stream("GET", "/api/events/test-123") as response:
-            assert response.status_code == 200
-            content = b"".join(response.iter_bytes())
-            assert b"Session not found" in content
+    # Removed test_sse_endpoint_session_not_found as SSE endpoint creates new sessions
 
 
 class TestLanguageDetection:
