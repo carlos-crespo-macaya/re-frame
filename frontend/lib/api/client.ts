@@ -5,7 +5,6 @@
 import { API_CONFIG } from './config'
 import { ApiError, logApiError } from './errors'
 import type {
-  ApiResponse,
   EventSourceParams,
   PdfDownloadResponse,
   MessageData,
