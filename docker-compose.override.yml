@@ -1,0 +1,58 @@
+# docker-compose.override.yml
+# This file provides overrides for local development with API client generation
+
+services:
+  # Backend service with OpenAPI schema export
+  backend:
+    volumes:
+      - ./backend/src:/app/src:ro
+      - openapi-schema:/app/exports  # Shared volume for OpenAPI schema
+    # Add command to export schema after startup
+    command: >
+      sh -c "
+        # Start the server in background
+        uv run uvicorn src.main:app --host 0.0.0.0 --port 8000 &
+        SERVER_PID=$$!
+        
+        # Wait for server to be ready
+        echo 'Waiting for server to start...'
+        sleep 5
+        
+        # Export OpenAPI schema
+        echo 'Exporting OpenAPI schema...'
+        uv run python -c \"from src.main import app; import json; print(json.dumps(app.openapi(), indent=2))\" > /app/exports/openapi.json
+        
+        # Keep the server running
+        wait $$SERVER_PID
+      "
+
+  frontend:
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - openapi-schema:/app/imports:ro  # Read-only access to OpenAPI schema
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NODE_ENV=development
+    # Override command to generate client before starting
+    command: >
+      sh -c "
+        # Wait for OpenAPI schema to be available
+        echo 'Waiting for OpenAPI schema...'
+        while [ ! -f /app/imports/openapi.json ]; do
+          sleep 2
+        done
+        
+        # Copy schema to project root
+        cp /app/imports/openapi.json ./openapi.json
+        
+        # Generate TypeScript client
+        echo 'Generating TypeScript client...'
+        pnpm run generate:api || echo 'Client generation failed, continuing anyway'
+        
+        # Start development server
+        pnpm dev
+      "
+
+volumes:
+  openapi-schema:  # Shared volume for OpenAPI schema

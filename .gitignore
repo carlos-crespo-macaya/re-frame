@@ -72,3 +72,7 @@ pnpm-debug.log*
 playwright-report/
 test-results/
 playwright/.cache/
+
+# generated api client
+frontend/lib/api/generated/
+frontend/openapi.json
