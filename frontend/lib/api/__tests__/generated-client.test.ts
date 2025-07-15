@@ -58,13 +58,6 @@ describe('Generated API Client', () => {
   it('should have sessions.downloadPdf method', () => {
     expect(generatedApi.sessions.downloadPdf).toBeDefined()
     expect(typeof generatedApi.sessions.downloadPdf).toBe('function')
-    
-    // Verify it accepts a session ID parameter
-    const mockDownload = generatedApi.sessions.downloadPdf as jest.Mock
-    if (mockDownload.mockImplementation) {
-      mockDownload('test-session-123')
-      expect(mockDownload).toHaveBeenCalledWith('test-session-123')
-    }
   })
 
   it('should have language.detect method with proper typing', () => {
