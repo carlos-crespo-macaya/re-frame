@@ -20,7 +20,7 @@ from datetime import datetime
 from pathlib import Path
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi import FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -31,6 +31,15 @@ from google.genai.types import Blob, Content, Part, SpeechConfig
 
 # Import CBT assistant instead of search agent
 from src.agents.cbt_assistant import create_cbt_assistant
+from src.models import (
+    HealthCheckResponse,
+    LanguageDetectionRequest,
+    LanguageDetectionResponse,
+    MessageRequest,
+    MessageResponse,
+    SessionInfo,
+    SessionListResponse,
+)
 from src.utils.audio_converter import AudioConverter
 from src.utils.session_manager import session_manager
 
@@ -178,7 +187,7 @@ async def shutdown_event():
     await session_manager.stop()
 
 
-@app.get("/")
+@app.get("/", summary="Root endpoint", operation_id="getRoot")
 async def root():
     """Serves the index.html or API info"""
     index_path = Path(STATIC_DIR) / "index.html"
@@ -187,19 +196,25 @@ async def root():
     return {"message": "CBT Assistant API", "docs": "/docs", "health": "/health"}
 
 
-@app.get("/health")
-async def health_check():
+@app.get(
+    "/health",
+    response_model=HealthCheckResponse,
+    summary="Health check",
+    operation_id="getHealthCheck",
+)
+async def health_check() -> HealthCheckResponse:
     """Health check endpoint for Cloud Run"""
-    return {
-        "status": "healthy",
-        "service": "cbt-assistant-api",
-        "version": "1.0.0",
-        "timestamp": datetime.utcnow().isoformat(),
-        "environment": ENVIRONMENT,
-    }
+    return HealthCheckResponse(
+        status="healthy",
+        service="CBT Reframing Assistant API",
+        version="1.0.0",
+        timestamp=datetime.utcnow().isoformat(),
+    )
 
 
-@app.get("/api/events/{session_id}")
+@app.get(
+    "/api/events/{session_id}", summary="SSE endpoint", operation_id="getEventStream"
+)
 async def sse_endpoint(
     session_id: str, is_audio: str = "false", language: str = "en-US"
 ):
@@ -249,21 +264,27 @@ async def sse_endpoint(
     )
 
 
-@app.post("/api/send/{session_id}")
-async def send_message_endpoint(session_id: str, request: Request):
+@app.post(
+    "/api/send/{session_id}",
+    response_model=MessageResponse,
+    summary="Send message",
+    operation_id="sendMessage",
+)
+async def send_message_endpoint(
+    session_id: str, message: MessageRequest
+) -> MessageResponse:
     """HTTP endpoint for client to agent communication"""
 
     # Get the session from session manager
     session = session_manager.get_session(session_id)
     if not session or not session.request_queue:
-        return {"error": "Session not found"}
+        return MessageResponse(status="error", error="Session not found")
 
     live_request_queue = session.request_queue
 
     # Parse the message
-    message = await request.json()
-    mime_type = message["mime_type"]
-    data = message["data"]
+    mime_type = message.mime_type
+    data = message.data
 
     # Send the message to the agent
     if mime_type == "text/plain":
@@ -279,10 +300,10 @@ async def send_message_endpoint(session_id: str, request: Request):
         # ADK only accepts audio/pcm format
         if mime_type == "audio/webm":
             # WebM conversion is not implemented yet
-            # Return proper HTTP 400 error
-            raise HTTPException(
-                status_code=400,
-                detail="WebM audio conversion is not implemented. Please use WAV format or send PCM directly.",
+            # Return error response
+            return MessageResponse(
+                status="error",
+                error="WebM audio conversion is not implemented. Please use WAV format or send PCM directly.",
             )
         else:
             # Convert other audio formats to PCM
@@ -298,44 +319,63 @@ async def send_message_endpoint(session_id: str, request: Request):
             )
 
             if metrics.get("error"):
-                return {"error": f"Audio conversion failed: {metrics['error']}"}
+                return MessageResponse(
+                    status="error", error=f"Audio conversion failed: {metrics['error']}"
+                )
 
             if not pcm_data:
-                return {"error": "Audio conversion resulted in empty data"}
+                return MessageResponse(
+                    status="error", error="Audio conversion resulted in empty data"
+                )
 
             # Validate PCM data
             if not AudioConverter.validate_pcm_data(pcm_data):
-                return {"error": "Invalid PCM data after conversion"}
+                return MessageResponse(
+                    status="error", error="Invalid PCM data after conversion"
+                )
 
             # Send converted PCM to agent
             live_request_queue.send_realtime(Blob(data=pcm_data, mime_type="audio/pcm"))
             print(f"[CLIENT TO AGENT]: converted audio/pcm: {len(pcm_data)} bytes")
     else:
-        return {"error": f"Mime type not supported: {mime_type}"}
+        return MessageResponse(
+            status="error", error=f"Mime type not supported: {mime_type}"
+        )
 
-    return {"status": "sent"}
+    return MessageResponse(status="sent", error=None)
 
 
-@app.get("/api/session/{session_id}")
-async def get_session_info(session_id: str):
+@app.get(
+    "/api/session/{session_id}",
+    response_model=SessionInfo,
+    summary="Get session info",
+    operation_id="getSessionInfo",
+)
+async def get_session_info(session_id: str) -> SessionInfo:
     """Get session information for debugging."""
     session = session_manager.get_session_readonly(session_id)
     if not session:
-        return {"error": "Session not found"}
+        raise HTTPException(status_code=404, detail="Session not found")
 
-    return {
-        "session_id": session.session_id,
-        "user_id": session.user_id,
-        "created_at": session.created_at,
-        "last_activity": session.last_activity,
-        "age_seconds": session.age_seconds,
-        "inactive_seconds": session.inactive_seconds,
-        "has_request_queue": session.request_queue is not None,
-    }
+    return SessionInfo(
+        session_id=session.session_id,
+        user_id=session.user_id,
+        created_at=datetime.fromtimestamp(session.created_at).isoformat(),
+        last_activity=datetime.fromtimestamp(session.last_activity).isoformat(),
+        age_seconds=session.age_seconds,
+        inactive_seconds=session.inactive_seconds,
+        has_request_queue=session.request_queue is not None,
+        metadata=session.metadata if hasattr(session, "metadata") else None,
+    )
 
 
-@app.get("/api/sessions")
-async def list_sessions():
+@app.get(
+    "/api/sessions",
+    response_model=SessionListResponse,
+    summary="List all sessions",
+    operation_id="listSessions",
+)
+async def list_sessions() -> SessionListResponse:
     """List all active sessions for debugging."""
     sessions = []
     for session_id, session in session_manager.sessions.items():
@@ -347,13 +387,13 @@ async def list_sessions():
             }
         )
 
-    return {
-        "total_sessions": session_manager.get_active_session_count(),
-        "sessions": sessions,
-    }
+    return SessionListResponse(
+        total_sessions=session_manager.get_active_session_count(),
+        sessions=sessions,
+    )
 
 
-@app.get("/api/pdf/{session_id}")
+@app.get("/api/pdf/{session_id}", summary="Download PDF", operation_id="downloadPdf")
 async def download_pdf(session_id: str):
     """Download PDF summary for a session - minimal implementation for local testing"""
     from datetime import datetime
@@ -384,14 +424,21 @@ Thank you for using re-frame.
     )
 
 
-@app.post("/api/language/detect")
-async def detect_language(request: Request):
+@app.post(
+    "/api/language/detect",
+    response_model=LanguageDetectionResponse,
+    summary="Detect language",
+    operation_id="detectLanguage",
+)
+async def detect_language(
+    request: LanguageDetectionRequest,
+) -> LanguageDetectionResponse:
     """Detect language from user input"""
     # TODO: Implement language detection using the language_detection utility
     # For now, return a placeholder response
-    data = await request.json()
-    return {
-        "status": "not_implemented",
-        "message": "Language detection will be implemented in Epic 1",
-        "text": data.get("text", ""),
-    }
+    return LanguageDetectionResponse(
+        status="not_implemented",
+        message="Language detection will be implemented in Epic 1",
+        language=None,
+        confidence=None,
+    )

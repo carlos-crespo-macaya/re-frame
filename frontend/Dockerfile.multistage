@@ -1,0 +1,99 @@
+# Multi-stage Dockerfile with OpenAPI schema generation support
+
+# Backend stage - just to get the OpenAPI schema
+FROM python:3.12-slim AS backend-schema
+
+# Install uv
+RUN pip install --no-cache-dir uv==0.4.15
+
+WORKDIR /backend
+
+# Copy backend files needed for schema generation
+COPY backend/pyproject.toml backend/uv.lock ./
+RUN uv sync --frozen --no-dev
+
+# Copy backend source
+COPY backend/src ./src
+
+# Generate OpenAPI schema
+RUN uv run python -c "from src.main import app; import json; print(json.dumps(app.openapi(), indent=2))" > /tmp/openapi.json || \
+    echo '{"openapi":"3.1.0","info":{"title":"API","version":"1.0.0"},"paths":{}}' > /tmp/openapi.json
+
+# Frontend base stage
+FROM node:18-alpine AS base
+RUN corepack enable && corepack prepare pnpm@10.11.0 --activate
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+
+# Frontend builder stage
+FROM base AS builder
+
+# Copy package files
+COPY frontend/package.json frontend/pnpm-lock.yaml ./
+
+# Install all dependencies
+RUN pnpm install --frozen-lockfile
+
+# Copy frontend source
+COPY frontend/ .
+
+# Copy OpenAPI schema from backend stage
+COPY --from=backend-schema /tmp/openapi.json ./openapi.json
+
+# Generate TypeScript client
+RUN pnpm run generate:api || echo "Warning: API client generation failed"
+
+# Build arguments
+ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_ENVIRONMENT=production
+
+# Set build-time environment variables
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_ENVIRONMENT=$NEXT_PUBLIC_ENVIRONMENT
+
+# Use Cloud Run specific config if available
+RUN if [ -f "next.config.cloudrun.mjs" ]; then \
+      mv next.config.cloudrun.mjs next.config.mjs; \
+    fi
+
+# Build the application
+RUN pnpm build
+
+# Production stage
+FROM node:18-alpine AS runner
+
+RUN corepack enable && corepack prepare pnpm@10.11.0 --activate
+
+WORKDIR /app
+
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S nextjs -u 1001
+
+# Copy built application
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/pnpm-lock.yaml ./
+COPY --from=builder /app/next.config.mjs ./
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+
+# Install production dependencies
+RUN pnpm install --prod --frozen-lockfile
+
+# Switch to non-root user
+USER nextjs
+
+# Expose port
+EXPOSE 8080
+
+# Environment variables
+ENV PORT 8080
+ENV NODE_ENV production
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:${PORT:-8080}/api/health', (res) => process.exit(res.statusCode === 200 ? 0 : 1))"
+
+# Start the application
+CMD ["node", "server.js"]
