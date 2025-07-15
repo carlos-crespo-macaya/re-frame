@@ -59,44 +59,48 @@ export default function ThoughtInputForm({
   }, [])
   
   
-  // Track processed messages to avoid reprocessing
-  const processedMessagesRef = useRef<Set<string>>(new Set())
+  // Track last processed message index to avoid reprocessing
+  const lastProcessedIndexRef = useRef<number>(-1)
   
   
-  // Listen for SSE messages
+  // Listen for SSE messages - process only new messages
   useEffect(() => {
     if (!sseClient.isConnected || !audioSessionActive) {
       return
     }
     
-    // Process each message only once
-    sseClient.messages.forEach((msg, index) => {
-      const messageKey = `${index}-${msg.message_type}-${msg.mime_type}`
+    const messages = sseClient.messages
+    const startIndex = lastProcessedIndexRef.current + 1
+    
+    // Process only new messages since last check
+    for (let i = startIndex; i < messages.length; i++) {
+      const msg = messages[i]
       
-      if (!processedMessagesRef.current.has(messageKey)) {
-        processedMessagesRef.current.add(messageKey)
-        
-        // In audio mode, we don't show transcriptions
-        // Just handle the audio flow without text interference
-        
-        // Handle audio playback - play once immediately when received
-        if (msg.mime_type === 'audio/pcm' && msg.data && pcmPlayerRef.current) {
-          // Play audio asynchronously without blocking
-          pcmPlayerRef.current.playPCM(msg.data).catch(err => {
-            if (process.env.NODE_ENV === 'development') {
-              console.error('Error playing audio:', err)
-            }
-          })
-        }
-        
-        // Handle turn completion
-        if (msg.turn_complete === true && pcmPlayerRef.current) {
-          pcmPlayerRef.current.reset()
-          setAudioState(prev => ({ ...prev, isProcessing: false }))
-        }
+      // In audio mode, we don't show transcriptions
+      // Just handle the audio flow without text interference
+      
+      // Handle audio playback - play once immediately when received
+      if (msg.mime_type === 'audio/pcm' && msg.data && pcmPlayerRef.current) {
+        // Play audio asynchronously without blocking
+        pcmPlayerRef.current.playPCM(msg.data).catch(err => {
+          if (process.env.NODE_ENV === 'development') {
+            console.error('Error playing audio:', err)
+          }
+        })
       }
-    })
-  }, [sseClient.messages, sseClient.isConnected, audioSessionActive, onSubmit])
+      
+      // Handle turn completion
+      if (msg.turn_complete === true && pcmPlayerRef.current) {
+        pcmPlayerRef.current.reset()
+        setAudioState(prev => ({ ...prev, isProcessing: false }))
+      }
+    }
+    
+    // Update last processed index
+    if (messages.length > 0) {
+      lastProcessedIndexRef.current = messages.length - 1
+    }
+  }, [sseClient.messages, sseClient.isConnected, audioSessionActive])
   
   
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -118,7 +122,7 @@ export default function ThoughtInputForm({
       pcmRecorder.cleanup()
       sseClient.disconnect()
       setAudioSessionActive(false)
-      processedMessagesRef.current.clear()
+      lastProcessedIndexRef.current = -1
     }
     // Reset PCM player
     if (pcmPlayerRef.current) {
@@ -260,6 +264,7 @@ export default function ThoughtInputForm({
       // Connect to SSE for streaming with selected language and audio mode
       await sseClient.connect(undefined, language, true)
       setAudioSessionActive(true)
+      lastProcessedIndexRef.current = -1  // Reset message tracking
       
       // Start recording - this will request browser microphone permission if needed
       await pcmRecorder.startRecording()
@@ -323,7 +328,7 @@ export default function ThoughtInputForm({
       setTimeout(() => {
         sseClient.disconnect()
         setAudioSessionActive(false)
-        processedMessagesRef.current.clear()
+        lastProcessedIndexRef.current = -1
       }, 2000)
       
     } catch (error) {
