@@ -172,8 +172,8 @@ export function useSSEClient(options: UseSSEClientOptions = {}) {
       interrupted: options.interrupted
     });
     
-    // Debug logging
-    if (message.mime_type === 'audio/pcm') {
+    // Debug logging only in development
+    if (message.mime_type === 'audio/pcm' && process.env.NODE_ENV === 'development') {
       console.log('Audio message payload:', {
         mime_type: message.mime_type,
         data_length: message.data.length,
