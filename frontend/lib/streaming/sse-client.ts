@@ -54,7 +54,7 @@ export class SSEClient {
   /**
    * Connect to SSE endpoint
    */
-  async connect(sessionId?: string, language?: string): Promise<void> {
+  async connect(sessionId?: string, language?: string, isAudio: boolean = false): Promise<void> {
     if (this.isConnecting || this.eventSource) {
       console.warn('SSE client is already connected or connecting');
       return;
@@ -74,6 +74,9 @@ export class SSEClient {
       const params = new URLSearchParams();
       if (language) {
         params.append('language', language);
+      }
+      if (isAudio) {
+        params.append('is_audio', 'true');
       }
       
       const url = `${this.options.baseUrl}/api/events/${this.session.id}${params.toString() ? '?' + params.toString() : ''}`;

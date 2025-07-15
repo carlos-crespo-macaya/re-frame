@@ -7,36 +7,57 @@ import { FrameworkBadge, LanguageSelector } from '@/components/ui'
 import { ReframeResponse, Framework } from '@/types/api'
 import { useSSEClient } from '@/lib/streaming/use-sse-client'
 import ReactMarkdown from 'react-markdown'
+import { NaturalConversation } from '@/components/audio/NaturalConversation'
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false)
   const [response, setResponse] = useState<ReframeResponse | null>(null)
   const [selectedLanguage, setSelectedLanguage] = useState('en-US')
-  const [sessionId, setSessionId] = useState<string | null>(null)
-  
-  // Initialize SSE client
+  const [useAudioMode, setUseAudioMode] = useState(false)
+  // Initialize SSE client (text mode only)
   const sseClient = useSSEClient({
     baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
     autoConnect: false,
   })
   
-  // Connect on mount and when language changes
+  // Connect on mount and when language changes (text mode only)
   useEffect(() => {
+    let mounted = true
+    
     const connect = async () => {
       try {
-        await sseClient.connect(undefined, selectedLanguage)
-        setSessionId(sseClient.sessionId)
+        if (mounted && !useAudioMode) {
+          // Disconnect any existing connection first
+          if (sseClient.isConnected) {
+            sseClient.disconnect()
+            await new Promise(resolve => setTimeout(resolve, 100))
+          }
+          await sseClient.connect(undefined, selectedLanguage, false)
+        }
       } catch (error) {
-        console.error('Failed to connect:', error)
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Failed to connect:', error)
+        }
       }
     }
     
-    connect()
+    // Only connect if not in audio mode
+    if (!useAudioMode) {
+      connect()
+    } else {
+      // Make sure to disconnect text mode when switching to audio
+      if (sseClient.isConnected) {
+        sseClient.disconnect()
+      }
+    }
     
     return () => {
-      sseClient.disconnect()
+      mounted = false
+      if (!useAudioMode && sseClient.isConnected) {
+        sseClient.disconnect()
+      }
     }
-  }, [selectedLanguage])
+  }, [selectedLanguage, useAudioMode, sseClient])
   
   // Track the start of current response
   const [responseStartIndex, setResponseStartIndex] = useState(0)
@@ -49,7 +70,7 @@ export default function Home() {
     const allMessages = sseClient.messages
     
     // Debug logging
-    if (allMessages.length > 0) {
+    if (allMessages.length > 0 && process.env.NODE_ENV === 'development') {
       console.log('All messages:', allMessages)
     }
     
@@ -67,7 +88,9 @@ export default function Home() {
       // Combine text messages from current response only
       const fullResponse = textMessages.map(msg => msg.data).join('')
       
-      console.log('Text messages found:', textMessages.length, 'Full response:', fullResponse)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Text messages found:', textMessages.length, 'Full response:', fullResponse)
+      }
       
       // Create response from backend message
       setResponse({
@@ -91,7 +114,9 @@ export default function Home() {
     
     // Clear loading state when turn is complete
     if (turnComplete && isLoading) {
-      console.log('Turn complete, clearing loading state')
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Turn complete, clearing loading state')
+      }
       setIsLoading(false)
     }
   }, [sseClient.messages, sseClient.isConnected, isLoading, responseStartIndex])
@@ -107,7 +132,9 @@ export default function Home() {
       // Send text message to backend
       await sseClient.sendText(thought)
     } catch (error) {
-      console.error('Failed to send message:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Failed to send message:', error)
+      }
       setIsLoading(false)
     }
   }
@@ -164,21 +191,49 @@ export default function Home() {
                 boxShadow: '0 4px 24px rgba(0, 0, 0, 0.1)',
                 animation: 'fadeIn 250ms cubic-bezier(0.25, 0.1, 0.25, 1)'
               }}>
-                <h3 className="text-xl font-heading font-medium text-neutral-800 mb-2">
-                  Tell us about the situation
-                </h3>
-                <p className="text-sm text-neutral-600 mb-8">
-                  A few sentences are enough — share what feels right.
-                </p>
+                <div className="flex justify-between items-start mb-6">
+                  <div>
+                    <h3 className="text-xl font-heading font-medium text-neutral-800 mb-2">
+                      Tell us about the situation
+                    </h3>
+                    <p className="text-sm text-neutral-600">
+                      A few sentences are enough — share what feels right.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setUseAudioMode(!useAudioMode)}
+                    className="flex items-center gap-2 px-3 py-1.5 text-sm text-neutral-800 rounded-full bg-neutral-200 hover:bg-neutral-300 transition-colors"
+                  >
+                    {useAudioMode ? (
+                      <>
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                        </svg>
+                        Switch to Text
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                        </svg>
+                        Switch to Voice
+                      </>
+                    )}
+                  </button>
+                </div>
               
-              <ThoughtInputForm 
-                onSubmit={handleSubmit}
-                onClear={handleClear}
-                isLoading={isLoading}
-                language={selectedLanguage}
-              />
+              {useAudioMode ? (
+                <NaturalConversation language={selectedLanguage} />
+              ) : (
+                <ThoughtInputForm 
+                  onSubmit={handleSubmit}
+                  onClear={handleClear}
+                  isLoading={isLoading}
+                  language={selectedLanguage}
+                />
+              )}
 
-                {response && (
+                {response && !useAudioMode && (
                   <div className="mt-8 p-6 bg-[#2a2a2a] border border-[#3a3a3a] rounded-xl animate-fade-in">
                     {/* Framework badges */}
                     {response.frameworks_used.length > 0 && (
