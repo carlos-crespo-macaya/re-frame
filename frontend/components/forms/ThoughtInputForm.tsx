@@ -58,19 +58,6 @@ export default function ThoughtInputForm({
     }
   }, [])
   
-  // Clean up audio session on unmount
-  useEffect(() => {
-    const cleanupOnUnmount = () => {
-      if (pcmRecorderRef.current) {
-        pcmRecorderRef.current.cleanup()
-      }
-      if (sseClientRef.current && sseClientRef.current.isConnected) {
-        sseClientRef.current.disconnect()
-      }
-    }
-    
-    return cleanupOnUnmount
-  }, [])
   
   // Track processed messages to avoid reprocessing
   const processedMessagesRef = useRef<Set<string>>(new Set())
@@ -241,6 +228,20 @@ export default function ThoughtInputForm({
   useEffect(() => {
     pcmRecorderRef.current = pcmRecorder
   }, [pcmRecorder])
+  
+  // Clean up audio session on unmount
+  useEffect(() => {
+    const cleanupOnUnmount = () => {
+      if (pcmRecorderRef.current) {
+        pcmRecorderRef.current.cleanup()
+      }
+      if (sseClientRef.current && sseClientRef.current.isConnected) {
+        sseClientRef.current.disconnect()
+      }
+    }
+    
+    return cleanupOnUnmount
+  }, [])
   
   // Audio handlers
   const handleStartRecording = useCallback(async () => {

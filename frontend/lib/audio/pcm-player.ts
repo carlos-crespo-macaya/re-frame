@@ -7,7 +7,6 @@ export class PCMPlayer {
   private audioContext: AudioContext | null = null
   private sampleRate: number
   private isPlaying = false
-  private audioQueue: AudioBuffer[] = []
   private nextStartTime = 0
   private isFirstChunk = true
   private startDelay = 0.1 // 100ms initial buffer
