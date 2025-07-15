@@ -221,9 +221,8 @@ class TestMessageEndpoints:
         request_data = MessageRequest(mime_type="text/plain", data="SGVsbG8gd29ybGQ=")
 
         response = client.post("/api/send/test-123", json=request_data.model_dump())
-        assert response.status_code == 200
-        assert response.json()["status"] == "error"
-        assert response.json()["error"] == "Session not found"
+        assert response.status_code == 404
+        assert response.json()["detail"] == "Session not found"
 
     def test_send_message_unsupported_mime_type(self, client, mock_session_manager):
         """Test sending message with unsupported mime type."""
@@ -236,9 +235,8 @@ class TestMessageEndpoints:
         )
 
         response = client.post("/api/send/test-123", json=request_data.model_dump())
-        assert response.status_code == 200
-        assert response.json()["status"] == "error"
-        assert "Mime type not supported" in response.json()["error"]
+        assert response.status_code == 415
+        assert "Mime type not supported" in response.json()["detail"]
 
     def test_send_message_audio_success(
         self, client, mock_session_manager, mock_audio_converter
@@ -267,6 +265,42 @@ class TestMessageEndpoints:
         # Verify audio was converted and sent
         mock_audio_converter.convert_to_pcm.assert_called_once()
         mock_queue.send_realtime.assert_called_once()
+
+    def test_send_message_webm_not_implemented(self, client, mock_session_manager):
+        """Test sending WebM audio returns not implemented error."""
+        mock_session = MagicMock()
+        mock_session.request_queue = MagicMock()
+        mock_session_manager.get_session.return_value = mock_session
+
+        request_data = MessageRequest(
+            mime_type="audio/webm", data="YXVkaW9fZGF0YQ=="
+        )
+
+        response = client.post("/api/send/test-123", json=request_data.model_dump())
+        assert response.status_code == 501
+        assert "WebM audio conversion is not implemented" in response.json()["detail"]
+
+    def test_send_message_audio_conversion_error(
+        self, client, mock_session_manager, mock_audio_converter
+    ):
+        """Test audio conversion error returns proper status."""
+        mock_session = MagicMock()
+        mock_session.request_queue = MagicMock()
+        mock_session_manager.get_session.return_value = mock_session
+
+        # Mock conversion error
+        mock_audio_converter.convert_to_pcm.return_value = (
+            None,
+            {"error": "Invalid audio format"},
+        )
+
+        request_data = MessageRequest(
+            mime_type="audio/wav", data="YXVkaW9fZGF0YQ=="
+        )
+
+        response = client.post("/api/send/test-123", json=request_data.model_dump())
+        assert response.status_code == 422
+        assert "Audio conversion failed" in response.json()["detail"]
 
 
 class TestSSEEndpoint:

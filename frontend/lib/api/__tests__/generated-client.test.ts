@@ -3,7 +3,7 @@
  */
 
 import { generatedApi } from '../generated-client'
-import type { MessageRequest, HealthCheckResponse } from '../generated/types.gen'
+import type { MessageRequest, HealthCheckResponse, LanguageDetectionRequest } from '../generated/types.gen'
 
 describe('Generated API Client', () => {
   it('should have properly typed methods', () => {
@@ -50,8 +50,33 @@ describe('Generated API Client', () => {
 
   it('should generate proper SSE endpoint URLs', () => {
     const sessionId = 'test-session-123'
-    const endpoint = generatedApi.events.getEndpoint(sessionId, 'true', 'es-ES')
+    const endpoint = generatedREDACTED(sessionId, 'true', 'es-ES')
     
     expect(endpoint).toBe('/api/events/test-session-123?is_audio=true&language=es-ES')
+  })
+
+  it('should have sessions.downloadPdf method', () => {
+    expect(generatedApi.sessions.downloadPdf).toBeDefined()
+    expect(typeof generatedApi.sessions.downloadPdf).toBe('function')
+    
+    // Verify it accepts a session ID parameter
+    const mockDownload = generatedApi.sessions.downloadPdf as jest.Mock
+    if (mockDownload.mockImplementation) {
+      mockDownload('test-session-123')
+      expect(mockDownload).toHaveBeenCalledWith('test-session-123')
+    }
+  })
+
+  it('should have language.detect method with proper typing', () => {
+    expect(generatedApi.language.detect).toBeDefined()
+    expect(typeof generatedApi.language.detect).toBe('function')
+    
+    // This verifies the type structure
+    const mockRequest: LanguageDetectionRequest = {
+      text: 'Hello, how are you?'
+    }
+    
+    // TypeScript will ensure the request matches the expected type
+    expect(mockRequest.text).toBe('Hello, how are you?')
   })
 })

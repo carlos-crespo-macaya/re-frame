@@ -62,7 +62,7 @@ export const generatedApi = {
   events: {
     // The generated client returns a promise, but SSE needs EventSource
     // This is just for type reference
-    getEndpoint: (sessionId: string, isAudio?: string, language?: string) =>
+    getEventStreamEndpoint: (sessionId: string, isAudio?: string, language?: string) =>
       `/api/events/${sessionId}?is_audio=${isAudio || 'false'}&language=${language || 'en-US'}`,
   },
 }
