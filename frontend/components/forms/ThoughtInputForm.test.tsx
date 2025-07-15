@@ -55,7 +55,7 @@ describe('ThoughtInputForm', () => {
     render(<ThoughtInputForm onSubmit={mockOnSubmit} onClear={mockOnClear} />)
     
     expect(screen.getByPlaceholderText(/what happened\? how did it feel\?/i)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /generate perspective/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /send/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /clear/i })).toBeInTheDocument()
   })
 
@@ -74,7 +74,7 @@ describe('ThoughtInputForm', () => {
     render(<ThoughtInputForm onSubmit={mockOnSubmit} onClear={mockOnClear} />)
     
     const textarea = screen.getByPlaceholderText(/what happened\? how did it feel\?/i)
-    const submitButton = screen.getByRole('button', { name: /generate perspective/i })
+    const submitButton = screen.getByRole('button', { name: /send/i })
     
     await user.type(textarea, 'I feel anxious about the meeting')
     await user.click(submitButton)
@@ -100,7 +100,7 @@ describe('ThoughtInputForm', () => {
   it('disables submit button when textarea is empty', () => {
     render(<ThoughtInputForm onSubmit={mockOnSubmit} onClear={mockOnClear} />)
     
-    const submitButton = screen.getByRole('button', { name: /generate perspective/i })
+    const submitButton = screen.getByRole('button', { name: /send/i })
     expect(submitButton).toBeDisabled()
   })
 
@@ -109,7 +109,7 @@ describe('ThoughtInputForm', () => {
     render(<ThoughtInputForm onSubmit={mockOnSubmit} onClear={mockOnClear} />)
     
     const textarea = screen.getByPlaceholderText(/what happened\? how did it feel\?/i)
-    const submitButton = screen.getByRole('button', { name: /generate perspective/i })
+    const submitButton = screen.getByRole('button', { name: /send/i })
     
     await user.type(textarea, 'Some thought')
     expect(submitButton).toBeEnabled()
@@ -150,7 +150,7 @@ describe('ThoughtInputForm', () => {
     render(<ThoughtInputForm onSubmit={mockOnSubmit} onClear={mockOnClear} />)
     
     const textarea = screen.getByPlaceholderText(/what happened\? how did it feel\?/i)
-    const submitButton = screen.getByRole('button', { name: /generate perspective/i })
+    const submitButton = screen.getByRole('button', { name: /send/i })
     
     await user.type(textarea, 'My thought')
     await user.click(submitButton)
@@ -179,7 +179,7 @@ describe('ThoughtInputForm', () => {
     await user.type(screen.getByPlaceholderText(/what happened\? how did it feel\?/i), 'Test')
     
     await user.tab()
-    expect(screen.getByRole('button', { name: /generate perspective/i })).toHaveFocus()
+    expect(screen.getByRole('button', { name: /send/i })).toHaveFocus()
     
     await user.tab()
     expect(screen.getByRole('button', { name: /clear/i })).toHaveFocus()

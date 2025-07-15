@@ -26,7 +26,7 @@ test.describe('Re-frame Full Workflow Integration', () => {
     await page.fill('textarea[placeholder*="What happened"]', thoughtText);
     
     // Wait for button to be enabled (webkit might be slower)
-    const submitButton = page.locator('button:has-text("Generate perspective")');
+    const submitButton = page.locator('button:has-text("Send")');
     await expect(submitButton).toBeEnabled({ timeout: 5000 });
     
     // Submit the form
@@ -124,7 +124,7 @@ test.describe('Mobile Responsiveness', () => {
     await expect(page.locator('textarea[placeholder*="What happened"]')).toBeVisible();
     
     // Verify layout adjusts for mobile - check button is still visible
-    await expect(page.locator('button:has-text("Generate perspective")')).toBeVisible();
+    await expect(page.locator('button:has-text("Send")')).toBeVisible();
   });
 });
 
@@ -140,7 +140,7 @@ test.describe('Error Handling', () => {
     await page.context().setOffline(true);
     
     // Try to submit
-    await page.click('button:has-text("Generate perspective")');
+    await page.click('button:has-text("Send")');
     
     // Should show error or handle gracefully - wait a bit
     await page.waitForTimeout(1000);

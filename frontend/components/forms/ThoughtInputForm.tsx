@@ -436,7 +436,7 @@ export default function ThoughtInputForm({
             {isLoading ? (
                 <span>Processing...</span>
               ) : (
-                <span>Generate perspective</span>
+                <span>Send</span>
               )}
           </Button>
           <Button
