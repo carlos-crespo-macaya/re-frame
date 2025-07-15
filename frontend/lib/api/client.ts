@@ -62,8 +62,8 @@ export class ApiClient {
     // Handle empty responses
     if (response.status === 204 || response.headers.get('content-length') === '0') {
       // For void returns, we can safely return undefined
-      // TypeScript will handle this properly for Promise<void>
-      return undefined as T
+      // The caller should expect void for these responses
+      return undefined as any
     }
 
     const contentType = response.headers.get('content-type')

@@ -73,9 +73,7 @@ export default function Home() {
     
     return () => {
       mounted = false
-      if (isConnected) {
-        disconnect()
-      }
+      disconnect()
     }
   }, [selectedLanguage, useAudioMode, isConnected, connect, disconnect])
   
