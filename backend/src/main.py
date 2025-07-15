@@ -278,7 +278,7 @@ async def send_message_endpoint(
     # Get the session from session manager
     session = session_manager.get_session(session_id)
     if not session or not session.request_queue:
-        return MessageResponse(status="error", error="Session not found")
+        raise HTTPException(status_code=404, detail="Session not found")
 
     live_request_queue = session.request_queue
 
@@ -300,10 +300,9 @@ async def send_message_endpoint(
         # ADK only accepts audio/pcm format
         if mime_type == "audio/webm":
             # WebM conversion is not implemented yet
-            # Return error response
-            return MessageResponse(
-                status="error",
-                error="WebM audio conversion is not implemented. Please use WAV format or send PCM directly.",
+            raise HTTPException(
+                status_code=501,
+                detail="WebM audio conversion is not implemented. Please use WAV format or send PCM directly.",
             )
         else:
             # Convert other audio formats to PCM
@@ -319,27 +318,31 @@ async def send_message_endpoint(
             )
 
             if metrics.get("error"):
-                return MessageResponse(
-                    status="error", error=f"Audio conversion failed: {metrics['error']}"
+                raise HTTPException(
+                    status_code=422,
+                    detail=f"Audio conversion failed: {metrics['error']}"
                 )
 
             if not pcm_data:
-                return MessageResponse(
-                    status="error", error="Audio conversion resulted in empty data"
+                raise HTTPException(
+                    status_code=422,
+                    detail="Audio conversion resulted in empty data"
                 )
 
             # Validate PCM data
             if not AudioConverter.validate_pcm_data(pcm_data):
-                return MessageResponse(
-                    status="error", error="Invalid PCM data after conversion"
+                raise HTTPException(
+                    status_code=422,
+                    detail="Invalid PCM data after conversion"
                 )
 
             # Send converted PCM to agent
             live_request_queue.send_realtime(Blob(data=pcm_data, mime_type="audio/pcm"))
             print(f"[CLIENT TO AGENT]: converted audio/pcm: {len(pcm_data)} bytes")
     else:
-        return MessageResponse(
-            status="error", error=f"Mime type not supported: {mime_type}"
+        raise HTTPException(
+            status_code=415,
+            detail=f"Mime type not supported: {mime_type}"
         )
 
     return MessageResponse(status="sent", error=None)
