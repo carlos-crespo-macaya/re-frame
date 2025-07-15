@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Button } from './Button'
+import { ApiClient } from '@/lib/api'
 
 interface PdfDownloadButtonProps {
   sessionId: string
@@ -18,29 +19,7 @@ export function PdfDownloadButton({ sessionId, className, disabled }: PdfDownloa
     setError(null)
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || '/api'
-      const response = await fetch(`${apiUrl}/pdf/${sessionId}`)
-      
-      if (!response.ok) {
-        throw new Error('Failed to download summary')
-      }
-
-      // Get the blob from the response
-      const blob = await response.blob()
-      
-      // Create a download link
-      const url = window.URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = url
-      link.download = `session-summary-${sessionId}.txt`
-      
-      // Trigger download
-      document.body.appendChild(link)
-      link.click()
-      
-      // Cleanup
-      document.body.removeChild(link)
-      window.URL.revokeObjectURL(url)
+      await ApiClient.downloadPdf(sessionId)
     } catch (err) {
       setError('Failed to download summary. Please try again.')
       console.error('Summary download error:', err)
