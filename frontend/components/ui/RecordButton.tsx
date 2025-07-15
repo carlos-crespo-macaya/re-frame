@@ -20,7 +20,6 @@ export const RecordButton: React.FC<RecordButtonProps> = ({
   className = ''
 }) => {
   const handleClick = () => {
-    console.log('RecordButton clicked - isRecording:', isRecording, 'micPermission:', micPermission)
     if (isRecording) {
       onStopRecording();
     } else {
