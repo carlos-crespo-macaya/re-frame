@@ -16,8 +16,19 @@ RUN uv sync --frozen --no-dev
 COPY backend/src ./src
 
 # Generate OpenAPI schema
-RUN uv run python -c "from src.main import app; import json; print(json.dumps(app.openapi(), indent=2))" > /tmp/openapi.json || \
-    echo '{"openapi":"3.1.0","info":{"title":"API","version":"1.0.0"},"paths":{}}' > /tmp/openapi.json
+RUN uv run python -c "from src.main import app; import json; \
+    try: \
+        print(json.dumps(app.openapi(), indent=2)); \
+    except Exception as e: \
+        print(json.dumps({ \
+            'openapi': '3.1.0', \
+            'info': { \
+                'title': 'API', \
+                'version': '1.0.0', \
+                'description': f'Schema generation failed: {str(e)}' \
+            }, \
+            'paths': {} \
+        }, indent=2))" > /tmp/openapi.json
 
 # Frontend base stage
 FROM node:18-alpine AS base
@@ -37,7 +48,7 @@ RUN pnpm install --frozen-lockfile
 # Copy frontend source
 COPY frontend/ .
 
-# Copy OpenAPI schema from backend stage
+# Copy OpenAPI schema from backend-schema stage (not 'backend')
 COPY --from=backend-schema /tmp/openapi.json ./openapi.json
 
 # Generate TypeScript client
