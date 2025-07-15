@@ -96,7 +96,9 @@ export default function ThoughtInputForm({
         if (msg.mime_type === 'audio/pcm' && msg.data && pcmPlayerRef.current) {
           // Play audio asynchronously without blocking
           pcmPlayerRef.current.playPCM(msg.data).catch(err => {
-            console.error('Error playing audio:', err)
+            if (process.env.NODE_ENV === 'development') {
+              console.error('Error playing audio:', err)
+            }
           })
         }
         
@@ -146,9 +148,6 @@ export default function ThoughtInputForm({
     }
   }
 
-  // Remove this useEffect - it's causing render loops
-  // We'll manage isRecording state manually in start/stop handlers
-  
   // Initialize audio recording timer for continuous streaming
   const audioTimerRef = useRef<NodeJS.Timeout | null>(null)
   const audioBufferRef = useRef<Float32Array[]>([])
@@ -189,7 +188,9 @@ export default function ThoughtInputForm({
     const base64Audio = arrayBufferToBase64(bytes.buffer)
     
     // Send audio without turn_complete
-    console.log(`Sending audio chunk: ${base64Audio.length} bytes, level: ${audioLevel.toFixed(3)}`)
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Sending audio chunk: ${base64Audio.length} bytes, level: ${audioLevel.toFixed(3)}`)
+    }
     await sseClient.sendAudio(base64Audio, false)
     
     // Clear buffer
@@ -203,7 +204,9 @@ export default function ThoughtInputForm({
       // Start new silence timer - if no audio for 1.5 seconds, send turn_complete
       silenceTimerRef.current = setTimeout(async () => {
         if (sseClient.isConnected) {
-          console.log('Silence detected, sending turn_complete')
+          if (process.env.NODE_ENV === 'development') {
+            console.log('Silence detected, sending turn_complete')
+          }
           await sseClient.sendMessage('', 'text/plain', {
             messageType: 'thought',
             turnComplete: true
@@ -211,7 +214,9 @@ export default function ThoughtInputForm({
         }
       }, 1500)
     } else {
-      console.log('Audio level below threshold:', audioLevel)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Audio level below threshold:', audioLevel)
+      }
     }
   }, [sseClient])
   
@@ -242,7 +247,9 @@ export default function ThoughtInputForm({
     try {
       // Check if already connected
       if (sseClient.isConnected) {
-        console.warn('SSE already connected, disconnecting first')
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('SSE already connected, disconnecting first')
+        }
         sseClient.disconnect()
         await new Promise(resolve => setTimeout(resolve, 100))
       }
@@ -266,7 +273,9 @@ export default function ThoughtInputForm({
         isRecording: true
       }))
     } catch (error) {
-      console.error('Failed to start recording:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Failed to start recording:', error)
+      }
       // Check if it's a permission error
       if (error instanceof Error && error.name === 'NotAllowedError') {
         setAudioState(prev => ({ ...prev, micPermission: 'denied', error: error as Error }))
@@ -317,7 +326,9 @@ export default function ThoughtInputForm({
       }, 2000)
       
     } catch (error) {
-      console.error('Failed to stop recording:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Failed to stop recording:', error)
+      }
       setAudioState(prev => ({ ...prev, isProcessing: false, isRecording: false }))
     }
   }, [pcmRecorder, sseClient, sendAudioBuffer])
