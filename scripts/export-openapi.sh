@@ -5,7 +5,11 @@
 set -e
 
 # Use environment variable for output path, with fallback to default
-OUTPUT_PATH="${OPENAPI_OUTPUT_PATH:-/app/frontend/openapi.json}"
+OUTPUT_PATH="${OPENAPI_OUTPUT_PATH:-/app/exports/openapi.json}"
+
+# Ensure the output directory exists
+OUTPUT_DIR=$(dirname "$OUTPUT_PATH")
+mkdir -p "$OUTPUT_DIR"
 
 # Change to backend directory
 cd /app/backend
