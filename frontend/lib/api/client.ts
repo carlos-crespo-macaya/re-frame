@@ -61,7 +61,9 @@ export class ApiClient {
 
     // Handle empty responses
     if (response.status === 204 || response.headers.get('content-length') === '0') {
-      return {} as T
+      // For void returns, we can safely return undefined
+      // TypeScript will handle this properly for Promise<void>
+      return undefined as T
     }
 
     const contentType = response.headers.get('content-type')
@@ -69,8 +71,12 @@ export class ApiClient {
       return response.json()
     }
 
-    // Return response as-is for other content types
-    return response as unknown as T
+    // For non-JSON responses, throw an error as we expect JSON
+    throw new ApiError(
+      415,
+      `Unsupported content type: ${contentType || 'unknown'}`,
+      { contentType }
+    )
   }
 
   /**
@@ -138,9 +144,16 @@ export class ApiClient {
       let filename = `session-${sessionId}.pdf`
       
       if (contentDisposition) {
-        const filenameMatch = contentDisposition.match(/filename="?(.+)"?/)
-        if (filenameMatch) {
-          filename = filenameMatch[1]
+        // Handle different Content-Disposition formats:
+        // filename="example.pdf"
+        // filename=example.pdf
+        // filename*=UTF-8''example.pdf
+        const filenameMatch = contentDisposition.match(
+          /filename\*?=["']?(?:UTF-8'')?([^;\n"']+)["']?/i
+        )
+        if (filenameMatch && filenameMatch[1]) {
+          // Decode URL-encoded filenames and remove quotes
+          filename = decodeURIComponent(filenameMatch[1].replace(/["']/g, ''))
         }
       }
 
