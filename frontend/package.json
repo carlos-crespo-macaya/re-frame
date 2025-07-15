@@ -12,7 +12,7 @@
     "test:ci": "jest --ci --coverage --maxWorkers=2",
     "typecheck": "tsc --noEmit",
     "generate:api": "openapi-ts --input ./openapi.json --output ./lib/api/generated --client legacy/axios",
-    "prebuild": "npm run generate:api"
+    "prebuild": "test -f openapi.json && npm run generate:api || echo 'Warning: openapi.json not found, skipping API generation'"
   },
   "dependencies": {
     "axios": "^1.10.0",
