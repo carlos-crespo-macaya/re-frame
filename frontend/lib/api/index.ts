@@ -4,6 +4,7 @@
 
 // Configuration
 export { API_CONFIG } from './config'
+export type { ApiEndpoints } from './config'
 
 // Main client and convenience functions
 export { 
@@ -28,5 +29,7 @@ export type {
   MessageData,
   HealthCheckResponse,
   SessionType,
-  ApiRequestConfig
+  ApiRequestConfig,
+  ClientMessage,
+  ServerMessage
 } from './types'
