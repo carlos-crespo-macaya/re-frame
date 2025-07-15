@@ -24,6 +24,9 @@ export default function Home() {
     autoConnect: false,
   })
   
+  // Extract specific values to avoid object identity issues in useEffect
+  const { isConnected, messages, connect, disconnect, sendText } = sseClient
+  
   
   // Connect on mount and when language/mode changes
   useEffect(() => {
@@ -39,11 +42,11 @@ export default function Home() {
           
           if (shouldConnect) {
             // Disconnect any existing connection first
-            if (sseClient.isConnected) {
-              sseClient.disconnect()
+            if (isConnected) {
+              disconnect()
               await new Promise(resolve => setTimeout(resolve, 100))
             }
-            await sseClient.connect(undefined, selectedLanguage, false)
+            await connect(undefined, selectedLanguage, false)
             hasConnectedRef.current = true
             previousLanguageRef.current = selectedLanguage
             previousAudioModeRef.current = useAudioMode
@@ -61,8 +64,8 @@ export default function Home() {
       performConnect()
     } else if (useAudioMode) {
       // Disconnect text mode when switching to audio
-      if (sseClient.isConnected) {
-        sseClient.disconnect()
+      if (isConnected) {
+        disconnect()
         hasConnectedRef.current = false
       }
       previousAudioModeRef.current = useAudioMode
@@ -70,21 +73,21 @@ export default function Home() {
     
     return () => {
       mounted = false
-      if (sseClient.isConnected) {
-        sseClient.disconnect()
+      if (isConnected) {
+        disconnect()
       }
     }
-  }, [selectedLanguage, useAudioMode, sseClient])
+  }, [selectedLanguage, useAudioMode, isConnected, connect, disconnect])
   
   // Track the start of current response
   const [responseStartIndex, setResponseStartIndex] = useState(0)
   
   // Process SSE messages
   useEffect(() => {
-    if (!sseClient.isConnected) return
+    if (!isConnected) return
     
     // Get all messages and filter for text responses
-    const allMessages = sseClient.messages
+    const allMessages = messages
     
     // Debug logging
     if (allMessages.length > 0 && process.env.NODE_ENV === 'development') {
@@ -136,18 +139,18 @@ export default function Home() {
       }
       setIsLoading(false)
     }
-  }, [sseClient.messages, sseClient.isConnected, isLoading, responseStartIndex])
+  }, [messages, isConnected, isLoading, responseStartIndex])
 
   const handleSubmit = async (thought: string) => {
     setIsLoading(true)
     setResponse(null)
     
     // Mark where the new response will start
-    setResponseStartIndex(sseClient.messages.length)
+    setResponseStartIndex(messages.length)
     
     try {
       // Send text message to backend
-      await sseClient.sendText(thought)
+      await sendText(thought)
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
         console.error('Failed to send message:', error)
