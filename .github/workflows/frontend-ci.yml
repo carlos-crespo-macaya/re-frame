@@ -57,6 +57,21 @@ jobs:
         working-directory: frontend
         run: pnpm install --frozen-lockfile
 
+      - name: Generate OpenAPI schema from backend
+        working-directory: backend
+        run: |
+          # Install backend dependencies
+          pip install uv
+          uv sync --all-extras
+          # Export OpenAPI schema
+          uv run python -c "from src.main import app; import json; print(json.dumps(app.openapi(), indent=2))" > ../frontend/openapi.json
+
+      - name: Generate TypeScript API client
+        working-directory: frontend
+        run: |
+          # Generate the API client from the schema
+          pnpm run generate:api
+
       - name: Run ESLint
         working-directory: frontend
         run: pnpm lint
