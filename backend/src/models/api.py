@@ -16,7 +16,7 @@
 
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class HealthCheckResponse(BaseModel):
@@ -38,13 +38,14 @@ class MessageRequest(BaseModel):
     mime_type: str = Field(..., description="MIME type of the message data")
     data: str = Field(..., description="Base64 encoded message data")
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "mime_type": "text/plain",
                 "data": "SGVsbG8gd29ybGQ=",  # "Hello world" in base64
             }
         }
+    )
 
 
 class MessageResponse(BaseModel):
@@ -53,8 +54,9 @@ class MessageResponse(BaseModel):
     status: str = Field(..., description="Status of the message processing")
     error: str | None = Field(None, description="Error message if processing failed")
 
-    class Config:
-        json_schema_extra = {"example": {"status": "sent", "error": None}}
+    model_config = ConfigDict(
+        json_schema_extra={"example": {"status": "sent", "error": None}}
+    )
 
 
 class SessionInfo(BaseModel):
@@ -82,8 +84,8 @@ class SessionListResponse(BaseModel):
     total_sessions: int = Field(..., description="Total number of active sessions")
     sessions: list[dict[str, Any]] = Field(..., description="List of session summaries")
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "total_sessions": 2,
                 "sessions": [
@@ -95,6 +97,7 @@ class SessionListResponse(BaseModel):
                 ],
             }
         }
+    )
 
 
 class SSEMessage(BaseModel):
@@ -110,14 +113,15 @@ class SSEMessage(BaseModel):
     content_type: str | None = Field(None, description="MIME type of content")
     data: str | None = Field(None, description="Base64 encoded content data")
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "examples": [
                 {"type": "connected", "session_id": "abc123"},
                 {"type": "content", "content_type": "text/plain", "data": "SGVsbG8="},
                 {"type": "turn_complete", "turn_complete": True, "interrupted": False},
             ]
         }
+    )
 
 
 class LanguageDetectionRequest(BaseModel):
@@ -125,8 +129,9 @@ class LanguageDetectionRequest(BaseModel):
 
     text: str = Field(..., description="Text to detect language from")
 
-    class Config:
-        json_schema_extra = {"example": {"text": "Hello, how are you today?"}}
+    model_config = ConfigDict(
+        json_schema_extra={"example": {"text": "Hello, how are you today?"}}
+    )
 
 
 class LanguageDetectionResponse(BaseModel):
@@ -141,8 +146,8 @@ class LanguageDetectionResponse(BaseModel):
         None, description="Additional information or error message"
     )
 
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "status": "success",
                 "language": "en",
@@ -150,3 +155,4 @@ class LanguageDetectionResponse(BaseModel):
                 "message": None,
             }
         }
+    )

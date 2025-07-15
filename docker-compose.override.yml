@@ -21,7 +21,7 @@ services:
         
         # Export OpenAPI schema using script
         echo 'Exporting OpenAPI schema...'
-        sh /app/scripts/export-openapi.sh > /app/exports/openapi.json
+        sh /app/scripts/export-openapi.sh
         
         # Keep the server running
         wait $$SERVER_PID
