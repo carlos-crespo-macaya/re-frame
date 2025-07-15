@@ -35,7 +35,9 @@ export default function Home() {
           await sseClient.connect(undefined, selectedLanguage, false)
         }
       } catch (error) {
-        console.error('Failed to connect:', error)
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Failed to connect:', error)
+        }
       }
     }
     
@@ -55,7 +57,7 @@ export default function Home() {
         sseClient.disconnect()
       }
     }
-  }, [selectedLanguage, useAudioMode]) // Remove sseClient from dependencies to prevent loops
+  }, [selectedLanguage, useAudioMode, sseClient])
   
   // Track the start of current response
   const [responseStartIndex, setResponseStartIndex] = useState(0)
@@ -68,7 +70,7 @@ export default function Home() {
     const allMessages = sseClient.messages
     
     // Debug logging
-    if (allMessages.length > 0) {
+    if (allMessages.length > 0 && process.env.NODE_ENV === 'development') {
       console.log('All messages:', allMessages)
     }
     
@@ -86,7 +88,9 @@ export default function Home() {
       // Combine text messages from current response only
       const fullResponse = textMessages.map(msg => msg.data).join('')
       
-      console.log('Text messages found:', textMessages.length, 'Full response:', fullResponse)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Text messages found:', textMessages.length, 'Full response:', fullResponse)
+      }
       
       // Create response from backend message
       setResponse({
@@ -110,7 +114,9 @@ export default function Home() {
     
     // Clear loading state when turn is complete
     if (turnComplete && isLoading) {
-      console.log('Turn complete, clearing loading state')
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Turn complete, clearing loading state')
+      }
       setIsLoading(false)
     }
   }, [sseClient.messages, sseClient.isConnected, isLoading, responseStartIndex])
@@ -126,7 +132,9 @@ export default function Home() {
       // Send text message to backend
       await sseClient.sendText(thought)
     } catch (error) {
-      console.error('Failed to send message:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Failed to send message:', error)
+      }
       setIsLoading(false)
     }
   }

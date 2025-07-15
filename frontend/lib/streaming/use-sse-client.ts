@@ -202,7 +202,9 @@ export function useSSEClient(options: UseSSEClientOptions = {}) {
   
   // Send audio message
   const sendAudio = useCallback((audioData: string, turnComplete = false) => {
-    console.log(`Sending audio/pcm data: ${audioData.length} chars, turnComplete: ${turnComplete}`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Sending audio/pcm data: ${audioData.length} chars, turnComplete: ${turnComplete}`);
+    }
     return sendMessage(audioData, 'audio/pcm', {
       messageType: 'thought',
       turnComplete: turnComplete

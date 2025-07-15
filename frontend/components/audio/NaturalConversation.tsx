@@ -83,13 +83,15 @@ export function NaturalConversation({ language = 'en-US' }: NaturalConversationP
     const base64Data = arrayBufferToBase64(combinedBuffer.buffer)
     
     // Log what we're sending
-    console.log('Sending audio chunk:', {
-      sessionId: sessionIdRef.current,
-      dataLength: base64Data.length,
-      bufferSize: combinedBuffer.length,
-      audioLevel: audioLevel.toFixed(4),
-      timestamp: new Date().toISOString()
-    })
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Sending audio chunk:', {
+        sessionId: sessionIdRef.current,
+        dataLength: base64Data.length,
+        bufferSize: combinedBuffer.length,
+        audioLevel: audioLevel.toFixed(4),
+        timestamp: new Date().toISOString()
+      })
+    }
     
     // Send the combined audio data
     try {
@@ -105,12 +107,18 @@ export function NaturalConversation({ language = 'en-US' }: NaturalConversationP
       })
       
       if (!response.ok) {
-        console.error('Failed to send audio:', response.statusText)
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Failed to send audio:', response.statusText)
+        }
       } else {
-        console.log('Audio sent successfully')
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Audio sent successfully')
+        }
       }
     } catch (error) {
-      console.error('Error sending audio:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error sending audio:', error)
+      }
     }
     
     // Clear the buffer
@@ -134,7 +142,9 @@ export function NaturalConversation({ language = 'en-US' }: NaturalConversationP
     }
     
     if (maxValue > 0.01) {
-      console.log('Audio received with level:', maxValue.toFixed(3), 'buffer size:', uint8Data.length)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Audio received with level:', maxValue.toFixed(3), 'buffer size:', uint8Data.length)
+      }
     }
   }, [])
   
@@ -144,11 +154,17 @@ export function NaturalConversation({ language = 'en-US' }: NaturalConversationP
       setStatus('Starting conversation...')
       
       // First test microphone access
-      console.log('Testing microphone access...')
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Testing microphone access...')
+      }
       const testStream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      console.log('Test stream obtained:', testStream)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Test stream obtained:', testStream)
+      }
       testStream.getTracks().forEach(track => {
-        console.log('Test track:', track.label, track.enabled)
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Test track:', track.label, track.enabled)
+        }
         track.stop()
       })
       
@@ -162,7 +178,9 @@ export function NaturalConversation({ language = 'en-US' }: NaturalConversationP
       )
       
       eventSource.onopen = () => {
-        console.log('Connected to audio session:', sessionId)
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Connected to audio session:', sessionId)
+        }
         setStatus('Connected - Speak naturally!')
       }
       
@@ -177,7 +195,9 @@ export function NaturalConversation({ language = 'en-US' }: NaturalConversationP
           
           // Handle transcriptions
           if (data.mime_type === 'text/plain' && data.message_type === 'transcription') {
-            console.log('Transcription:', data.data)
+            if (process.env.NODE_ENV === 'development') {
+              console.log('Transcription:', data.data)
+            }
           }
           
           // Reset on turn complete
@@ -185,12 +205,16 @@ export function NaturalConversation({ language = 'en-US' }: NaturalConversationP
             pcmPlayerRef.current.reset()
           }
         } catch (err) {
-          console.error('Failed to parse message:', err)
+          if (process.env.NODE_ENV === 'development') {
+            console.error('Failed to parse message:', err)
+          }
         }
       }
       
       eventSource.onerror = (error) => {
-        console.error('SSE error:', error)
+        if (process.env.NODE_ENV === 'development') {
+          console.error('SSE error:', error)
+        }
         setStatus('Connection error - click to restart')
       }
       
@@ -198,7 +222,9 @@ export function NaturalConversation({ language = 'en-US' }: NaturalConversationP
       
       // Create audio context first
       audioContextRef.current = new AudioContext({ sampleRate: 16000 })
-      console.log('AudioContext sample rate:', audioContextRef.current.sampleRate)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('AudioContext sample rate:', audioContextRef.current.sampleRate)
+      }
       
       // Load the AudioWorklet module
       try {
@@ -229,15 +255,21 @@ export function NaturalConversation({ language = 'en-US' }: NaturalConversationP
         
         await audioContextRef.current.audioWorklet.addModule(workletUrl);
         URL.revokeObjectURL(workletUrl);
-        console.log('AudioWorklet module loaded successfully')
+        if (process.env.NODE_ENV === 'development') {
+          console.log('AudioWorklet module loaded successfully')
+        }
         
         // Request microphone permission
-        console.log('Requesting microphone permission...')
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Requesting microphone permission...')
+        }
         const stream = await navigator.mediaDevices.getUserMedia({
           audio: { channelCount: 1 }
         })
         
-        console.log('Microphone permission granted')
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Microphone permission granted')
+        }
         streamRef.current = stream
         
         // Create the source and worklet node
@@ -261,10 +293,14 @@ export function NaturalConversation({ language = 'en-US' }: NaturalConversationP
           audioRecorderHandler(pcmData)
         }
         
-        console.log('Audio recording started with AudioWorklet')
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Audio recording started with AudioWorklet')
+        }
         
       } catch (error) {
-        console.error('Failed to setup AudioWorklet, falling back to ScriptProcessor:', error)
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Failed to setup AudioWorklet, falling back to ScriptProcessor:', error)
+        }
         
         // Fallback to ScriptProcessor if AudioWorklet fails
         const stream = await navigator.mediaDevices.getUserMedia({
@@ -282,24 +318,35 @@ export function NaturalConversation({ language = 'en-US' }: NaturalConversationP
         }
         
         sourceRef.current.connect(scriptProcessor)
-        // Don't connect to destination to avoid feedback
-        // scriptProcessor needs to be connected to destination for processing to work
-        scriptProcessor.connect(audioContextRef.current.destination)
+        // ScriptProcessor requires connection to destination for processing to work,
+        // but we use a gain node set to 0 to prevent audio feedback
+        const silentGain = audioContextRef.current.createGain()
+        silentGain.gain.value = 0
+        scriptProcessor.connect(silentGain)
+        silentGain.connect(audioContextRef.current.destination)
         
-        console.log('Audio recording started with ScriptProcessor (fallback)')
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Audio recording started with ScriptProcessor (fallback)')
+        }
       }
       
       setIsActive(true)
-      console.log('Audio recording started, timer interval starting...')
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Audio recording started, timer interval starting...')
+      }
       
       // Start the buffer timer to send audio every 200ms
       bufferTimerRef.current = setInterval(() => {
         sendBufferedAudio()
       }, 200)
-      console.log('Buffer timer started')
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Buffer timer started')
+      }
       
     } catch (error) {
-      console.error('Failed to start conversation:', error)
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Failed to start conversation:', error)
+      }
       setStatus('Failed to start - click to retry')
     }
   }
