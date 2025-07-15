@@ -39,6 +39,45 @@ export function NaturalConversation({ language = 'en-US' }: NaturalConversationP
     }
   }, [])
   
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      // Clean up timers
+      if (bufferTimerRef.current) {
+        clearInterval(bufferTimerRef.current)
+        bufferTimerRef.current = null
+      }
+      if (silenceTimerRef.current) {
+        clearTimeout(silenceTimerRef.current)
+        silenceTimerRef.current = null
+      }
+      
+      // Clean up audio resources
+      if (workletNodeRef.current) {
+        workletNodeRef.current.disconnect()
+        workletNodeRef.current = null
+      }
+      if (sourceRef.current) {
+        sourceRef.current.disconnect()
+        sourceRef.current = null
+      }
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop())
+        streamRef.current = null
+      }
+      if (audioContextRef.current) {
+        audioContextRef.current.close()
+        audioContextRef.current = null
+      }
+      
+      // Clean up SSE connection
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close()
+        eventSourceRef.current = null
+      }
+    }
+  }, [])
+  
   // Convert Float32 samples to 16-bit PCM
   const convertFloat32ToPCM = (inputData: Float32Array): ArrayBuffer => {
     const pcm16 = new Int16Array(inputData.length)
