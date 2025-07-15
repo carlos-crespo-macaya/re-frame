@@ -35,6 +35,10 @@ RUN uv run python -c "from src.main import app; import json; print(json.dumps(ap
 
 # Create non-root user for security
 RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+
+# Create exports directory with proper permissions
+RUN mkdir -p /app/exports && chown appuser:appuser /app/exports
+
 USER appuser
 
 # Expose port (Cloud Run uses PORT env variable)
