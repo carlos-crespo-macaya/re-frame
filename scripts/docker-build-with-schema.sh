@@ -32,7 +32,6 @@ fi
 
 # Parse arguments
 BUILD_MODE=${1:-development}
-EXPORT_SCHEMA_ONLY=${2:-false}
 
 print_step "Build mode: $BUILD_MODE"
 
