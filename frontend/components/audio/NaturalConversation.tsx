@@ -282,7 +282,8 @@ export function NaturalConversation({ language = 'en-US' }: NaturalConversationP
         }
         
         sourceRef.current.connect(scriptProcessor)
-        // Important: don't connect to destination to avoid feedback
+        // Don't connect to destination to avoid feedback
+        // scriptProcessor needs to be connected to destination for processing to work
         scriptProcessor.connect(audioContextRef.current.destination)
         
         console.log('Audio recording started with ScriptProcessor (fallback)')

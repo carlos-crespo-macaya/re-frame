@@ -75,11 +75,6 @@ export default function ThoughtInputForm({
   // Track processed messages to avoid reprocessing
   const processedMessagesRef = useRef<Set<string>>(new Set())
   
-  // Store audio mode in a ref to avoid dependency issues
-  const audioModeRef = useRef(audioState.mode)
-  useEffect(() => {
-    audioModeRef.current = audioState.mode
-  }, [audioState.mode])
   
   // Listen for SSE messages
   useEffect(() => {
