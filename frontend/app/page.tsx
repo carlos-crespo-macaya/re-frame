@@ -24,8 +24,6 @@ export default function Home() {
     autoConnect: false,
   })
   
-  // Extract values for dependency arrays
-  const { isConnected, connect, disconnect } = sseClient
   
   // Connect on mount and when language/mode changes
   useEffect(() => {
@@ -41,11 +39,11 @@ export default function Home() {
           
           if (shouldConnect) {
             // Disconnect any existing connection first
-            if (isConnected) {
-              disconnect()
+            if (sseClient.isConnected) {
+              sseClient.disconnect()
               await new Promise(resolve => setTimeout(resolve, 100))
             }
-            await connect(undefined, selectedLanguage, false)
+            await sseClient.connect(undefined, selectedLanguage, false)
             hasConnectedRef.current = true
             previousLanguageRef.current = selectedLanguage
             previousAudioModeRef.current = useAudioMode
@@ -63,8 +61,8 @@ export default function Home() {
       performConnect()
     } else if (useAudioMode) {
       // Disconnect text mode when switching to audio
-      if (isConnected) {
-        disconnect()
+      if (sseClient.isConnected) {
+        sseClient.disconnect()
         hasConnectedRef.current = false
       }
       previousAudioModeRef.current = useAudioMode
@@ -72,8 +70,11 @@ export default function Home() {
     
     return () => {
       mounted = false
+      if (sseClient.isConnected) {
+        sseClient.disconnect()
+      }
     }
-  }, [selectedLanguage, useAudioMode, isConnected, connect, disconnect])
+  }, [selectedLanguage, useAudioMode, sseClient])
   
   // Track the start of current response
   const [responseStartIndex, setResponseStartIndex] = useState(0)
