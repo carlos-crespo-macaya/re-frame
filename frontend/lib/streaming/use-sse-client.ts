@@ -112,12 +112,12 @@ export function useSSEClient(options: UseSSEClientOptions = {}) {
   }, [memoizedSseOptions, autoConnect]); // Re-create client when options change
   
   // Connect to SSE
-  const connect = useCallback(async (sessionId?: string, language?: string) => {
+  const connect = useCallback(async (sessionId?: string, language?: string, isAudio: boolean = false) => {
     if (!clientRef.current) return;
     
     try {
       setState(prev => ({ ...prev, error: null }));
-      await clientRef.current.connect(sessionId, language);
+      await clientRef.current.connect(sessionId, language, isAudio);
       
       const session = clientRef.current.getSession();
       setState(prev => ({
@@ -172,6 +172,16 @@ export function useSSEClient(options: UseSSEClientOptions = {}) {
       interrupted: options.interrupted
     });
     
+    // Debug logging
+    if (mimeType === 'audio/pcm') {
+      console.log('Audio message payload:', {
+        mime_type: message.mime_type,
+        data_length: message.data.length,
+        turn_complete: message.turn_complete,
+        session_id: message.session_id
+      });
+    }
+    
     if (enableRateLimit) {
       await rateLimiterRef.current.send(
         message,
@@ -191,7 +201,8 @@ export function useSSEClient(options: UseSSEClientOptions = {}) {
   }, [sendMessage]);
   
   // Send audio message
-  const sendAudio = useCallback((audioData: string, turnComplete = false) => {
+  const sendAudio = useCallback((audioData: string, turnComplete = true) => {
+    console.log(`Sending audio/pcm data: ${audioData.length} chars, turnComplete: ${turnComplete}`);
     return sendMessage(audioData, 'audio/pcm', {
       messageType: 'thought',
       turnComplete: turnComplete

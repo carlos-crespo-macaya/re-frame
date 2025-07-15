@@ -50,7 +50,6 @@ describe('Audio Types', () => {
         expect(state.isPlaying).toBe(false);
         expect(state.audioEnabled).toBe(false);
         expect(state.micPermission).toBe('prompt');
-        expect(state.transcription).toBe('');
         expect(state.audioLevel).toBe(0);
         expect(state.mode).toBe('instant');
         expect(state.error).toBeNull();
@@ -194,7 +193,6 @@ describe('Audio Types', () => {
         isProcessing: false,
         audioEnabled: true,
         micPermission: 'granted',
-        transcription: 'Test transcription',
         audioLevel: 0.5,
         mode: 'manual',
         error: null
