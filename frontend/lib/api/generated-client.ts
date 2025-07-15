@@ -78,5 +78,7 @@ export type {
   LanguageDetectionResponse,
 }
 
-// Direct exports of SDK functions are removed to prevent fragility due to generator changes.
-// Use the `generatedApi` wrapper for accessing SDK functionality instead.
+// Direct exports of SDK functions (getHealthCheck, sendMessage, etc.) were removed
+// because they can break when the OpenAPI generator changes function names or signatures.
+// The `generatedApi` wrapper pattern provides a stable API surface that won't break
+// when the underlying generated code changes, ensuring better maintainability.
