@@ -31,7 +31,7 @@ __all__ = [
     "LanguageDetectionResponse",
     "MessageRequest",
     "MessageResponse",
+    "SSEMessage",
     "SessionInfo",
     "SessionListResponse",
-    "SSEMessage",
 ]
