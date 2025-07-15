@@ -16,7 +16,7 @@ import base64
 import json
 import os
 import warnings
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -208,7 +208,7 @@ async def health_check() -> HealthCheckResponse:
         status="healthy",
         service="CBT Reframing Assistant API",
         version="1.0.0",
-        timestamp=datetime.utcnow().isoformat(),
+        timestamp=datetime.now(UTC).isoformat(),
     )
 
 
@@ -216,14 +216,14 @@ async def health_check() -> HealthCheckResponse:
     "/api/events/{session_id}", summary="SSE endpoint", operation_id="getEventStream"
 )
 async def sse_endpoint(
-    session_id: str, is_audio: str = "false", language: str = "en-US"
+    session_id: str, is_audio: bool = False, language: str = "en-US"
 ):
     """SSE endpoint for agent to client communication"""
 
     # Start agent session
     # Use session_id as user_id for ADK
     live_events, live_request_queue = await start_agent_session(
-        session_id, is_audio == "true", language
+        session_id, is_audio, language
     )
 
     # Store the session with session manager
@@ -320,20 +320,18 @@ async def send_message_endpoint(
             if metrics.get("error"):
                 raise HTTPException(
                     status_code=422,
-                    detail=f"Audio conversion failed: {metrics['error']}"
+                    detail=f"Audio conversion failed: {metrics['error']}",
                 )
 
             if not pcm_data:
                 raise HTTPException(
-                    status_code=422,
-                    detail="Audio conversion resulted in empty data"
+                    status_code=422, detail="Audio conversion resulted in empty data"
                 )
 
             # Validate PCM data
             if not AudioConverter.validate_pcm_data(pcm_data):
                 raise HTTPException(
-                    status_code=422,
-                    detail="Invalid PCM data after conversion"
+                    status_code=422, detail="Invalid PCM data after conversion"
                 )
 
             # Send converted PCM to agent
@@ -341,8 +339,7 @@ async def send_message_endpoint(
             print(f"[CLIENT TO AGENT]: converted audio/pcm: {len(pcm_data)} bytes")
     else:
         raise HTTPException(
-            status_code=415,
-            detail=f"Mime type not supported: {mime_type}"
+            status_code=415, detail=f"Mime type not supported: {mime_type}"
         )
 
     return MessageResponse(status="sent", error=None)
@@ -363,8 +360,8 @@ async def get_session_info(session_id: str) -> SessionInfo:
     return SessionInfo(
         session_id=session.session_id,
         user_id=session.user_id,
-        created_at=datetime.fromtimestamp(session.created_at).isoformat(),
-        last_activity=datetime.fromtimestamp(session.last_activity).isoformat(),
+        created_at=datetime.fromtimestamp(session.created_at, tz=UTC).isoformat(),
+        last_activity=datetime.fromtimestamp(session.last_activity, tz=UTC).isoformat(),
         age_seconds=session.age_seconds,
         inactive_seconds=session.inactive_seconds,
         has_request_queue=session.request_queue is not None,
@@ -406,7 +403,7 @@ async def download_pdf(session_id: str):
     pdf_content = f"""Session Summary
 ==================
 Session ID: {session_id}
-Date: {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}
+Date: {datetime.now(UTC).strftime('%Y-%m-%d %H:%M UTC')}
 
 This is a mock PDF for local testing.
 In production, this would contain:
@@ -415,14 +412,14 @@ In production, this would contain:
 - Reframed perspectives
 - Resources mentioned
 
-Thank you for using re-frame.
+Thank you for using CBT Assistant.
 """.encode()
 
     return Response(
-        content=pdf_content,
-        media_type="text/plain",  # Using text/plain for POC
+        content=b"Mock PDF content for " + pdf_content,  # Mock PDF binary content
+        media_type="application/pdf",
         headers={
-            "Content-Disposition": f"attachment; filename=session-summary-{session_id}.txt",
+            "Content-Disposition": f'attachment; filename="reframe-summary-{session_id}.pdf"',
         },
     )
 

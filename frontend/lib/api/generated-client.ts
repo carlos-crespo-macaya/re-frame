@@ -62,8 +62,8 @@ export const generatedApi = {
   events: {
     // The generated client returns a promise, but SSE needs EventSource
     // This is just for type reference
-    getEventStreamEndpoint: (sessionId: string, isAudio?: string, language?: string) =>
-      `/api/events/${sessionId}?is_audio=${isAudio || 'false'}&language=${language || 'en-US'}`,
+    getEventStreamEndpoint: (sessionId: string, isAudio?: boolean, language?: string) =>
+      `/api/events/${sessionId}?is_audio=${isAudio || false}&language=${language || 'en-US'}`,
   },
 }
 
@@ -78,5 +78,5 @@ export type {
   LanguageDetectionResponse,
 }
 
-// Export specific SDK functions for direct use if needed
-export { getHealthCheck, sendMessage, getSessionInfo, listSessions } from './generated/sdk.gen'
+// Direct exports of SDK functions are removed to prevent fragility due to generator changes.
+// Use the `generatedApi` wrapper for accessing SDK functionality instead.
