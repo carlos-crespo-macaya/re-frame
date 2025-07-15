@@ -13,6 +13,7 @@ import {
   isStatusMessage
 } from './message-protocol';
 import { sessionManager, Session } from './session-manager';
+import { ApiClient, logApiError, EventSourceParams } from '../api';
 
 export interface SSEClientOptions {
   baseUrl?: string;
@@ -71,20 +72,18 @@ export class SSEClient {
         this.session = sessionManager.createSession();
       }
       
-      const params = new URLSearchParams();
+      const params: EventSourceParams = {};
       if (language) {
-        params.append('language', language);
+        params.language = language;
       }
       if (isAudio) {
-        params.append('is_audio', 'true');
+        params.is_audio = true;
       }
       
-      const url = `${this.options.baseUrl}/api/events/${this.session.id}${params.toString() ? '?' + params.toString() : ''}`;
-      
-      console.log('Connecting to SSE:', url);
+      console.log('Connecting to SSE for session:', this.session.id);
       this.updateStatus('connecting');
       
-      this.eventSource = new EventSource(url);
+      this.eventSource = ApiClient.createEventSource(this.session.id, params);
       
       this.eventSource.onopen = () => {
         console.log('SSE connection opened');
@@ -153,24 +152,11 @@ export class SSEClient {
       throw new Error('No active session');
     }
     
-    const url = `${this.options.baseUrl}/api/send/${this.session.id}`;
-    
     try {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(message)
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Failed to send message: ${response.statusText}`);
-      }
-      
+      await ApiClient.sendMessage(this.session.id, message);
       sessionManager.updateActivity(this.session.id);
-      
     } catch (error) {
+      logApiError(error, `SSE sendMessage(${this.session.id})`);
       this.options.onError(error as Error);
       throw error;
     }
