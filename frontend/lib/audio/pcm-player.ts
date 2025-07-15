@@ -104,7 +104,6 @@ export class PCMPlayer {
       this.audioContext = null
     }
     this.nextStartTime = 0
-    this.audioQueue = []
     this.isFirstChunk = true
   }
   
