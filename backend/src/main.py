@@ -20,7 +20,7 @@ from datetime import datetime
 from pathlib import Path
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, Request, Response, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -279,10 +279,11 @@ async def send_message_endpoint(session_id: str, request: Request):
         # ADK only accepts audio/pcm format
         if mime_type == "audio/webm":
             # WebM conversion is not implemented yet
-            # For now, return an error message
-            return {
-                "error": "WebM audio conversion is not implemented. Please use WAV format or send PCM directly."
-            }
+            # Return proper HTTP 400 error
+            raise HTTPException(
+                status_code=400,
+                detail="WebM audio conversion is not implemented. Please use WAV format or send PCM directly."
+            )
         else:
             # Convert other audio formats to PCM
             decoded_data = base64.b64decode(data)
