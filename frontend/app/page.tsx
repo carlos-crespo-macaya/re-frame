@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import ThoughtInputForm from '@/components/forms/ThoughtInputForm'
 import { FrameworkBadge, LanguageSelector } from '@/components/ui'
@@ -14,25 +14,42 @@ export default function Home() {
   const [response, setResponse] = useState<ReframeResponse | null>(null)
   const [selectedLanguage, setSelectedLanguage] = useState('en-US')
   const [useAudioMode, setUseAudioMode] = useState(false)
+  const hasConnectedRef = useRef(false)
+  const previousLanguageRef = useRef(selectedLanguage)
+  const previousAudioModeRef = useRef(useAudioMode)
+  
   // Initialize SSE client (text mode only)
   const sseClient = useSSEClient({
     baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
     autoConnect: false,
   })
   
-  // Connect on mount and when language changes (text mode only)
+  // Extract values for dependency arrays
+  const { isConnected, connect, disconnect } = sseClient
+  
+  // Connect on mount and when language/mode changes
   useEffect(() => {
     let mounted = true
     
-    const connect = async () => {
+    const performConnect = async () => {
       try {
         if (mounted && !useAudioMode) {
-          // Disconnect any existing connection first
-          if (sseClient.isConnected) {
-            sseClient.disconnect()
-            await new Promise(resolve => setTimeout(resolve, 100))
+          // Only reconnect if language changed or first connection
+          const shouldConnect = !hasConnectedRef.current || 
+                               previousLanguageRef.current !== selectedLanguage ||
+                               previousAudioModeRef.current !== useAudioMode
+          
+          if (shouldConnect) {
+            // Disconnect any existing connection first
+            if (isConnected) {
+              disconnect()
+              await new Promise(resolve => setTimeout(resolve, 100))
+            }
+            await connect(undefined, selectedLanguage, false)
+            hasConnectedRef.current = true
+            previousLanguageRef.current = selectedLanguage
+            previousAudioModeRef.current = useAudioMode
           }
-          await sseClient.connect(undefined, selectedLanguage, false)
         }
       } catch (error) {
         if (process.env.NODE_ENV === 'development') {
@@ -41,23 +58,22 @@ export default function Home() {
       }
     }
     
-    // Only connect if not in audio mode
+    // Handle mode switching
     if (!useAudioMode) {
-      connect()
-    } else {
-      // Make sure to disconnect text mode when switching to audio
-      if (sseClient.isConnected) {
-        sseClient.disconnect()
+      performConnect()
+    } else if (useAudioMode) {
+      // Disconnect text mode when switching to audio
+      if (isConnected) {
+        disconnect()
+        hasConnectedRef.current = false
       }
+      previousAudioModeRef.current = useAudioMode
     }
     
     return () => {
       mounted = false
-      if (!useAudioMode && sseClient.isConnected) {
-        sseClient.disconnect()
-      }
     }
-  }, [selectedLanguage, useAudioMode, sseClient])
+  }, [selectedLanguage, useAudioMode, isConnected, connect, disconnect])
   
   // Track the start of current response
   const [responseStartIndex, setResponseStartIndex] = useState(0)
