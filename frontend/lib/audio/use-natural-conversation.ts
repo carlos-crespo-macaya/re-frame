@@ -113,15 +113,16 @@ export function useNaturalConversation(options: UseNaturalConversationOptions = 
     if (!sessionIdRef.current) return
 
     try {
-      const response = await fetch(`${apiUrl}/api/messages`, {
+      const response = await fetch(`${apiUrl}/api/send/${sessionIdRef.current}`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'X-Session-ID': sessionIdRef.current
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          content: '',
+          data: '',
           mime_type: 'audio/pcm',
+          message_type: 'thought',
+          session_id: sessionIdRef.current,
           turn_complete: true
         })
       })
@@ -172,17 +173,18 @@ export function useNaturalConversation(options: UseNaturalConversationOptions = 
     // Convert to base64
     const base64Audio = arrayBufferToBase64(mergedBuffer.buffer)
 
-    // Send to API
+    // Send to API using the correct backend endpoint
     try {
-      const response = await fetch(`${apiUrl}/api/messages`, {
+      const response = await fetch(`${apiUrl}/api/send/${sessionIdRef.current}`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'X-Session-ID': sessionIdRef.current
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          content: base64Audio,
+          data: base64Audio,
           mime_type: 'audio/pcm',
+          message_type: 'thought',
+          session_id: sessionIdRef.current,
           turn_complete: false
         })
       })
