@@ -9,17 +9,18 @@ services:
       - ./scripts:/app/scripts:ro  # Mount scripts directory
       - openapi-schema:/app/exports  # Shared volume for OpenAPI schema
     # Add command to export schema after startup
+    user: root  # Run as root to have write permissions to volume
     command: >
       sh -c "
         # Start the server in background
-        uv run uvicorn src.main:app --host 0.0.0.0 --port 8000 &
+        su appuser -c 'uv run uvicorn src.main:app --host 0.0.0.0 --port 8000' &
         SERVER_PID=$$!
         
         # Wait for server to be ready
         echo 'Waiting for server to start...'
         sleep 5
         
-        # Export OpenAPI schema using script
+        # Export OpenAPI schema using script (as root for volume write access)
         echo 'Exporting OpenAPI schema...'
         sh /app/scripts/export-openapi.sh
         
