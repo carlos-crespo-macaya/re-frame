@@ -5,7 +5,12 @@ This module provides utilities for creating CBT Assistant agents.
 The main agent instance for ADK commands is in __agent__.py.
 """
 
-from google.adk.agents import LlmAgent
+# The ADK dependency is only available in certain environments.
+# Import it lazily so that local development without the SDK does not crash.
+try:
+    from google.adk.agents import LlmAgent  # type: ignore
+except ModuleNotFoundError:  # pragma: no cover – handled gracefully below
+    LlmAgent = None  # type: ignore
 
 from src.agents.phase_manager import check_phase_transition, get_current_phase_info
 from src.knowledge.cbt_context import BASE_CBT_CONTEXT
@@ -47,6 +52,21 @@ def create_cbt_assistant(model: str = "gemini-2.0-flash-live-001") -> LlmAgent:
         + "You must follow the phases in order and cannot skip ahead. "
         + "Use the phase management tools to check and transition between phases."
     )
+
+    # If the ADK is not available (e.g. during open-source development or in
+    # CI) fall back to a very simple echo agent so that the remainder of the
+    # application – especially the SSE plumbing – continues to work.  This
+    # provides a graceful degradation instead of an import-time crash.
+
+    if LlmAgent is None:  # pragma: no cover
+        class _EchoAgent:  # Minimal stub matching the ADK agent interface
+            name = "EchoAgent"
+
+            async def __call__(self, *args, **kwargs):  # noqa: D401 – simple stub
+                user_content = kwargs.get("content") or ""
+                return f"You said: {user_content}"
+
+        return _EchoAgent()  # type: ignore
 
     agent = LlmAgent(
         model=model,

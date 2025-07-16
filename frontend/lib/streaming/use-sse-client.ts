@@ -49,6 +49,15 @@ export function useSSEClient(options: UseSSEClientOptions = {}) {
   const clientRef = useRef<SSEClient | null>(null);
   const assemblerRef = useRef(new MessageAssembler());
   const rateLimiterRef = useRef(new RateLimiter(rateLimitMs));
+
+  // Queue for messages attempted before the SSE connection is fully open.
+  // Each entry stores the arguments passed to sendMessage so we can replay
+  // them later in the exact same order.
+  const pendingQueueRef = useRef<Array<[
+    string,
+    'text/plain' | 'audio/pcm',
+    Partial<{ messageType: 'thought' | 'response' | 'transcription'; turnComplete?: boolean; interrupted?: boolean; }>
+  ]>>([]);
   
   // Memoize SSE options to prevent unnecessary re-renders
   const memoizedSseOptions = useMemo(() => sseOptions, [
@@ -97,6 +106,35 @@ export function useSSEClient(options: UseSSEClientOptions = {}) {
           connectionState: status,
           isConnected: status === 'connected'
         }));
+
+        // When the connection transitions to "connected" we flush any queued
+        // messages that were generated while waiting for the SSE handshake.
+        if (status === 'connected' && pendingQueueRef.current.length > 0 && clientRef.current) {
+          const flushQueue = async () => {
+            for (const [queuedData, queuedMime, queuedOpts] of pendingQueueRef.current) {
+              try {
+                // eslint-disable-next-line no-await-in-loop
+                await clientRef.current!.sendMessage(
+                  createClientMessage({
+                    data: queuedData,
+                    mimeType: queuedMime,
+                    messageType: queuedOpts.messageType || 'thought',
+                    sessionId: clientRef.current!.getSession()!.id,
+                    turnComplete: queuedOpts.turnComplete,
+                    interrupted: queuedOpts.interrupted
+                  })
+                );
+              } catch (err) {
+                console.error('Failed to flush queued message:', err);
+              }
+            }
+            pendingQueueRef.current = [];
+          };
+
+          // Fire and forget – we don't await inside the status handler.
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          flushQueue();
+        }
       }
     });
     
@@ -147,6 +185,8 @@ export function useSSEClient(options: UseSSEClientOptions = {}) {
       sessionId: null,
       messages: []
     }));
+
+    pendingQueueRef.current = [];
   }, []);
   
   // Send a message
@@ -159,8 +199,16 @@ export function useSSEClient(options: UseSSEClientOptions = {}) {
       interrupted?: boolean;
     }> = {}
   ) => {
-    if (!clientRef.current || !state.sessionId) {
-      throw new Error('Not connected to SSE');
+    const client = clientRef.current;
+
+    // If the SSE connection hasn't been fully established yet we enqueue the
+    // message. It will be flushed as soon as we receive the "connected" status
+    // from the EventSource. This prevents race conditions where the first
+    // message arrives at the backend before the session is created, which
+    // results in 404 errors.
+    if (!client || !state.sessionId || client.getConnectionState() !== 'connected') {
+      pendingQueueRef.current.push([data, mimeType, options]);
+      return;
     }
     
     const message = createClientMessage({
@@ -172,14 +220,16 @@ export function useSSEClient(options: UseSSEClientOptions = {}) {
       interrupted: options.interrupted
     });
     
-    // Debug logging only in development
-    if (message.mime_type === 'audio/pcm' && process.env.NODE_ENV === 'development') {
+    // Always emit a debug log for audio payloads so that issues can be
+    // diagnosed on production systems without having to rebuild the frontend
+    // in development mode.
+    if (message.mime_type === 'audio/pcm') {
       console.log('Audio message payload:', {
         mime_type: message.mime_type,
         data_length: message.data.length,
         turn_complete: message.turn_complete,
         session_id: message.session_id
-      });
+      })
     }
     
     if (enableRateLimit) {
@@ -202,9 +252,7 @@ export function useSSEClient(options: UseSSEClientOptions = {}) {
   
   // Send audio message
   const sendAudio = useCallback((audioData: string, turnComplete = false) => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`Sending audio/pcm data: ${audioData.length} chars, turnComplete: ${turnComplete}`);
-    }
+    console.log(`Sending audio/pcm data: ${audioData.length} chars, turnComplete: ${turnComplete}`)
     return sendMessage(audioData, 'audio/pcm', {
       messageType: 'thought',
       turnComplete: turnComplete

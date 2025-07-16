@@ -1,13 +1,51 @@
-"""
-Phase Manager for CBT Conversation Flow.
+"""Phase Manager for CBT Conversation Flow.
 
-This module manages the conversation phases and transitions
-for the CBT reframing assistant.
+Manages conversation phases and transitions for the CBT reframing assistant.
+
+We enable **deferred evaluation** of type-annotations so helper functions that
+reference ``ConversationPhase`` can be declared prior to the enum definition.
 """
+
+from __future__ import annotations
 
 from enum import Enum
+from typing import Any, Dict, List, Sequence
+from .utils.intent import classify_intent
+# limit for trimming memory blobs
+TOKEN_LIMIT = 8000  # keep a cushion below model max
 
-from google.adk.agents import LlmAgent
+# ----------  NEW HELPERS  --------------------------------------------------- #
+
+def handoff_prompt(frm: ConversationPhase, to: ConversationPhase) -> str:
+    """Human‑sounding sentence that bridges two phases."""
+    return (
+        f"🟢 **Great job!** We’ve finished *{frm.value}*. "
+        f"Next up: **{to.value.title()}**. Ready?"
+    )
+
+def _trim_list(items: Sequence[str], keep: int = 3) -> List[str]:
+    return list(items[-keep:])
+
+# ---------------------------------------------------------------------------
+# Optional ADK dependency – we provide a lightweight stub when the actual SDK
+# is not available in the execution environment (e.g. during CI).
+# ---------------------------------------------------------------------------
+
+try:
+    from google.adk.agents import LlmAgent  # type: ignore
+except ModuleNotFoundError:  # pragma: no cover – stub fallback
+
+    class LlmAgent:  # type: ignore[override]
+        """Extremely thin stub so that type-checks and imports succeed."""
+
+        def __init__(self, *, model: str, name: str, instruction: str, tools=None):
+            self.model = model
+            self.name = name
+            self.instruction = instruction
+            self.tools = tools or []
+
+        def __str__(self) -> str:  # noqa: D401 – needed by tests
+            return self.instruction
 
 from src.knowledge.cbt_context import BASE_CBT_CONTEXT
 
@@ -105,6 +143,36 @@ class PhaseManager:
             ),
         }
         return instructions.get(phase, "")
+
+    def transition(self, state: Dict[str, Any], target: ConversationPhase) -> None:
+        """Perform phase transition with a human-friendly summary."""
+        prev_raw = state.get("phase")
+
+        # Safely coerce the previous phase (it may be missing or a plain string)
+        if isinstance(prev_raw, ConversationPhase):
+            prev_phase = prev_raw
+        else:
+            try:
+                prev_phase = ConversationPhase(prev_raw)
+            except Exception:  # noqa: BLE001
+                prev_phase = ConversationPhase.GREETING
+
+        state["phase"] = target
+        state["transition_summary"] = handoff_prompt(prev_phase, target)
+
+    def register_user_message(self, state: Dict[str, Any], user_msg: str) -> None:
+        """Call on every user turn; tag intent & trim long lists."""
+        state["intent"] = classify_intent(user_msg)
+
+        # trim memory blobs if growing too large
+        for key in ("thoughts_recorded", "emotions_captured"):
+            if isinstance(state.get(key), list) and len(state[key]) > 6:
+                state[key] = _trim_list(state[key])
+
+        # cheap length check for state size
+        combined = " ".join(state.get(k, "") for k in ("thoughts_recorded", "transition_summary"))
+        if len(combined) > TOKEN_LIMIT:
+            state["thoughts_recorded"] = _trim_list(state.get("thoughts_recorded", []))
 
 
 # Phase Management Tools - Simple Python functions that ADK will wrap as FunctionTools

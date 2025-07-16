@@ -1,0 +1,254 @@
+
+From 1e2d34b7a1c6f9b5903c6c2e672adf7e7b0a9dfe Mon Sep 17 00:00:00 2001
+Subject: 💬✨ Full UX & Voice polish pass
+
+# ------------------------------
+# BACKEND CHANGES
+# ------------------------------
+diff --git a/backend/src/routers/asr.py b/backend/src/routers/asr.py
+new file mode 100644
+index 0000000..3f4a5e7
+--- /dev/null
++++ b/backend/src/routers/asr.py
+@@
++"""Cloud‑based ASR enhancement for browser partial transcripts."""
++from fastapi import APIRouter
++from pydantic import BaseModel
++from google.cloud import speech
++
++router = APIRouter()
++client = speech.SpeechClient()
++
++class _Req(BaseModel):
++    partial: str
++
++@router.post("/enhance_asr")
++async def enhance(req: _Req):
++    audio = speech.RecognitionAudio(content=req.partial.encode())  # naive placeholder
++    config = speech.RecognitionConfig(language_code="en-US", model="latest_long")
++    resp = client.recognize(config=config, audio=audio)
++    best = resp.results[0].alternatives[0].transcript if resp.results else req.partial
++    return {"transcript": best}
++
+diff --git a/backend/src/routers/websocket.py b/backend/src/routers/websocket.py
+new file mode 100644
+index 0000000..e21b1d3
+--- /dev/null
++++ b/backend/src/routers/websocket.py
+@@
++from fastapi import WebSocket, APIRouter, WebSocketDisconnect
++from backend.src.agents import orchestrator
++
++router = APIRouter()
++
++@router.websocket("/ws")
++async def ws_chat(ws: WebSocket):
++    await ws.accept()
++    tts_task = None
++    try:
++        while True:
++            msg = await ws.receive_text()
++            if msg.startswith("__bargein__"):
++                if tts_task:
++                    tts_task.cancel()
++                continue
++            async for token in orchestrator.stream(msg):
++                await ws.send_text(token)
++    except WebSocketDisconnect:
++        return
++
+diff --git a/backend/src/agents/utils/summarizer.py b/backend/src/agents/utils/summarizer.py
+new file mode 100644
+index 0000000..832b2c9
+--- /dev/null
++++ b/backend/src/agents/utils/summarizer.py
+@@
++"""Generate a 1‑sentence recap chip for long assistant messages."""
++from backend.src.models.gemini_client import gemini_call
++
++PROMPT = """Summarise the following therapist response into a single short sentence
++the user can glance at later. Do NOT add new advice. 
++
++RESPONSE:
++"""""{text}"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""+"""
++
++def recap(text: str) -> str:
++    return gemini_call(PROMPT.format(text=text), temperature=0.0)
++
+diff --git a/backend/src/agents/orchestrator.py b/backend/src/agents/orchestrator.py
+index 2a67d20..d4e7fd1 100644
+--- a/backend/src/agents/orchestrator.py
++++ b/backend/src/agents/orchestrator.py
+@@
+ from backend.src.agents.utils.summarizer import recap
+@@
+-        assistant_msg = await self.current_agent().respond(self.state)
++        assistant_msg = await self.current_agent().respond(self.state)
++        # ---------- recap chip ----------
++        if assistant_msg.count(".") >= 3:
++            self.state["recap"] = recap(assistant_msg)
+
+         self.state["messages"].append(
+             {"role": "assistant", "content": assistant_msg}
+         )
+@@
+         return assistant_msg
++
++# expose quick suggestions
++    def reply_suggestions(self) -> list[str]:
++        return ["Yes", "No", "Explain more"] if self.state["phase"] == "SUMMARY" else []
+
+diff --git a/backend/src/main.py b/backend/src/main.py
+index 09c9388..22bf1e4 100644
+--- a/backend/src/main.py
++++ b/backend/src/main.py
+@@
+ from .routers import chat, stream, websocket, asr
+@@
+ app.include_router(websocket.router, prefix="/api/v1")
++app.include_router(asr.router, prefix="/api/v1")
+
+# ------------------------------
+# FRONTEND CHANGES
+# ------------------------------
+diff --git a/frontend/src/hooks/useSpeechInput.ts b/frontend/src/hooks/useSpeechInput.ts
+new file mode 100644
+index 0000000..d8f610e
+--- /dev/null
++++ b/frontend/src/hooks/useSpeechInput.ts
+@@
++import { useEffect, useState } from "react";
++
++export default function useSpeechInput(onFinal: (txt: string) => void) {
++  const [partial, setPartial] = useState("");
++
++  useEffect(() => {
++    const rec: any = new (window as any).webkitSpeechRecognition();
++    rec.interimResults = true;
++    rec.continuous = false;
++    rec.onresult = (e: any) => {
++      const t = Array.from(e.results)
++        .map((r: any) => r[0].transcript)
++        .join(" ");
++      if (e.results[0].isFinal) {
++        fetch("/api/v1/enhance_asr", {
++          method: "POST",
++          headers: { "Content-Type": "application/json" },
++          body: JSON.stringify({ partial: t }),
++        })
++          .then((r) => r.json())
++          .then((d) => onFinal(d.transcript));
++        setPartial("");
++      } else {
++        setPartial(t);
++      }
++    };
++    rec.start();
++    return () => rec.stop();
++  }, []);
++
++  return partial;
++}
++
+diff --git a/frontend/src/components/SkeletonLoader.tsx b/frontend/src/components/SkeletonLoader.tsx
+new file mode 100644
+index 0000000..fb86d75
+--- /dev/null
++++ b/frontend/src/components/SkeletonLoader.tsx
+@@
++export default function SkeletonLoader() {
++  return (
++    <div className="animate-pulse space-y-2">
++      <div className="h-3 bg-gray-200 rounded" style={{ width: "80%" }} />
++      <div className="h-3 bg-gray-200 rounded" style={{ width: "90%" }} />
++      <div className="h-3 bg-gray-200 rounded" style={{ width: "75%" }} />
++    </div>
++  );
++}
++
+diff --git a/frontend/src/components/ChatMessage.tsx b/frontend/src/components/ChatMessage.tsx
+index e9d3fdf..a3cde46 100644
+--- a/frontend/src/components/ChatMessage.tsx
++++ b/frontend/src/components/ChatMessage.tsx
+@@
+-import React from "react";
++import React from "react";
++import diff from "diff-match-patch"; // npm i diff-match-patch
+
+ export default function ChatMessage({ msg }: { msg: any }) {
+-  return <p className="whitespace-pre-wrap">{msg.content}</p>;
++  if (msg.type === "diff") {
++    const dmp = new diff();
++    const d = dmp.diff_main(msg.prev, msg.next);
++    return (
++      <p>
++        {d.map(([op, txt], i) =>
++          op === 1 ? (
++            <span key={i} className="text-green-600">
++              {txt}
++            </span>
++          ) : op === -1 ? (
++            <span key={i} className="line-through text-red-500">
++              {txt}
++            </span>
++          ) : (
++            txt
++          )
++        )}
++      </p>
++    );
++  }
++  return <p className="whitespace-pre-wrap">{msg.content}</p>;
+ }
+
+diff --git a/frontend/src/App.tsx b/frontend/src/App.tsx
+index 0ba73bf..9f8763d 100644
+--- a/frontend/src/App.tsx
++++ b/frontend/src/App.tsx
+@@
+ import SkeletonLoader from "./components/SkeletonLoader";
+ import useSpeechInput from "./hooks/useSpeechInput";
+
+ export default function App() {
+   const partial = useSpeechInput(handleSubmit);
+@@
+-        {loading && <SkeletonLoader />}
++        {loading && <SkeletonLoader />}
+         {partial && (
+           <p className="italic text-gray-500">{partial}</p>
+         )}
+@@
++      {session.recap && (
++        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 bg-white/80 backdrop-blur px-3 py-1 rounded shadow">
++          <span className="text-sm text-gray-700">{session.recap}</span>
++        </div>
++      )}
+
+diff --git a/frontend/src/components/PhaseAwareFinish.tsx b/frontend/src/components/PhaseAwareFinish.tsx
+new file mode 100644
+index 0000000..9abc0f8
+--- /dev/null
++++ b/frontend/src/components/PhaseAwareFinish.tsx
+@@
++export default function PhaseAwareFinish({
++  phase,
++  onWrap,
++  onDig,
++}: {
++  phase: string;
++  onWrap: () => void;
++  onDig: () => void;
++}) {
++  if (phase !== "SUMMARY") return null;
++  return (
++    <div className="flex gap-3 justify-center mt-4">
++      <button onClick={onWrap} className="btn-primary">
++        Wrap up
++      </button>
++      <button onClick={onDig} className="btn-secondary">
++        Dig deeper
++      </button>
++    </div>
++  );
++}
+==================  end patch  ==================

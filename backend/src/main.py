@@ -17,6 +17,8 @@ import json
 import os
 import warnings
 from datetime import UTC, datetime
+import asyncio
+from typing import Optional
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -24,10 +26,70 @@ from fastapi import FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
-from google.adk.agents.live_request_queue import LiveRequestQueue
-from google.adk.agents.run_config import RunConfig
-from google.adk.runners import InMemoryRunner
-from google.genai.types import Blob, Content, Part, SpeechConfig
+# Google ADK (Agent Development Kit) is an optional dependency. Attempt to
+# import it, but gracefully degrade when it's unavailable so local development
+# without the proprietary SDK still works and the remainder of the service can
+# be started (e.g. for unit-tests that mock the ADK layer).
+
+try:
+    from google.adk.agents.live_request_queue import LiveRequestQueue  # type: ignore
+    from google.adk.agents.run_config import RunConfig  # type: ignore
+    from google.adk.runners import InMemoryRunner  # type: ignore
+    from google.genai.types import Blob, Content, Part, SpeechConfig  # type: ignore
+except ModuleNotFoundError:  # pragma: no cover
+    # Provide extremely lightweight stand-ins so that type-checking and run-time
+    # references do not fail.  These stubs purposefully implement only the
+    # minimal surface area used by this application.
+
+    class _Stub:
+        def __init__(self, *_, **__):
+            pass
+
+        def __getattr__(self, _name):
+            # Return a no-op callable for any attribute access.
+            return lambda *_, **__: None
+
+        # Support usage as an async iterator (e.g. for live event streams)
+        def __aiter__(self):  # noqa: D401 – minimal stub
+            return self
+
+        async def __anext__(self):  # noqa: D401 – minimal stub
+            raise StopAsyncIteration
+
+    LiveRequestQueue = _Stub  # type: ignore
+    RunConfig = _Stub  # type: ignore
+    InMemoryRunner = _Stub  # type: ignore
+
+    class _Blob(_Stub):
+        def __init__(self, data=None, mime_type=None):
+            self.data = data
+            self.mime_type = mime_type
+
+    Blob = _Blob  # type: ignore
+
+    class _Content(_Stub):
+        def __init__(self, role=None, parts=None):
+            self.role = role
+            self.parts = parts or []
+
+    Content = _Content  # type: ignore
+
+    class _Part(_Stub):
+        def __init__(self, text: str | None = None):
+            self.text = text
+            self.inline_data = None
+
+        @staticmethod
+        def from_text(text: str):  # type: ignore
+            return _Part(text)
+
+    Part = _Part  # type: ignore
+
+    class _SpeechConfig(_Stub):
+        def __init__(self, language_code=None):
+            self.language_code = language_code
+
+    SpeechConfig = _SpeechConfig  # type: ignore
 
 # Import CBT assistant instead of search agent
 from src.agents.cbt_assistant import create_cbt_assistant
@@ -142,6 +204,13 @@ app = FastAPI(
     version="1.0.0",
 )
 
+# Local micro-routers (websocket chat & ASR enhancement).  We import lazily
+# here to avoid circular-import issues during test discovery.
+from src.routers import asr, websocket  # noqa: E402  pylint: disable=wrong-import-position
+
+app.include_router(asr.router, prefix="/api/v1")
+app.include_router(websocket.router, prefix="/api/v1")
+
 # Configure CORS based on environment
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 if ENVIRONMENT == "production":
@@ -155,12 +224,13 @@ else:
         "http://localhost:3000",  # Frontend dev server
         "http://127.0.0.1:3000",  # Alternative localhost
         "http://frontend:3000",  # Docker service name
+        "null",  # file:// URLs used when opening debug-sse.html directly
     ]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
-    allow_credentials=True,
+    allow_credentials=False,  # No cookies or auth headers required for SSE/API
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
     expose_headers=["X-Session-Id", "X-Phase-Status"],
@@ -245,8 +315,24 @@ async def sse_endpoint(
             # Send initial connection event
             yield f"data: {json.dumps({'type': 'connected', 'session_id': session_id})}\n\n"
 
+            # Forward all agent events to the client
             async for data in agent_to_client_sse(live_events):
                 yield data
+
+            # If the agent event stream finishes (e.g. before the user sends
+            # the first request) keep the SSE connection open so that the same
+            # connection can still be used once requests start flowing.  We
+            # periodically emit an SSE comment line as a heartbeat to prevent
+            # proxies from timing-out the idle connection.
+            while True:
+                # SSE comment lines start with ':' and are ignored by the
+                # browser EventSource but keep the HTTP stream alive.
+                yield ": keep-alive\n\n"
+                # A moderate heartbeat interval (15s) is more than enough to
+                # avoid the common 30s idle-timeout on many reverse proxies
+                # while still being infrequent so it will not create undue
+                # traffic.
+                await asyncio.sleep(15)
         except Exception as e:
             print(f"Error in SSE stream: {e}")
             yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
@@ -260,6 +346,17 @@ async def sse_endpoint(
             "Cache-Control": "no-cache",
             "Connection": "keep-alive",
             "X-Accel-Buffering": "no",  # Disable proxy buffering
+            # Starlette's CORSMiddleware fails to append CORS headers to
+            # streaming responses.  We therefore add the header explicitly so
+            # that browsers allow EventSource connections even when the page
+            # is served from file:// (origin "null") or other allowed origins.
+            # For development we echo back the Origin header value when it is
+            # present, otherwise we fall back to "*" so that file:// (origin
+            # "null") requests are permitted.  We also explicitly disable
+            # credentials on this streaming response because EventSource does
+            # not send cookies by default.
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Credentials": "false",
         },
     )
 

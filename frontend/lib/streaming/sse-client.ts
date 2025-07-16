@@ -167,14 +167,23 @@ export class SSEClient {
    */
   private handleMessage(event: MessageEvent): void {
     this.lastEventTime = Date.now();
-    
+
+    // Skip synthetic connection notification and heartbeat comment lines to
+    // avoid JSON.parse errors that would close the EventSource.
+    if (
+      event.data.startsWith('{"type": "connected"') || // initial connect msg
+      event.data.startsWith(':') // SSE comment / heartbeat
+    ) {
+      return;
+    }
+
     try {
       const data = JSON.parse(event.data);
       
       if (isServerMessage(data)) {
         this.messageBuffer.push(data);
         this.options.onMessage(data);
-        
+
         if (this.session) {
           sessionManager.updateActivity(this.session.id);
         }

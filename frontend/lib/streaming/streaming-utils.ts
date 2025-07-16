@@ -107,7 +107,8 @@ export class MessageAssembler {
   addChunk(message: ServerMessage): string | null {
     // Use timestamp if available, otherwise use chunk_id or a counter
     const timestamp = message.timestamp || message.chunk_id || `msg-${this.messageCounter++}`;
-    const key = `${message.session_id}-${timestamp}`;
+    const sessionPart = message.session_id ?? 'anonymous';
+    const key = `${sessionPart}-${timestamp}`;
     
     if (!this.chunks.has(key)) {
       this.chunks.set(key, []);
@@ -118,7 +119,12 @@ export class MessageAssembler {
       chunks.push(message.data);
     }
     
-    if (message.is_final) {
+    // The backend signals the end of a turn either via the legacy is_final flag
+    // **or** (in the current protocol) by sending a minimal message that has
+    // `turn_complete: true`.  Treat both as the delimiter for assembling the
+    // collected chunks into a complete message.
+
+    if (message.is_final || (message.turn_complete === true)) {
       const complete = chunks.join('');
       this.chunks.delete(key);
       return complete;

@@ -39,6 +39,18 @@ export function useNaturalConversation(options: UseNaturalConversationOptions = 
   const eventSourceRef = useRef<EventSource | null>(null)
   const sessionIdRef = useRef<string | null>(null)
 
+  // Flag indicating the backend session is ready to receive messages. We only
+  // set this to true once the SSE connection has been successfully opened,
+  // because the backend creates the session during the SSE handshake. If we
+  // attempt to POST audio before this point the backend will quite rightly
+  // respond with 404 – the exact issue we are fixing here.
+  const sseReadyRef = useRef<boolean>(false)
+
+  // Buffer of pending messages that were produced before the SSE connection
+  // finished opening. Each entry is a tuple [base64Data, turnComplete].  As
+  // soon as the connection is ready we flush this queue.
+  const pendingMessageQueueRef = useRef<Array<[string, boolean]>>([])
+
   // Audio buffering for 0.2s intervals
   const audioBufferRef = useRef<Uint8Array[]>([])
   const bufferTimerRef = useRef<NodeJS.Timeout | null>(null)
@@ -114,7 +126,18 @@ export function useNaturalConversation(options: UseNaturalConversationOptions = 
     data: string,
     turnComplete: boolean = false
   ) => {
-    if (!sessionIdRef.current) return
+    if (!sessionIdRef.current) {
+      return
+    }
+
+    // If the SSE connection is not ready yet we queue the message so that it
+    // can be sent as soon as the backend session exists. This prevents the
+    // 404 responses that occur when we race the creation of the session on
+    // the backend.
+    if (!sseReadyRef.current) {
+      pendingMessageQueueRef.current.push([data, turnComplete])
+      return
+    }
 
     try {
       const message = createClientMessage({
@@ -217,6 +240,21 @@ export function useNaturalConversation(options: UseNaturalConversationOptions = 
       if (process.env.NODE_ENV === 'development') {
         console.log('Connected to audio session:', sessionId)
       }
+
+      // Mark the SSE connection as ready so that we can start sending audio.
+      sseReadyRef.current = true
+
+      // Flush any messages that were queued while we were waiting for the
+      // connection. We process them in FIFO order to preserve timing.
+      while (pendingMessageQueueRef.current.length > 0) {
+        const [queuedData, queuedTurnComplete] = pendingMessageQueueRef.current.shift()!
+        // We intentionally ignore the returned promise because we are already
+        // inside the open handler and do not want to block UI rendering. Any
+        // errors will still be routed through the central ApiClient logger.
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        sendAudioMessage(queuedData, queuedTurnComplete)
+      }
+
       setState(prev => ({ ...prev, status: 'Connected - Speak naturally!' }))
     }
 
@@ -417,6 +455,10 @@ export function useNaturalConversation(options: UseNaturalConversationOptions = 
       eventSourceRef.current.close()
       eventSourceRef.current = null
     }
+
+    // Reset connection flags and queues
+    sseReadyRef.current = false
+    pendingMessageQueueRef.current = []
 
     // Clear audio buffer
     audioBufferRef.current = []

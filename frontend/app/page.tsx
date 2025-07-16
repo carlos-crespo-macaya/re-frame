@@ -53,9 +53,7 @@ export default function Home() {
           }
         }
       } catch (error) {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('Failed to connect:', error)
-        }
+        console.error('Failed to connect:', error)
       }
     }
     
@@ -88,7 +86,12 @@ export default function Home() {
     const allMessages = messages
     
     // Debug logging
-    if (allMessages.length > 0 && process.env.NODE_ENV === 'development') {
+    // Log every batch of messages so that problems can be debugged even when
+    // the application is built in production mode.  This intentionally avoids
+    // gating the diagnostic output behind NODE_ENV so that testers can inspect
+    // the SSE conversation on any deployment by simply opening the browser
+    // console.
+    if (allMessages.length > 0) {
       console.log('All messages:', allMessages)
     }
     
@@ -106,9 +109,7 @@ export default function Home() {
       // Combine text messages from current response only
       const fullResponse = textMessages.map(msg => msg.data).join('')
       
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Text messages found:', textMessages.length, 'Full response:', fullResponse)
-      }
+      console.log('Text messages found:', textMessages.length, 'Full response:', fullResponse)
       
       // Create response from backend message
       setResponse({
@@ -132,9 +133,7 @@ export default function Home() {
     
     // Clear loading state when turn is complete
     if (turnComplete && isLoading) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Turn complete, clearing loading state')
-      }
+      console.log('Turn complete, clearing loading state')
       setIsLoading(false)
     }
   }, [messages, isConnected, isLoading, responseStartIndex])
@@ -150,9 +149,7 @@ export default function Home() {
       // Send text message to backend
       await sendText(thought)
     } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Failed to send message:', error)
-      }
+      console.error('Failed to send message:', error)
       setIsLoading(false)
     }
   }

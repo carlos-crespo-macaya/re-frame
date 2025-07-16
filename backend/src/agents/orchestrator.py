@@ -122,3 +122,47 @@ def create_cbt_orchestrator(model: str = "gemini-2.0-flash") -> LlmAgent:
     # For now, return a simple CBT assistant that can handle all phases
     # SequentialAgent requires a different architecture
     return router_agent
+
+
+# ---------------------------------------------------------------------------
+# Convenience helpers used by the React front-end patch.  These are **not**
+# part of the original orchestrator design but exposing them at module level
+# keeps the import surface area minimal while satisfying runtime dependencies
+# in the new UX code.
+# ---------------------------------------------------------------------------
+
+
+def reply_suggestions(state: dict | None = None) -> list[str]:  # noqa: D401
+    """Return quick-reply suggestions based on the current *phase*.
+
+    The implementation here mirrors the behaviour outlined in the UX patch –
+    we only surface suggestions during the SUMMARY phase.  When no *state*
+    dict is provided we default to an empty list so that callers in unrelated
+    contexts don't fail.
+    """
+
+    if not state:
+        return []
+
+    if str(state.get("phase", "")).upper() == "SUMMARY":
+        return ["Yes", "No", "Explain more"]
+    return []
+
+
+# ---------------------------------------------------------------------------
+# Streaming helper (stub)
+# ---------------------------------------------------------------------------
+
+
+async def stream(user_message: str):  # noqa: D401
+    """Yield *tokens* for the assistant response in a streaming fashion.
+
+    This implementation is deliberately minimal: it constructs a canned reply
+    acknowledging the user message and then yields it word-by-word so that the
+    front-end can render an incremental stream over websockets/SSE without the
+    full complexity of server-side chunking.
+    """
+
+    response = f"You said: {user_message}. Let's continue our CBT journey together."
+    for token in response.split():
+        yield token + " "

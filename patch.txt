@@ -1,0 +1,295 @@
+======================  reframe_polish.patch  ======================
+From f3f0e38b8ae5f1c0305479e4dbe6ef36d4b8b7b8 Mon Sep 17 00:00:00 2001
+Subject: ✨ Polish pass – agentic flow, SSE, UX quick wins
+
+diff --git a/backend/src/agents/phase_manager.py b/backend/src/agents/phase_manager.py
+index 1c2d44e..8a3b6e9 100644
+--- a/backend/src/agents/phase_manager.py
++++ b/backend/src/agents/phase_manager.py
+@@
+-from enum import Enum
++from enum import Enum
++from typing import Dict, Any, List, Tuple, Optional, Sequence
++from .utils.intent import classify_intent
+ 
+ class ConversationPhase(str, Enum):
+     GREETING = "GREETING"
+@@
+ 
++TOKEN_LIMIT = 8000  # keep a cushion below model max
++
++# ----------  NEW HELPERS  --------------------------------------------------- #
++
++def handoff_prompt(frm: ConversationPhase, to: ConversationPhase) -> str:
++    """Human‑sounding sentence that bridges two phases."""
++    return (
++        f"🟢 **Great job!** We’ve finished *{frm.value.lower()}*. "
++        f"Next up: **{to.value.title()}**. Ready?"
++    )
++
++def _trim_list(items: Sequence[str], keep: int = 3) -> List[str]:
++    return list(items[-keep:])
++
+ # --------------------------------------------------------------------------- #
+ 
+ class PhaseManager:
+@@
+-        return True
++        # allow rewind if user explicitly asks during SUMMARY
++        if current == ConversationPhase.SUMMARY and target == ConversationPhase.REFRAMING:
++            return state.get("intent") == "clarification_request"
++        return True
+@@
+     def transition(self, state: dict, target: ConversationPhase):
+-        state["phase"] = target
++        prev = state["phase"]
++        state["phase"] = target
++        state["transition_summary"] = handoff_prompt(prev, target)
++
++    # public --------------------------------------------------------------- #
++
++    def register_user_message(self, state: Dict[str, Any], user_msg: str):
++        """Call on every user turn; tags intent & trims long lists."""
++        state["intent"] = classify_intent(user_msg)
++
++        # trim memory blobs if prompt would blow past token limit
++        for k in ("thoughts_recorded", "emotions_captured"):
++            if isinstance(state.get(k), list) and len(state[k]) > 6:
++                state[k] = _trim_list(state[k])
++
++        # length check (cheap)
++        if len(" ".join(state.get(k, "") for k in ("thoughts_recorded", "transition_summary"))) > TOKEN_LIMIT:
++            state["thoughts_recorded"] = _trim_list(state.get("thoughts_recorded", []))
+diff --git a/backend/src/agents/utils/__init__.py b/backend/src/agents/utils/__init__.py
+new file mode 100644
+index 0000000..e69de29
+diff --git a/backend/src/agents/utils/intent.py b/backend/src/agents/utils/intent.py
+new file mode 100644
+index 0000000..4b2cd85
+--- /dev/null
++++ b/backend/src/agents/utils/intent.py
+@@
++"""
++Ultra‑light, single‑call intent classification to keep the agentic graph smooth.
++"""
++from functools import lru_cache
++from backend.src.models.gemini_client import gemini_call
++
++PROMPT = """Classify the user's sentence into one of these labels:
++1. clarification_request – user wants to go back or explain more
++2. continue             – user is happy to proceed
++
++Return only the label.
++Sentence: "{sentence}" =>"""
++
++@lru_cache(maxsize=256)
++def classify_intent(sentence: str) -> str:
++    resp = gemini_call(PROMPT.format(sentence=sentence), temperature=0.0)
++    return "clarification_request" if "clarification" in resp.lower() else "continue"
+diff --git a/backend/src/agents/orchestrator.py b/backend/src/agents/orchestrator.py
+index 3d4d9fa..2a67d20 100644
+--- a/backend/src/agents/orchestrator.py
++++ b/backend/src/agents/orchestrator.py
+@@
+-        # store user message
+-        self.state["messages"].append({"role": "user", "content": user_message})
++        # tag intent & trim
++        self.phases.register_user_message(self.state, user_message)
++
++        # store user message
++        self.state["messages"].append({"role": "user", "content": user_message})
+diff --git a/backend/src/models/gemini_client.py b/backend/src/models/gemini_client.py
+index 7b99bcb..0561b1c 100644
+--- a/backend/src/models/gemini_client.py
++++ b/backend/src/models/gemini_client.py
+@@
+-def gemini_call(prompt: str, **params) -> str:
+-    resp = client.generate_content(
+-        model="gemini-2.0-flash",
+-        contents=[{"role": "user", "parts": [{"text": prompt}]}],
+-        **params,
+-    )
+-    return resp.text
++def gemini_call(prompt: str, **params) -> str:
++    try_models = ["gemini-2.0-flash", "gemini-1.5-pro"]
++    last_err = None
++    for model in try_models:
++        try:
++            resp = client.generate_content(
++                model=model,
++                contents=[{"role": "user", "parts": [{"text": prompt}]}],
++                **params,
++            )
++            return resp.text
++        except Exception as exc:  # noqa: BLE001
++            last_err = exc
++            if "blocked" in str(exc).lower():
++                continue
++            raise
++    raise RuntimeError(f"All models failed, last error: {last_err}") from last_err
+diff --git a/backend/src/main.py b/backend/src/main.py
+index 0c0f705..09c9388 100644
+--- a/backend/src/main.py
++++ b/backend/src/main.py
+@@
+ from fastapi import FastAPI
++import time, logging
+ 
+ app = FastAPI()
+ 
++@app.middleware("http")
++async def latency_mw(request, call_next):
++    start = time.time()
++    resp = await call_next(request)
++    delta_ms = int((time.time() - start) * 1000)
++    logging.info("metric path=%s ms=%d", request.url.path, delta_ms)
++    return resp
++
+ from .routers import chat, stream
+@@
+ app.include_router(chat.router, prefix="/api/v1")
++app.include_router(stream.router, prefix="/api/v1")
+diff --git a/backend/src/routers/stream.py b/backend/src/routers/stream.py
+new file mode 100644
+index 0000000..5a9e0e4
+--- /dev/null
++++ b/backend/src/routers/stream.py
+@@
++from fastapi import APIRouter
++from sse_starlette.sse import EventSourceResponse
++from backend.src.agents import orchestrator
++
++router = APIRouter()
++
++
++@router.post("/stream")
++async def stream_chat(user_message: str):
++    """Server‑Sent Events endpoint that streams assistant tokens."""
++
++    async def event_gen():
++        async for token in orchestrator.stream(user_message):
++            yield {"event": "token", "data": token}
++
++    return EventSourceResponse(event_gen())
+diff --git a/backend/src/services/session_store.py b/backend/src/services/session_store.py
+index 3bc0c0e..42966c7 100644
+--- a/backend/src/services/session_store.py
++++ b/backend/src/services/session_store.py
+@@
+         return self._sessions.get(session_id)
+ 
++    # --- new: simple GC ---------------------------------------------------- #
++    async def _gc_loop(self, idle_minutes: int = 30):
++        while True:
++            await asyncio.sleep(60)
++            now = time.time()
++            for sid, s in list(self._sessions.items()):
++                if now - s["last_used"] > idle_minutes * 60:
++                    self._sessions.pop(sid, None)
++
++    def start_gc(self):
++        import asyncio, time
++
++        asyncio.create_task(self._gc_loop())
++
+diff --git a/frontend/src/components/PhasePill.tsx b/frontend/src/components/PhasePill.tsx
+new file mode 100644
+index 0000000..c4a239d
+--- /dev/null
++++ b/frontend/src/components/PhasePill.tsx
+@@
++type Phase = "GREETING" | "DISCOVERY" | "REFRAMING" | "SUMMARY";
++
++const colours: Record<Phase, string> = {
++  GREETING: "bg-emerald-200",
++  DISCOVERY: "bg-blue-200",
++  REFRAMING: "bg-violet-200",
++  SUMMARY: "bg-amber-200",
++};
++
++export default function PhasePill({ phase }: { phase: Phase }) {
++  return (
++    <span
++      className={`px-3 py-1 rounded-full text-xs font-medium ${colours[phase]} transition-colors`}
++    >
++      {phase}
++    </span>
++  );
++}
+diff --git a/frontend/src/components/QuickReplies.tsx b/frontend/src/components/QuickReplies.tsx
+new file mode 100644
+index 0000000..b5cf954
+--- /dev/null
++++ b/frontend/src/components/QuickReplies.tsx
+@@
++export default function QuickReplies({
++  suggestions,
++  onSelect,
++}: {
++  suggestions: string[];
++  onSelect: (s: string) => void;
++}) {
++  if (!suggestions?.length) return null;
++  return (
++    <div className="flex gap-2 mt-2">
++      {suggestions.slice(0, 3).map((s) => (
++        <button
++          key={s}
++          className="px-3 py-1 border rounded-full text-sm hover:bg-gray-100"
++          onClick={() => onSelect(s)}
++        >
++          {s}
++        </button>
++      ))}
++    </div>
++  );
++}
+diff --git a/frontend/src/components/ChatInput.tsx b/frontend/src/components/ChatInput.tsx
+index fa1d103..8f3247b 100644
+--- a/frontend/src/components/ChatInput.tsx
++++ b/frontend/src/components/ChatInput.tsx
+@@
+-import React, { useState } from "react";
++import React, { useState } from "react";
++import QuickReplies from "./QuickReplies";
+@@
+-      <button type="submit" className="btn-primary">Send</button>
++      <button type="submit" className="btn-primary">
++        {phase === "GREETING"
++          ? "Start"
++          : phase === "DISCOVERY"
++          ? "Share"
++          : phase === "REFRAMING"
++          ? "Reframe"
++          : "Finish"}
++      </button>
++      <QuickReplies suggestions={replySuggestions} onSelect={setInput} />
+     </form>
+diff --git a/frontend/src/App.tsx b/frontend/src/App.tsx
+index 4dfdb32..0ba73bf 100644
+--- a/frontend/src/App.tsx
++++ b/frontend/src/App.tsx
+@@
+-import ChatInput from "./components/ChatInput";
++import ChatInput from "./components/ChatInput";
++import PhasePill from "./components/PhasePill";
+ 
+ export default function App() {
+@@
+-      <main className="flex-1 overflow-y-auto px-4 py-6">
++      <main className="flex-1 overflow-y-auto px-4 py-6">
++        <div className="mb-4">
++          <PhasePill phase={session.phase} />
++        </div>
+         {messages.map(...)}
+       </main>
+diff --git a/frontend/src/css/tailwind.css b/frontend/src/css/tailwind.css
+index 58c0a07..044d8a2 100644
+--- a/frontend/src/css/tailwind.css
++++ b/frontend/src/css/tailwind.css
+@@
+ .bg-emerald-200 { @apply bg-emerald-200; }
+ .bg-blue-200    { @apply bg-blue-200; }
+ .bg-violet-200  { @apply bg-violet-200; }
+ .bg-amber-200   { @apply bg-amber-200; }
+====================  end reframe_polish.patch  ====================
