@@ -20,7 +20,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Response
+from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -161,7 +161,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_methods=["GET", "POST", "OPTIONS", "HEAD"],
     allow_headers=["*"],
     expose_headers=["X-Session-Id", "X-Phase-Status"],
 )
@@ -215,12 +215,28 @@ async def health_check() -> HealthCheckResponse:
 @app.get(
     "/api/events/{session_id}", summary="SSE endpoint", operation_id="getEventStream"
 )
+@app.head(
+    "/api/events/{session_id}",
+    summary="SSE endpoint HEAD",
+    operation_id="headEventStream",
+)
 async def sse_endpoint(
-    session_id: str, is_audio: bool = False, language: str = "en-US"
+    request: Request, session_id: str, is_audio: bool = False, language: str = "en-US"
 ):
     """SSE endpoint for agent to client communication"""
 
-    # Start agent session
+    # Handle HEAD requests
+    if request.method == "HEAD":
+        return Response(
+            headers={
+                "Content-Type": "text/event-stream",
+                "Cache-Control": "no-cache",
+                "Connection": "keep-alive",
+                "X-Accel-Buffering": "no",
+            }
+        )
+
+    # Start agent session for GET requests
     # Use session_id as user_id for ADK
     live_events, live_request_queue = await start_agent_session(
         session_id, is_audio, language
