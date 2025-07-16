@@ -38,11 +38,13 @@ gcloud iam workload-identity-pools create $POOL_NAME \
 
 # Create Workload Identity Provider
 echo "🔗 Creating Workload Identity Provider..."
+# Note: The attribute-condition is required to avoid the "must reference provider claims" error
 gcloud iam workload-identity-pools providers create-oidc $PROVIDER_NAME \
   --location="global" \
   --workload-identity-pool=$POOL_NAME \
   --display-name="GitHub Actions Provider" \
-  --attribute-mapping="google.subject=assertion.sub,attribute.actor=assertion.actor,attribute.repository=assertion.repository" \
+  --attribute-mapping="google.subject=assertion.sub,attribute.actor=assertion.actor,attribute.repository=assertion.repository,attribute.repository_owner=assertion.repository_owner" \
+  --attribute-condition="assertion.repository_owner == '${GITHUB_ORG}'" \
   --issuer-uri="https://token.actions.githubusercontent.com" || echo "Provider already exists"
 
 # Get Workload Identity Pool ID
