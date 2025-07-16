@@ -235,6 +235,11 @@ export default function ThoughtInputForm({
   // Clean up audio session on unmount
   useEffect(() => {
     const cleanupOnUnmount = () => {
+      // Clear audio timer if running
+      if (audioTimerRef.current) {
+        clearInterval(audioTimerRef.current)
+        audioTimerRef.current = null
+      }
       if (pcmRecorderRef.current) {
         pcmRecorderRef.current.cleanup()
       }
