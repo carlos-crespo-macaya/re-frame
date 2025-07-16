@@ -14,9 +14,11 @@ export default function Home() {
   const [response, setResponse] = useState<ReframeResponse | null>(null)
   const [selectedLanguage, setSelectedLanguage] = useState('en-US')
   const [useAudioMode, setUseAudioMode] = useState(false)
+  const [isConnecting, setIsConnecting] = useState(false)
   const hasConnectedRef = useRef(false)
   const previousLanguageRef = useRef(selectedLanguage)
   const previousAudioModeRef = useRef(useAudioMode)
+  const connectionAttemptRef = useRef<number>(0)
   
   // Initialize SSE client (text mode only)
   const sseClient = useSSEClient({
@@ -25,43 +27,72 @@ export default function Home() {
   })
   
   // Extract specific values to avoid object identity issues in useEffect
-  const { isConnected, messages, connect, disconnect, sendText } = sseClient
+  const { isConnected, messages, connect, disconnect, sendText, error } = sseClient
   
   
   // Connect on mount and when language/mode changes
   useEffect(() => {
     let mounted = true
+    const currentAttempt = ++connectionAttemptRef.current
+    
+    // Debounce connection attempts in development to handle React StrictMode
+    const debounceDelay = process.env.NODE_ENV === 'development' ? 100 : 0
     
     const performConnect = async () => {
       try {
-        if (mounted && !useAudioMode) {
+        if (mounted && !useAudioMode && !isConnecting) {
           // Only reconnect if language changed or first connection
           const shouldConnect = !hasConnectedRef.current || 
                                previousLanguageRef.current !== selectedLanguage ||
                                previousAudioModeRef.current !== useAudioMode
           
           if (shouldConnect) {
+            setIsConnecting(true)
+            
             // Disconnect any existing connection first
             if (isConnected) {
               disconnect()
               await new Promise(resolve => setTimeout(resolve, 100))
             }
-            await connect(undefined, selectedLanguage, false)
-            hasConnectedRef.current = true
-            previousLanguageRef.current = selectedLanguage
-            previousAudioModeRef.current = useAudioMode
+            
+            // Only proceed if this is still the latest connection attempt
+            if (currentAttempt === connectionAttemptRef.current && mounted) {
+              await connect(undefined, selectedLanguage, false)
+              hasConnectedRef.current = true
+              previousLanguageRef.current = selectedLanguage
+              previousAudioModeRef.current = useAudioMode
+            }
+            
+            setIsConnecting(false)
           }
         }
       } catch (error) {
         if (process.env.NODE_ENV === 'development') {
           console.error('Failed to connect:', error)
         }
+        setIsConnecting(false)
+        
+        // Retry connection after delay if still mounted
+        if (mounted && currentAttempt === connectionAttemptRef.current) {
+          setTimeout(() => {
+            if (mounted && !isConnected && !useAudioMode) {
+              performConnect()
+            }
+          }, 2000)
+        }
       }
     }
     
-    // Handle mode switching
+    // Handle mode switching with debounce
     if (!useAudioMode) {
-      performConnect()
+      if (debounceDelay > 0) {
+        const timer = setTimeout(() => {
+          if (mounted) performConnect()
+        }, debounceDelay)
+        return () => clearTimeout(timer)
+      } else {
+        performConnect()
+      }
     } else if (useAudioMode) {
       // Disconnect text mode when switching to audio
       if (isConnected) {
@@ -73,9 +104,11 @@ export default function Home() {
     
     return () => {
       mounted = false
-      disconnect()
+      if (isConnected) {
+        disconnect()
+      }
     }
-  }, [selectedLanguage, useAudioMode, isConnected, connect, disconnect])
+  }, [selectedLanguage, useAudioMode, isConnected, isConnecting, connect, disconnect])
   
   // Track the start of current response
   const [responseStartIndex, setResponseStartIndex] = useState(0)
@@ -243,12 +276,29 @@ export default function Home() {
               {useAudioMode ? (
                 <NaturalConversation language={selectedLanguage} />
               ) : (
-                <ThoughtInputForm 
-                  onSubmit={handleSubmit}
-                  onClear={handleClear}
-                  isLoading={isLoading}
-                  language={selectedLanguage}
-                />
+                <>
+                  {/* Connection status for debugging */}
+                  {process.env.NODE_ENV === 'development' && (
+                    <div className="mb-4 text-xs text-neutral-500 flex items-center gap-2">
+                      <span className={`inline-block w-2 h-2 rounded-full ${
+                        isConnecting ? 'bg-yellow-500 animate-pulse' : 
+                        isConnected ? 'bg-green-500' : 
+                        'bg-red-500'
+                      }`} />
+                      <span>
+                        {isConnecting ? 'Connecting...' : 
+                         isConnected ? 'Connected' : 
+                         `Disconnected${error ? ` - ${error.message}` : ''}`}
+                      </span>
+                    </div>
+                  )}
+                  <ThoughtInputForm 
+                    onSubmit={handleSubmit}
+                    onClear={handleClear}
+                    isLoading={isLoading}
+                    language={selectedLanguage}
+                  />
+                </>
               )}
 
                 {response && !useAudioMode && (
