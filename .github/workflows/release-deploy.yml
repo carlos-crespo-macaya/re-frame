@@ -17,11 +17,11 @@ on:
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-  REGION: ${{ secrets.GCP_REGION || 'us-central1' }}
+  REGION: ${{ secrets.GCP_REGION || 'europe-west-1' }}
   BILLING_ACCOUNT_ID: ${{ secrets.GCP_BILLING_ACCOUNT_ID }}
   BACKEND_SERVICE: re-frame-backend
   FRONTEND_SERVICE: re-frame-frontend
-  REGISTRY: ${{ secrets.GCP_REGION || 'us-central1' }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/re-frame
+  REGISTRY: ${{ secrets.GCP_REGION || 'europe-west-1' }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/re-frame
 
 permissions:
   contents: write
