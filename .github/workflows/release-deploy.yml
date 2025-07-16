@@ -169,10 +169,7 @@ jobs:
             --memory 1Gi \
             --min-instances 0 \
             --max-instances 10 \
-            --set-env-vars "ENVIRONMENT=${{ github.event.inputs.environment || 'production' }}" \
-            --set-env-vars "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" \
-            --set-env-vars "LOG_LEVEL=info" \
-            --set-env-vars "ALLOWED_ORIGINS=https://${{ env.FRONTEND_SERVICE }}-${{ github.event.inputs.environment || 'production' }}.run.app,https://re-frame.social"
+            --set-env-vars "ENVIRONMENT=${{ github.event.inputs.environment || 'production' }},GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }},LOG_LEVEL=info,ALLOWED_ORIGINS=https://${{ env.FRONTEND_SERVICE }}-${{ github.event.inputs.environment || 'production' }}.run.app"
 
       - name: Get Backend Service URL
         id: backend-url
