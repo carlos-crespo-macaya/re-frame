@@ -11,6 +11,8 @@
     "test:watch": "jest --watch",
     "test:ci": "jest --ci --coverage --maxWorkers=2",
     "typecheck": "tsc --noEmit",
+    "pretest": "test -f openapi.json || cp openapi-temp.json openapi.json && npm run generate:api",
+    "pretypecheck": "test -f openapi.json || cp openapi-temp.json openapi.json && npm run generate:api",
     "generate:api": "openapi-ts --input ./openapi.json --output ./lib/api/generated --client legacy/axios",
     "prebuild": "test -f openapi.json && npm run generate:api || echo 'Warning: openapi.json not found, skipping API generation'"
   },
