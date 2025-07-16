@@ -67,6 +67,7 @@ ignore = [
     "E501",  # Line too long (handled by formatter)
     "B008",  # Do not perform function calls in argument defaults
     "SIM105", # Use contextlib.suppress instead of try-except-pass
+    "RUF012", # Mutable class attributes (needed for Pydantic Config)
 ]
 
 [tool.ruff.lint.per-file-ignores]
@@ -151,3 +152,6 @@ fix = ["format", "lint-fix"]
 
 # Development setup
 setup = { shell = "uv sync --all-extras && pre-commit install" }
+
+# OpenAPI schema export for frontend client generation
+export-openapi = { shell = "python -c \"from src.main import app; import json; print(json.dumps(app.openapi(), indent=2))\" > ../frontend/openapi.json" }

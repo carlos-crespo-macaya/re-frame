@@ -1,61 +1,60 @@
-# Base stage with pnpm
+# Multi-stage Dockerfile with OpenAPI schema generation support
+
+# Backend stage - just to get the OpenAPI schema
+FROM python:3.12-slim AS backend-schema
+
+# Install uv
+RUN pip install --no-cache-dir uv==0.4.15
+
+WORKDIR /backend
+
+# Copy backend files needed for schema generation
+COPY backend/pyproject.toml backend/uv.lock ./
+RUN uv sync --frozen --no-dev
+
+# Copy backend source
+COPY backend/src ./src
+
+# Generate OpenAPI schema
+RUN uv run python -c "from src.main import app; import json; \
+    try: \
+        print(json.dumps(app.openapi(), indent=2)); \
+    except Exception as e: \
+        print(json.dumps({ \
+            'openapi': '3.1.0', \
+            'info': { \
+                'title': 'API', \
+                'version': '1.0.0', \
+                'description': f'Schema generation failed: {str(e)}' \
+            }, \
+            'paths': {} \
+        }, indent=2))" > /tmp/openapi.json
+
+# Frontend base stage
 FROM node:18-alpine AS base
-
-# Install pnpm
 RUN corepack enable && corepack prepare pnpm@10.11.0 --activate
-
-# Add necessary build tools
 RUN apk add --no-cache libc6-compat
-
 WORKDIR /app
 
-# Development stage
-FROM base AS development
+# Frontend builder stage
+FROM base AS builder
 
 # Copy package files
-COPY package.json pnpm-lock.yaml ./
+COPY frontend/package.json frontend/pnpm-lock.yaml ./
 
 # Install all dependencies
 RUN pnpm install --frozen-lockfile
 
-# Copy source code
-COPY . .
+# Copy frontend source
+COPY frontend/ .
 
-# Expose port for development
-EXPOSE 3000
+# Copy OpenAPI schema from backend-schema stage (not 'backend')
+COPY --from=backend-schema /tmp/openapi.json ./openapi.json
 
-# Set environment for development
-ENV NODE_ENV=development
-ENV HOSTNAME=0.0.0.0
-ENV PORT=3000
-
-# Health check for development
-HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3000/api/health', (res) => process.exit(res.statusCode === 200 ? 0 : 1))"
-
-# Development command
-CMD ["pnpm", "dev"]
-
-# Build stage
-FROM base AS builder
-
-# Copy package files
-COPY package.json pnpm-lock.yaml ./
-
-# Install dependencies
-RUN pnpm install --frozen-lockfile
-
-# Copy source code
-COPY . .
-
-# Copy OpenAPI schema from backend build (if using docker-compose)
-# Or generate a placeholder if not available
-COPY --from=backend /tmp/openapi.json ./openapi.json 2>/dev/null || echo '{"openapi":"3.1.0","info":{"title":"API","version":"1.0.0"},"paths":{}}' > ./openapi.json
-
-# Generate TypeScript client from OpenAPI schema
+# Generate TypeScript client
 RUN pnpm run generate:api || echo "Warning: API client generation failed"
 
-# Build arguments for environment variables
+# Build arguments
 ARG NEXT_PUBLIC_API_URL
 ARG NEXT_PUBLIC_ENVIRONMENT=production
 
@@ -63,7 +62,7 @@ ARG NEXT_PUBLIC_ENVIRONMENT=production
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_ENVIRONMENT=$NEXT_PUBLIC_ENVIRONMENT
 
-# Use Cloud Run specific config if deploying to Cloud Run
+# Use Cloud Run specific config if available
 RUN if [ -f "next.config.cloudrun.mjs" ]; then \
       mv next.config.cloudrun.mjs next.config.mjs; \
     fi
@@ -74,12 +73,11 @@ RUN pnpm build
 # Production stage
 FROM node:18-alpine AS runner
 
-# Install pnpm
 RUN corepack enable && corepack prepare pnpm@10.11.0 --activate
 
 WORKDIR /app
 
-# Create a non-root user
+# Create non-root user
 RUN addgroup -g 1001 -S nodejs
 RUN adduser -S nextjs -u 1001
 
@@ -91,7 +89,7 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 
-# Install only production dependencies
+# Install production dependencies
 RUN pnpm install --prod --frozen-lockfile
 
 # Switch to non-root user
@@ -100,7 +98,7 @@ USER nextjs
 # Expose port
 EXPOSE 8080
 
-# Set environment variable for Cloud Run
+# Environment variables
 ENV PORT 8080
 ENV NODE_ENV production
 

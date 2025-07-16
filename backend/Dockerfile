@@ -29,8 +29,16 @@ RUN uv sync --frozen --no-dev
 # Copy application code
 COPY src/ src/
 
+# Generate OpenAPI schema for frontend (as root for file permissions)
+# This ensures the schema is available even if the container doesn't start
+RUN uv run python -c "from src.main import app; import json; print(json.dumps(app.openapi(), indent=2))" > /tmp/openapi.json || echo '{"info":{"title":"API Schema Generation Failed"}}' > /tmp/openapi.json
+
 # Create non-root user for security
 RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+
+# Create exports directory with proper permissions
+RUN mkdir -p /app/exports && chown appuser:appuser /app/exports
+
 USER appuser
 
 # Expose port (Cloud Run uses PORT env variable)

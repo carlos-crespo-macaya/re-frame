@@ -1,0 +1,2 @@
+# Ignore generated API client files
+lib/api/generated/
