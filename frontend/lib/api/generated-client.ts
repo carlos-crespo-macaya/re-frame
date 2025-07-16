@@ -13,7 +13,7 @@ import {
   sendMessage,
   detectLanguage,
   getEventStream,
-} from './generated/sdk.gen.js'
+} from './generated/sdk.gen'
 import type {
   MessageRequest,
   MessageResponse,
@@ -22,7 +22,7 @@ import type {
   HealthCheckResponse,
   LanguageDetectionRequest,
   LanguageDetectionResponse,
-} from './generated/types.gen.js'
+} from './generated/types.gen'
 
 // Configure the generated client with our API settings
 OpenAPI.BASE = API_CONFIG.baseUrl
