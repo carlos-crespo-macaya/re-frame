@@ -126,7 +126,10 @@ jobs:
           context: ${{ matrix.context }}
           file: ${{ matrix.dockerfile }}
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: |
+            ${{ env.REGISTRY }}/re-frame-${{ matrix.service }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/re-frame-${{ matrix.service }}:${{ github.ref_name }}
+            ${{ (github.ref == 'refs/heads/main' || github.event.inputs.environment == 'production') && format('{0}/re-frame-{1}:latest', env.REGISTRY, matrix.service) || '' }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
