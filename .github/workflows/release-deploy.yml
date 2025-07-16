@@ -102,7 +102,8 @@ jobs:
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_WIF_SERVICE_ACCOUNT }}
 
       - name: Configure Docker for Artifact Registry
         run: |
@@ -165,7 +166,7 @@ jobs:
       - name: Deploy Backend to Cloud Run
         run: |
           gcloud run deploy ${{ env.BACKEND_SERVICE }} \
-            --image ${{ env.REGISTRY }}/re-frame-backend:${{ github.sha }} \
+            --image ${{ env.REGISTRY }}/re-frame-backend:${{ github.ref_name }} \
             --region ${{ env.REGION }} \
             --platform managed \
             --allow-unauthenticated \
@@ -216,7 +217,7 @@ jobs:
       - name: Deploy Frontend to Cloud Run
         run: |
           gcloud run deploy ${{ env.FRONTEND_SERVICE }} \
-            --image ${{ env.REGISTRY }}/re-frame-frontend:${{ github.sha }} \
+            --image ${{ env.REGISTRY }}/re-frame-frontend:${{ github.ref_name }} \
             --region ${{ env.REGION }} \
             --platform managed \
             --allow-unauthenticated \
