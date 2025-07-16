@@ -9,9 +9,9 @@ const nextConfig = {
   // Strict mode for better React development
   reactStrictMode: true,
   // Experimental features for better performance
-  experimental: {
-    optimizeCss: true,
-  },
+  // experimental: {
+  //   optimizeCss: true,
+  // },
   // Environment variables that will be available in the browser
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
