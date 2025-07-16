@@ -5,7 +5,15 @@
 
 import { OpenAPI } from './generated/core/OpenAPI'
 import { API_CONFIG } from './config'
-import * as sdk from './generated/sdk.gen'
+import {
+  getHealthCheck,
+  getSessionInfo,
+  listSessions,
+  downloadPdf,
+  sendMessage,
+  detectLanguage,
+  getEventStream,
+} from './generated/sdk.gen.js'
 import type {
   MessageRequest,
   MessageResponse,
@@ -14,7 +22,7 @@ import type {
   HealthCheckResponse,
   LanguageDetectionRequest,
   LanguageDetectionResponse,
-} from './generated/types.gen'
+} from './generated/types.gen.js'
 
 // Configure the generated client with our API settings
 OpenAPI.BASE = API_CONFIG.baseUrl
@@ -28,16 +36,16 @@ export const generatedApi = {
    * Health check
    */
   health: {
-    check: () => sdk.getHealthCheck(),
+    check: () => getHealthCheck(),
   },
 
   /**
    * Session management
    */
   sessions: {
-    get: (sessionId: string) => sdk.getSessionInfo({ sessionId }),
-    list: () => sdk.listSessions(),
-    downloadPdf: (sessionId: string) => sdk.downloadPdf({ sessionId }),
+    get: (sessionId: string) => getSessionInfo({ sessionId }),
+    list: () => listSessions(),
+    downloadPdf: (sessionId: string) => downloadPdf({ sessionId }),
   },
 
   /**
@@ -45,7 +53,7 @@ export const generatedApi = {
    */
   messages: {
     send: (sessionId: string, requestBody: MessageRequest) =>
-      sdk.sendMessage({ sessionId, requestBody }),
+      sendMessage({ sessionId, requestBody }),
   },
 
   /**
@@ -53,7 +61,7 @@ export const generatedApi = {
    */
   language: {
     detect: (requestBody: LanguageDetectionRequest) =>
-      sdk.detectLanguage({ requestBody }),
+      detectLanguage({ requestBody }),
   },
 
   /**
