@@ -1,15 +1,11 @@
-# docker-compose.prod.yml
-# Production-ready configuration with proper multi-stage builds
+version: '3.8'
 
 services:
-  # Build backend first to generate OpenAPI schema
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-      cache_from:
-        - re-frame-backend:latest
-    image: re-frame-backend:latest
+    image: ghcr.io/macayaven/re-frame-backend:latest
     ports:
       - "8000:8000"
     environment:
@@ -17,29 +13,35 @@ services:
       - ENVIRONMENT=production
       - LOG_LEVEL=info
       - PORT=8000
+      - PYTHONUNBUFFERED=1
+      # CORS settings - will be handled by backend code based on ENVIRONMENT
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 30s
+    restart: unless-stopped
+    networks:
+      - app-network
 
-  # Build frontend with OpenAPI schema from backend
   frontend:
     build:
-      context: .
-      dockerfile: ./frontend/Dockerfile.multistage
+      context: ./frontend
+      dockerfile: Dockerfile.standalone
       args:
-        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+        - NEXT_PUBLIC_API_URL=http://backend:8000
         - NEXT_PUBLIC_ENVIRONMENT=production
-      cache_from:
-        - re-frame-frontend:latest
-    image: re-frame-frontend:latest
+    image: ghcr.io/macayaven/re-frame-frontend:latest
     ports:
-      - "3000:8080"
+      - "8080:8080"
     environment:
-      - PORT=8080
       - NODE_ENV=production
+      - PORT=8080
+      # Use internal service name for server-side requests
+      - API_URL=http://backend:8000
+      # Use localhost for client-side requests in local testing
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
     depends_on:
       backend:
         condition: service_healthy
@@ -49,7 +51,16 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
+    restart: unless-stopped
+    networks:
+      - app-network
 
 networks:
-  default:
-    name: cbt-assistant-network
+  app-network:
+    driver: bridge
+    name: re-frame-network
+
+# Volumes for persistent data (if needed in future)
+volumes:
+  backend-data:
+  frontend-cache:
