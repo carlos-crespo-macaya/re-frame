@@ -21,7 +21,7 @@ env:
   BILLING_ACCOUNT_ID: ${{ secrets.GCP_BILLING_ACCOUNT_ID }}
   BACKEND_SERVICE: re-frame-backend
   FRONTEND_SERVICE: re-frame-frontend
-  REGISTRY: ghcr.io
+  REGISTRY: ${{ secrets.GCP_REGION || 'us-central1' }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/re-frame
 
 permissions:
   contents: write
@@ -99,18 +99,20 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Configure Docker for Artifact Registry
+        run: |
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
 
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/re-frame-${{ matrix.service }}
+          images: ${{ env.REGISTRY }}/re-frame-${{ matrix.service }}
           tags: |
             type=ref,event=branch
             type=ref,event=pr
@@ -160,7 +162,7 @@ jobs:
       - name: Deploy Backend to Cloud Run
         run: |
           gcloud run deploy ${{ env.BACKEND_SERVICE }} \
-            --image ${{ env.REGISTRY }}/${{ github.repository_owner }}/re-frame-backend:${{ github.sha }} \
+            --image ${{ env.REGISTRY }}/re-frame-backend:${{ github.sha }} \
             --region ${{ env.REGION }} \
             --platform managed \
             --allow-unauthenticated \
@@ -211,7 +213,7 @@ jobs:
       - name: Deploy Frontend to Cloud Run
         run: |
           gcloud run deploy ${{ env.FRONTEND_SERVICE }} \
-            --image ${{ env.REGISTRY }}/${{ github.repository_owner }}/re-frame-frontend:${{ github.sha }} \
+            --image ${{ env.REGISTRY }}/re-frame-frontend:${{ github.sha }} \
             --region ${{ env.REGION }} \
             --platform managed \
             --allow-unauthenticated \
@@ -220,9 +222,7 @@ jobs:
             --memory 512Mi \
             --min-instances 0 \
             --max-instances 10 \
-            --set-env-vars "NODE_ENV=production" \
-            --set-env-vars "NEXT_PUBLIC_API_URL=${{ steps.backend-url.outputs.url }}" \
-            --set-env-vars "API_URL=${{ steps.backend-url.outputs.url }}"
+            --set-env-vars "NODE_ENV=production,NEXT_PUBLIC_API_URL=${{ steps.backend-url.outputs.url }},API_URL=${{ steps.backend-url.outputs.url }}"
 
       - name: Get Frontend Service URL
         id: frontend-url
@@ -312,8 +312,8 @@ jobs:
             - **Backend API**: ${{ steps.urls.outputs.backend }}
             
             ### 🐳 Docker Images
-            - **Frontend**: `ghcr.io/${{ github.repository_owner }}/re-frame-frontend:${{ github.ref_name }}`
-            - **Backend**: `ghcr.io/${{ github.repository_owner }}/re-frame-backend:${{ github.ref_name }}`
+            - **Frontend**: `${{ env.REGISTRY }}/re-frame-frontend:${{ github.ref_name }}`
+            - **Backend**: `${{ env.REGISTRY }}/re-frame-backend:${{ github.ref_name }}`
             
             ### 📊 Release Statistics
             - **Commits**: ${{ steps.changelog.outputs.commit_count || '0' }}
