@@ -129,7 +129,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
-            NEXT_PUBLIC_API_URL=${{ matrix.service == 'frontend' && 'https://${{ env.BACKEND_SERVICE }}-${{ github.event.inputs.environment || 'production' }}.run.app' || '' }}
+            NEXT_PUBLIC_API_URL=${{ matrix.service == 'frontend' && format('https://{0}-{1}.run.app', env.BACKEND_SERVICE, github.event.inputs.environment || 'production') || '' }}
             NEXT_PUBLIC_ENVIRONMENT=${{ github.event.inputs.environment || 'production' }}
 
   deploy-backend:
