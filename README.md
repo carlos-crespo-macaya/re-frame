@@ -106,11 +106,95 @@ docker-compose down
 
 ## 🚢 Deployment
 
-The application is deployed to Google Cloud Run:
+### Overview
 
-- **Frontend**: Deployed from `frontend/` directory
-- **Backend**: Deployed from `backend/` directory
-- **CI/CD**: GitHub Actions handles automated deployment on push to `main`
+The application is deployed to Google Cloud Run with Identity-Aware Proxy (IAP) protection:
+
+- **Frontend**: Next.js application served from Cloud Run
+- **Backend**: FastAPI with Google ADK agents on Cloud Run
+- **Security**: IAP protects the demo from unauthorized access
+- **CI/CD**: GitHub Actions handles automated deployment on tags
+
+### Quick Deployment
+
+1. **Set up GCP infrastructure**:
+   ```bash
+   ./scripts/setup-gcp-infrastructure.sh
+   ```
+
+2. **Configure Workload Identity Federation** (Recommended):
+   ```bash
+   ./scripts/setup-workload-identity.sh
+   ```
+
+3. **Configure GitHub Secrets**:
+   - `GCP_PROJECT_ID`: Your GCP project ID
+   - `GCP_REGION`: Deployment region (e.g., us-central1)
+   - `GCP_BILLING_ACCOUNT_ID`: Your GCP billing account ID
+   - `WIF_PROVIDER`: Workload Identity Provider (from setup script)
+   - `WIF_SERVICE_ACCOUNT`: Service account email
+   - `GEMINI_API_KEY`: Your Gemini API key
+   - `IAP_CLIENT_ID`: OAuth client ID for IAP
+   - `IAP_CLIENT_SECRET`: OAuth client secret
+   - `AUTHORIZED_DOMAIN`: Your organization domain
+
+4. **Deploy**:
+   ```bash
+   # Create a release tag
+   git tag v1.0.0
+   git push origin v1.0.0
+   ```
+
+### Local Testing with Docker
+
+```bash
+# Test with production configuration
+docker-compose -f docker-compose.prod.yml up
+
+# Access at:
+# - Frontend: http://localhost:8080
+# - Backend: http://localhost:8000
+```
+
+### Manual Deployment
+
+```bash
+# Build and push images
+docker build -t ghcr.io/your-org/re-frame-backend:latest ./backend
+docker build -f ./frontend/Dockerfile.standalone \
+  -t ghcr.io/your-org/re-frame-frontend:latest ./frontend
+
+# Push to registry
+docker push ghcr.io/your-org/re-frame-backend:latest
+docker push ghcr.io/your-org/re-frame-frontend:latest
+
+# Deploy to Cloud Run
+gcloud run deploy re-frame-backend \
+  --image ghcr.io/your-org/re-frame-backend:latest \
+  --region us-central1
+
+gcloud run deploy re-frame-frontend \
+  --image ghcr.io/your-org/re-frame-frontend:latest \
+  --region us-central1
+```
+
+### IAP Configuration
+
+See [docs/IAP_CONFIGURATION.md](docs/IAP_CONFIGURATION.md) for detailed IAP setup instructions.
+
+### Deployment Architecture
+
+```mermaid
+graph TD
+    A[User] --> B[IAP]
+    B --> C[Cloud Run Frontend]
+    C --> D[Cloud Run Backend]
+    D --> E[Gemini API]
+    
+    F[GitHub Actions] --> G[Container Registry]
+    G --> C
+    G --> D
+```
 
 ## 🤝 Contributing
 
