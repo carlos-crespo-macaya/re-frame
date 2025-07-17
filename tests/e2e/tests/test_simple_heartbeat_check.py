@@ -47,7 +47,6 @@ async def test_backend_heartbeat_stream():
                     data_str = line_str[6:]  # Remove 'data: ' prefix
                     
                     try:
-                        import json
                         data = json.loads(data_str)
                         
                         print(f"[{elapsed:.1f}s] Received: {data}")
