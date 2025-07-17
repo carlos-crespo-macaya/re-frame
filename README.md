@@ -96,12 +96,39 @@ npm run test:backend
 
 ## 🐳 Docker Development
 
+### Docker Compose Files
+
+This project uses multiple Docker Compose configurations for different environments:
+
+| File | Purpose | Usage |
+|------|---------|-------|
+| `docker-compose.yml` | Base configuration for local development | `docker-compose up` |
+| `docker-compose.override.yml` | Auto-loaded development overrides (CORS settings) | Loaded automatically |
+| `docker-compose.dev.yml` | Extended dev with Redis & MailHog | `docker-compose -f docker-compose.yml -f docker-compose.dev.yml up` |
+| `docker-compose.prod.yml` | Production testing configuration | `docker-compose -f docker-compose.prod.yml up` |
+| `docker-compose.integration.yml` | Integration testing with Playwright | Used by `make test-integration` |
+| `tests/e2e/docker-compose.test.yml` | E2E test overrides | Used by E2E test suite |
+
+### Common Docker Commands
+
 ```bash
-# Build and run with Docker Compose
+# Basic development (frontend + backend)
 docker-compose up --build
 
-# Stop services
+# Full development environment (includes Redis, MailHog)
+docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+# Run E2E tests
+cd tests/e2e && ./run_tests.sh
+
+# Production testing
+docker-compose -f docker-compose.prod.yml up
+
+# Stop all services
 docker-compose down
+
+# Clean up volumes
+docker-compose down -v
 ```
 
 ## 🚢 Deployment
