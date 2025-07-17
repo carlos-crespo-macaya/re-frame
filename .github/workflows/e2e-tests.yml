@@ -63,8 +63,8 @@ jobs:
 
       - name: Build and start services
         run: |
-          docker-compose -f docker-compose.yml -f tests/e2e/docker-compose.test.yml build
-          docker-compose -f docker-compose.yml -f tests/e2e/docker-compose.test.yml up -d
+          docker compose -f docker-compose.yml -f tests/e2e/docker-compose.test.yml build
+          docker compose -f docker-compose.yml -f tests/e2e/docker-compose.test.yml up -d
 
       - name: Wait for services
         run: |
@@ -100,11 +100,11 @@ jobs:
         if: failure()
         run: |
           echo "=== Backend Logs ==="
-          docker-compose -f docker-compose.yml -f tests/e2e/docker-compose.test.yml logs backend
+          docker compose -f docker-compose.yml -f tests/e2e/docker-compose.test.yml logs backend
           echo "=== Frontend Logs ==="
-          docker-compose -f docker-compose.yml -f tests/e2e/docker-compose.test.yml logs frontend
+          docker compose -f docker-compose.yml -f tests/e2e/docker-compose.test.yml logs frontend
 
       - name: Stop services
         if: always()
         run: |
-          docker-compose -f docker-compose.yml -f tests/e2e/docker-compose.test.yml down -v
+          docker compose -f docker-compose.yml -f tests/e2e/docker-compose.test.yml down -v
