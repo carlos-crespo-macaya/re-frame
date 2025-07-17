@@ -4,6 +4,7 @@ Simple test to check if backend is sending heartbeats.
 import pytest
 import asyncio
 import aiohttp
+import json
 from datetime import datetime
 
 
