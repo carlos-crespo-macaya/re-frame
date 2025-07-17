@@ -4,25 +4,24 @@
  */
 
 import { SSEClient } from '../sse-client';
-import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 
 // Mock dependencies
-vi.mock('../session-manager', () => ({
+jest.mock('../session-manager', () => ({
   sessionManager: {
-    createSession: vi.fn(),
-    updateActivity: vi.fn(),
-    removeSession: vi.fn(),
+    createSession: jest.fn(),
+    updateActivity: jest.fn(),
+    removeSession: jest.fn(),
   },
 }));
 
-vi.mock('../../api', () => ({
+jest.mock('../../api', () => ({
   ApiClient: {
-    createSession: vi.fn().mockResolvedValue({
+    createSession: jest.fn().mockResolvedValue({
       data: { session_id: 'test-session-id' },
     }),
-    sendMessage: vi.fn().mockResolvedValue({}),
+    sendMessage: jest.fn().mockResolvedValue({}),
   },
-  logApiError: vi.fn(),
+  logApiError: jest.fn(),
 }));
 
 describe('SSEClient Heartbeat Timer', () => {
@@ -31,31 +30,40 @@ describe('SSEClient Heartbeat Timer', () => {
   let originalEventSource: any;
 
   beforeEach(() => {
+    // Define EventSource constants if not available
+    if (typeof EventSource === 'undefined') {
+      (global as any).EventSource = class {
+        static CONNECTING = 0;
+        static OPEN = 1;
+        static CLOSED = 2;
+      };
+    }
+
     // Mock EventSource
     mockEventSource = {
-      readyState: EventSource.OPEN,
-      close: vi.fn(),
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
+      readyState: 1, // EventSource.OPEN
+      close: jest.fn(),
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
       onopen: null,
       onmessage: null,
       onerror: null,
     };
 
     originalEventSource = global.EventSource;
-    global.EventSource = vi.fn().mockImplementation(() => mockEventSource) as any;
+    global.EventSource = jest.fn().mockImplementation(() => mockEventSource) as any;
 
     client = new SSEClient({
-      onMessage: vi.fn(),
-      onError: vi.fn(),
-      onStatusChange: vi.fn(),
-      onReconnect: vi.fn(),
+      onMessage: jest.fn(),
+      onError: jest.fn(),
+      onStatusChange: jest.fn(),
+      onReconnect: jest.fn(),
     });
   });
 
   afterEach(() => {
     global.EventSource = originalEventSource;
-    vi.clearAllMocks();
+    jest.clearAllMocks();
   });
 
   it('should update lastEventTime on ANY SSE message', async () => {
@@ -97,10 +105,10 @@ describe('SSEClient Heartbeat Timer', () => {
   it('should not timeout if messages are received within threshold', async () => {
     // Connect with short heartbeat interval for testing
     const customClient = new SSEClient({
-      onMessage: vi.fn(),
-      onError: vi.fn(),
-      onStatusChange: vi.fn(),
-      onReconnect: vi.fn(),
+      onMessage: jest.fn(),
+      onError: jest.fn(),
+      onStatusChange: jest.fn(),
+      onReconnect: jest.fn(),
       heartbeatInterval: 1000, // 1 second for faster testing
     });
 
@@ -138,10 +146,10 @@ describe('SSEClient Heartbeat Timer', () => {
   it('should timeout if no messages received', async () => {
     // Connect with short heartbeat interval for testing
     const customClient = new SSEClient({
-      onMessage: vi.fn(),
-      onError: vi.fn(),
-      onStatusChange: vi.fn(),
-      onReconnect: vi.fn(),
+      onMessage: jest.fn(),
+      onError: jest.fn(),
+      onStatusChange: jest.fn(),
+      onReconnect: jest.fn(),
       heartbeatInterval: 500, // 500ms for faster testing
     });
 
