@@ -48,7 +48,7 @@ async def test_heartbeats_prevent_timeout(
         print(f"  - Connection lost: {disconnected}")
         
         # Check UI for disconnected message
-        disconnected_visible = await home.is_visible('text="Disconnected"', timeout=1000)
+        disconnected_visible = await home.is_visible('text="Disconnected"', timeout=100)
         print(f"  - UI shows disconnected: {disconnected_visible}")
         
         if disconnected or disconnected_visible:
