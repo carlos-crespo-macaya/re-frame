@@ -4,13 +4,15 @@
  */
 
 import { SSEClient } from '../sse-client';
+import type { ApiClient as ApiClientType } from '../../api';
 
 // Mock dependencies
 jest.mock('../session-manager', () => ({
   sessionManager: {
-    createSession: jest.fn(),
+    createSession: jest.fn(() => ({ id: 'test-session-id', messages: [] })),
     updateActivity: jest.fn(),
     removeSession: jest.fn(),
+    getSession: jest.fn(() => ({ id: 'test-session-id', messages: [] })),
   },
 }));
 
@@ -20,9 +22,14 @@ jest.mock('../../api', () => ({
       data: { session_id: 'test-session-id' },
     }),
     sendMessage: jest.fn().mockResolvedValue({}),
+    createEventSource: jest.fn(),
   },
   logApiError: jest.fn(),
 }));
+
+// Import the mocked module
+import { ApiClient } from '../../api';
+const mockedApiClient = ApiClient as jest.Mocked<typeof ApiClientType>;
 
 describe('SSEClient Heartbeat Timer', () => {
   let client: SSEClient;
@@ -52,6 +59,9 @@ describe('SSEClient Heartbeat Timer', () => {
 
     originalEventSource = global.EventSource;
     global.EventSource = jest.fn().mockImplementation(() => mockEventSource) as any;
+    
+    // Mock ApiClient to return our mockEventSource
+    mockedApiClient.createEventSource.mockReturnValue(mockEventSource);
 
     client = new SSEClient({
       onMessage: jest.fn(),
@@ -74,9 +84,6 @@ describe('SSEClient Heartbeat Timer', () => {
     const initialTime = (client as any).lastEventTime;
     expect(initialTime).toBeGreaterThan(0);
 
-    // Wait a bit to ensure time difference
-    await new Promise(resolve => setTimeout(resolve, 10));
-
     // Simulate various SSE messages
     const testMessages = [
       { data: JSON.stringify({ mime_type: 'text/plain', data: 'Hello' }) },
@@ -89,6 +96,9 @@ describe('SSEClient Heartbeat Timer', () => {
 
     for (const message of testMessages) {
       const timeBefore = (client as any).lastEventTime;
+      
+      // Wait a bit to ensure time difference  
+      await new Promise(resolve => setTimeout(resolve, 5));
       
       // Trigger onmessage handler
       if (mockEventSource.onmessage) {
@@ -104,9 +114,14 @@ describe('SSEClient Heartbeat Timer', () => {
 
   it('should not timeout if messages are received within threshold', async () => {
     // Connect with short heartbeat interval for testing
+    let errorCalled = false;
     const customClient = new SSEClient({
       onMessage: jest.fn(),
-      onError: jest.fn(),
+      onError: (error: any) => {
+        if (error.message === 'Connection timeout') {
+          errorCalled = true;
+        }
+      },
       onStatusChange: jest.fn(),
       onReconnect: jest.fn(),
       heartbeatInterval: 1000, // 1 second for faster testing
@@ -116,13 +131,6 @@ describe('SSEClient Heartbeat Timer', () => {
 
     // Start heartbeat monitoring
     (customClient as any).startHeartbeat();
-
-    let errorCalled = false;
-    customClient.options.onError = (error: any) => {
-      if (error.message === 'Connection timeout') {
-        errorCalled = true;
-      }
-    };
 
     // Simulate regular messages within heartbeat interval
     const messageInterval = setInterval(() => {
@@ -145,9 +153,14 @@ describe('SSEClient Heartbeat Timer', () => {
 
   it('should timeout if no messages received', async () => {
     // Connect with short heartbeat interval for testing
+    let timeoutError: Error | null = null;
     const customClient = new SSEClient({
       onMessage: jest.fn(),
-      onError: jest.fn(),
+      onError: (error: any) => {
+        if (error.message === 'Connection timeout') {
+          timeoutError = error;
+        }
+      },
       onStatusChange: jest.fn(),
       onReconnect: jest.fn(),
       heartbeatInterval: 500, // 500ms for faster testing
@@ -158,19 +171,12 @@ describe('SSEClient Heartbeat Timer', () => {
     // Start heartbeat monitoring
     (customClient as any).startHeartbeat();
 
-    let timeoutError: Error | null = null;
-    customClient.options.onError = (error: any) => {
-      if (error.message === 'Connection timeout') {
-        timeoutError = error;
-      }
-    };
-
     // Don't send any messages and wait for timeout
     await new Promise(resolve => setTimeout(resolve, 1500)); // Wait 1.5 seconds
 
     // Verify timeout occurred
     expect(timeoutError).not.toBeNull();
-    expect(timeoutError?.message).toBe('Connection timeout');
+    expect(timeoutError!.message).toBe('Connection timeout');
 
     (customClient as any).stopHeartbeat();
   });
