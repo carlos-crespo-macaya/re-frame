@@ -18,27 +18,26 @@ describe('Generated API Client', () => {
   it('should enforce type safety for message requests', () => {
     // This will fail TypeScript compilation if types don't match
     const validRequest: MessageRequest = {
-      mime_type: 'text/plain',
-      data: 'SGVsbG8gd29ybGQ=', // Base64 encoded "Hello world"
+      content: 'Hello world',
+      session_id: 'test-session-123',
     }
 
     // This would fail TypeScript compilation:
     // const invalidRequest: MessageRequest = {
-    //   mimeType: 'text/plain', // Wrong property name
-    //   data: 'test',
+    //   text: 'Hello world', // Wrong property name
+    //   sessionId: 'test',   // Wrong property name (should be session_id)
     // }
 
-    expect(validRequest.mime_type).toBe('text/plain')
-    expect(validRequest.data).toBe('SGVsbG8gd29ybGQ=')
+    expect(validRequest.content).toBe('Hello world')
+    expect(validRequest.session_id).toBe('test-session-123')
   })
 
   it('should have proper health check response type', () => {
     // This verifies the response type structure
     const mockResponse: HealthCheckResponse = {
       status: 'healthy',
-      service: 'CBT Reframing Assistant API',
-      timestamp: new Date().toISOString(),
       version: '1.0.0',
+      timestamp: new Date().toISOString(),
     }
 
     // TypeScript ensures status can only be 'healthy' or 'unhealthy'
