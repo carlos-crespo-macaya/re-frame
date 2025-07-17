@@ -135,7 +135,7 @@ export default function Home() {
     const turnComplete = currentMessages.some(msg => msg.turn_complete === true)
     
     // Update response as messages arrive
-    if (textMessages.length > 0) {
+    if (textMessages.length > 0 || turnComplete) {
       // Combine text messages from current response only
       const fullResponse = textMessages.map(msg => msg.data).join('')
       
@@ -143,24 +143,27 @@ export default function Home() {
         console.log('Text messages found:', textMessages.length, 'Full response:', fullResponse)
       }
       
-      // Create response from backend message
-      setResponse({
-        success: true,
-        response: fullResponse,
-        frameworks_used: ['CBT'],
-        transparency: {
-          agents_used: ['cbt_assistant'],
-          techniques_applied: ['Cognitive restructuring'],
-          framework_details: {
-            CBT: {
-              techniques: ['Cognitive restructuring'],
-              confidence: 0.85,
-              patterns_addressed: []
-            }
-          },
-          selection_rationale: 'CBT framework applied based on the thought pattern.'
-        }
-      })
+      // Only set response if we have content OR turn is complete
+      if (fullResponse || turnComplete) {
+        // Create response from backend message
+        setResponse({
+          success: true,
+          response: fullResponse,
+          frameworks_used: ['CBT'],
+          transparency: {
+            agents_used: ['cbt_assistant'],
+            techniques_applied: ['Cognitive restructuring'],
+            framework_details: {
+              CBT: {
+                techniques: ['Cognitive restructuring'],
+                confidence: 0.85,
+                patterns_addressed: []
+              }
+            },
+            selection_rationale: 'CBT framework applied based on the thought pattern.'
+          }
+        })
+      }
     }
     
     // Clear loading state when turn is complete
