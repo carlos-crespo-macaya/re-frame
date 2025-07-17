@@ -259,10 +259,10 @@ async def sse_endpoint(
 
     async def event_generator():
         heartbeat_task = None
-        
+
         # Simple queue for heartbeats
         heartbeat_queue = asyncio.Queue(maxsize=1)
-        
+
         async def send_heartbeats():
             """Send heartbeats every 15 seconds."""
             try:
@@ -270,65 +270,93 @@ async def sse_endpoint(
                     await asyncio.sleep(15)
                     try:
                         # Use put_nowait to avoid blocking if queue is full
-                        heartbeat_queue.put_nowait({
-                            'type': 'heartbeat',
-                            'timestamp': datetime.now(UTC).isoformat()
-                        })
+                        heartbeat_queue.put_nowait(
+                            {
+                                "type": "heartbeat",
+                                "timestamp": datetime.now(UTC).isoformat(),
+                            }
+                        )
                     except asyncio.QueueFull:
                         # If queue is full, remove old heartbeat and add new one
                         try:
                             heartbeat_queue.get_nowait()
-                            heartbeat_queue.put_nowait({
-                                'type': 'heartbeat',
-                                'timestamp': datetime.now(UTC).isoformat()
-                            })
-                        except:
+                            heartbeat_queue.put_nowait(
+                                {
+                                    "type": "heartbeat",
+                                    "timestamp": datetime.now(UTC).isoformat(),
+                                }
+                            )
+                        except Exception:
                             pass
             except asyncio.CancelledError:
                 pass
-        
+
         try:
             # Send initial connection event
             yield f"data: {json.dumps({'type': 'connected', 'session_id': session_id})}\n\n"
-            
+
             # Start heartbeat sender
             heartbeat_task = asyncio.create_task(send_heartbeats())
-            
+
             # Process both agent events and heartbeats
             agent_iterator = agent_to_client_sse(live_events).__aiter__()
-            agent_exhausted = False
-            
+            agent_stream_ended = False
+
             while True:
-                # Check for heartbeat
-                heartbeat_msg = None
-                try:
-                    heartbeat_msg = heartbeat_queue.get_nowait()
-                except asyncio.QueueEmpty:
-                    pass
-                
-                if heartbeat_msg:
-                    yield f"data: {json.dumps(heartbeat_msg)}\n\n"
-                    print(f"[HEARTBEAT] Sent heartbeat for session {session_id}")
-                
-                # Check for agent message only if not exhausted
-                if not agent_exhausted:
+                # Wait for either a heartbeat or an agent message
+                tasks = []
+
+                # Always wait for heartbeats
+                heartbeat_task = asyncio.create_task(heartbeat_queue.get())
+                tasks.append(heartbeat_task)
+
+                # Add agent task if stream not exhausted
+                agent_task = None
+                if not agent_stream_ended:
+                    agent_task = asyncio.create_task(anext(agent_iterator, None))
+                    tasks.append(agent_task)
+
+                # If agent is exhausted and no heartbeat available, wait briefly
+                if agent_stream_ended:
                     try:
-                        agent_msg = await asyncio.wait_for(
-                            anext(agent_iterator, None),
-                            timeout=0.1  # 100ms timeout
-                        )
-                        
+                        # Check if heartbeat is immediately available
+                        heartbeat_msg = heartbeat_queue.get_nowait()
+                        yield f"data: {json.dumps(heartbeat_msg)}\n\n"
+                        print(f"[HEARTBEAT] Sent heartbeat for session {session_id}")
+                        continue
+                    except asyncio.QueueEmpty:
+                        # No heartbeat ready, wait for next one
+                        pass
+
+                # Wait for first task to complete
+                done, pending = await asyncio.wait(
+                    tasks, return_when=asyncio.FIRST_COMPLETED
+                )
+
+                # Cancel pending tasks
+                for task in pending:
+                    task.cancel()
+                    try:
+                        await task
+                    except asyncio.CancelledError:
+                        pass
+
+                # Process completed tasks
+                for task in done:
+                    if task == heartbeat_task:
+                        heartbeat_msg = task.result()
+                        yield f"data: {json.dumps(heartbeat_msg)}\n\n"
+                        print(f"[HEARTBEAT] Sent heartbeat for session {session_id}")
+                    elif agent_task and task == agent_task:
+                        agent_msg = task.result()
                         if agent_msg:
                             yield agent_msg
                         elif agent_msg is None:
                             # Agent stream ended, but keep connection alive for heartbeats
-                            agent_exhausted = True
-                            print(f"[SSE] Agent stream ended for session {session_id}, continuing with heartbeats")
-                    except asyncio.TimeoutError:
-                        pass  # No agent message available, continue
-                
-                # Small delay to prevent busy loop
-                await asyncio.sleep(0.1)
+                            agent_stream_ended = True
+                            print(
+                                f"[SSE] Agent stream ended for session {session_id}, continuing with heartbeats"
+                            )
         except Exception as e:
             print(f"Error in SSE stream: {e}")
             yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
