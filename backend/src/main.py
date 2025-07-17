@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import asyncio
 import base64
 import json
 import os
@@ -257,16 +258,83 @@ async def sse_endpoint(
         print(f"Client session {session_id} disconnected from SSE")
 
     async def event_generator():
+        heartbeat_task = None
+        
+        # Simple queue for heartbeats
+        heartbeat_queue = asyncio.Queue(maxsize=1)
+        
+        async def send_heartbeats():
+            """Send heartbeats every 15 seconds."""
+            try:
+                while True:
+                    await asyncio.sleep(15)
+                    try:
+                        # Use put_nowait to avoid blocking if queue is full
+                        heartbeat_queue.put_nowait({
+                            'type': 'heartbeat',
+                            'timestamp': datetime.now(UTC).isoformat()
+                        })
+                    except asyncio.QueueFull:
+                        # If queue is full, remove old heartbeat and add new one
+                        try:
+                            heartbeat_queue.get_nowait()
+                            heartbeat_queue.put_nowait({
+                                'type': 'heartbeat',
+                                'timestamp': datetime.now(UTC).isoformat()
+                            })
+                        except:
+                            pass
+            except asyncio.CancelledError:
+                pass
+        
         try:
             # Send initial connection event
             yield f"data: {json.dumps({'type': 'connected', 'session_id': session_id})}\n\n"
-
-            async for data in agent_to_client_sse(live_events):
-                yield data
+            
+            # Start heartbeat sender
+            heartbeat_task = asyncio.create_task(send_heartbeats())
+            
+            # Process both agent events and heartbeats
+            agent_iterator = agent_to_client_sse(live_events).__aiter__()
+            agent_exhausted = False
+            
+            while True:
+                # Check for heartbeat
+                heartbeat_msg = None
+                try:
+                    heartbeat_msg = heartbeat_queue.get_nowait()
+                except asyncio.QueueEmpty:
+                    pass
+                
+                if heartbeat_msg:
+                    yield f"data: {json.dumps(heartbeat_msg)}\n\n"
+                    print(f"[HEARTBEAT] Sent heartbeat for session {session_id}")
+                
+                # Check for agent message only if not exhausted
+                if not agent_exhausted:
+                    try:
+                        agent_msg = await asyncio.wait_for(
+                            anext(agent_iterator, None),
+                            timeout=0.1  # 100ms timeout
+                        )
+                        
+                        if agent_msg:
+                            yield agent_msg
+                        elif agent_msg is None:
+                            # Agent stream ended, but keep connection alive for heartbeats
+                            agent_exhausted = True
+                            print(f"[SSE] Agent stream ended for session {session_id}, continuing with heartbeats")
+                    except asyncio.TimeoutError:
+                        pass  # No agent message available, continue
+                
+                # Small delay to prevent busy loop
+                await asyncio.sleep(0.1)
         except Exception as e:
             print(f"Error in SSE stream: {e}")
             yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
         finally:
+            if heartbeat_task and not heartbeat_task.done():
+                heartbeat_task.cancel()
             cleanup()
 
     return StreamingResponse(
