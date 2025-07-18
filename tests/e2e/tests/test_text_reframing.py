@@ -185,10 +185,10 @@ class TestTextReframing:
         assert selected_lang == "es-ES"
         
         # Wait a bit for the new connection to establish and greeting to appear
-        await page.wait_for_timeout(2000)
+        await authenticated_page.wait_for_timeout(2000)
         
         # Look for Spanish greeting in the message thread instead of response box
-        page_content = await page.content()
+        page_content = await authenticated_page.content()
         assert any(spanish_greeting in page_content.lower() for spanish_greeting in [
             "hola", "bienvenido", "asistente", "cbt", "ayudar"
         ]), "No Spanish greeting found after language switch"
