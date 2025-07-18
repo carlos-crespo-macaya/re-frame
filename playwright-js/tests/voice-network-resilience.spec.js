@@ -151,8 +151,12 @@ test.describe('Voice Network Resilience', () => {
     await context.setOffline(false);
     await page.waitForTimeout(2000); // Give more time for recovery
     
+    // Wait for the Clear button to be enabled again
+    const clearButton = page.getByRole('button', { name: /clear/i });
+    await expect(clearButton).toBeEnabled({ timeout: 10000 });
+    
     // Clear and try again with a new submission
-    await page.getByRole('button', { name: /clear/i }).click();
+    await clearButton.click();
     await page.fill('textarea', 'Testing after reconnection');
     
     // Should be able to submit successfully now
