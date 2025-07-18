@@ -17,6 +17,7 @@ jobs:
     outputs:
       backend: ${{ steps.changes.outputs.backend }}
       frontend: ${{ steps.changes.outputs.frontend }}
+      voice: ${{ steps.changes.outputs.voice }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -34,6 +35,13 @@ jobs:
               - '.github/workflows/frontend-ci.yml'
               - 'package.json'
               - 'pnpm-lock.yaml'
+            voice:
+              - 'backend/src/audio/**'
+              - 'backend/tests/test_audio*'
+              - 'frontend/lib/audio/**'
+              - 'frontend/components/audio/**'
+              - 'playwright-js/tests/voice-*.spec.js'
+              - '.github/workflows/voice-*.yml'
 
   summary:
     name: CI Summary
@@ -48,6 +56,7 @@ jobs:
           echo "#### Changed Components:"
           echo "- Backend: ${{ needs.changes.outputs.backend }}"
           echo "- Frontend: ${{ needs.changes.outputs.frontend }}"
+          echo "- Voice: ${{ needs.changes.outputs.voice }}"
           echo ""
           if [[ "${{ needs.changes.outputs.backend }}" == "true" ]]; then
             echo "✅ Backend CI workflow triggered"
@@ -55,6 +64,9 @@ jobs:
           if [[ "${{ needs.changes.outputs.frontend }}" == "true" ]]; then
             echo "✅ Frontend CI workflow triggered"
           fi
-          if [[ "${{ needs.changes.outputs.backend }}" != "true" && "${{ needs.changes.outputs.frontend }}" != "true" ]]; then
+          if [[ "${{ needs.changes.outputs.voice }}" == "true" ]]; then
+            echo "✅ Voice tests workflow triggered"
+          fi
+          if [[ "${{ needs.changes.outputs.backend }}" != "true" && "${{ needs.changes.outputs.frontend }}" != "true" && "${{ needs.changes.outputs.voice }}" != "true" ]]; then
             echo "ℹ️ No component changes detected"
           fi
