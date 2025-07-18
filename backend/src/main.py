@@ -591,9 +591,11 @@ async def send_message_endpoint(
             events = await process_message(runner, adk_session, content, run_config)
 
             # Queue events for SSE delivery
+            event_count = 0
             for event in events:
                 if message_queue:
                     await message_queue.put(event)
+                event_count += 1
 
             # Send a final turn_complete event after all content
             turn_complete_event = type(
@@ -613,7 +615,7 @@ async def send_message_endpoint(
                 logger,
                 "message_processed",
                 session_id=session_id,
-                event_count=len(events),
+                event_count=event_count,
             )
         except Exception as e:
             logger.error(
@@ -632,24 +634,30 @@ async def send_message_endpoint(
         try:
             # Decode base64 audio
             audio_data = base64.b64decode(data)
+            
+            # Check audio size limit
+            audio_size_mb = len(audio_data) / (1024 * 1024)
+            if audio_size_mb > config.AUDIO_MAX_SIZE_MB:
+                raise HTTPException(
+                    status_code=413,
+                    detail=f"Audio data too large: {audio_size_mb:.1f}MB exceeds {config.AUDIO_MAX_SIZE_MB}MB limit"
+                )
 
             # Log transcript but never log audio data
             logger.info(
                 f"Processing audio for session {session_id}, size: {len(audio_data)} bytes"
             )
 
-            # TODO: Initialize audio session when services are ready
-            # audio_session = AudioPipelineSession(
-            #     session_id=session_id,
-            #     language=request.headers.get("X-Language", "en-US"),
-            #     sample_rate=config.AUDIO_SAMPLE_RATE
-            # )
-
-            # TODO: Process audio to text when services are ready
-            # transcript = await audio_session.process_audio(audio_data)
-
-            # For now, return a mock transcript for testing
-            transcript = "Hello, this is a test transcript."
+            # For now, use a simple approach - just return a mock transcript
+            # In production, this would:
+            # 1. Initialize STT service
+            # 2. Process audio through STT
+            # 3. Return actual transcript
+            
+            # Mock transcript for testing
+            transcript = "Hello, I need help with reframing my thoughts."
+            
+            # Log transcript preview (never log full audio data)
             logger.info(
                 f"Transcribed audio for session {session_id}: {transcript[:50]}..."
             )
@@ -661,9 +669,11 @@ async def send_message_endpoint(
             events = await process_message(runner, adk_session, content, run_config)
 
             # Queue events for SSE delivery
+            event_count = 0
             for event in events:
                 if message_queue:
                     await message_queue.put(event)
+                event_count += 1
 
             # Send turn_complete event
             turn_complete_event = type(
@@ -682,10 +692,13 @@ async def send_message_endpoint(
                 logger,
                 "audio_processed",
                 session_id=session_id,
-                event_count=len(events),
+                event_count=event_count,
                 transcript_preview=transcript[:50],
             )
 
+        except HTTPException:
+            # Re-raise HTTP exceptions (like 413) as-is
+            raise
         except Exception as e:
             logger.error(f"Audio processing error: {e!s}")
             raise HTTPException(
