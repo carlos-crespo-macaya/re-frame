@@ -10,8 +10,8 @@
 # Provide minimal stubs so that absolute imports like ``import tests.e2e`` do
 # not fail when the *e2e* directory is skipped.
 
-from types import ModuleType
 import sys as _sys
+from types import ModuleType
 
 
 def _ensure(name: str):
