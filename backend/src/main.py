@@ -29,6 +29,8 @@ from google.adk.agents.run_config import RunConfig
 from google.adk.runners import InMemoryRunner
 from google.genai.types import Content, Part, SpeechConfig
 
+from src import config
+
 # Import CBT assistant instead of search agent
 from src.agents.cbt_assistant import create_cbt_assistant
 from src.models import (
@@ -621,11 +623,72 @@ async def send_message_endpoint(
                 status_code=500, detail=f"Error processing message: {e!s}"
             ) from e
     elif mime_type == "audio/pcm":
-        # For now, audio is not supported in non-live mode
-        raise HTTPException(
-            status_code=501,
-            detail="Audio processing not yet implemented in request-response mode",
-        )
+        if not config.VOICE_MODE_ENABLED:
+            raise HTTPException(
+                status_code=501,
+                detail="Audio processing not yet implemented in request-response mode",
+            )
+
+        try:
+            # Decode base64 audio
+            audio_data = base64.b64decode(data)
+
+            # Log transcript but never log audio data
+            logger.info(
+                f"Processing audio for session {session_id}, size: {len(audio_data)} bytes"
+            )
+
+            # TODO: Initialize audio session when services are ready
+            # audio_session = AudioPipelineSession(
+            #     session_id=session_id,
+            #     language=request.headers.get("X-Language", "en-US"),
+            #     sample_rate=config.AUDIO_SAMPLE_RATE
+            # )
+
+            # TODO: Process audio to text when services are ready
+            # transcript = await audio_session.process_audio(audio_data)
+
+            # For now, return a mock transcript for testing
+            transcript = "Hello, this is a test transcript."
+            logger.info(
+                f"Transcribed audio for session {session_id}: {transcript[:50]}..."
+            )
+
+            # Process through normal text flow
+            content = Content(role="user", parts=[Part.from_text(text=transcript)])
+
+            # Process message and get events
+            events = await process_message(runner, adk_session, content, run_config)
+
+            # Queue events for SSE delivery
+            for event in events:
+                if message_queue:
+                    await message_queue.put(event)
+
+            # Send turn_complete event
+            turn_complete_event = type(
+                "Event",
+                (),
+                {
+                    "type": "turn_complete",
+                    "turn_complete": True,
+                    "server_content": {"model_turn": {"parts": []}},
+                },
+            )()
+            if message_queue:
+                await message_queue.put(turn_complete_event)
+
+            log_agent_event(
+                logger,
+                "audio_processed",
+                session_id=session_id,
+                event_count=len(events),
+                transcript_preview=transcript[:50],
+            )
+
+        except Exception as e:
+            logger.error(f"Audio processing error: {e!s}")
+            raise HTTPException(status_code=500, detail="Audio processing failed") from e
     elif mime_type in AudioConverter.SUPPORTED_INPUT_FORMATS:
         # Audio conversion not supported in request-response mode
         raise HTTPException(
