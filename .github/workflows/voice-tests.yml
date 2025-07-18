@@ -46,7 +46,7 @@ jobs:
         working-directory: backend
         run: |
           uv sync --all-extras
-          uv run pytest tests/test_audio* -v
+          uv run pytest tests/test_audio* -v --no-cov
 
   voice-e2e-tests:
     name: Voice E2E Tests
