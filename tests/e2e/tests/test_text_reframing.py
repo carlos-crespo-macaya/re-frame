@@ -184,13 +184,27 @@ class TestTextReframing:
         selected_lang = await home.get_selected_language()
         assert selected_lang == "es-ES"
         
+        # Wait a bit for the new connection to establish and greeting to appear
+        await page.wait_for_timeout(2000)
+        
+        # Look for Spanish greeting in the message thread instead of response box
+        page_content = await page.content()
+        assert any(spanish_greeting in page_content.lower() for spanish_greeting in [
+            "hola", "bienvenido", "asistente", "cbt", "ayudar"
+        ]), "No Spanish greeting found after language switch"
+        
         # Submit a thought in Spanish
         await home.enter_thought("Tengo miedo de hablar en público")
         await home.submit_thought()
         
-        # Wait for response
+        # Wait for response (this time it should appear in response box)
         response = await home.wait_for_response()
         assert response, "No response received for Spanish input"
+        
+        # Verify response contains Spanish content
+        assert any(spanish_word in response.lower() for spanish_word in [
+            "miedo", "hablar", "público", "pensar", "sentir"
+        ]), "Response doesn't appear to be in Spanish"
     
     @pytest.mark.asyncio
     async def test_loading_states(
