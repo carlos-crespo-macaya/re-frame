@@ -75,8 +75,8 @@ async def start_agent_session(user_id, is_audio=False, language_code="en-US"):
         language_code=language_code,
     )
 
-    # Create the CBT assistant agent
-    cbt_agent = create_cbt_assistant()
+    # Create the CBT assistant agent with language support
+    cbt_agent = create_cbt_assistant(language_code=language_code)
     logger.debug("cbt_agent_created", agent_name=cbt_agent.name)
 
     # Create a Runner
