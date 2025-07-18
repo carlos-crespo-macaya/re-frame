@@ -66,9 +66,9 @@ class TestAudioErrorHandling:
                 json={"mime_type": "audio/pcm", "data": large_audio},
             )
 
-        # For now, this will process (we'll add size limits later)
-        # When size limits are implemented, update to expect 413
-        assert response.status_code in [200, 413, 500]
+        # Should return 413 for oversized audio
+        assert response.status_code == 413
+        assert "Audio data too large" in response.json()["detail"]
 
     def test_stt_service_failure(self, client, mock_session):
         """Test graceful handling of STT service failure."""
