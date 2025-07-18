@@ -8,6 +8,7 @@ import { ReframeResponse, Framework } from '@/types/api'
 import { useSSEClient } from '@/lib/streaming/use-sse-client'
 import ReactMarkdown from 'react-markdown'
 import { NaturalConversation } from '@/components/audio/NaturalConversation'
+import { appLogger } from '@/lib/logger'
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false)
@@ -48,28 +49,42 @@ export default function Home() {
           
           if (shouldConnect) {
             setIsConnecting(true)
+            appLogger.info('Connection attempt', {
+              attempt: currentAttempt,
+              language: selectedLanguage,
+              audioMode: useAudioMode,
+              isConnected,
+              shouldConnect
+            })
             
             // Disconnect any existing connection first
             if (isConnected) {
+              appLogger.info('Disconnecting existing connection')
               disconnect()
               await new Promise(resolve => setTimeout(resolve, 100))
             }
             
             // Only proceed if this is still the latest connection attempt
             if (currentAttempt === connectionAttemptRef.current && mounted) {
+              appLogger.info('Connecting with settings', {
+                language: selectedLanguage,
+                audioMode: false
+              })
               await connect(undefined, selectedLanguage, false)
               hasConnectedRef.current = true
               previousLanguageRef.current = selectedLanguage
               previousAudioModeRef.current = useAudioMode
+              appLogger.info('Connection successful')
             }
             
             setIsConnecting(false)
           }
         }
       } catch (error) {
-        if (process.env.NODE_ENV === 'development') {
-          console.error('Failed to connect:', error)
-        }
+        appLogger.error('Failed to connect', {
+          attempt: currentAttempt,
+          language: selectedLanguage
+        }, error as Error)
         setIsConnecting(false)
         
         // Retry connection after delay if still mounted
@@ -96,6 +111,7 @@ export default function Home() {
     } else if (useAudioMode) {
       // Disconnect text mode when switching to audio
       if (isConnected) {
+        appLogger.info('Disconnecting text mode for audio mode switch')
         disconnect()
         hasConnectedRef.current = false
       }
