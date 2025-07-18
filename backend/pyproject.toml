@@ -112,6 +112,9 @@ addopts = [
     "--cov-fail-under=80",  # Required 80% coverage
 ]
 asyncio_mode = "auto"
+markers = [
+    "load: marks tests as load tests (deselect with '-m \"not load\"')",
+]
 
 # Coverage configuration
 [tool.coverage.run]
