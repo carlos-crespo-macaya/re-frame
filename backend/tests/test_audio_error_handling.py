@@ -38,14 +38,14 @@ class TestAudioErrorHandling:
 
     def test_corrupted_base64_audio(self, client, mock_session):
         """Test handling of malformed base64 audio data."""
-        with patch("src.config.VOICE_MODE_ENABLED", True):
-            with patch.object(
-                session_manager, "get_session", return_value=mock_session
-            ):
-                response = client.post(
-                    "/api/send/test-session",
-                    json={"mime_type": "audio/pcm", "data": "invalid_base64_!@#"},
-                )
+        with (
+            patch("src.config.VOICE_MODE_ENABLED", True),
+            patch.object(session_manager, "get_session", return_value=mock_session),
+        ):
+            response = client.post(
+                "/api/send/test-session",
+                json={"mime_type": "audio/pcm", "data": "invalid_base64_!@#"},
+            )
 
         assert response.status_code == 500
         assert "Audio processing failed" in response.json()["detail"]
@@ -56,15 +56,15 @@ class TestAudioErrorHandling:
         large_audio = base64.b64encode(b"x" * 10_000_000).decode()
 
         # First, let's add size validation to our implementation
-        with patch("src.config.AUDIO_MAX_SIZE_MB", 1):  # Set limit to 1MB
-            with patch("src.config.VOICE_MODE_ENABLED", True):
-                with patch.object(
-                    session_manager, "get_session", return_value=mock_session
-                ):
-                    response = client.post(
-                        "/api/send/test-session",
-                        json={"mime_type": "audio/pcm", "data": large_audio},
-                    )
+        with (
+            patch("src.config.AUDIO_MAX_SIZE_MB", 1),  # Set limit to 1MB
+            patch("src.config.VOICE_MODE_ENABLED", True),
+            patch.object(session_manager, "get_session", return_value=mock_session),
+        ):
+            response = client.post(
+                "/api/send/test-session",
+                json={"mime_type": "audio/pcm", "data": large_audio},
+            )
 
         # For now, this will process (we'll add size limits later)
         # When size limits are implemented, update to expect 413
@@ -77,18 +77,18 @@ class TestAudioErrorHandling:
         async def mock_process_message(*args, **kwargs):
             raise Exception("STT service unavailable")
 
-        with patch("src.config.VOICE_MODE_ENABLED", True):
-            with patch.object(
-                session_manager, "get_session", return_value=mock_session
-            ):
-                with patch("src.main.process_message", mock_process_message):
-                    response = client.post(
-                        "/api/send/test-session",
-                        json={
-                            "mime_type": "audio/pcm",
-                            "data": AudioSamples.get_sample("hello"),
-                        },
-                    )
+        with (
+            patch("src.config.VOICE_MODE_ENABLED", True),
+            patch.object(session_manager, "get_session", return_value=mock_session),
+            patch("src.main.process_message", mock_process_message),
+        ):
+            response = client.post(
+                "/api/send/test-session",
+                json={
+                    "mime_type": "audio/pcm",
+                    "data": AudioSamples.get_sample("hello"),
+                },
+            )
 
         assert response.status_code == 500
         assert "Audio processing failed" in response.json()["detail"]
@@ -100,18 +100,18 @@ class TestAudioErrorHandling:
         async def mock_process_message(*args, **kwargs):
             return []
 
-        with patch("src.config.VOICE_MODE_ENABLED", True):
-            with patch.object(
-                session_manager, "get_session", return_value=mock_session
-            ):
-                with patch("src.main.process_message", mock_process_message):
-                    response = client.post(
-                        "/api/send/test-session",
-                        json={
-                            "mime_type": "audio/pcm",
-                            "data": AudioSamples.get_sample("silence"),
-                        },
-                    )
+        with (
+            patch("src.config.VOICE_MODE_ENABLED", True),
+            patch.object(session_manager, "get_session", return_value=mock_session),
+            patch("src.main.process_message", mock_process_message),
+        ):
+            response = client.post(
+                "/api/send/test-session",
+                json={
+                    "mime_type": "audio/pcm",
+                    "data": AudioSamples.get_sample("silence"),
+                },
+            )
 
         assert response.status_code == 200
         # Response should indicate successful processing even for silence
