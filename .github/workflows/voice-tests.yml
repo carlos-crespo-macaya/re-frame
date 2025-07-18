@@ -103,7 +103,7 @@ jobs:
       - name: Run voice E2E tests
         run: |
           cd playwright-js
-          npx playwright test --config playwright.config.ts voice-*.spec.js
+          npx playwright test --config playwright.config.ts tests/voice-*.spec.js
       
       - name: Upload test results
         if: always()
