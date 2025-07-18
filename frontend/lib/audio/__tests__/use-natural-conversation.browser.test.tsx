@@ -1,6 +1,5 @@
 import { renderHook, act } from '@testing-library/react';
 import { useNaturalConversation } from '../use-natural-conversation';
-import { ApiClient } from '../../api';
 
 // Mock the session utilities
 jest.mock('../../utils/session', () => ({
@@ -8,37 +7,42 @@ jest.mock('../../utils/session', () => ({
 }));
 
 // Mock the API client
-jest.mock('../../api', () => ({
-  ApiClient: {
-    sendMessage: jest.fn().mockResolvedValue(undefined),
-    createEventSource: jest.fn().mockImplementation(() => {
-      const mockEventSource = {
-        close: jest.fn(),
-        addEventListener: jest.fn(),
-        removeEventListener: jest.fn(),
-        readyState: 1,
-        url: '',
-        withCredentials: false,
-        CONNECTING: 0,
-        OPEN: 1,
-        CLOSED: 2,
-        onerror: null,
-        onmessage: null,
-        onopen: null,
-      };
-      
-      // Simulate successful connection
-      setTimeout(() => {
-        if (mockEventSource.onopen) {
-          mockEventSource.onopen(new Event('open'));
-        }
-      }, 0);
-      
-      return mockEventSource;
-    })
-  },
-  logApiError: jest.fn()
-}));
+jest.mock('../../api', () => {
+  const mockCreateEventSource = jest.fn(() => {
+    const mockEventSource: any = {
+      close: jest.fn(),
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      readyState: 1,
+      url: '',
+      withCredentials: false,
+      CONNECTING: 0,
+      OPEN: 1,
+      CLOSED: 2,
+      onerror: null,
+      onmessage: null,
+      onopen: null,
+    };
+    
+    // Simulate successful connection
+    setTimeout(() => {
+      if (mockEventSource.onopen) {
+        mockEventSource.onopen({ type: 'open' } as Event);
+      }
+    }, 0);
+    
+    return mockEventSource;
+  });
+  
+  return {
+    ApiClient: {
+      sendMessage: jest.fn().mockResolvedValue(undefined),
+      createEventSource: mockCreateEventSource
+    },
+    logApiError: jest.fn(),
+    __mockCreateEventSource: mockCreateEventSource
+  };
+});
 
 // Mock the streaming message protocol
 jest.mock('../../streaming/message-protocol', () => ({
@@ -271,32 +275,7 @@ describe('Browser Compatibility', () => {
   
   describe('Network resilience', () => {
     it('should handle network disconnection gracefully', async () => {
-      // Get access to the mock EventSource
-      const mockEventSource = (ApiClient.createEventSource as jest.Mock).mockImplementation(() => {
-        const eventSource = {
-          close: jest.fn(),
-          addEventListener: jest.fn(),
-          removeEventListener: jest.fn(),
-          readyState: 1,
-          url: '',
-          withCredentials: false,
-          CONNECTING: 0,
-          OPEN: 1,
-          CLOSED: 2,
-          onerror: null,
-          onmessage: null,
-          onopen: null,
-        };
-        
-        // Simulate successful connection initially
-        setTimeout(() => {
-          if (eventSource.onopen) {
-            eventSource.onopen(new Event('open'));
-          }
-        }, 0);
-        
-        return eventSource;
-      });
+      const { __mockCreateEventSource } = jest.requireMock('../../api');
       
       const { result } = renderHook(() => useNaturalConversation());
       
@@ -307,12 +286,12 @@ describe('Browser Compatibility', () => {
       expect(result.current.isActive).toBe(true);
       
       // Get the created EventSource instance
-      const eventSourceInstance = mockEventSource.mock.results[0].value;
+      const eventSourceInstance = __mockCreateEventSource.mock.results[0].value;
       
       // Simulate SSE error
       await act(async () => {
         if (eventSourceInstance.onerror) {
-          eventSourceInstance.onerror(new Event('error'));
+          eventSourceInstance.onerror({ type: 'error' } as Event);
         }
       });
       
