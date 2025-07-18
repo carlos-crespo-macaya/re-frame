@@ -218,21 +218,22 @@ class TestMessageEndpoints:
         mock_runner = AsyncMock()
         mock_adk_session = MagicMock()
         mock_run_config = MagicMock()
-        
+
         # Set up metadata with required components
         mock_session.metadata = {
             "message_queue": mock_queue,
             "runner": mock_runner,
             "adk_session": mock_adk_session,
-            "run_config": mock_run_config
+            "run_config": mock_run_config,
         }
         mock_session_manager.get_session.return_value = mock_session
-        
+
         # Mock process_message to return empty events
         async def mock_run_async(*args, **kwargs):
             # Return an empty async iterator
             for _ in []:
                 yield
+
         mock_runner.run_async = mock_run_async
 
         request_data = MessageRequest(
@@ -261,13 +262,13 @@ class TestMessageEndpoints:
         mock_runner = AsyncMock()
         mock_adk_session = MagicMock()
         mock_run_config = MagicMock()
-        
+
         # Set up metadata with required components
         mock_session.metadata = {
             "message_queue": mock_queue,
             "runner": mock_runner,
             "adk_session": mock_adk_session,
-            "run_config": mock_run_config
+            "run_config": mock_run_config,
         }
         mock_session_manager.get_session.return_value = mock_session
 
@@ -288,13 +289,13 @@ class TestMessageEndpoints:
         mock_runner = AsyncMock()
         mock_adk_session = MagicMock()
         mock_run_config = MagicMock()
-        
+
         # Set up metadata with required components
         mock_session.metadata = {
             "message_queue": mock_queue,
             "runner": mock_runner,
             "adk_session": mock_adk_session,
-            "run_config": mock_run_config
+            "run_config": mock_run_config,
         }
         mock_session_manager.get_session.return_value = mock_session
 
@@ -305,7 +306,10 @@ class TestMessageEndpoints:
         response = client.post("/api/send/test-123", json=request_data.model_dump())
         # Audio processing now returns 501 in request-response mode
         assert response.status_code == 501
-        assert "Audio processing not yet implemented in request-response mode" in response.json()["detail"]
+        assert (
+            "Audio processing not yet implemented in request-response mode"
+            in response.json()["detail"]
+        )
 
     def test_send_message_webm_not_implemented(self, client, mock_session_manager):
         """Test sending WebM audio returns not implemented error."""
@@ -314,13 +318,13 @@ class TestMessageEndpoints:
         mock_runner = AsyncMock()
         mock_adk_session = MagicMock()
         mock_run_config = MagicMock()
-        
+
         # Set up metadata with required components
         mock_session.metadata = {
             "message_queue": mock_queue,
             "runner": mock_runner,
             "adk_session": mock_adk_session,
-            "run_config": mock_run_config
+            "run_config": mock_run_config,
         }
         mock_session_manager.get_session.return_value = mock_session
 
@@ -328,7 +332,10 @@ class TestMessageEndpoints:
 
         response = client.post("/api/send/test-123", json=request_data.model_dump())
         assert response.status_code == 501
-        assert "Audio processing not yet implemented in request-response mode" in response.json()["detail"]
+        assert (
+            "Audio processing not yet implemented in request-response mode"
+            in response.json()["detail"]
+        )
 
     def test_send_message_audio_conversion_not_implemented(
         self, client, mock_session_manager, mock_audio_converter
@@ -339,13 +346,13 @@ class TestMessageEndpoints:
         mock_runner = AsyncMock()
         mock_adk_session = MagicMock()
         mock_run_config = MagicMock()
-        
+
         # Set up metadata with required components
         mock_session.metadata = {
             "message_queue": mock_queue,
             "runner": mock_runner,
             "adk_session": mock_adk_session,
-            "run_config": mock_run_config
+            "run_config": mock_run_config,
         }
         mock_session_manager.get_session.return_value = mock_session
 
@@ -354,7 +361,10 @@ class TestMessageEndpoints:
         response = client.post("/api/send/test-123", json=request_data.model_dump())
         # Audio processing returns 501 in request-response mode
         assert response.status_code == 501
-        assert "Audio processing not yet implemented in request-response mode" in response.json()["detail"]
+        assert (
+            "Audio processing not yet implemented in request-response mode"
+            in response.json()["detail"]
+        )
 
 
 class TestSSEEndpoint:
