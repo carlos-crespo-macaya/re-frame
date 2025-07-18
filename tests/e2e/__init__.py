@@ -21,6 +21,6 @@ import sys as _sys
 # test files can use concise absolute imports regardless of where the e2e
 # package sits in ``sys.path``.
 
-for _alias in ("pages", "utils"):
+for _alias in ("pages", "utils", "fixtures"):
     if _alias not in _sys.modules:  # pragma: no cover – executed only during e2e
         _sys.modules[_alias] = import_module(f"{__name__}.{_alias}")
