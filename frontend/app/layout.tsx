@@ -5,6 +5,7 @@ import "./styles/globals.css";
 import RootErrorBoundary from "@/components/error/RootErrorBoundary";
 import { ThemeProvider } from "@/lib/theme/ThemeContext";
 import { themeScript } from "@/lib/theme/theme-script";
+import { TestSetup } from "@/components/test/TestSetup";
 
 const inter = Inter({
   subsets: ['latin'],
@@ -97,6 +98,9 @@ export default function RootLayout({
             </div>
           </RootErrorBoundary>
         </ThemeProvider>
+        
+        {/* Test setup for E2E testing */}
+        <TestSetup />
       </body>
     </html>
   );
