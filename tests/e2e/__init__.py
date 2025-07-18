@@ -17,5 +17,10 @@ from importlib import import_module
 import sys as _sys
 
 
-if "pages" not in _sys.modules:  # pragma: no cover – executed only for e2e run
-    _sys.modules["pages"] = import_module(__name__ + ".pages")
+# Expose shorter import aliases (``pages.*`` and ``utils.*``) so that
+# test files can use concise absolute imports regardless of where the e2e
+# package sits in ``sys.path``.
+
+for _alias in ("pages", "utils"):
+    if _alias not in _sys.modules:  # pragma: no cover – executed only during e2e
+        _sys.modules[_alias] = import_module(f"{__name__}.{_alias}")
