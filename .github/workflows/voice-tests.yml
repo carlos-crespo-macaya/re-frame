@@ -46,14 +46,7 @@ jobs:
         working-directory: backend
         run: |
           uv sync --all-extras
-          uv run pytest tests/test_audio* -v --cov=src.audio --cov-report=xml
-      
-      - name: Upload backend coverage
-        uses: codecov/codecov-action@v4
-        with:
-          file: ./backend/coverage.xml
-          flags: backend-voice
-          fail_ci_if_error: false
+          uv run pytest tests/test_audio* -v
 
   voice-e2e-tests:
     name: Voice E2E Tests
