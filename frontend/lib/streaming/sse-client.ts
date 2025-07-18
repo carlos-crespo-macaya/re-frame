@@ -171,6 +171,12 @@ export class SSEClient {
     try {
       const data = JSON.parse(event.data);
       
+      // Handle heartbeat messages
+      if (data.type === 'heartbeat') {
+        // Just update last event time, no need to process further
+        return;
+      }
+      
       if (isServerMessage(data)) {
         this.messageBuffer.push(data);
         this.options.onMessage(data);

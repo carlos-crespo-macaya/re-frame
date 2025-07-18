@@ -37,7 +37,7 @@ test-backend: ## Run backend tests
 
 .PHONY: test-integration
 test-integration: ## Run integration tests
-	docker-compose -f docker-compose.yml -f docker-compose.test.yml up --abort-on-container-exit
+	docker-compose -f docker-compose.yml -f docker-compose.integration.yml up --abort-on-container-exit
 
 # Linting and formatting
 .PHONY: lint
