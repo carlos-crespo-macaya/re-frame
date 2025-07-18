@@ -1,0 +1,83 @@
+version: '3.8'
+
+# Performance testing configuration
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.perf.yml up
+
+services:
+  backend:
+    environment:
+      # Enable voice mode for performance testing
+      - VOICE_MODE_ENABLED=true
+      # Increase worker count for load testing
+      - WEB_CONCURRENCY=4
+      # Enable performance monitoring endpoints
+      - ENABLE_METRICS=true
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+    # Add health check for load testing
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: Add monitoring stack for performance testing
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    ports:
+      - "9090:9090"
+    networks:
+      - app-network
+
+  grafana:
+    image: grafana/grafana:latest
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - app-network
+
+  # Load testing container
+  k6:
+    image: grafana/k6:latest
+    volumes:
+      - ./tests/load/k6:/scripts
+    command: run /scripts/voice-load-test.js
+    environment:
+      - K6_VUS=50
+      - K6_DURATION=5m
+      - API_BASE_URL=http://backend:8000
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - app-network
+
+volumes:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  app-network:
+    driver: bridge

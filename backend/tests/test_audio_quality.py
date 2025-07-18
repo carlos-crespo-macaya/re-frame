@@ -26,7 +26,6 @@ class TestAudioQuality:
             abs(detected_rate - 16000) < 100
         ), f"Expected 16kHz, got {detected_rate}Hz"
 
-    @pytest.mark.skip(reason="SNR calculation needs refinement for synthetic audio")
     def test_audio_noise_level(self):
         """Verify audio noise is within acceptable range."""
         # Create speech-like signal with good amplitude
@@ -47,27 +46,32 @@ class TestAudioQuality:
         modulation = 0.5 + 0.5 * np.sin(2 * np.pi * 3 * t)  # 3 Hz modulation
         clean_audio = clean_audio * modulation
 
-        # Scale to reasonable 16-bit range (avoid clipping)
-        clean_audio_int16 = (clean_audio * 8000).astype(np.int16)
+        # Normalize to [-1, 1] range first
+        clean_audio = clean_audio / np.max(np.abs(clean_audio))
 
-        # Add moderate noise
-        noise_std = np.std(clean_audio_int16) * 0.2  # 20% of signal std
-        noise = np.random.normal(0, noise_std, len(clean_audio_int16))
+        # Scale to reasonable 16-bit range (avoid clipping)
+        # Use higher amplitude for better SNR
+        clean_audio_int16 = (clean_audio * 16000).astype(np.int16)
+
+        # Add moderate noise (lower noise level for better SNR)
+        noise_level = 0.1  # 10% noise level
+        noise_amplitude = 16000 * noise_level  # Scale noise to same range
+        noise = np.random.normal(0, noise_amplitude, len(clean_audio_int16))
         noisy_audio = clean_audio_int16 + noise.astype(np.int16)
         noisy_audio = np.clip(noisy_audio, -32768, 32767).astype(np.int16)
 
-        # Calculate effective SNR
-        signal_power = np.mean(clean_audio_int16**2)
-        noise_power = np.mean(noise**2)
+        # Calculate effective SNR using RMS values
+        signal_rms = np.sqrt(np.mean(clean_audio_int16.astype(np.float64) ** 2))
+        noise_rms = np.sqrt(np.mean(noise**2))
 
         # Check signal is stronger than noise
         assert (
-            signal_power > noise_power * 4
-        ), "Signal power should be at least 4x noise power"
+            signal_rms > noise_rms * 2
+        ), f"Signal RMS {signal_rms:.1f} should be at least 2x noise RMS {noise_rms:.1f}"
 
         # Calculate SNR in dB
-        if noise_power > 0:
-            snr_db = 10 * np.log10(signal_power / noise_power)
+        if noise_rms > 0:
+            snr_db = 20 * np.log10(signal_rms / noise_rms)
             assert (
                 snr_db > 6
             ), f"SNR {snr_db:.1f}dB is too low for acceptable audio quality"

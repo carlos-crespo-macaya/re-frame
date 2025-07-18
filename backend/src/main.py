@@ -49,6 +49,7 @@ from src.utils.logging import (
     log_session_event,
     setup_logging,
 )
+from src.utils.performance_monitor import get_performance_monitor
 from src.utils.session_manager import session_manager
 
 warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
@@ -269,6 +270,12 @@ async def startup_event():
     await session_manager.start()
     logger.info("session_manager_started")
 
+    # Start performance monitoring
+    performance_monitor = get_performance_monitor()
+    # Create background task for periodic logging
+    asyncio.create_task(performance_monitor.log_periodic_summary())
+    logger.info("performance_monitoring_started")
+
 
 @app.on_event("shutdown")
 async def shutdown_event():
@@ -301,6 +308,17 @@ async def health_check() -> HealthCheckResponse:
         version="1.0.0",
         timestamp=datetime.now(UTC).isoformat(),
     )
+
+
+@app.get(
+    "/api/metrics",
+    summary="Performance metrics",
+    operation_id="getMetrics",
+)
+async def get_metrics():
+    """Get performance metrics for voice modality."""
+    performance_monitor = get_performance_monitor()
+    return performance_monitor.get_metrics()
 
 
 @app.get(
@@ -349,6 +367,10 @@ async def sse_endpoint(
         logger, session_id, "connected", is_audio=is_audio, language=language
     )
 
+    # Track session start for performance monitoring
+    performance_monitor = get_performance_monitor()
+    await performance_monitor.start_session(session_id)
+
     # Send initial greeting message
     logger.info("sending_initial_greeting", session_id=session_id)
     initial_content = Content(
@@ -384,7 +406,8 @@ async def sse_endpoint(
         total_events=len(greeting_events),
     )
 
-    def cleanup():
+    async def cleanup():
+        await performance_monitor.end_session(session_id)
         session_manager.remove_session(session_id)
         log_session_event(logger, session_id, "disconnected")
 
@@ -532,7 +555,7 @@ async def sse_endpoint(
         finally:
             if heartbeat_task and not heartbeat_task.done():
                 heartbeat_task.cancel()
-            cleanup()
+            await cleanup()
 
     return StreamingResponse(
         event_generator(),
@@ -555,167 +578,190 @@ async def send_message_endpoint(
     session_id: str, message: MessageRequest
 ) -> MessageResponse:
     """HTTP endpoint for client to agent communication"""
+    performance_monitor = get_performance_monitor()
 
-    # Get the session from session manager
-    session = session_manager.get_session(session_id)
-    if not session:
-        raise HTTPException(status_code=404, detail="Session not found")
+    async with performance_monitor.track_request(
+        "voice" if message.mime_type.startswith("audio/") else "text"
+    ):
+        # Get the session from session manager
+        session = session_manager.get_session(session_id)
+        if not session:
+            raise HTTPException(status_code=404, detail="Session not found")
 
-    # Get session components
-    runner = session.metadata.get("runner")
-    adk_session = session.metadata.get("adk_session")
-    run_config = session.metadata.get("run_config")
-    message_queue = session.metadata.get("message_queue")
+        # Get session components
+        runner = session.metadata.get("runner")
+        adk_session = session.metadata.get("adk_session")
+        run_config = session.metadata.get("run_config")
+        message_queue = session.metadata.get("message_queue")
 
-    if not all([runner, adk_session, run_config, message_queue]):
-        raise HTTPException(status_code=500, detail="Session not properly initialized")
+        if not all([runner, adk_session, run_config, message_queue]):
+            raise HTTPException(
+                status_code=500, detail="Session not properly initialized"
+            )
 
-    # Parse the message
-    mime_type = message.mime_type
-    data = message.data
+        # Parse the message
+        mime_type = message.mime_type
+        data = message.data
 
-    # Process the message based on type
-    if mime_type == "text/plain":
-        content = Content(role="user", parts=[Part.from_text(text=data)])
-
-        log_agent_event(
-            logger,
-            "message_received",
-            session_id=session_id,
-            mime_type=mime_type,
-            text=data,
-        )
-
-        # Process message and get events
-        try:
-            events = await process_message(runner, adk_session, content, run_config)
-
-            # Queue events for SSE delivery
-            event_count = 0
-            for event in events:
-                if message_queue:
-                    await message_queue.put(event)
-                event_count += 1
-
-            # Send a final turn_complete event after all content
-            turn_complete_event = type(
-                "Event",
-                (),
-                {
-                    "turn_complete": True,
-                    "interrupted": False,
-                    "content": None,
-                    "partial": False,
-                },
-            )()
-            if message_queue:
-                await message_queue.put(turn_complete_event)
+        # Process the message based on type
+        if mime_type == "text/plain":
+            content = Content(role="user", parts=[Part.from_text(text=data)])
 
             log_agent_event(
                 logger,
-                "message_processed",
+                "message_received",
                 session_id=session_id,
-                event_count=event_count,
+                mime_type=mime_type,
+                text=data,
             )
-        except Exception as e:
-            logger.error(
-                "message_processing_error", session_id=session_id, error=str(e)
-            )
-            raise HTTPException(
-                status_code=500, detail=f"Error processing message: {e!s}"
-            ) from e
-    elif mime_type == "audio/pcm":
-        if not config.VOICE_MODE_ENABLED:
+
+            # Process message and get events
+            try:
+                events = await process_message(runner, adk_session, content, run_config)
+
+                # Queue events for SSE delivery
+                event_count = 0
+                for event in events:
+                    if message_queue:
+                        await message_queue.put(event)
+                    event_count += 1
+
+                # Send a final turn_complete event after all content
+                turn_complete_event = type(
+                    "Event",
+                    (),
+                    {
+                        "turn_complete": True,
+                        "interrupted": False,
+                        "content": None,
+                        "partial": False,
+                    },
+                )()
+                if message_queue:
+                    await message_queue.put(turn_complete_event)
+
+                log_agent_event(
+                    logger,
+                    "message_processed",
+                    session_id=session_id,
+                    event_count=event_count,
+                )
+            except Exception as e:
+                logger.error(
+                    "message_processing_error", session_id=session_id, error=str(e)
+                )
+                raise HTTPException(
+                    status_code=500, detail=f"Error processing message: {e!s}"
+                ) from e
+        elif mime_type == "audio/pcm":
+            if not config.VOICE_MODE_ENABLED:
+                raise HTTPException(
+                    status_code=501,
+                    detail="Audio processing not yet implemented in request-response mode",
+                )
+
+            try:
+                async with performance_monitor.track_audio_processing("decode"):
+                    # Decode base64 audio
+                    audio_data = base64.b64decode(data)
+
+                    # Check audio size limit
+                    audio_size_mb = len(audio_data) / (1024 * 1024)
+                    if audio_size_mb > config.AUDIO_MAX_SIZE_MB:
+                        raise HTTPException(
+                            status_code=413,
+                            detail=f"Audio data too large: {audio_size_mb:.1f}MB exceeds {config.AUDIO_MAX_SIZE_MB}MB limit",
+                        )
+
+                # Log transcript but never log audio data
+                logger.info(
+                    f"Processing audio for session {session_id}, size: {len(audio_data)} bytes"
+                )
+
+                # Simulate STT processing with performance tracking
+                async with performance_monitor.track_audio_processing("stt"):
+                    # For now, use a simple approach - just return a mock transcript
+                    # In production, this would:
+                    # 1. Initialize STT service
+                    # 2. Process audio through STT
+                    # 3. Return actual transcript
+                    import time as time_module
+
+                    stt_start = time_module.time()
+
+                    # Mock transcript for testing
+                    transcript = "Hello, I need help with reframing my thoughts."
+
+                    # Simulate STT processing time
+                    await asyncio.sleep(0.1)  # Simulate 100ms STT processing
+
+                    stt_duration = time_module.time() - stt_start
+                    performance_monitor.record_stt_latency(stt_duration)
+
+                # Log transcript preview (never log full audio data)
+                logger.info(
+                    f"Transcribed audio for session {session_id}: {transcript[:50]}..."
+                )
+
+                # Process through normal text flow
+                content = Content(role="user", parts=[Part.from_text(text=transcript)])
+
+                # Process message and get events
+                async with performance_monitor.track_audio_processing(
+                    "agent_processing"
+                ):
+                    events = await process_message(
+                        runner, adk_session, content, run_config
+                    )
+
+                # Queue events for SSE delivery
+                event_count = 0
+                for event in events:
+                    if message_queue:
+                        await message_queue.put(event)
+                    event_count += 1
+
+                # Send turn_complete event
+                turn_complete_event = type(
+                    "Event",
+                    (),
+                    {
+                        "type": "turn_complete",
+                        "turn_complete": True,
+                        "server_content": {"model_turn": {"parts": []}},
+                    },
+                )()
+                if message_queue:
+                    await message_queue.put(turn_complete_event)
+
+                log_agent_event(
+                    logger,
+                    "audio_processed",
+                    session_id=session_id,
+                    event_count=event_count,
+                    transcript_preview=transcript[:50],
+                )
+
+            except HTTPException:
+                # Re-raise HTTP exceptions (like 413) as-is
+                raise
+            except Exception as e:
+                logger.error(f"Audio processing error: {e!s}")
+                raise HTTPException(
+                    status_code=500, detail="Audio processing failed"
+                ) from e
+        elif mime_type in AudioConverter.SUPPORTED_INPUT_FORMATS:
+            # Audio conversion not supported in request-response mode
             raise HTTPException(
                 status_code=501,
                 detail="Audio processing not yet implemented in request-response mode",
             )
-
-        try:
-            # Decode base64 audio
-            audio_data = base64.b64decode(data)
-
-            # Check audio size limit
-            audio_size_mb = len(audio_data) / (1024 * 1024)
-            if audio_size_mb > config.AUDIO_MAX_SIZE_MB:
-                raise HTTPException(
-                    status_code=413,
-                    detail=f"Audio data too large: {audio_size_mb:.1f}MB exceeds {config.AUDIO_MAX_SIZE_MB}MB limit",
-                )
-
-            # Log transcript but never log audio data
-            logger.info(
-                f"Processing audio for session {session_id}, size: {len(audio_data)} bytes"
-            )
-
-            # For now, use a simple approach - just return a mock transcript
-            # In production, this would:
-            # 1. Initialize STT service
-            # 2. Process audio through STT
-            # 3. Return actual transcript
-
-            # Mock transcript for testing
-            transcript = "Hello, I need help with reframing my thoughts."
-
-            # Log transcript preview (never log full audio data)
-            logger.info(
-                f"Transcribed audio for session {session_id}: {transcript[:50]}..."
-            )
-
-            # Process through normal text flow
-            content = Content(role="user", parts=[Part.from_text(text=transcript)])
-
-            # Process message and get events
-            events = await process_message(runner, adk_session, content, run_config)
-
-            # Queue events for SSE delivery
-            event_count = 0
-            for event in events:
-                if message_queue:
-                    await message_queue.put(event)
-                event_count += 1
-
-            # Send turn_complete event
-            turn_complete_event = type(
-                "Event",
-                (),
-                {
-                    "type": "turn_complete",
-                    "turn_complete": True,
-                    "server_content": {"model_turn": {"parts": []}},
-                },
-            )()
-            if message_queue:
-                await message_queue.put(turn_complete_event)
-
-            log_agent_event(
-                logger,
-                "audio_processed",
-                session_id=session_id,
-                event_count=event_count,
-                transcript_preview=transcript[:50],
-            )
-
-        except HTTPException:
-            # Re-raise HTTP exceptions (like 413) as-is
-            raise
-        except Exception as e:
-            logger.error(f"Audio processing error: {e!s}")
+        else:
             raise HTTPException(
-                status_code=500, detail="Audio processing failed"
-            ) from e
-    elif mime_type in AudioConverter.SUPPORTED_INPUT_FORMATS:
-        # Audio conversion not supported in request-response mode
-        raise HTTPException(
-            status_code=501,
-            detail="Audio processing not yet implemented in request-response mode",
-        )
-    else:
-        raise HTTPException(
-            status_code=415, detail=f"Mime type not supported: {mime_type}"
-        )
+                status_code=415, detail=f"Mime type not supported: {mime_type}"
+            )
 
-    return MessageResponse(status="sent", error=None)
+        return MessageResponse(status="sent", error=None)
 
 
 @app.get(
