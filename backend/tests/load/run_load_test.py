@@ -12,6 +12,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 import httpx
+
 from tests.fixtures import AudioSamples
 
 
@@ -50,7 +51,7 @@ async def run_concurrent_test(
 
         for iteration in range(iterations):
             print(f"\n📊 Iteration {iteration + 1}/{iterations}")
-            
+
             # Create tasks for concurrent users
             tasks = [
                 simulate_voice_user(client, user_id + (iteration * num_users))
@@ -63,10 +64,7 @@ async def run_concurrent_test(
             iteration_time = time.time() - start_time
 
             # Analyze results
-            successful = [
-                r for r in results if isinstance(r, tuple) and r[0] == 200
-            ]
-            failed = len(results) - len(successful)
+            successful = [r for r in results if isinstance(r, tuple) and r[0] == 200]
 
             response_times = [r[1] for r in successful]
             all_response_times.extend(response_times)
@@ -79,12 +77,14 @@ async def run_concurrent_test(
                 avg_time = sum(response_times) / len(response_times)
                 min_time = min(response_times)
                 max_time = max(response_times)
-                
+
                 print(f"  ✅ Success: {len(successful)}/{len(results)}")
-                print(f"  ⏱️  Response times - Min: {min_time:.2f}s, Avg: {avg_time:.2f}s, Max: {max_time:.2f}s")
+                print(
+                    f"  ⏱️  Response times - Min: {min_time:.2f}s, Avg: {avg_time:.2f}s, Max: {max_time:.2f}s"
+                )
                 print(f"  🏁 Iteration completed in {iteration_time:.2f}s")
             else:
-                print(f"  ❌ All requests failed!")
+                print("  ❌ All requests failed!")
 
             # Brief pause between iterations
             if iteration < iterations - 1:
@@ -106,7 +106,7 @@ async def run_concurrent_test(
         p95 = all_response_times[int(len(all_response_times) * 0.95)]
         p99 = all_response_times[int(len(all_response_times) * 0.99)]
 
-        print(f"\nResponse time percentiles:")
+        print("\nResponse time percentiles:")
         print(f"  Average: {avg_time:.3f}s")
         print(f"  P50: {p50:.3f}s")
         print(f"  P95: {p95:.3f}s")
@@ -136,7 +136,7 @@ async def run_sustained_test(
                 )
                 request_count += 1
                 worker_request_count += 1
-                
+
                 if status == 200:
                     success_count += 1
                     response_times.append(elapsed)
@@ -153,7 +153,7 @@ async def run_sustained_test(
         actual_duration = time.time() - start_time
         actual_rate = request_count / actual_duration
 
-        print(f"\n📊 Sustained test completed:")
+        print("\n📊 Sustained test completed:")
         print(f"  Duration: {actual_duration:.1f}s")
         print(f"  Total requests: {request_count}")
         print(f"  Actual rate: {actual_rate:.1f} req/s")
