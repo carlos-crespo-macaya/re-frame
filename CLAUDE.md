@@ -15,11 +15,20 @@ A transparent, AI-assisted tool designed for people with Avoidant Personality Di
 ```
 re-frame/
 ├── frontend/          # Next.js 14 frontend application
+│   └── CLAUDE.md     # Frontend-specific instructions
 ├── backend/           # FastAPI backend with ADK agents
+│   └── CLAUDE.md     # Backend-specific instructions
 ├── docs/              # Shared documentation
 ├── scripts/           # Utility scripts
 └── docker-compose.yml # Local development setup
 ```
+
+## Directory-Specific Instructions
+
+Claude will automatically use the most specific CLAUDE.md based on your working directory:
+- **Working in `/frontend`**: Uses `frontend/CLAUDE.md` for frontend-specific guidance
+- **Working in `/backend`**: Uses `backend/CLAUDE.md` for backend-specific guidance
+- **Working in root or other directories**: Uses this file for general project guidance
 
 ## Commands Reference
 

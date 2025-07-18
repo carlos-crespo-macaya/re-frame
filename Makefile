@@ -109,6 +109,16 @@ docker-clean: ## Clean up Docker resources
 db-migrate: ## Run database migrations
 	@echo "No database migrations configured yet"
 
+# Documentation management
+.PHONY: check-docs
+check-docs: ## Check if CLAUDE.md files need updating
+	@./scripts/update-claude-docs.sh
+
+.PHONY: update-docs
+update-docs: ## Update CLAUDE.md files (interactive)
+	@echo "Run: /update-claude-docs"
+	@echo "This will analyze recent changes and update CLAUDE.md files"
+
 # Dependency management
 .PHONY: install
 install: install-frontend install-backend ## Install all dependencies
