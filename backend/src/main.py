@@ -688,7 +688,9 @@ async def send_message_endpoint(
 
         except Exception as e:
             logger.error(f"Audio processing error: {e!s}")
-            raise HTTPException(status_code=500, detail="Audio processing failed") from e
+            raise HTTPException(
+                status_code=500, detail="Audio processing failed"
+            ) from e
     elif mime_type in AudioConverter.SUPPORTED_INPUT_FORMATS:
         # Audio conversion not supported in request-response mode
         raise HTTPException(
