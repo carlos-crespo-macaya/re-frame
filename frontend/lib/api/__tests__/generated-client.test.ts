@@ -25,7 +25,7 @@ describe('Generated API Client', () => {
     // This would fail TypeScript compilation:
     // const invalidRequest: MessageRequest = {
     //   mimeType: 'text/plain', // Wrong property name
-    //   data: 'test',
+    //   content: 'test',         // Wrong property name
     // }
 
     expect(validRequest.mime_type).toBe('text/plain')
@@ -36,8 +36,8 @@ describe('Generated API Client', () => {
     // This verifies the response type structure
     const mockResponse: HealthCheckResponse = {
       status: 'healthy',
-      service: 'CBT Reframing Assistant API',
       timestamp: new Date().toISOString(),
+      service: 'CBT Reframing Assistant API',
       version: '1.0.0',
     }
 

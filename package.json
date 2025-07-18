@@ -20,6 +20,10 @@
     "docker:build": "docker-compose build",
     "docker:up": "docker-compose up",
     "docker:down": "docker-compose down",
+    "e2e": "npx playwright test --config playwright.config.ts",
+    "e2e:ui": "npx playwright test --ui --config playwright.config.ts",
+    "e2e:js": "npx playwright test --config playwright-js/playwright.config.ts",
+    "e2e:js:ui": "npx playwright test --ui --config playwright-js/playwright.config.ts",
     "test:e2e": "cd frontend && pnpm playwright test",
     "test:e2e:ui": "cd frontend && pnpm playwright test --ui",
     "test:e2e:debug": "cd frontend && pnpm playwright test --debug",
@@ -38,5 +42,9 @@
     "node": ">=18.0.0",
     "pnpm": ">=8.0.0"
   },
-  "packageManager": "pnpm@10.11.0+sha512.6540583f41cc5f628eb3d9773ecee802f4f9ef9923cc45b69890fb47991d4b092964694ec3a4f738a420c918a333062c8b925d312f42e4f0c263eb603551f977"
+  "packageManager": "pnpm@10.11.0+sha512.6540583f41cc5f628eb3d9773ecee802f4f9ef9923cc45b69890fb47991d4b092964694ec3a4f738a420c918a333062c8b925d312f42e4f0c263eb603551f977",
+  "dependencies": {
+    "@playwright/test": "^1.54.1",
+    "pnpm": "^10.13.1"
+  }
 }

@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import asyncio
 import base64
 import json
 import os
@@ -24,10 +25,9 @@ from fastapi import FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
-from google.adk.agents.live_request_queue import LiveRequestQueue
 from google.adk.agents.run_config import RunConfig
 from google.adk.runners import InMemoryRunner
-from google.genai.types import Blob, Content, Part, SpeechConfig
+from google.genai.types import Content, Part, SpeechConfig
 
 # Import CBT assistant instead of search agent
 from src.agents.cbt_assistant import create_cbt_assistant
@@ -41,9 +41,19 @@ from src.models import (
     SessionListResponse,
 )
 from src.utils.audio_converter import AudioConverter
+from src.utils.logging import (
+    get_logger,
+    log_agent_event,
+    log_session_event,
+    setup_logging,
+)
 from src.utils.session_manager import session_manager
 
 warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
+
+# Set up logging
+setup_logging(log_level=os.getenv("LOG_LEVEL", "INFO"))
+logger = get_logger(__name__)
 
 #
 # ADK Streaming
@@ -51,27 +61,37 @@ warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
 
 # Load Gemini API Key
 load_dotenv()
+logger.info("application_started", app_name="CBT Reframing Assistant")
 
 APP_NAME = "CBT Reframing Assistant"
 
 
 async def start_agent_session(user_id, is_audio=False, language_code="en-US"):
     """Starts an agent session"""
+    logger.info(
+        "agent_session_starting",
+        user_id=user_id,
+        is_audio=is_audio,
+        language_code=language_code,
+    )
 
-    # Create the CBT assistant agent
-    cbt_agent = create_cbt_assistant()
+    # Create the CBT assistant agent with language support
+    cbt_agent = create_cbt_assistant(language_code=language_code)
+    logger.debug("cbt_agent_created", agent_name=cbt_agent.name)
 
     # Create a Runner
     runner = InMemoryRunner(
         app_name=APP_NAME,
         agent=cbt_agent,
     )
+    logger.debug("runner_created", app_name=APP_NAME)
 
     # Create a Session
     session = await runner.session_service.create_session(
         app_name=APP_NAME,
         user_id=user_id,  # Replace with actual user ID
     )
+    logger.info("adk_session_created", session=str(session), user_id=user_id)
 
     # Set response modality
     modality = "AUDIO" if is_audio else "TEXT"
@@ -80,56 +100,121 @@ async def start_agent_session(user_id, is_audio=False, language_code="en-US"):
         speech_config=SpeechConfig(language_code=language_code),
     )
 
-    # Create a LiveRequestQueue for this session
-    live_request_queue = LiveRequestQueue()
+    # Return runner, session, and run_config for later use
+    return runner, session, run_config
 
-    # Start agent session
-    live_events = runner.run_live(
-        session=session,
-        live_request_queue=live_request_queue,
+
+async def process_message(runner, session, message_content, run_config):
+    """Process a single message using run_async"""
+    logger.info("processing_message", session=str(session))
+
+    # Use run_async for request-response pattern
+    events = []
+    async for event in runner.run_async(
+        user_id=session.user_id,
+        session_id=session.id,
+        new_message=message_content,
         run_config=run_config,
-    )
-    return live_events, live_request_queue
+    ):
+        events.append(event)
+
+    logger.info("message_processed", session=str(session), event_count=len(events))
+    return events
 
 
 async def agent_to_client_sse(live_events):
     """Agent to client communication via SSE"""
     async for event in live_events:
-        # If the turn complete or interrupted, send it
-        if event.turn_complete or event.interrupted:
+        logger.debug(
+            "agent_event_received",
+            event_type=type(event).__name__,
+            has_content=hasattr(event, "content") and event.content is not None,
+            has_turn_complete=hasattr(event, "turn_complete"),
+            has_interrupted=hasattr(event, "interrupted"),
+            has_partial=hasattr(event, "partial"),
+        )
+
+        # Check if this is the final event with turn_complete
+        is_turn_complete = hasattr(event, "turn_complete") and event.turn_complete
+
+        # Only send turn_complete if there's no content (it's a standalone turn complete event)
+        if is_turn_complete and not (hasattr(event, "content") and event.content):
             message = {
-                "turn_complete": event.turn_complete,
-                "interrupted": event.interrupted,
+                "turn_complete": True,
+                "interrupted": getattr(event, "interrupted", False),
             }
             yield f"data: {json.dumps(message)}\n\n"
-            print(f"[AGENT TO CLIENT]: {message}")
+            log_agent_event(
+                logger,
+                "turn_complete",
+                turn_complete=True,
+                interrupted=getattr(event, "interrupted", False),
+            )
             continue
 
         # Read the Content and its first Part
-        part: Part = event.content and event.content.parts and event.content.parts[0]
-        if not part:
-            continue
+        if hasattr(event, "content") and event.content:
+            logger.debug(
+                "event_has_content",
+                content_role=getattr(event.content, "role", None),
+                parts_count=(
+                    len(event.content.parts) if hasattr(event.content, "parts") else 0
+                ),
+            )
 
-        # If it's audio, send Base64 encoded audio data
-        is_audio = part.inline_data and part.inline_data.mime_type.startswith(
-            "audio/pcm"
-        )
-        if is_audio:
-            audio_data = part.inline_data and part.inline_data.data
-            if audio_data:
-                message = {
-                    "mime_type": "audio/pcm",
-                    "data": base64.b64encode(audio_data).decode("ascii"),
-                }
-                yield f"data: {json.dumps(message)}\n\n"
-                print(f"[AGENT TO CLIENT]: audio/pcm: {len(audio_data)} bytes.")
-                continue
+            if hasattr(event.content, "parts") and event.content.parts:
+                part = event.content.parts[0]
 
-        # If it's text and a parial text, send it
-        if part.text and event.partial:
-            message = {"mime_type": "text/plain", "data": part.text}
-            yield f"data: {json.dumps(message)}\n\n"
-            print(f"[AGENT TO CLIENT]: text/plain: {message}")
+                # If it's audio, send Base64 encoded audio data
+                if (
+                    hasattr(part, "inline_data")
+                    and part.inline_data
+                    and hasattr(part.inline_data, "mime_type")
+                ):
+                    is_audio = part.inline_data.mime_type.startswith("audio/pcm")
+                    if is_audio and hasattr(part.inline_data, "data"):
+                        audio_data = part.inline_data.data
+                        if audio_data:
+                            message = {
+                                "mime_type": "audio/pcm",
+                                "data": base64.b64encode(audio_data).decode("ascii"),
+                            }
+                            yield f"data: {json.dumps(message)}\n\n"
+                            log_agent_event(
+                                logger,
+                                "audio_sent",
+                                mime_type="audio/pcm",
+                                size_bytes=len(audio_data),
+                            )
+                            continue
+
+                # If it's text, send it (remove partial check for now)
+                if hasattr(part, "text") and part.text:
+                    logger.debug("part_has_text", text_preview=part.text[:100])
+                    message = {"mime_type": "text/plain", "data": part.text}
+                    yield f"data: {json.dumps(message)}\n\n"
+                    log_agent_event(
+                        logger,
+                        "text_sent",
+                        mime_type="text/plain",
+                        text=part.text,
+                        is_partial=getattr(event, "partial", False),
+                    )
+
+                    # If this event also has turn_complete, send that too
+                    if is_turn_complete:
+                        logger.debug(
+                            "sending_turn_complete_after_content",
+                            is_turn_complete=is_turn_complete,
+                        )
+                        message = {
+                            "turn_complete": True,
+                            "interrupted": getattr(event, "interrupted", False),
+                        }
+                        yield f"data: {json.dumps(message)}\n\n"
+                        log_agent_event(
+                            logger, "turn_complete_after_content", turn_complete=True
+                        )
 
 
 #
@@ -178,13 +263,17 @@ if STATIC_DIR.exists():
 @app.on_event("startup")
 async def startup_event():
     """Start background tasks on startup."""
+    logger.info("starting_session_manager")
     await session_manager.start()
+    logger.info("session_manager_started")
 
 
 @app.on_event("shutdown")
 async def shutdown_event():
     """Clean up on shutdown."""
+    logger.info("stopping_session_manager")
     await session_manager.stop()
+    logger.info("application_shutdown")
 
 
 @app.get("/", summary="Root endpoint", operation_id="getRoot")
@@ -238,7 +327,7 @@ async def sse_endpoint(
 
     # Start agent session for GET requests
     # Use session_id as user_id for ADK
-    live_events, live_request_queue = await start_agent_session(
+    runner, adk_session, run_config = await start_agent_session(
         session_id, is_audio, language
     )
 
@@ -246,27 +335,201 @@ async def sse_endpoint(
     session_info = session_manager.create_session(
         session_id=session_id,
         user_id=session_id,  # Using session_id as user_id for POC
-        request_queue=live_request_queue,
+        request_queue=None,  # No longer using LiveRequestQueue
     )
     session_info.metadata["language"] = language
+    session_info.metadata["runner"] = runner
+    session_info.metadata["adk_session"] = adk_session
+    session_info.metadata["run_config"] = run_config
+    session_info.metadata["message_queue"] = asyncio.Queue()
 
-    print(f"Client session {session_id} connected via SSE, audio mode: {is_audio}")
+    log_session_event(
+        logger, session_id, "connected", is_audio=is_audio, language=language
+    )
+
+    # Send initial greeting message
+    logger.info("sending_initial_greeting", session_id=session_id)
+    initial_content = Content(
+        role="user",
+        parts=[
+            Part.from_text(text="[System: New session started. Please greet the user.]")
+        ],
+    )
+
+    # Process initial greeting
+    greeting_events = await process_message(
+        runner, adk_session, initial_content, run_config
+    )
+
+    # Queue the greeting events
+    logger.info(
+        "queueing_greeting_events",
+        session_id=session_id,
+        event_count=len(greeting_events),
+    )
+    for i, event in enumerate(greeting_events):
+        logger.debug(
+            "queueing_event",
+            session_id=session_id,
+            event_index=i,
+            event_type=type(event).__name__,
+            has_content=hasattr(event, "content") and event.content is not None,
+        )
+        await session_info.metadata["message_queue"].put(event)
+    logger.info(
+        "greeting_events_queued",
+        session_id=session_id,
+        total_events=len(greeting_events),
+    )
 
     def cleanup():
         session_manager.remove_session(session_id)
-        print(f"Client session {session_id} disconnected from SSE")
+        log_session_event(logger, session_id, "disconnected")
 
     async def event_generator():
+        heartbeat_task = None
+
+        # Simple queue for heartbeats
+        heartbeat_queue = asyncio.Queue(maxsize=1)
+
+        async def send_heartbeats():
+            """Send heartbeats every 15 seconds."""
+            try:
+                while True:
+                    await asyncio.sleep(15)
+                    try:
+                        # Use put_nowait to avoid blocking if queue is full
+                        heartbeat_queue.put_nowait(
+                            {
+                                "type": "heartbeat",
+                                "timestamp": datetime.now(UTC).isoformat(),
+                            }
+                        )
+                    except asyncio.QueueFull:
+                        # If queue is full, remove old heartbeat and add new one
+                        try:
+                            heartbeat_queue.get_nowait()
+                            heartbeat_queue.put_nowait(
+                                {
+                                    "type": "heartbeat",
+                                    "timestamp": datetime.now(UTC).isoformat(),
+                                }
+                            )
+                        except Exception:
+                            pass
+            except asyncio.CancelledError:
+                pass
+
         try:
             # Send initial connection event
             yield f"data: {json.dumps({'type': 'connected', 'session_id': session_id})}\n\n"
 
-            async for data in agent_to_client_sse(live_events):
-                yield data
+            # Start heartbeat sender
+            heartbeat_task = asyncio.create_task(send_heartbeats())
+
+            # Get message queue from session
+            message_queue = session_info.metadata.get("message_queue")
+            if not message_queue:
+                logger.error("no_message_queue", session_id=session_id)
+                yield f"data: {json.dumps({'type': 'error', 'message': 'No message queue'})}\\n\\n"
+                return
+
+            # Process events from queue
+            async def get_next_event():
+                """Get next event from queue"""
+                try:
+                    event = await message_queue.get()
+                    logger.debug(
+                        "event_retrieved_from_queue",
+                        session_id=session_id,
+                        event_type=type(event).__name__,
+                    )
+                    return event
+                except Exception as e:
+                    logger.error("queue_get_error", error=str(e))
+                    return None
+
+            while True:
+                # Wait for either a heartbeat or a queued message
+                tasks = []
+
+                # Always wait for heartbeats
+                heartbeat_task = asyncio.create_task(heartbeat_queue.get())
+                tasks.append(heartbeat_task)
+
+                # Wait for next event from queue
+                event_task = asyncio.create_task(get_next_event())
+                tasks.append(event_task)
+
+                # Wait for first task to complete if we have tasks
+                if not tasks:
+                    await asyncio.sleep(0.1)
+                    continue
+
+                done, pending = await asyncio.wait(
+                    tasks, return_when=asyncio.FIRST_COMPLETED
+                )
+
+                # Cancel pending tasks
+                for task in pending:
+                    task.cancel()
+                    try:
+                        await task
+                    except asyncio.CancelledError:
+                        pass
+
+                # Process completed tasks
+                for task in done:
+                    if task == heartbeat_task:
+                        try:
+                            heartbeat_msg = task.result()
+                            yield f"data: {json.dumps(heartbeat_msg)}\n\n"
+                            logger.debug(
+                                "heartbeat_sent",
+                                session_id=session_id,
+                                timestamp=heartbeat_msg.get("timestamp"),
+                            )
+                        except Exception as e:
+                            logger.error("heartbeat_error", error=str(e))
+                    elif task == event_task:
+                        try:
+                            event = task.result()
+                            if event:
+                                logger.info(
+                                    "processing_agent_event",
+                                    session_id=session_id,
+                                    event_type=type(event).__name__,
+                                    has_content=hasattr(event, "content"),
+                                    has_turn_complete=hasattr(event, "turn_complete"),
+                                    has_partial=hasattr(event, "partial"),
+                                )
+
+                                # Convert event to SSE format
+                                # Create an async generator from the single event
+                                async def single_event(evt=event):
+                                    yield evt
+
+                                async for sse_msg in agent_to_client_sse(
+                                    single_event()
+                                ):
+                                    logger.debug(
+                                        "sse_message_generated",
+                                        session_id=session_id,
+                                        message_preview=sse_msg[:100],
+                                    )
+                                    yield sse_msg
+                        except Exception as e:
+                            logger.error(
+                                "event_processing_error", error=str(e), exc_info=True
+                            )
         except Exception as e:
-            print(f"Error in SSE stream: {e}")
+            logger.error(
+                "sse_stream_error", session_id=session_id, error=str(e), exc_info=True
+            )
             yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
         finally:
+            if heartbeat_task and not heartbeat_task.done():
+                heartbeat_task.cancel()
             cleanup()
 
     return StreamingResponse(
@@ -293,66 +556,82 @@ async def send_message_endpoint(
 
     # Get the session from session manager
     session = session_manager.get_session(session_id)
-    if not session or not session.request_queue:
+    if not session:
         raise HTTPException(status_code=404, detail="Session not found")
 
-    live_request_queue = session.request_queue
+    # Get session components
+    runner = session.metadata.get("runner")
+    adk_session = session.metadata.get("adk_session")
+    run_config = session.metadata.get("run_config")
+    message_queue = session.metadata.get("message_queue")
+
+    if not all([runner, adk_session, run_config, message_queue]):
+        raise HTTPException(status_code=500, detail="Session not properly initialized")
 
     # Parse the message
     mime_type = message.mime_type
     data = message.data
 
-    # Send the message to the agent
+    # Process the message based on type
     if mime_type == "text/plain":
         content = Content(role="user", parts=[Part.from_text(text=data)])
-        live_request_queue.send_content(content=content)
-        print(f"[CLIENT TO AGENT]: {data}")
-    elif mime_type == "audio/pcm":
-        decoded_data = base64.b64decode(data)
-        live_request_queue.send_realtime(Blob(data=decoded_data, mime_type=mime_type))
-        print(f"[CLIENT TO AGENT]: audio/pcm: {len(decoded_data)} bytes")
-    elif mime_type in AudioConverter.SUPPORTED_INPUT_FORMATS:
-        # For now, we need to properly convert audio to PCM
-        # ADK only accepts audio/pcm format
-        if mime_type == "audio/webm":
-            # WebM conversion is not implemented yet
+
+        log_agent_event(
+            logger,
+            "message_received",
+            session_id=session_id,
+            mime_type=mime_type,
+            text=data,
+        )
+
+        # Process message and get events
+        try:
+            events = await process_message(runner, adk_session, content, run_config)
+
+            # Queue events for SSE delivery
+            for event in events:
+                if message_queue:
+                    await message_queue.put(event)
+
+            # Send a final turn_complete event after all content
+            turn_complete_event = type(
+                "Event",
+                (),
+                {
+                    "turn_complete": True,
+                    "interrupted": False,
+                    "content": None,
+                    "partial": False,
+                },
+            )()
+            if message_queue:
+                await message_queue.put(turn_complete_event)
+
+            log_agent_event(
+                logger,
+                "message_processed",
+                session_id=session_id,
+                event_count=len(events),
+            )
+        except Exception as e:
+            logger.error(
+                "message_processing_error", session_id=session_id, error=str(e)
+            )
             raise HTTPException(
-                status_code=501,
-                detail="WebM audio conversion is not implemented. Please use WAV format or send PCM directly.",
-            )
-        else:
-            # Convert other audio formats to PCM
-            decoded_data = base64.b64decode(data)
-            pcm_data, metrics = AudioConverter.convert_to_pcm(decoded_data, mime_type)
-
-            # Log conversion metrics
-            print(
-                f"[AUDIO CONVERSION]: {mime_type} -> PCM in {metrics['conversion_time']:.1f}ms"
-            )
-            print(
-                f"[AUDIO CONVERSION]: {metrics['input_size']} -> {metrics['output_size']} bytes"
-            )
-
-            if metrics.get("error"):
-                raise HTTPException(
-                    status_code=422,
-                    detail=f"Audio conversion failed: {metrics['error']}",
-                )
-
-            if not pcm_data:
-                raise HTTPException(
-                    status_code=422, detail="Audio conversion resulted in empty data"
-                )
-
-            # Validate PCM data
-            if not AudioConverter.validate_pcm_data(pcm_data):
-                raise HTTPException(
-                    status_code=422, detail="Invalid PCM data after conversion"
-                )
-
-            # Send converted PCM to agent
-            live_request_queue.send_realtime(Blob(data=pcm_data, mime_type="audio/pcm"))
-            print(f"[CLIENT TO AGENT]: converted audio/pcm: {len(pcm_data)} bytes")
+                status_code=500, detail=f"Error processing message: {e!s}"
+            ) from e
+    elif mime_type == "audio/pcm":
+        # For now, audio is not supported in non-live mode
+        raise HTTPException(
+            status_code=501,
+            detail="Audio processing not yet implemented in request-response mode",
+        )
+    elif mime_type in AudioConverter.SUPPORTED_INPUT_FORMATS:
+        # Audio conversion not supported in request-response mode
+        raise HTTPException(
+            status_code=501,
+            detail="Audio processing not yet implemented in request-response mode",
+        )
     else:
         raise HTTPException(
             status_code=415, detail=f"Mime type not supported: {mime_type}"
