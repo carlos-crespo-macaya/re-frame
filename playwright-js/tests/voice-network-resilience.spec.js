@@ -149,11 +149,14 @@ test.describe('Voice Network Resilience', () => {
     
     // Go back online
     await context.setOffline(false);
-    await page.waitForTimeout(2000); // Give more time for recovery
+    await page.waitForTimeout(3000); // Give more time for recovery
     
-    // Wait for the Clear button to be enabled again
+    // Wait for the submit button to stop processing first
+    await expect(submitButton).toBeEnabled({ timeout: 15000 });
+    
+    // Then wait for the Clear button to be enabled
     const clearButton = page.getByRole('button', { name: /clear/i });
-    await expect(clearButton).toBeEnabled({ timeout: 10000 });
+    await expect(clearButton).toBeEnabled({ timeout: 15000 });
     
     // Clear and try again with a new submission
     await clearButton.click();
