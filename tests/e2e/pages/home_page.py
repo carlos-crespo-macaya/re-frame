@@ -58,13 +58,15 @@ class HomePage(BasePage):
         input_element = self.page.locator(self.THOUGHT_INPUT)
         await expect(input_element).to_have_value("")
     
-    async def wait_for_response(self, timeout: int = 30000) -> str:
+    async def wait_for_response(self, timeout: int = 120000) -> str:
         """Wait for and return the reframed response."""
         # The app displays responses in a div with these classes
         response_selector = 'div.mt-8.p-6.bg-\\[\\#2a2a2a\\]'
         
-        # Wait for response element to appear
-        response_element = await self.wait_for_element(response_selector, timeout=timeout)
+        # Ensure the response container is present (may already exist from a
+        # previous turn). We use the *first* one consistently.
+        response_element = self.page.locator(response_selector).first
+        await response_element.wait_for(state="visible", timeout=timeout)
         
         # Get the text content from the prose div inside
         prose_element = response_element.locator(self.RESPONSE_CONTAINER)
@@ -74,21 +76,27 @@ class HomePage(BasePage):
         # This ensures we get the complete response, not a partial one
         previous_text = ""
         stable_count = 0
-        check_interval = 500  # Check every 500ms
-        
-        while stable_count < 2:  # Need 2 consecutive checks with same text
+        check_interval = 500  # ms
+        elapsed = 0
+
+        while stable_count < 2 and elapsed < timeout:
             await self.page.wait_for_timeout(check_interval)
+            elapsed += check_interval
+
             current_text = await prose_element.text_content() or ""
-            
+
             if current_text == previous_text:
                 stable_count += 1
             else:
                 stable_count = 0
                 previous_text = current_text
-            
-            # Safety check to avoid infinite loop
-            if stable_count == 0 and check_interval * 10 > timeout:
-                break
+
+        if stable_count < 2:
+            snippet = (previous_text or "").strip().replace("\n", " ")[:120]
+            raise AssertionError(
+                f"Assistant response did not stabilise within {timeout/1000:.1f}s. "
+                f"Last text: '{snippet}…'"
+            )
         
         # Also wait for loading indicator to be hidden if it's present
         try:
