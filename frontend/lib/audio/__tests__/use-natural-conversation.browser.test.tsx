@@ -1,4 +1,4 @@
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook, act } from '@testing-library/react';
 import { useNaturalConversation } from '../use-natural-conversation';
 
 // Polyfill for Safari/WebKit
@@ -35,9 +35,14 @@ describe('Browser Compatibility', () => {
       ])
     };
     
-    navigator.mediaDevices = {
-      getUserMedia: jest.fn().mockResolvedValue(mockMediaStream),
-    } as any;
+    // Use Object.defineProperty to override readonly property
+    Object.defineProperty(navigator, 'mediaDevices', {
+      value: {
+        getUserMedia: jest.fn().mockResolvedValue(mockMediaStream),
+      },
+      writable: true,
+      configurable: true,
+    });
   });
   
   afterEach(() => {
