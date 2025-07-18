@@ -7,14 +7,13 @@ rest of the code to load, we create minimal placeholder modules at import
 time and register them in ``sys.modules`` so Python considers them real
 packages.
 
-Only the names required by the current test-suite are implemented.  The goal
-is **not** to replicate functionality – just to be import-compatible and let
+# Only the names required by the current test-suite are implemented.  The goal
+# is **not** to replicate functionality - just to be import-compatible and let
 the business logic under test run with simple dummies.
 """
 
-from types import ModuleType
 import sys
-
+from types import ModuleType
 
 # ---------------------------------------------------------------------------
 # Helper utilities
@@ -42,18 +41,18 @@ adk_pkg = _ensure_module("google.adk")
 agents_pkg = _ensure_module("google.adk.agents")
 
 
-class _StubLlmAgent:  # noqa: D401 – simple stub class
+class _StubLlmAgent:
     """Bare-bones stand-in for the real `google.adk.agents.LlmAgent`."""
 
     def __init__(self, *_, **kwargs):  # accept any args so callers don't fail
         self.name = kwargs.get("name", "StubLlmAgent")
         self.tools = kwargs.get("tools", [])
 
-    # The real API exposes a ``__call__`` – we just echo the prompt
-    def __call__(self, prompt: str, *_, **__) -> str:  # noqa: D401
+    # The real API exposes a ``__call__`` - we just echo the prompt
+    def __call__(self, prompt: str, *_, **__) -> str:
         return f"[STUB RESPONSE] {prompt}"
 
-    def __repr__(self) -> str:  # pragma: no cover – debugging helper
+    def __repr__(self) -> str:  # pragma: no cover - debugging helper
         return f"<StubLlmAgent name={self.name!r} tools={self.tools!r}>"
 
 
@@ -62,11 +61,11 @@ agents_pkg.LlmAgent = _StubLlmAgent  # type: ignore[attr-defined]
 
 
 # Make ``from google.adk.agents import LlmAgent`` work
-sys.modules["google.adk.agents"].LlmAgent = _StubLlmAgent  # noqa: SLF001
+sys.modules["google.adk.agents"].LlmAgent = _StubLlmAgent
 
 
 # ---------------------------------------------------------------------------
-# google.cloud sub-packages (speech, texttospeech) – empty stubs
+# google.cloud sub-packages (speech, texttospeech) - empty stubs
 # ---------------------------------------------------------------------------
 
 
@@ -76,7 +75,7 @@ _ensure_module("google.cloud.texttospeech")
 
 
 # ---------------------------------------------------------------------------
-# google.genai stub (empty – just needs to exist)
+# google.genai stub (empty - just needs to exist)
 # ---------------------------------------------------------------------------
 
 
@@ -94,10 +93,10 @@ _ensure_module("tests")
 _ensure_module("tests.e2e")
 
 # ---------------------------------------------------------------------------
-# Legacy dummy classes – kept to satisfy unit tests that assert for their
+# Legacy dummy classes - kept to satisfy unit tests that assert for their
 # presence within this stub file.  They do **not** participate in any runtime
 # logic after the refactor above but provide a stable public surface so we
-# don’t have to modify the existing test expectations.
+# do not have to modify the existing test expectations.
 # ---------------------------------------------------------------------------
 
 
@@ -122,7 +121,7 @@ class genai:  # noqa: N801
 
 
 # Re-export public names so ``import google as g; g.adk`` still works.
-import types as _types  # noqa: ABS101 – internal import
+import types as _types  # noqa: E402
 
 google_pkg.adk = adk_pkg  # type: ignore[attr-defined]
 google_pkg.cloud = cloud_pkg  # type: ignore[attr-defined]

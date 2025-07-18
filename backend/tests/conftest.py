@@ -29,7 +29,7 @@ def pytest_configure(config):
 # ---------------------------------------------------------------------------
 
 
-def pytest_ignore_collect(path, config):  # noqa: D401 – pytest naming
+def pytest_ignore_collect(path, config):
     """Skip E2E playwright tests during the backend unit-test run.
 
     These tests live under ``tests/e2e`` at the repository root and require a
