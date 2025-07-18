@@ -100,7 +100,7 @@ cleanup() {
   echo ""
   echo "Cleaning up..."
   if [ "$TEST_MODE" = "docker" ]; then
-    docker-compose -f docker-compose.test.yml down
+    docker-compose -f docker-compose.integration.yml down
   fi
 }
 
@@ -116,7 +116,7 @@ if [ "$TEST_MODE" = "docker" ]; then
   echo -e "${YELLOW}Starting Docker containers...${NC}"
   
   # Build and start containers
-  docker-compose -f docker-compose.test.yml up -d --build
+  docker-compose -f docker-compose.integration.yml up -d --build
   
   # Wait for services
   wait_for_service "http://localhost:3000" "Frontend" || exit 1
@@ -124,7 +124,7 @@ if [ "$TEST_MODE" = "docker" ]; then
   
   # Run tests in container
   echo -e "${YELLOW}Running tests in Docker...${NC}"
-  docker-compose -f docker-compose.test.yml run --rm playwright
+  docker-compose -f docker-compose.integration.yml run --rm playwright
   
 else
   # Local mode
