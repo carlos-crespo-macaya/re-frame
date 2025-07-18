@@ -84,6 +84,7 @@ class AudioSamples:
             audio = audio * 2.0
             audio = np.clip(audio, -1.0, 1.0)
 
-        # Convert to 16-bit PCM
-        audio_int16 = (audio * 32767).astype(np.int16)
+        # Convert to 16-bit PCM with headroom to avoid clipping
+        # Use 0.8 factor to ensure we don't hit the limits
+        audio_int16 = (audio * 32767 * 0.8).astype(np.int16)
         return audio_int16.tobytes()

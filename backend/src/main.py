@@ -634,13 +634,13 @@ async def send_message_endpoint(
         try:
             # Decode base64 audio
             audio_data = base64.b64decode(data)
-            
+
             # Check audio size limit
             audio_size_mb = len(audio_data) / (1024 * 1024)
             if audio_size_mb > config.AUDIO_MAX_SIZE_MB:
                 raise HTTPException(
                     status_code=413,
-                    detail=f"Audio data too large: {audio_size_mb:.1f}MB exceeds {config.AUDIO_MAX_SIZE_MB}MB limit"
+                    detail=f"Audio data too large: {audio_size_mb:.1f}MB exceeds {config.AUDIO_MAX_SIZE_MB}MB limit",
                 )
 
             # Log transcript but never log audio data
@@ -653,10 +653,10 @@ async def send_message_endpoint(
             # 1. Initialize STT service
             # 2. Process audio through STT
             # 3. Return actual transcript
-            
+
             # Mock transcript for testing
             transcript = "Hello, I need help with reframing my thoughts."
-            
+
             # Log transcript preview (never log full audio data)
             logger.info(
                 f"Transcribed audio for session {session_id}: {transcript[:50]}..."
