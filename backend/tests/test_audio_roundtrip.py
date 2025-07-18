@@ -46,16 +46,18 @@ def test_audio_roundtrip_minimal(client, audio_samples):
     }
 
     # Enable voice mode for this test by patching the config module directly
-    with patch("src.config.VOICE_MODE_ENABLED", True):
-        with patch.object(session_manager, "get_session", return_value=mock_session):
-            with patch("src.main.process_message", mock_process_message):
-                resp = client.post(
-                    f"/api/send/{session_id}",
-                    json={
-                        "mime_type": "audio/pcm",
-                        "data": audio_samples.get_sample("hello"),
-                    },
-                )
+    with (
+        patch("src.config.VOICE_MODE_ENABLED", True),
+        patch.object(session_manager, "get_session", return_value=mock_session),
+        patch("src.main.process_message", mock_process_message),
+    ):
+        resp = client.post(
+            f"/api/send/{session_id}",
+            json={
+                "mime_type": "audio/pcm",
+                "data": audio_samples.get_sample("hello"),
+            },
+        )
 
     # Now we expect 200 since basic audio processing is implemented
     assert resp.status_code == 200, f"Expected 200, got {resp.status_code}: {resp.text}"
