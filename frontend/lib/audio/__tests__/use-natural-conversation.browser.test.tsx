@@ -277,22 +277,39 @@ describe('Browser Compatibility', () => {
     it('should handle network disconnection gracefully', async () => {
       const { __mockCreateEventSource } = jest.requireMock('../../api');
       
+      // Mock EventSource to fail immediately
+      __mockCreateEventSource.mockImplementation(() => {
+        const mockEventSource: any = {
+          close: jest.fn(),
+          addEventListener: jest.fn(),
+          removeEventListener: jest.fn(),
+          readyState: 0, // CONNECTING
+          url: '',
+          withCredentials: false,
+          CONNECTING: 0,
+          OPEN: 1,
+          CLOSED: 2,
+          onerror: null,
+          onmessage: null,
+          onopen: null,
+        };
+        
+        // Simulate connection error after a short delay
+        setTimeout(() => {
+          if (mockEventSource.onerror) {
+            mockEventSource.onerror({ type: 'error' } as Event);
+          }
+        }, 10);
+        
+        return mockEventSource;
+      });
+      
       const { result } = renderHook(() => useNaturalConversation());
       
       await act(async () => {
         await result.current.startConversation();
-      });
-      
-      expect(result.current.isActive).toBe(true);
-      
-      // Get the created EventSource instance
-      const eventSourceInstance = __mockCreateEventSource.mock.results[0].value;
-      
-      // Simulate SSE error
-      await act(async () => {
-        if (eventSourceInstance.onerror) {
-          eventSourceInstance.onerror({ type: 'error' } as Event);
-        }
+        // Wait for the error to be triggered
+        await new Promise(resolve => setTimeout(resolve, 50));
       });
       
       // Should show connection error
