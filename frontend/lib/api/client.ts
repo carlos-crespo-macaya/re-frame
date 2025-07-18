@@ -10,6 +10,7 @@ import type {
   MessageData,
   ApiRequestConfig
 } from './types'
+import { apiLogger } from '../logger'
 
 /**
  * Main API client class
@@ -28,19 +29,35 @@ export class ApiClient {
     const timeoutId = setTimeout(() => controller.abort(), timeout)
 
     try {
+      apiLogger.apiRequest(fetchConfig.method || 'GET', url, {
+        timeout,
+        headers: fetchConfig.headers
+      })
+      
       const response = await fetch(url, {
         ...fetchConfig,
         signal: controller.signal
       })
       clearTimeout(timeoutId)
+      
+      apiLogger.apiResponse(fetchConfig.method || 'GET', url, response.status, {
+        ok: response.ok,
+        statusText: response.statusText
+      })
+      
       return response
     } catch (error) {
       clearTimeout(timeoutId)
       if (error instanceof Error) {
         if (error.name === 'AbortError') {
+          apiLogger.apiError(fetchConfig.method || 'GET', url, error, {
+            reason: 'timeout',
+            timeout
+          })
           throw new ApiError(408, 'Request timeout')
         }
       }
+      apiLogger.apiError(fetchConfig.method || 'GET', url, error as Error)
       throw error
     }
   }

@@ -10,6 +10,9 @@ from enum import Enum
 from google.adk.agents import LlmAgent
 
 from src.knowledge.cbt_context import BASE_CBT_CONTEXT
+from src.utils.logging import get_logger
+
+logger = get_logger(__name__)
 
 
 class ConversationPhase(Enum):
@@ -125,13 +128,25 @@ def check_phase_transition(target_phase: str) -> dict:
     # For now, return a structured response that the agent can use
     valid_phases = ["greeting", "discovery", "reframing", "summary"]
 
+    logger.info(
+        "phase_transition_requested",
+        target_phase=target_phase,
+        valid_phases=valid_phases,
+    )
+
     if target_phase not in valid_phases:
+        logger.warning(
+            "invalid_phase_transition",
+            target_phase=target_phase,
+            valid_phases=valid_phases,
+        )
         return {
             "status": "error",
             "message": f"Invalid phase: {target_phase}. Valid phases are: {', '.join(valid_phases)}",
         }
 
     # In actual use, the agent will manage state through the session
+    logger.info("phase_transition_ready", target_phase=target_phase)
     return {
         "status": "success",
         "message": f"Ready to transition to {target_phase} phase",
@@ -150,26 +165,32 @@ def get_current_phase_info() -> dict:
     """
     # In actual implementation, this would access session state
     # For now, return structured guidance
+    logger.debug("phase_info_requested")
+
+    phase_flow = {
+        "greeting": {
+            "description": "Welcome and introduction phase",
+            "next_phases": ["discovery"],
+        },
+        "discovery": {
+            "description": "Understanding thoughts and feelings",
+            "next_phases": ["reframing"],
+        },
+        "reframing": {
+            "description": "Identifying distortions and creating alternatives",
+            "next_phases": ["summary"],
+        },
+        "summary": {
+            "description": "Recap and next steps",
+            "next_phases": [],
+        },
+    }
+
+    logger.debug("phase_info_returned", phase_flow=phase_flow)
+
     return {
         "status": "success",
-        "phase_flow": {
-            "greeting": {
-                "description": "Welcome and introduction phase",
-                "next_phases": ["discovery"],
-            },
-            "discovery": {
-                "description": "Understanding thoughts and feelings",
-                "next_phases": ["reframing"],
-            },
-            "reframing": {
-                "description": "Identifying distortions and creating alternatives",
-                "next_phases": ["summary"],
-            },
-            "summary": {
-                "description": "Recap and next steps",
-                "next_phases": [],
-            },
-        },
+        "phase_flow": phase_flow,
         "message": "Use this information to guide the conversation flow",
     }
 

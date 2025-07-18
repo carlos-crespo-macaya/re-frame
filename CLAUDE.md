@@ -21,9 +21,71 @@ re-frame/
 └── docker-compose.yml # Local development setup
 ```
 
+## Commands Reference
+
+### Frontend Development
+```bash
+cd frontend
+pnpm run dev         # Start development server on http://localhost:3000
+pnpm run build       # Build for production
+pnpm run test        # Run all tests (Jest)
+pnpm run test:watch  # Run tests in watch mode
+pnpm run test:ci     # Run tests with coverage for CI
+pnpm run lint        # Run ESLint
+pnpm run typecheck   # TypeScript type checking
+pnpm run generate:api # Generate API client from OpenAPI spec
+```
+
+### Backend Development
+```bash
+cd backend
+uv sync --all-extras                      # Install all dependencies
+uv run python -m uvicorn src.main:app --reload  # Start API server
+uv run poe test                          # Run all tests
+uv run poe test-cov                      # Run tests with coverage report
+uv run poe check                         # Run ALL quality checks (format, lint, typecheck, test)
+uv run poe format                        # Auto-fix formatting (black + isort)
+uv run poe lint                          # Run linting (ruff)
+uv run poe typecheck                     # Run type checking (mypy)
+uv run poe export-openapi                # Export OpenAPI schema for frontend
+```
+
+### Monorepo Commands (from root)
+```bash
+npm run dev:frontend    # Run frontend
+npm run dev:backend     # Run backend
+npm run dev:all         # Run both concurrently
+npm run test:all        # Test everything
+```
+
+### Docker Development
+```bash
+# Basic development (frontend + backend)
+docker-compose up --build
+
+# Full development environment (includes Redis, MailHog)
+docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+# Run E2E tests
+cd tests/e2e && ./run_tests.sh
+
+# Stop all services
+docker-compose down -v
+```
+
+### E2E Testing
+```bash
+cd frontend
+pnpm run test:e2e                # Run Playwright tests
+pnpm run test:e2e:ui             # Run with UI mode
+pnpm run test:e2e:debug          # Run in debug mode
+pnpm run test:e2e:headed         # Run with browser visible
+pnpm run test:e2e:report         # Show test report
+```
+
 ## Project Management
 
-## GitHub Project Board
+### GitHub Project Board
 - **All project management is done via GitHub Projects**: https://github.com/users/macayaven/projects/7
 - Work on issues in priority order: P0 (Critical) → P1 (High) → P2 (Medium)
 - Issues are organized by Epic (Epic 0: Migration, Epic 1: Local Docker, Epic 2: Cloud Run)
@@ -50,38 +112,6 @@ Example: `[BE-141] Update CORS configuration for local API routes`
 - Backend: `cd backend && uv run poe check`
 - Frontend: `cd frontend && pnpm run lint && pnpm run typecheck && pnpm run test`
 
-## Environment Variables
-- Use `GEMINI_API_KEY` (not `GOOGLE_AI_API_KEY`) for Google AI services
-- Docker uses `http://backend:8000` for service-to-service communication
-- Local development uses `http://localhost:8000`
-
-# Key Commands
-
-### Frontend Development
-```bash
-cd frontend
-pnpm run dev        # Start development server on http://localhost:3000
-pnpm run build      # Build for production
-pnpm run test       # Run all tests
-pnpm run lint       # Run ESLint
-```
-
-### Backend Development (after merge)
-```bash
-cd backend
-python -m uvicorn app.main:app --reload  # Start API server
-pytest              # Run tests
-ruff check .        # Lint Python code
-```
-
-### Monorepo Commands (from root)
-```bash
-npm run dev:frontend    # Run frontend
-npm run dev:backend     # Run backend
-npm run dev:all         # Run both concurrently
-npm run test:all        # Test everything
-```
-
 ## Architecture
 
 ### Frontend Tech Stack
@@ -91,18 +121,42 @@ npm run test:all        # Test everything
 - **Audio**: Web Audio API with AudioWorklets
 - **Real-time**: Server-Sent Events (SSE) for streaming
 - **Testing**: Jest with React Testing Library
+- **API Client**: Generated from OpenAPI schema using @hey-api/openapi-ts
 
-### Backend Tech Stack (coming soon)
+### Backend Tech Stack
 - **Framework**: FastAPI
-- **Language**: Python 3.11+
-- **AI**: Google's Agent Development Kit (ADK)
+- **Language**: Python 3.11+ (project uses 3.12)
+- **Package Manager**: uv (NOT pip or poetry)
+- **AI**: Google's Agent Development Kit (ADK) with Gemini models
 - **Audio**: Processing for 16kHz PCM format
-- **Testing**: pytest
+- **Testing**: pytest with 80% coverage requirement
+- **Code Quality**: black, isort, ruff, mypy
 
 ### Deployment
 - **Frontend**: Google Cloud Run (containerized)
 - **Backend**: Google Cloud Run (containerized)
 - **CI/CD**: GitHub Actions with automated deployment
+
+## Key Architectural Patterns
+
+### Frontend Architecture
+- **Component Structure**: Components are in `/frontend/components/` with tests alongside
+- **Core Libraries**: Business logic in `/frontend/lib/`
+- **SSE Client**: Real-time streaming via `/frontend/lib/streaming/sse-client.ts`
+- **Audio Processing**: Web Audio API with worklets in `/frontend/public/worklets/`
+- **API Integration**: Type-safe client generated from backend OpenAPI schema
+
+### Backend Architecture
+- **Agent System**: Uses Google ADK Sequential Agents for conversation flow
+- **Phases**: GREETING → DISCOVERY → REFRAMING → SUMMARY
+- **Safety First**: Crisis detection at every user input
+- **Session Management**: In-memory session state (no persistence beyond session)
+- **Knowledge Base**: CBT context and techniques in `/backend/src/knowledge/`
+
+## Environment Variables
+- Use `GEMINI_API_KEY` (not `GOOGLE_AI_API_KEY`) for Google AI services
+- Docker uses `http://backend:8000` for service-to-service communication
+- Local development uses `http://localhost:8000`
 
 ## After Context Clear
 
@@ -111,13 +165,6 @@ When resuming work, provide:
 2. Link to GitHub project: https://github.com/users/macayaven/projects/7
 3. Current branch: "We're on branch issue-142-audio-conversion"
 4. Work completed so far: "We've already implemented X and Y"
-
-## Important Patterns
-
-1. **Monorepo Structure**: Frontend and backend are separate but coordinated
-2. **Path Prefixes**: Use relative paths within each project
-3. **Shared Resources**: Documentation and scripts at root level
-4. **Independent Builds**: Each service builds and deploys separately
 
 ## Working with Audio Features
 
@@ -138,10 +185,10 @@ When resuming work, provide:
 - `/frontend/app/` - Next.js pages and routes
 - `/frontend/components/` - React components
 - `/frontend/lib/` - Core functionality
-- `/backend/app/` - FastAPI application (coming soon)
-- `/backend/agents/` - ADK agents (coming soon)
+- `/backend/src/` - Backend source code (note: NOT `/backend/app/`)
+- `/backend/src/agents/` - ADK agents
 - `/docs/TEAM_COORDINATION_GUIDE.md` - Development workflow
-- `/docs/MONOREPO_MIGRATION_CHECKLIST.md` - Migration progress
+- `/docs/archive/MONOREPO_MIGRATION_CHECKLIST.md` - Migration progress
 
 ## Testing Approach
 
@@ -149,3 +196,38 @@ Always check for existing test patterns before writing new tests:
 - Frontend: Look for `*.test.tsx` files alongside components
 - Backend: Look for `test_*.py` files in tests directory
 - Use existing mocks and test utilities where available
+
+### Running Specific Tests
+```bash
+# Frontend - run single test file
+cd frontend && pnpm test -- MessageList.test.tsx
+
+# Backend - run single test file
+cd backend && uv run pytest tests/test_greeting_phase.py -v
+
+# Backend - run with specific test pattern
+cd backend && uv run pytest -k "test_greeting" -v
+```
+
+## Important Implementation Notes
+
+### When implementing features:
+1. **Always run quality checks before committing**: Use `uv run poe check` for backend, full lint/test suite for frontend
+2. **Follow existing patterns**: Check similar components/modules before creating new ones
+3. **Maintain test coverage**: Backend requires 80% minimum
+4. **Handle errors gracefully**: Especially for SSE connections and external API calls
+5. **Keep security in mind**: Never log sensitive data, use environment variables for secrets
+
+### Backend-Specific Guidelines
+- Use `uv` as package manager (NOT pip or poetry)
+- Follow ADK patterns for agent development
+- Include `BASE_CBT_CONTEXT` in all agent instructions
+- Implement crisis detection at every user input
+- Write tests first (TDD approach)
+
+### Frontend-Specific Guidelines
+- Use App Router (not Pages Router)
+- Follow existing component patterns in `/frontend/components/`
+- Keep audio processing in Web Workers/AudioWorklets
+- Handle SSE reconnection gracefully
+- Maintain TypeScript strict mode
