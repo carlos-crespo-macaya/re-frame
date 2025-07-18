@@ -14,9 +14,8 @@
 
 """Tests for the orchestrator crisis check and router agent."""
 
-from google.adk.agents import LlmAgent
-
 import pytest
+from google.adk.agents import LlmAgent
 
 from src.agents.orchestrator import (
     check_for_crisis,

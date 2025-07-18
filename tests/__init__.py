@@ -7,6 +7,5 @@ package so that dotted module imports such as
 
 resolve correctly during pytest collection.
 
-The file is intentionally empty – it only needs to exist.
+The file is intentionally empty - it only needs to exist.
 """
-

@@ -53,7 +53,9 @@ class TestPhaseManager:
     )
     def test_get_phase_instruction(self, phase):
         instr = PhaseManager.get_phase_instruction(phase)
-        assert isinstance(instr, str) and instr.strip(), f"Instruction missing for {phase}"
+        assert (
+            isinstance(instr, str) and instr.strip()
+        ), f"Instruction missing for {phase}"
 
 
 class TestPhaseTools:
