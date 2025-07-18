@@ -25,13 +25,17 @@ test.describe('Voice Network Resilience', () => {
     // Submit a thought to start conversation
     await page.fill('textarea', 'I feel anxious about testing');
     
+    // Wait for button to be enabled after filling textarea
+    const submitButton = page.getByRole('button', { name: /generate perspective/i });
+    await expect(submitButton).toBeEnabled({ timeout: 10000 });
+    
     // Intercept SSE endpoint to simulate failure
     await page.route('**/api/events/**', route => {
       route.abort('failed');
     });
     
     // Submit form which should trigger SSE connection
-    await page.getByRole('button', { name: /generate perspective/i }).click();
+    await submitButton.click();
     
     // Should handle the connection error gracefully
     // Look for any error indication in the UI
@@ -67,7 +71,11 @@ test.describe('Voice Network Resilience', () => {
     
     // Submit a thought
     await page.fill('textarea', 'Testing network resilience');
-    await page.getByRole('button', { name: /generate perspective/i }).click();
+    
+    // Wait for button to be enabled
+    const submitButton = page.getByRole('button', { name: /generate perspective/i });
+    await expect(submitButton).toBeEnabled({ timeout: 10000 });
+    await submitButton.click();
     
     // Wait for potential retry logic
     await page.waitForTimeout(3000);
@@ -85,7 +93,11 @@ test.describe('Voice Network Resilience', () => {
     
     // Submit a thought to establish session
     await page.fill('textarea', 'Starting a conversation');
-    await page.getByRole('button', { name: /generate perspective/i }).click();
+    
+    // Wait for button to be enabled
+    const submitButton = page.getByRole('button', { name: /generate perspective/i });
+    await expect(submitButton).toBeEnabled({ timeout: 10000 });
+    await submitButton.click();
     
     // Wait for response
     await page.waitForSelector('div.mt-8', { timeout: 10000 });
@@ -105,7 +117,11 @@ test.describe('Voice Network Resilience', () => {
     // Should be able to continue conversation
     await page.getByRole('button', { name: /clear/i }).click();
     await page.fill('textarea', 'Continuing after network interruption');
-    await page.getByRole('button', { name: /generate perspective/i }).click();
+    
+    // Wait for button to be enabled
+    const continueButton = page.getByRole('button', { name: /generate perspective/i });
+    await expect(continueButton).toBeEnabled({ timeout: 10000 });
+    await continueButton.click();
   });
 
   test('handles slow network conditions', async ({ page }) => {
@@ -118,7 +134,11 @@ test.describe('Voice Network Resilience', () => {
     
     // Submit a thought
     await page.fill('textarea', 'Testing on slow network');
-    await page.getByRole('button', { name: /generate perspective/i }).click();
+    
+    // Wait for button to be enabled
+    const submitButton = page.getByRole('button', { name: /generate perspective/i });
+    await expect(submitButton).toBeEnabled({ timeout: 10000 });
+    await submitButton.click();
     
     // Check for loading state - the button should show loading
     const loadingButton = page.getByRole('button', { name: /Processing/i });
@@ -147,11 +167,11 @@ test.describe('Voice Network Resilience', () => {
     const textarea = page.locator('textarea');
     await expect(textarea).toBeVisible();
     
-    // Go back online
+    // Go back online BEFORE reloading
     await context.setOffline(false);
-    await page.waitForTimeout(2000);
+    await page.waitForTimeout(1000);
     
-    // Reload the page to reset the form state
+    // Now reload the page while online
     await page.reload();
     await page.waitForLoadState('networkidle');
     
@@ -160,6 +180,7 @@ test.describe('Voice Network Resilience', () => {
     
     // Should be able to submit successfully now
     const newSubmitButton = page.getByRole('button', { name: /generate perspective/i });
+    await expect(newSubmitButton).toBeEnabled({ timeout: 10000 });
     await newSubmitButton.click();
     
     // Wait for either a response or at least verify form is working
@@ -170,7 +191,11 @@ test.describe('Voice Network Resilience', () => {
   test('handles rapid connection state changes', async ({ page, context }) => {
     // Submit initial thought
     await page.fill('textarea', 'Testing rapid network changes');
-    await page.getByRole('button', { name: /generate perspective/i }).click();
+    
+    // Wait for button to be enabled
+    const submitButton = page.getByRole('button', { name: /generate perspective/i });
+    await expect(submitButton).toBeEnabled({ timeout: 10000 });
+    await submitButton.click();
     
     // Rapidly toggle network state
     for (let i = 0; i < 5; i++) {
@@ -201,7 +226,9 @@ test.describe('Voice Network Resilience', () => {
     });
     
     // Now click submit - this will trigger the slow request
-    await page.getByRole('button', { name: /generate perspective/i }).click();
+    const submitButton = page.getByRole('button', { name: /generate perspective/i });
+    await expect(submitButton).toBeEnabled({ timeout: 10000 });
+    await submitButton.click();
     
     // Wait a bit for request to be made
     await page.waitForTimeout(1000);
