@@ -86,7 +86,9 @@ jobs:
           DEBUG_NETWORK: false
         run: |
           source venv/bin/activate
-          pytest -v --tb=short --maxfail=5
+          # Run tests in parallel using pytest-xdist
+          # Settings are configured in pytest.ini (defaults to -n auto)
+          pytest
 
       - name: Upload test results
         if: always()
