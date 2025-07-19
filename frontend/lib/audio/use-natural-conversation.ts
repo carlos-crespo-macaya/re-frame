@@ -5,6 +5,9 @@ import { ApiClient, logApiError, EventSourceParams } from '../api'
 import { generateAudioSessionId } from '../utils/session'
 import { createClientMessage } from '../streaming/message-protocol'
 
+// Audio configuration - aligned with backend expectation
+const AUDIO_SAMPLE_RATE = 16000
+
 export interface UseNaturalConversationOptions {
   language?: string
   onTranscription?: (text: string) => void
@@ -47,7 +50,7 @@ export function useNaturalConversation(options: UseNaturalConversationOptions = 
 
   // Initialize PCM player on mount
   useEffect(() => {
-    pcmPlayerRef.current = new PCMPlayer(24000)
+    pcmPlayerRef.current = new PCMPlayer(AUDIO_SAMPLE_RATE)
 
     return () => {
       if (pcmPlayerRef.current) {
@@ -266,7 +269,7 @@ export function useNaturalConversation(options: UseNaturalConversationOptions = 
   // Setup audio recording
   const setupAudioRecording = useCallback(async () => {
     // Create audio context
-    audioContextRef.current = new AudioContext({ sampleRate: 16000 })
+    audioContextRef.current = new AudioContext({ sampleRate: AUDIO_SAMPLE_RATE })
     if (process.env.NODE_ENV === 'development') {
       console.log('AudioContext sample rate:', audioContextRef.current.sampleRate)
     }
@@ -314,7 +317,7 @@ export function useNaturalConversation(options: UseNaturalConversationOptions = 
         echoCancellation: true,
         noiseSuppression: true,
         autoGainControl: true,
-        sampleRate: 16000
+        sampleRate: AUDIO_SAMPLE_RATE
       }
     })
     streamRef.current = stream
