@@ -1,10 +1,9 @@
 name: Release and Deploy to Cloud Run
 
 on:
-  push:
-    tags:
-      - 'v*'
+  # Workflow disabled
   workflow_dispatch:
+    if: false
     inputs:
       environment:
         description: 'Environment to deploy to'
@@ -32,6 +31,7 @@ jobs:
   test:
     name: Run Tests
     runs-on: self-hosted
+    if: false  # Workflow disabled
     strategy:
       matrix:
         service: [frontend, backend]
