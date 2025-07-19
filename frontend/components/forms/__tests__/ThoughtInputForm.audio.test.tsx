@@ -15,7 +15,7 @@ jest.mock('@/lib/audio/use-audio-recorder')
 jest.mock('@/lib/streaming/use-sse-client')
 
 // Mock canvas for AudioVisualizer
-HTMLCanvasElement.prototype.getContext = jest.fn(() => ({
+const mockCanvasContext = {
   clearRect: jest.fn(),
   fillRect: jest.fn(),
   fillStyle: '',
@@ -30,7 +30,9 @@ HTMLCanvasElement.prototype.getContext = jest.fn(() => ({
   save: jest.fn(),
   restore: jest.fn(),
   translate: jest.fn()
-})) as unknown as CanvasRenderingContext2D
+} as any
+
+HTMLCanvasElement.prototype.getContext = jest.fn(() => mockCanvasContext)
 
 // Mock window.devicePixelRatio
 Object.defineProperty(window, 'devicePixelRatio', {
@@ -67,8 +69,12 @@ describe.skip('ThoughtInputForm - Audio Integration - SKIPPED: Audio moved to se
       micPermission: 'prompt',
       error: null,
       isGateOpen: false,
+      audioBlob: null,
+      audioUrl: null,
       startRecording: mockStartRecording,
       stopRecording: mockStopRecording,
+      checkMicPermission: jest.fn(),
+      setNoiseGateThreshold: jest.fn(),
       cleanup: jest.fn()
     };
     
@@ -89,10 +95,12 @@ describe.skip('ThoughtInputForm - Audio Integration - SKIPPED: Audio moved to se
       connect: mockConnect,
       disconnect: mockDisconnect,
       sendMessage: jest.fn(),
+      sendText: jest.fn(),
       sendAudio: mockSendAudio,
       clearMessages: jest.fn(),
       getLatestMessage: jest.fn(),
-      getMessagesByType: jest.fn().mockReturnValue([])
+      getMessagesByType: jest.fn().mockReturnValue([]),
+      client: null
     };
     
     (useSSEClient as jest.Mock).mockReturnValue(mockSSEClient)
@@ -154,7 +162,7 @@ describe.skip('ThoughtInputForm - Audio Integration - SKIPPED: Audio moved to se
     const recordingAudioRecorder = {
       ...mockAudioRecorder,
       isRecording: true,
-      micPermission: 'granted'
+      micPermission: 'granted' as const
     };
     (useAudioRecorder as jest.Mock).mockReturnValue(recordingAudioRecorder)
     
@@ -181,7 +189,7 @@ describe.skip('ThoughtInputForm - Audio Integration - SKIPPED: Audio moved to se
     const recordingState = {
       ...mockAudioRecorder,
       isRecording: true,
-      micPermission: 'granted'
+      micPermission: 'granted' as const
     };
     (useAudioRecorder as jest.Mock).mockReturnValue(recordingState)
     
@@ -309,7 +317,7 @@ describe.skip('ThoughtInputForm - Audio Integration - SKIPPED: Audio moved to se
     const recordingState = {
       ...mockAudioRecorder,
       isRecording: true,
-      micPermission: 'granted'
+      micPermission: 'granted' as const
     };
     (useAudioRecorder as jest.Mock).mockReturnValue(recordingState)
     
@@ -343,7 +351,7 @@ describe.skip('ThoughtInputForm - Audio Integration - SKIPPED: Audio moved to se
     const recordingState = {
       ...mockAudioRecorder,
       isRecording: true,
-      micPermission: 'granted'
+      micPermission: 'granted' as const
     };
     (useAudioRecorder as jest.Mock).mockReturnValue(recordingState)
     
