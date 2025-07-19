@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import Link from 'next/link'
 import ThoughtInputForm from '@/components/forms/ThoughtInputForm'
 import { FrameworkBadge, LanguageSelector } from '@/components/ui'
@@ -21,11 +21,14 @@ export default function Home() {
   const previousAudioModeRef = useRef(useAudioMode)
   const connectionAttemptRef = useRef<number>(0)
   
-  // Initialize SSE client (text mode only)
-  const sseClient = useSSEClient({
+  // Memoize SSE client options to prevent recreating the client on every render
+  const sseOptions = useMemo(() => ({
     baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
     autoConnect: false,
-  })
+  }), [])
+  
+  // Initialize SSE client (text mode only)
+  const sseClient = useSSEClient(sseOptions)
   
   // Extract specific values to avoid object identity issues in useEffect
   const { isConnected, messages, connect, disconnect, sendText, error } = sseClient
@@ -113,25 +116,17 @@ export default function Home() {
       // Always try to disconnect on unmount
       disconnect()
     }
-  }, [selectedLanguage, useAudioMode, connect, disconnect])
+  }, [selectedLanguage, useAudioMode])
   
   // Track the start of current response
   const [responseStartIndex, setResponseStartIndex] = useState(0)
   
-  // Process SSE messages
-  useEffect(() => {
-    if (!isConnected) return
-    
-    // Get all messages and filter for text responses
-    const allMessages = messages
-    
-    // Debug logging
-    if (allMessages.length > 0 && process.env.NODE_ENV === 'development') {
-      console.log('All messages:', allMessages)
-    }
+  // Get the latest response from messages
+  const latestResponse = useMemo(() => {
+    if (!isConnected || messages.length === 0) return null
     
     // Only process messages from the current response
-    const currentMessages = allMessages.slice(responseStartIndex)
+    const currentMessages = messages.slice(responseStartIndex)
     const textMessages = currentMessages.filter(msg => 
       msg.mime_type === 'text/plain' && msg.data
     )
@@ -139,19 +134,12 @@ export default function Home() {
     // Check for turn completion in current messages
     const turnComplete = currentMessages.some(msg => msg.turn_complete === true)
     
-    // Update response as messages arrive
     if (textMessages.length > 0 || turnComplete) {
       // Combine text messages from current response only
       const fullResponse = textMessages.map(msg => msg.data).join('')
       
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Text messages found:', textMessages.length, 'Full response:', fullResponse)
-      }
-      
-      // Only set response if we have content OR turn is complete
       if (fullResponse || turnComplete) {
-        // Create response from backend message
-        setResponse({
+        return {
           success: true,
           response: fullResponse,
           frameworks_used: ['CBT'],
@@ -166,19 +154,29 @@ export default function Home() {
               }
             },
             selection_rationale: 'CBT framework applied based on the thought pattern.'
-          }
-        })
+          },
+          turnComplete
+        }
       }
     }
     
-    // Clear loading state when turn is complete
-    if (turnComplete && isLoading) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Turn complete, clearing loading state')
+    return null
+  }, [messages, responseStartIndex, isConnected])
+  
+  // Update response state when latest response changes
+  useEffect(() => {
+    if (latestResponse) {
+      setResponse(latestResponse)
+      
+      // Clear loading state when turn is complete
+      if (latestResponse.turnComplete && isLoading) {
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Turn complete, clearing loading state')
+        }
+        setIsLoading(false)
       }
-      setIsLoading(false)
     }
-  }, [messages, isConnected, isLoading, responseStartIndex])
+  }, [latestResponse, isLoading])
 
   const handleSubmit = async (thought: string) => {
     setIsLoading(true)
