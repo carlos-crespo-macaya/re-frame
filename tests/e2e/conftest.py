@@ -101,9 +101,11 @@ async def page(context: BrowserContext) -> AsyncGenerator[Page, None]:
 
 
 @pytest.fixture
-def session_id() -> str:
-    """Generate a unique session ID for each test."""
-    return f"test-session-{uuid.uuid4().hex[:8]}"
+def session_id(worker_id) -> str:
+    """Generate a unique session ID for each test, including worker ID for parallel execution."""
+    # worker_id is provided by pytest-xdist (e.g., 'gw0', 'gw1', etc.)
+    # If not running in parallel, worker_id is 'master'
+    return f"test-session-{worker_id}-{uuid.uuid4().hex[:8]}"
 
 
 @pytest.fixture
