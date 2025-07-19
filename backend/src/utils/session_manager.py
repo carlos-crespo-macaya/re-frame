@@ -98,6 +98,10 @@ class SessionManager:
         """Get count of active sessions."""
         return len(self.sessions)
 
+    def list_sessions(self) -> list[SessionInfo]:
+        """Get list of all active sessions."""
+        return list(self.sessions.values())
+
     async def _periodic_cleanup(self):
         """Periodically clean up expired sessions."""
         cleanup_interval = min(
