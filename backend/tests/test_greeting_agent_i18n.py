@@ -24,8 +24,8 @@ class TestGreetingAgentI18n:
 
     def test_detect_user_language_unsupported(self):
         """Test language detection for unsupported language."""
-        # French input (unsupported)
-        result = detect_user_language("Bonjour, je me sens anxieux aujourd'hui")
+        # Japanese input (unsupported)
+        result = detect_user_language("こんにちは、今日は不安を感じています")
         assert result["language_code"] == "en"  # Falls back to English
         assert result["language_name"] == "English"
         assert result["supported"] is True

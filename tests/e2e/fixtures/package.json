@@ -1,0 +1,13 @@
+{
+  "name": "e2e-audio-fixtures",
+  "version": "1.0.0",
+  "description": "Audio fixture generation for E2E tests",
+  "main": "generate-audio-fixtures.js",
+  "scripts": {
+    "generate": "node generate-audio-fixtures.js"
+  },
+  "dependencies": {
+    "@google-cloud/text-to-speech": "^5.0.2",
+    "@google/generative-ai": "^0.7.1"
+  }
+}

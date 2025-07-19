@@ -8,6 +8,7 @@ It includes routers for text and voice endpoints and handles basic app configura
 import asyncio
 import os
 import warnings
+from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -35,11 +36,52 @@ logger = get_logger(__name__)
 load_dotenv()
 logger.info("application_started", app_name="CBT Reframing Assistant")
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Manage application lifespan with startup and shutdown events."""
+    # Startup
+    logger.info("starting_session_manager")
+    await session_manager.start()
+    logger.info("session_manager_started")
+
+    # Start voice session manager
+    logger.info("starting_voice_session_manager")
+    await voice_session_manager.start()
+    logger.info("voice_session_manager_started")
+
+    # Start performance monitoring task
+    performance_monitor = get_performance_monitor()
+    monitor_task = asyncio.create_task(performance_monitor.log_periodic_summary())
+    app.state.monitor_task = monitor_task
+    logger.info("performance_monitoring_started")
+
+    yield
+
+    # Shutdown
+    logger.info("stopping_performance_monitor")
+    if hasattr(app.state, "monitor_task"):
+        app.state.monitor_task.cancel()
+        try:
+            await app.state.monitor_task
+        except asyncio.CancelledError:
+            logger.info("performance_monitor_cancelled")
+
+    logger.info("stopping_session_manager")
+    await session_manager.stop()
+
+    logger.info("stopping_voice_session_manager")
+    await voice_session_manager.stop()
+
+    logger.info("application_shutdown")
+
+
 # FastAPI app
 app = FastAPI(
     title="CBT Reframing Assistant API",
     description="Cognitive Behavioral Therapy assistant powered by Google's ADK",
     version="1.0.0",
+    lifespan=lifespan,
 )
 
 # Configure CORS based on environment
@@ -76,37 +118,6 @@ STATIC_DIR = Path("static")
 # Only mount static files if the directory exists
 if STATIC_DIR.exists():
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
-
-
-@app.on_event("startup")
-async def startup_event():
-    """Start background tasks on startup."""
-    logger.info("starting_session_manager")
-    await session_manager.start()
-    logger.info("session_manager_started")
-
-    # Start voice session manager
-    logger.info("starting_voice_session_manager")
-    await voice_session_manager.start()
-    logger.info("voice_session_manager_started")
-
-    # Start performance monitoring
-    performance_monitor = get_performance_monitor()
-    # Create background task for periodic logging
-    asyncio.create_task(performance_monitor.log_periodic_summary())
-    logger.info("performance_monitoring_started")
-
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    """Clean up on shutdown."""
-    logger.info("stopping_session_manager")
-    await session_manager.stop()
-
-    logger.info("stopping_voice_session_manager")
-    await voice_session_manager.stop()
-
-    logger.info("application_shutdown")
 
 
 @app.get("/", summary="Root endpoint", operation_id="getRoot")

@@ -82,7 +82,7 @@ export interface SSEEventData {
 /**
  * Type guards
  */
-export function isServerMessage(data: any): data is ServerMessage {
+export function isServerMessage(data: unknown): data is ServerMessage {
   if (!data || typeof data !== 'object') {
     return false;
   }
@@ -95,7 +95,7 @@ export function isServerMessage(data: any): data is ServerMessage {
   );
 }
 
-export function isErrorMessage(data: any): data is ErrorMessage {
+export function isErrorMessage(data: unknown): data is ErrorMessage {
   return (
     data &&
     typeof data === 'object' &&
@@ -105,7 +105,7 @@ export function isErrorMessage(data: any): data is ErrorMessage {
   );
 }
 
-export function isStatusMessage(data: any): data is StatusMessage {
+export function isStatusMessage(data: unknown): data is StatusMessage {
   return (
     data &&
     typeof data === 'object' &&
