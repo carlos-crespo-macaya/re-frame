@@ -18,9 +18,19 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
+        run: |
+          # Check if Python 3.11 is already installed
+          if command -v python3.11 &> /dev/null; then
+            echo "Python 3.11 is already installed"
+            python3.11 --version
+          else
+            echo "Installing Python 3.11 from deadsnakes PPA"
+            sudo add-apt-repository ppa:deadsnakes/ppa -y
+            sudo apt-get update
+            sudo apt-get install -y python3.11 python3.11-venv python3.11-dev
+          fi
+          # Create symlink for python command
+          sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.11 1
 
       - name: Cache Python dependencies
         uses: actions/cache@v4
@@ -35,7 +45,7 @@ jobs:
       - name: Install Python dependencies
         working-directory: tests/e2e
         run: |
-          python -m venv venv
+          python3.11 -m venv venv
           source venv/bin/activate
           pip install --upgrade pip
           pip install -r requirements.txt
