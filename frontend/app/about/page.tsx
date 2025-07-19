@@ -42,11 +42,11 @@ export default function About() {
               </li>
               <li className="flex items-start">
                 <span className="mr-2">•</span>
-                <div><strong className="text-[#EDEDED]">What it isn't:</strong> full psychotherapy, medical advice, or a crisis service.</div>
+                <div><strong className="text-[#EDEDED]">What it isn&apos;t:</strong> full psychotherapy, medical advice, or a crisis service.</div>
               </li>
               <li className="flex items-start">
                 <span className="mr-2">•</span>
-                <div><strong className="text-[#EDEDED]">Who builds it:</strong> just me—<strong className="text-[#EDEDED]">Carlos</strong>, a software engineer who's lived with AvPD for years and is investing my own time, skills, and will to create the tool I wish I'd had.</div>
+                <div><strong className="text-[#EDEDED]">Who builds it:</strong> just me—<strong className="text-[#EDEDED]">Carlos</strong>, a software engineer who&apos;s lived with AvPD for years and is investing my own time, skills, and will to create the tool I wish I&apos;d had.</div>
               </li>
               <li className="flex items-start">
                 <span className="mr-2">•</span>

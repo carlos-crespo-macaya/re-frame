@@ -61,14 +61,14 @@ export interface AudioEvents {
 /**
  * Type guard for AudioMode
  */
-export function isValidAudioMode(mode: any): mode is AudioMode {
+export function isValidAudioMode(mode: unknown): mode is AudioMode {
   return mode === 'instant' || mode === 'manual';
 }
 
 /**
  * Type guard for MimeType
  */
-export function isValidMimeType(type: any): type is MimeType {
+export function isValidMimeType(type: unknown): type is MimeType {
   return type === 'text/plain' || type === 'audio/pcm';
 }
 

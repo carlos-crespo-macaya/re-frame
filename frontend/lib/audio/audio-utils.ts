@@ -118,7 +118,7 @@ export function formatDuration(ms: number): string {
 /**
  * Debounce function calls
  */
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends (...args: unknown[]) => unknown>(
   fn: T,
   delay: number
 ): (...args: Parameters<T>) => void {
@@ -133,7 +133,7 @@ export function debounce<T extends (...args: any[]) => any>(
 /**
  * Throttle function calls
  */
-export function throttle<T extends (...args: any[]) => any>(
+export function throttle<T extends (...args: unknown[]) => unknown>(
   fn: T,
   limit: number
 ): (...args: Parameters<T>) => void {
@@ -157,7 +157,7 @@ export function isAudioSupported(): boolean {
   if (typeof window === 'undefined') return false;
   
   return !!(
-    ((window as any).AudioContext || (window as any).webkitAudioContext) &&
+    ((window as unknown as { AudioContext?: unknown }).AudioContext || (window as unknown as { webkitAudioContext?: unknown }).webkitAudioContext) &&
     typeof navigator !== 'undefined' &&
     navigator.mediaDevices &&
     navigator.mediaDevices.getUserMedia
@@ -196,7 +196,7 @@ export function checkAudioSupport(): {
     };
   }
   
-  const AudioContextClass = (window as any).AudioContext || (window as any).webkitAudioContext;
+  const AudioContextClass = (window as unknown as { AudioContext?: typeof AudioContext; webkitAudioContext?: typeof AudioContext }).AudioContext || (window as unknown as { AudioContext?: typeof AudioContext; webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
   const hasAudioContext = !!AudioContextClass;
   const hasAudioWorklet = hasAudioContext && AudioContextClass.prototype && 'audioWorklet' in AudioContextClass.prototype;
   const hasGetUserMedia = !!(navigator?.mediaDevices?.getUserMedia);

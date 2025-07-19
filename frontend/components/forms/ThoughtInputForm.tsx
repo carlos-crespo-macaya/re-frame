@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui'
 import { createDefaultAudioState, AudioState } from '@/lib/audio'
 import { useSSEClient } from '@/lib/streaming/use-sse-client'
-import { checkAudioSupport, arrayBufferToBase64 } from '@/lib/audio/audio-utils'
+import { arrayBufferToBase64 } from '@/lib/audio/audio-utils'
 import { usePCMRecorder } from '@/lib/audio/use-pcm-recorder'
 import { PCMPlayer } from '@/lib/audio/pcm-player'
 
@@ -20,11 +20,11 @@ export default function ThoughtInputForm({
   onSubmit, 
   onClear, 
   isLoading = false,
-  language = 'en-US'
+  // language = 'en-US'
 }: ThoughtInputFormProps) {
   const [thought, setThought] = useState('')
   const [audioState, setAudioState] = useState<AudioState>(createDefaultAudioState())
-  const [audioSupported, setAudioSupported] = useState(false)
+  // const [audioSupported, setAudioSupported] = useState(false)
   const [audioSessionActive, setAudioSessionActive] = useState(false)
   const maxLength = 1000
   const pcmPlayerRef = useRef<PCMPlayer | null>(null)
@@ -44,8 +44,8 @@ export default function ThoughtInputForm({
 
   // Initialize PCM player and check audio support on mount
   useEffect(() => {
-    const support = checkAudioSupport()
-    setAudioSupported(support.audioContext && support.audioWorklet && support.getUserMedia)
+    // const support = checkAudioSupport()
+    // setAudioSupported(support.audioContext && support.audioWorklet && support.getUserMedia)
     
     // Initialize PCM player for audio playback (24kHz for ADK output)
     pcmPlayerRef.current = new PCMPlayer(24000)
@@ -145,7 +145,7 @@ export default function ThoughtInputForm({
   const lastAudioLevelRef = useRef<number>(0)
   
   // Send audio buffer periodically
-  const sendAudioBuffer = useCallback(async () => {
+  /* const sendAudioBuffer = useCallback(async () => {
     if (audioBufferRef.current.length === 0 || !sseClient.isConnected) {
       return
     }
@@ -208,7 +208,7 @@ export default function ThoughtInputForm({
         console.log('Audio level below threshold:', audioLevel)
       }
     }
-  }, [sseClient])
+  }, [sseClient]) */
   
   // Modified PCM recorder with continuous streaming
   const pcmRecorder = usePCMRecorder({
@@ -252,7 +252,7 @@ export default function ThoughtInputForm({
   }, [])
   
   // Audio handlers
-  const handleStartRecording = useCallback(async () => {
+  /* const handleStartRecording = useCallback(async () => {
     try {
       // Check if already connected
       if (sseClient.isConnected) {
@@ -341,7 +341,7 @@ export default function ThoughtInputForm({
       }
       setAudioState(prev => ({ ...prev, isProcessing: false, isRecording: false }))
     }
-  }, [pcmRecorder, sseClient, sendAudioBuffer])
+  }, [pcmRecorder, sseClient, sendAudioBuffer]) */
 
 
   const isSubmitDisabled = !thought.trim() || isLoading
