@@ -31,7 +31,7 @@ permissions:
 jobs:
   test:
     name: Run Tests
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     strategy:
       matrix:
         service: [frontend, backend]
@@ -81,7 +81,7 @@ jobs:
   build-and-push:
     name: Build and Push Docker Images
     needs: test
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     strategy:
       matrix:
         include:
@@ -141,7 +141,7 @@ jobs:
   deploy-backend:
     name: Deploy Backend to Cloud Run
     needs: build-and-push
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     environment: ${{ github.event.inputs.environment || 'production' }}
 
     steps:
@@ -186,7 +186,7 @@ jobs:
   deploy-frontend:
     name: Deploy Frontend to Cloud Run
     needs: [build-and-push, deploy-backend]
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     environment: ${{ github.event.inputs.environment || 'production' }}
 
     steps:
@@ -237,7 +237,7 @@ jobs:
   configure-iap:
     name: Configure Identity-Aware Proxy
     needs: [deploy-backend, deploy-frontend]
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     if: github.event.inputs.environment == 'production' || startsWith(github.ref, 'refs/tags/v')
     
     steps:
@@ -273,7 +273,7 @@ jobs:
   create-release:
     name: Create GitHub Release
     needs: [deploy-backend, deploy-frontend]
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     if: startsWith(github.ref, 'refs/tags/v')
     
     steps:

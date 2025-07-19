@@ -25,7 +25,7 @@ permissions:
 jobs:
   voice-playwright-tests:
     name: Voice Network Resilience Tests
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     timeout-minutes: 15
     strategy:
       fail-fast: false
@@ -141,7 +141,7 @@ jobs:
 
   voice-integration-summary:
     name: Voice Tests Summary
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: voice-playwright-tests
     if: always()
     
