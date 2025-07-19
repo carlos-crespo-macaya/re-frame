@@ -48,7 +48,7 @@ pnpm run generate:api # Generate API client from OpenAPI spec
 ### Backend Development
 ```bash
 cd backend
-uv sync --all-extras                      # Install all dependencies
+uv sync --all-extras                      # Install all dependencies including voice
 uv run python -m uvicorn src.main:app --reload  # Start API server
 uv run poe test                          # Run all tests
 uv run poe test-cov                      # Run tests with HTML coverage report
@@ -61,6 +61,9 @@ uv run poe typecheck                     # Run type checking (mypy)
 uv run poe fix                           # Fix all auto-fixable issues (format + lint-fix)
 uv run poe export-openapi                # Export OpenAPI schema for frontend
 uv run poe setup                         # Development setup (sync deps + install pre-commit)
+
+# Voice modality (optional)
+uv sync --extra voice                    # Install voice dependencies only
 ```
 
 ### Monorepo Commands (from root)
@@ -101,7 +104,7 @@ docker-compose down -v
 # From root directory
 npm run e2e                      # Run Playwright tests with main config
 npm run e2e:ui                   # Run Playwright tests with UI mode
-npm run e2e:js                   # Run JavaScript Playwright tests
+npm run e2e:js                   # Run JavaScript Playwright tests (playwright-js/)
 npm run e2e:js:ui                # Run JavaScript Playwright tests with UI mode
 npm run test:e2e:install         # Install Playwright browsers
 
@@ -114,10 +117,22 @@ pnpm run test:e2e:headed         # Run with browser visible
 pnpm run test:e2e:report         # Show test report
 
 # Python E2E tests (separate infrastructure)
-cd tests/e2e && ./run_tests.sh   # Run Python E2E tests
+cd tests/e2e && ./run_tests.sh   # Run Python E2E tests with pytest-xdist
+
+# Voice E2E tests
+cd playwright-js && npm test tests/voice-network-resilience.spec.js
 ```
 
 ## Project Management
+
+### Linear Project
+- **Primary project tracking in Linear**: https://linear.app/carlos-crespo/project/re-framesocial-cbt-assistant-6c36f6288cc8
+- All issues from the fix plan are tracked there:
+  - CAR-24: Remove duplicate backend/main.py entry point (Urgent)
+  - CAR-25: Migrate to FastAPI lifespan protocol (Urgent)
+  - CAR-26: Fix performance monitor task tracking (High)
+  - CAR-27: Implement real language detection (High)
+  - CAR-28: Add missing test coverage for UI components (Medium)
 
 ### GitHub Project Board
 - **All project management is done via GitHub Projects**: https://github.com/users/macayaven/projects/7
@@ -154,7 +169,7 @@ Example: `[BE-141] Update CORS configuration for local API routes`
 - **Styling**: Tailwind CSS v3 with custom design tokens
 - **Audio**: Web Audio API with AudioWorklets
 - **Real-time**: Server-Sent Events (SSE) for streaming
-- **Testing**: Jest with React Testing Library
+- **Testing**: Jest with React Testing Library + Playwright
 - **API Client**: Generated from OpenAPI schema using @hey-api/openapi-ts
 
 ### Backend Tech Stack
@@ -164,7 +179,8 @@ Example: `[BE-141] Update CORS configuration for local API routes`
 - **Main Module**: FastAPI app is at `src.main:app` (not `app.main:app`)
 - **AI**: Google's Agent Development Kit (ADK) with Gemini models
 - **Audio**: Processing for 16kHz PCM format
-- **Testing**: pytest with 80% coverage requirement
+- **Voice** (optional): Google Cloud Speech-to-Text & Text-to-Speech
+- **Testing**: pytest with 80% coverage requirement + pytest-xdist for parallel execution
 - **Code Quality**: black, isort, ruff, mypy
 
 ### Deployment
@@ -207,6 +223,13 @@ When resuming work, provide:
 - Backend expects 16kHz PCM (conversion handled by backend)
 - No audio storage - only transcriptions are kept
 - SSE for real-time streaming between frontend and backend
+
+### Voice Modality (Optional)
+- Google Cloud Speech-to-Text for voice input
+- Google Cloud Text-to-Speech for voice output
+- Voice tests located in `playwright-js/tests/voice-*.spec.js`
+- Load tests for voice functionality in `tests/load/`
+- Install with: `cd backend && uv sync --extra voice`
 
 ## Current Status
 
@@ -254,8 +277,10 @@ make docker-logs
 ### E2E Test Infrastructure
 - **Python E2E tests**: Located in `tests/e2e/` with separate virtual environment
 - **JavaScript E2E tests**: Located in `playwright-js/` directory (self-contained)
+- **Voice E2E tests**: Voice network resilience tests in `playwright-js/tests/`
 - **Environment**: E2E tests use `.env.test` file
 - **Docker**: Integration tests use dedicated `docker-compose.integration.yml`
+- **Parallel execution**: pytest-xdist enabled for faster test runs
 
 ## Important Implementation Notes
 

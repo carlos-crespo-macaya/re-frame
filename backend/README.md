@@ -26,7 +26,7 @@ The project is in early development stages. See our [GitHub Issues](https://gith
 - Simplified prompt templates for all conversation phases
 - Project configuration with uv package manager
 - Basic CBT Assistant agent with Gemini integration
-- Interactive command-line interface (`main.py`)
+- FastAPI application with SSE streaming (`src/main.py`)
 
 ### In Progress
 See [Phase 1: Basic ADK Infrastructure](https://github.com/macayaven/reframe-agents/issues/2) and subsequent phases in our issue tracker.
@@ -74,8 +74,8 @@ adk run
 cd src/agents
 adk api_server
 
-# Option 4: Run standalone script (for testing)
-uv run python main.py
+# Option 4: Run API server locally
+uv run python -m uvicorn src.main:app --reload
 ```
 
 ### Development Commands

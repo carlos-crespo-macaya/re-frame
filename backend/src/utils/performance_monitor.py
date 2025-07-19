@@ -224,10 +224,14 @@ class PerformanceMonitor:
 
     async def log_periodic_summary(self, interval: int = 300) -> None:
         """Log performance summary periodically (default: every 5 minutes)."""
-        while True:
-            await asyncio.sleep(interval)
-            summary = self.get_metrics()
-            logger.info("performance_summary", **summary)
+        try:
+            while True:
+                await asyncio.sleep(interval)
+                summary = self.get_metrics()
+                logger.info("performance_summary", **summary)
+        except asyncio.CancelledError:
+            logger.info("performance_monitoring_stopped")
+            raise
 
 
 # Global performance monitor instance

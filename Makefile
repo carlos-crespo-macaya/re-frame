@@ -36,8 +36,24 @@ test-backend: ## Run backend tests
 	cd backend && uv run poe test
 
 .PHONY: test-integration
-test-integration: ## Run integration tests
-	docker-compose -f docker-compose.yml -f docker-compose.integration.yml up --abort-on-container-exit
+test-integration: ## Run integration tests with Docker
+	./scripts/test-integration.sh --docker
+
+.PHONY: test-e2e
+test-e2e: ## Run E2E tests with Docker
+	./scripts/run-e2e-tests.sh
+
+.PHONY: test-e2e-text
+test-e2e-text: ## Run text-only E2E tests
+	./scripts/run-e2e-tests.sh --text
+
+.PHONY: test-e2e-voice
+test-e2e-voice: ## Run voice-only E2E tests
+	./scripts/run-e2e-tests.sh --voice
+
+.PHONY: test-e2e-ui
+test-e2e-ui: ## Run E2E tests in UI mode
+	./scripts/run-e2e-tests.sh --ui
 
 # Linting and formatting
 .PHONY: lint

@@ -1,54 +1,94 @@
 === CONTEXT HANDOFF ===
 
-📍 Working on: Issue #212 - E2E pytest-xdist implementation
+📍 Working on: Linear Issue CAR-28 - Add missing test coverage for UI components
 🌿 Branch: issue-212-e2e-pytest-xdist
 📂 Directory: /Users/carlos/workspace/re-frame
 
 ✅ Completed:
-- Implemented voice/audio functionality improvements
-- Fixed ESLint warnings in frontend (unescaped entities, TypeScript any types, unused variables)
-- Disabled 6 unused GitHub workflows (release, security, voice tests)
-- Added workflow-level concurrency to 4 enabled CI workflows
-- Created PR #214: https://github.com/macayaven/re-frame/pull/214
-- Connected to Linear server for project management
+- Created comprehensive test suite for MessageBubble component (100% coverage)
+- Created test suite for PlaybackControls component (92.3% coverage)
+- Removed old TypeScript E2E test file (full-workflow.spec.ts)
+- Created new E2E test infrastructure with Docker support
+- Generated ALL audio fixtures using Google Cloud Text-to-Speech (10/10 files)
+- Created voice conversation tests for both English and Spanish
 
-🚧 In Progress:
-- PR #214 is open and ready for review
-- All CI checks should be running with the new concurrency settings
+🚧 Test Coverage Achieved:
+- MessageBubble.tsx: 100% coverage
+- PlaybackControls.tsx: 92.3% statement coverage, 100% function coverage
+- Overall conversation components: 100% coverage
 
-📝 Next Steps:
-1. Monitor PR #214 for CI status
-2. Address any review feedback
-3. Merge when approved
+📝 E2E Test Matrix (4 combinations):
+The goal is to test complete workflows with these variables:
+1. **English + Text** - full-text-workflow.spec.ts
+2. **English + Voice** - voice-english-fixtures.spec.ts
+3. **Spanish + Text** - text-conversation.spec.ts (needs Spanish variant)
+4. **Spanish + Voice** - voice-spanish-fixtures.spec.ts
+
+Current test files:
+- text-conversation.spec.ts - Simple text conversation flow
+- voice-conversation.spec.ts - Basic voice UI testing
+- full-text-workflow.spec.ts - Complete CBT conversation (English)
+- full-voice-workflow.spec.ts - Voice with audio playback
+- voice-english-fixtures.spec.ts - English voice with real TTS audio
+- voice-spanish-fixtures.spec.ts - Spanish voice with real TTS audio
+
+🎙️ Audio Fixtures (ALL COMPLETE):
+English (5 files - 611.7KB total):
+- en-greeting.wav (120.1KB)
+- en-thought-1.wav (113.8KB)
+- en-insight.wav (125.1KB)
+- en-conclusion.wav (137.6KB)
+- en-sleep-worry.wav (115.1KB)
+
+Spanish (5 files - 727.5KB total):
+- es-greeting.wav (151.7KB)
+- es-thought-1.wav (145.0KB)
+- es-insight.wav (149.2KB)
+- es-conclusion.wav (174.0KB)
+- es-social.wav (107.1KB) ✓ Fixed with es-ES-Standard-A voice
 
 🔧 Key Commands:
-- Backend tests: cd backend && uv run poe test
-- Frontend lint: cd frontend && pnpm run lint
-- Check PR status: gh pr view 214
-- View CI runs: gh run list
+- Generate audio fixtures: cd tests/e2e/fixtures && ./setup-and-generate.sh
+- Run all E2E tests: ./run-e2e-docker.sh
+- Run text tests only: ./run-e2e-docker.sh --text
+- Run voice tests only: ./run-e2e-docker.sh --voice
+- Debug mode: ./run-e2e-docker.sh --debug --keep-running
+- Frontend unit tests: cd frontend && pnpm run test:ci
 
-📎 Important Files Modified:
-- backend/src/main.py (added voice routers)
-- backend/src/voice/* (new voice functionality)
-- backend/src/text/router.py (refactored from main)
-- frontend/components/forms/ThoughtInputForm.tsx (commented unused audio handlers)
-- frontend/lib/logger.ts (fixed TypeScript types)
-- .github/workflows/*.yml (disabled unused, added concurrency)
+📎 Important Files:
+- frontend/components/audio/conversation/__tests__/MessageBubble.test.tsx
+- frontend/components/ui/__tests__/PlaybackControls.test.tsx
+- tests/e2e/fixtures/generate-audio-fixtures.js
+- tests/e2e/voice-english-fixtures.spec.ts
+- tests/e2e/voice-spanish-fixtures.spec.ts
+- docker-compose.integration.yml
+- scripts/run-e2e-tests.sh
 
 🔗 References:
-- PR: #214 - https://github.com/macayaven/re-frame/pull/214
-- Issue: #212 - E2E pytest-xdist
-- Project Board: https://github.com/users/macayaven/projects/7
-- Linear: Connected to linear-server
+- Linear Issue: https://linear.app/carlos-crespo/issue/CAR-28
+- Project: https://linear.app/carlos-crespo/project/re-framesocial-cbt-assistant-6c36f6288cc8
+- GitHub Project: https://github.com/users/macayaven/projects/7
 
-💡 Key Decisions:
-- Disabled unused workflows to reduce CI noise
-- Added cancel-in-progress to prevent workflow queue buildup
-- Kept audio handler functions commented (not deleted) for potential future use
+📊 Test Results:
+- Unit tests: All passing with >80% coverage target met
+- E2E tests: Ready to run with real audio fixtures
+- Voice fixtures: 10/10 files generated successfully (all complete!)
 
-🏁 Session Summary:
-Started with voice/audio implementation work on branch issue-212-e2e-pytest-xdist. 
-Fixed frontend ESLint warnings, disabled unused workflows, and added concurrency 
-controls to active CI workflows. All changes pushed to PR #214.
+🔑 Environment:
+- GEMINI_API_KEY is set (used by backend)
+- Google Cloud TTS authenticated via application default credentials
+- Docker and Docker Compose available
+- All 10 audio fixtures successfully generated
+
+💡 Next Steps:
+1. Create Spanish text workflow test (to complete the 4-combination matrix)
+2. Run all E2E tests to verify workflows:
+   - English + Text: full-text-workflow.spec.ts ✓
+   - English + Voice: voice-english-fixtures.spec.ts ✓
+   - Spanish + Text: (needs creation)
+   - Spanish + Voice: voice-spanish-fixtures.spec.ts ✓
+3. Verify all workflows complete successfully
+4. Commit the test improvements
+5. Update Linear issue CAR-28 as completed
 
 === END HANDOFF ===

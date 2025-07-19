@@ -208,14 +208,14 @@ export class RateLimiter {
 /**
  * Create a reconnecting SSE client wrapper
  */
-export function createReconnectingClient(
-  clientFactory: () => any,
+export function createReconnectingClient<T>(
+  clientFactory: () => T,
   options: {
     maxAttempts?: number;
     backoffMs?: number;
     onReconnect?: (attempt: number) => void;
   } = {}
-): any {
+): T {
   const {
     maxAttempts = 5,
     backoffMs = 1000,
@@ -247,7 +247,7 @@ export function createReconnectingClient(
       const value = target[prop];
       
       if (typeof value === 'function') {
-        return async (...args: any[]) => {
+        return async (...args: unknown[]) => {
           try {
             return await value.apply(target, args);
           } catch (error) {

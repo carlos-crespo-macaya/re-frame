@@ -116,7 +116,7 @@ export default function Home() {
       // Always try to disconnect on unmount
       disconnect()
     }
-  }, [selectedLanguage, useAudioMode])
+  }, [selectedLanguage, useAudioMode, connect, disconnect])
   
   // Track the start of current response
   const [responseStartIndex, setResponseStartIndex] = useState(0)

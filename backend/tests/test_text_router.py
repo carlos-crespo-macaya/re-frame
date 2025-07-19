@@ -171,17 +171,98 @@ class TestLanguageDetection:
     """Test language detection endpoint."""
 
     def test_detect_language(self, client):
-        """Test language detection returns default response."""
+        """Test language detection for all supported languages."""
+        # Test cases with phrases in different languages
+        test_cases = [
+            {
+                "text": "Hello, how are you today? I hope you're doing well.",
+                "expected_lang": "en",
+                "description": "English",
+            },
+            {
+                "text": "Hola, ¿cómo estás? Espero que tengas un buen día.",
+                "expected_lang": "es",
+                "description": "Spanish",
+            },
+        ]
+
+        for test_case in test_cases:
+            response = client.post(
+                "/api/language/detect",
+                json={"text": test_case["text"]},
+            )
+            assert response.status_code == 200
+
+            data = response.json()
+            assert data["status"] == "success"
+            assert (
+                data["language"] == test_case["expected_lang"]
+            ), f"Failed for {test_case['description']}: expected {test_case['expected_lang']}, got {data['language']}"
+            # Confidence should be reasonable for clear language samples
+            assert (
+                0.7 <= data["confidence"] <= 1.0
+            ), f"Low confidence for {test_case['description']}: {data['confidence']}"
+
+    def test_detect_unsupported_languages(self, client):
+        """Test that unsupported languages fall back to English."""
+        # French text (no longer supported)
         response = client.post(
             "/api/language/detect",
-            json={"text": "Hello, how are you?"},
+            json={
+                "text": "Bonjour, comment allez-vous? J'espère que vous passez une bonne journée."
+            },
         )
         assert response.status_code == 200
-
         data = response.json()
-        assert data["status"] == "success"
+        assert data["language"] == "en"  # Should fall back to English
+        assert data["confidence"] == 0.5  # Low confidence for fallback
+
+        # German text (no longer supported)
+        response = client.post(
+            "/api/language/detect",
+            json={
+                "text": "Guten Tag, wie geht es Ihnen? Ich hoffe, Sie haben einen schönen Tag."
+            },
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["language"] == "en"  # Should fall back to English
+        assert data["confidence"] == 0.5  # Low confidence for fallback
+
+    def test_detect_language_edge_cases(self, client):
+        """Test language detection edge cases."""
+        # Empty text should return default language
+        response = client.post(
+            "/api/language/detect",
+            json={"text": ""},
+        )
+        assert response.status_code == 200
+        data = response.json()
         assert data["language"] == "en"
-        assert data["confidence"] == 0.95
+        assert data["confidence"] == 1.0
+
+        # Very short text might fall back to English default
+        response = client.post(
+            "/api/language/detect",
+            json={"text": "Hi"},
+        )
+        assert response.status_code == 200
+        data = response.json()
+        # Short text often can't be reliably detected, so it may fall back to English
+        assert data["language"] in ["en", "es"]
+        assert 0.0 <= data["confidence"] <= 1.0
+
+        # Mixed language text - should detect dominant language
+        response = client.post(
+            "/api/language/detect",
+            json={
+                "text": "Hello world! This is mostly English with just un poco de español."
+            },
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["language"] == "en"  # Should detect English as dominant
+        assert 0.5 <= data["confidence"] <= 1.0
 
 
 class TestPDFEndpoint:
