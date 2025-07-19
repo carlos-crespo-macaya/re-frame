@@ -5,7 +5,7 @@
 import {
   ServerMessage,
   ErrorMessage,
-  StatusMessage,
+  // StatusMessage,
   ClientMessage,
   ConnectionState,
   isServerMessage,

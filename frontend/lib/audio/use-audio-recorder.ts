@@ -43,7 +43,7 @@ export function useAudioRecorder(options: UseAudioRecorderOptions = {}) {
       result.addEventListener('change', () => {
         setState(prev => ({ ...prev, micPermission: result.state as MicPermissionState }))
       })
-    } catch (error) {
+    } catch {
       // Fallback for browsers that don't support permission query
       setState(prev => ({ ...prev, micPermission: 'prompt' }))
     }

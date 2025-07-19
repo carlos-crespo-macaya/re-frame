@@ -9,7 +9,7 @@ import {
 } from './sse-client';
 import {
   type ServerMessage,
-  type ClientMessage,
+  // type ClientMessage,
   type ConnectionState,
   type ErrorMessage,
   createClientMessage
@@ -51,12 +51,7 @@ export function useSSEClient(options: UseSSEClientOptions = {}) {
   const rateLimiterRef = useRef(new RateLimiter(rateLimitMs));
   
   // Memoize SSE options to prevent unnecessary re-renders
-  const memoizedSseOptions = useMemo(() => sseOptions, [
-    sseOptions.baseUrl,
-    sseOptions.reconnectInterval,
-    sseOptions.maxReconnectAttempts,
-    sseOptions.heartbeatInterval
-  ]);
+  const memoizedSseOptions = useMemo(() => sseOptions, [sseOptions]);
   
   // Initialize SSE client
   useEffect(() => {
