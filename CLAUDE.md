@@ -15,11 +15,20 @@ A transparent, AI-assisted tool designed for people with Avoidant Personality Di
 ```
 re-frame/
 ├── frontend/          # Next.js 14 frontend application
+│   └── CLAUDE.md     # Frontend-specific instructions
 ├── backend/           # FastAPI backend with ADK agents
+│   └── CLAUDE.md     # Backend-specific instructions
 ├── docs/              # Shared documentation
 ├── scripts/           # Utility scripts
 └── docker-compose.yml # Local development setup
 ```
+
+## Directory-Specific Instructions
+
+Claude will automatically use the most specific CLAUDE.md based on your working directory:
+- **Working in `/frontend`**: Uses `frontend/CLAUDE.md` for frontend-specific guidance
+- **Working in `/backend`**: Uses `backend/CLAUDE.md` for backend-specific guidance
+- **Working in root or other directories**: Uses this file for general project guidance
 
 ## Commands Reference
 
@@ -42,12 +51,16 @@ cd backend
 uv sync --all-extras                      # Install all dependencies
 uv run python -m uvicorn src.main:app --reload  # Start API server
 uv run poe test                          # Run all tests
-uv run poe test-cov                      # Run tests with coverage report
+uv run poe test-cov                      # Run tests with HTML coverage report
 uv run poe check                         # Run ALL quality checks (format, lint, typecheck, test)
 uv run poe format                        # Auto-fix formatting (black + isort)
+uv run poe format-check                  # Check formatting without modifying
 uv run poe lint                          # Run linting (ruff)
+uv run poe lint-fix                      # Auto-fix linting issues
 uv run poe typecheck                     # Run type checking (mypy)
+uv run poe fix                           # Fix all auto-fixable issues (format + lint-fix)
 uv run poe export-openapi                # Export OpenAPI schema for frontend
+uv run poe setup                         # Development setup (sync deps + install pre-commit)
 ```
 
 ### Monorepo Commands (from root)
@@ -56,6 +69,16 @@ npm run dev:frontend    # Run frontend
 npm run dev:backend     # Run backend
 npm run dev:all         # Run both concurrently
 npm run test:all        # Test everything
+
+# Additional commands from Makefile
+make setup              # Initial project setup (installs pnpm, uv, dependencies)
+make test-integration   # Run integration tests with Docker
+make pre-commit         # Run all pre-commit checks (lint, typecheck, test)
+make clean              # Clean generated files and caches
+make update-deps        # Update all dependencies (frontend and backend)
+make deploy-frontend    # Deploy frontend via GitHub workflow
+make deploy-backend     # Deploy backend via GitHub workflow
+make docs               # Serve documentation locally with MkDocs Material
 ```
 
 ### Docker Development
@@ -75,12 +98,23 @@ docker-compose down -v
 
 ### E2E Testing
 ```bash
+# From root directory
+npm run e2e                      # Run Playwright tests with main config
+npm run e2e:ui                   # Run Playwright tests with UI mode
+npm run e2e:js                   # Run JavaScript Playwright tests
+npm run e2e:js:ui                # Run JavaScript Playwright tests with UI mode
+npm run test:e2e:install         # Install Playwright browsers
+
+# From frontend directory
 cd frontend
 pnpm run test:e2e                # Run Playwright tests
 pnpm run test:e2e:ui             # Run with UI mode
 pnpm run test:e2e:debug          # Run in debug mode
 pnpm run test:e2e:headed         # Run with browser visible
 pnpm run test:e2e:report         # Show test report
+
+# Python E2E tests (separate infrastructure)
+cd tests/e2e && ./run_tests.sh   # Run Python E2E tests
 ```
 
 ## Project Management
@@ -125,8 +159,9 @@ Example: `[BE-141] Update CORS configuration for local API routes`
 
 ### Backend Tech Stack
 - **Framework**: FastAPI
-- **Language**: Python 3.11+ (project uses 3.12)
+- **Language**: Python 3.12 (specifically requires 3.12)
 - **Package Manager**: uv (NOT pip or poetry)
+- **Main Module**: FastAPI app is at `src.main:app` (not `app.main:app`)
 - **AI**: Google's Agent Development Kit (ADK) with Gemini models
 - **Audio**: Processing for 16kHz PCM format
 - **Testing**: pytest with 80% coverage requirement
@@ -196,6 +231,7 @@ Always check for existing test patterns before writing new tests:
 - Frontend: Look for `*.test.tsx` files alongside components
 - Backend: Look for `test_*.py` files in tests directory
 - Use existing mocks and test utilities where available
+- Coverage: Backend requires 80% minimum (excludes `src/utils/crawl.py`)
 
 ### Running Specific Tests
 ```bash
@@ -207,7 +243,19 @@ cd backend && uv run pytest tests/test_greeting_phase.py -v
 
 # Backend - run with specific test pattern
 cd backend && uv run pytest -k "test_greeting" -v
+
+# Integration tests with Docker
+make test-integration
+
+# Show Docker logs during tests
+make docker-logs
 ```
+
+### E2E Test Infrastructure
+- **Python E2E tests**: Located in `tests/e2e/` with separate virtual environment
+- **JavaScript E2E tests**: Located in `playwright-js/` directory (self-contained)
+- **Environment**: E2E tests use `.env.test` file
+- **Docker**: Integration tests use dedicated `docker-compose.integration.yml`
 
 ## Important Implementation Notes
 
