@@ -169,11 +169,13 @@ test.describe('Voice Network Resilience', () => {
     
     // Go back online BEFORE reloading
     await context.setOffline(false);
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(2000);
     
     // Now reload the page while online
     await page.reload();
-    await page.waitForLoadState('networkidle');
+    // Wait for the page to be ready (DOM loaded) instead of waiting for all network requests
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForTimeout(1000);
     
     // After reload, form should be fully functional
     await page.fill('textarea', 'Testing after reconnection');
