@@ -41,7 +41,7 @@ export default function Home() {
     
     const performConnect = async () => {
       try {
-        if (mounted && !useAudioMode && !isConnecting) {
+        if (mounted && !useAudioMode) {
           // Only reconnect if language changed or first connection
           const shouldConnect = !hasConnectedRef.current || 
                                previousLanguageRef.current !== selectedLanguage ||
@@ -53,16 +53,8 @@ export default function Home() {
               attempt: currentAttempt,
               language: selectedLanguage,
               audioMode: useAudioMode,
-              isConnected,
               shouldConnect
             })
-            
-            // Disconnect any existing connection first
-            if (isConnected) {
-              appLogger.info('Disconnecting existing connection')
-              disconnect()
-              await new Promise(resolve => setTimeout(resolve, 100))
-            }
             
             // Only proceed if this is still the latest connection attempt
             if (currentAttempt === connectionAttemptRef.current && mounted) {
@@ -90,7 +82,7 @@ export default function Home() {
         // Retry connection after delay if still mounted
         if (mounted && currentAttempt === connectionAttemptRef.current) {
           setTimeout(() => {
-            if (mounted && !isConnected && !useAudioMode) {
+            if (mounted && !useAudioMode) {
               performConnect()
             }
           }, 2000)
@@ -110,21 +102,18 @@ export default function Home() {
       }
     } else if (useAudioMode) {
       // Disconnect text mode when switching to audio
-      if (isConnected) {
-        appLogger.info('Disconnecting text mode for audio mode switch')
-        disconnect()
-        hasConnectedRef.current = false
-      }
+      appLogger.info('Disconnecting text mode for audio mode switch')
+      disconnect()
+      hasConnectedRef.current = false
       previousAudioModeRef.current = useAudioMode
     }
     
     return () => {
       mounted = false
-      if (isConnected) {
-        disconnect()
-      }
+      // Always try to disconnect on unmount
+      disconnect()
     }
-  }, [selectedLanguage, useAudioMode, isConnected, isConnecting, connect, disconnect])
+  }, [selectedLanguage, useAudioMode, connect, disconnect])
   
   // Track the start of current response
   const [responseStartIndex, setResponseStartIndex] = useState(0)
