@@ -41,6 +41,7 @@ export function useNaturalConversation(options: UseNaturalConversationOptions = 
   const pcmPlayerRef = useRef<PCMPlayer | null>(null)
   const eventSourceRef = useRef<EventSource | null>(null)
   const sessionIdRef = useRef<string | null>(null)
+  const isSSEConnectedRef = useRef<boolean>(false)
 
   // Audio buffering for 0.2s intervals
   const audioBufferRef = useRef<Uint8Array[]>([])
@@ -149,7 +150,7 @@ export function useNaturalConversation(options: UseNaturalConversationOptions = 
 
   // Send buffered audio data every 0.2 seconds
   const sendBufferedAudio = useCallback(async () => {
-    if (audioBufferRef.current.length === 0 || !sessionIdRef.current) {
+    if (audioBufferRef.current.length === 0 || !sessionIdRef.current || !isSSEConnectedRef.current) {
       return
     }
 
@@ -220,12 +221,21 @@ export function useNaturalConversation(options: UseNaturalConversationOptions = 
       if (process.env.NODE_ENV === 'development') {
         console.log('Connected to audio session:', sessionId)
       }
+      isSSEConnectedRef.current = true
       setState(prev => ({ ...prev, status: 'Connected - Speak naturally!' }))
     }
 
     eventSource.onmessage = async (event) => {
       try {
         const data = JSON.parse(event.data)
+
+        // Mark as truly connected when we receive the first message
+        if (data.type === 'connected') {
+          isSSEConnectedRef.current = true
+          if (process.env.NODE_ENV === 'development') {
+            console.log('Session established, ready to send audio')
+          }
+        }
 
         // Handle audio playback
         if (data.mime_type === 'audio/pcm' && data.data && pcmPlayerRef.current) {
@@ -257,6 +267,7 @@ export function useNaturalConversation(options: UseNaturalConversationOptions = 
       if (process.env.NODE_ENV === 'development') {
         console.error('SSE error:', error)
       }
+      isSSEConnectedRef.current = false
       setState(prev => ({ ...prev, status: 'Connection error - click to restart' }))
       if (onError) {
         onError(new Error('SSE connection error'))
@@ -420,6 +431,9 @@ export function useNaturalConversation(options: UseNaturalConversationOptions = 
       eventSourceRef.current.close()
       eventSourceRef.current = null
     }
+
+    // Reset connection flag
+    isSSEConnectedRef.current = false
 
     // Clear audio buffer
     audioBufferRef.current = []

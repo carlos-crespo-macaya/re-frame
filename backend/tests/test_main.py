@@ -22,24 +22,19 @@ from httpx import ASGITransport, AsyncClient
 
 # Patch all external dependencies before importing the app
 with (
-    patch("src.main.create_cbt_assistant", MagicMock()),
-    patch("src.main.session_manager", MagicMock()),
-    patch("src.main.AudioConverter", MagicMock()),
+    patch("src.text.router.create_cbt_assistant", MagicMock()),
+    patch("src.utils.session_manager.session_manager", MagicMock()),
+    patch("src.utils.audio_converter.AudioConverter", MagicMock()),
 ):
     from src.main import app
 
-from src.models import (
-    HealthCheckResponse,
-    LanguageDetectionRequest,
-    MessageRequest,
-    SessionInfo,
-)
+from src.models import HealthCheckResponse
 
 
 @pytest.fixture
 def mock_session_manager():
     """Mock session manager for tests."""
-    with patch("src.main.session_manager") as mock:
+    with patch("src.utils.session_manager.session_manager") as mock:
         # Setup default behaviors
         mock.get_session.return_value = None
         mock.get_session_readonly.return_value = None
@@ -52,46 +47,24 @@ def mock_session_manager():
 
 
 @pytest.fixture
-def mock_audio_converter():
-    """Mock audio converter for tests."""
-    with patch("src.main.AudioConverter") as mock_class:
-        # Mock class attributes and methods
-        mock_class.SUPPORTED_INPUT_FORMATS = ["audio/wav", "audio/webm", "audio/pcm"]
-        mock_class.validate_pcm_data = MagicMock(return_value=True)
-        mock_class.convert_to_pcm = MagicMock(
-            return_value=(
-                b"pcm_data",
-                {
-                    "sample_rate": 16000,
-                    "conversion_time": 10.5,
-                    "input_size": 1000,
-                    "output_size": 500,
-                },
-            )
-        )
-        yield mock_class
-
-
-@pytest.fixture
-def mock_create_cbt_assistant():
-    """Mock CBT assistant creation."""
-    with patch("src.main.create_cbt_assistant") as mock:
-        mock_agent = MagicMock()
-        mock.return_value = mock_agent
+def mock_voice_session_manager():
+    """Mock voice session manager for tests."""
+    with patch("src.voice.session_manager.voice_session_manager") as mock:
+        # Make async methods
+        mock.start = AsyncMock()
+        mock.stop = AsyncMock()
         yield mock
 
 
 @pytest.fixture
-def client(mock_session_manager, mock_audio_converter, mock_create_cbt_assistant):
+def client(mock_session_manager, mock_voice_session_manager):
     """Create a test client for the FastAPI app with mocked dependencies."""
     with TestClient(app) as test_client:
         yield test_client
 
 
 @pytest.fixture
-async def async_client(
-    mock_session_manager, mock_audio_converter, mock_create_cbt_assistant
-):
+async def async_client(mock_session_manager, mock_voice_session_manager):
     """Create an async test client for the FastAPI app with mocked dependencies."""
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
@@ -149,349 +122,124 @@ class TestRootEndpoint:
 
         response = client.get("/")
         assert response.status_code == 200
-        assert response.headers["content-type"] == "text/html; charset=utf-8"
         assert response.content == b"<html>Test</html>"
+        assert response.headers["content-type"] == "text/html; charset=utf-8"
 
 
-class TestSessionEndpoints:
-    """Test session-related endpoints."""
+class TestMetricsEndpoint:
+    """Test the metrics endpoint."""
 
-    def test_get_session_info_found(self, client, mock_session_manager):
-        """Test getting session info when session exists."""
-        mock_session = MagicMock()
-        mock_session.session_id = "test-123"
-        mock_session.user_id = "user-456"
-        mock_session.created_at = 1234567890.0
-        mock_session.last_activity = 1234567900.0
-        mock_session.age_seconds = 10.0
-        mock_session.inactive_seconds = 5.0
-        mock_session.request_queue = MagicMock()
-        mock_session.metadata = {}
-        mock_session_manager.get_session_readonly.return_value = mock_session
+    @patch("src.main.get_performance_monitor")
+    def test_get_metrics(self, mock_get_monitor, client):
+        """Test that metrics endpoint returns performance data."""
+        # Mock performance monitor to return realistic metrics
+        mock_monitor = MagicMock()
+        mock_monitor.get_metrics.return_value = {
+            "uptime_seconds": 3600.0,
+            "total_requests": 100,
+            "error_count": 1,
+            "error_rate": 0.01,
+            "throughput_rps": 0.028,
+            "active_sessions": 0,
+            "response_times": {
+                "min": 0.01,
+                "max": 0.1,
+                "avg": 0.05,
+                "p50": 0.045,
+                "p95": 0.09,
+                "p99": 0.099,
+            },
+        }
+        mock_get_monitor.return_value = mock_monitor
 
-        response = client.get("/api/session/test-123")
+        response = client.get("/api/metrics")
         assert response.status_code == 200
 
         data = response.json()
-        assert data["session_id"] == "test-123"
-        assert data["user_id"] == "user-456"
-        assert data["has_request_queue"] is True
-
-        # Validate response model
-        session_info = SessionInfo(**data)
-        assert session_info.session_id == "test-123"
-
-    def test_get_session_info_not_found(self, client, mock_session_manager):
-        """Test getting session info when session doesn't exist."""
-        mock_session_manager.get_session_readonly.return_value = None
-
-        response = client.get("/api/session/test-123")
-        assert response.status_code == 404
-        assert response.json()["detail"] == "Session not found"
-
-    def test_list_sessions(self, client, mock_session_manager):
-        """Test listing all sessions."""
-        mock_session = MagicMock()
-        mock_session.session_id = "test-123"
-        mock_session.age_seconds = 60.0
-        mock_session.inactive_seconds = 10.0
-
-        mock_session_manager.sessions = {"test-123": mock_session}
-        mock_session_manager.get_active_session_count.return_value = 1
-
-        response = client.get("/api/sessions")
-        assert response.status_code == 200
-
-        data = response.json()
-        assert data["total_sessions"] == 1
-        assert len(data["sessions"]) == 1
-        assert data["sessions"][0]["session_id"] == "test-123"
-
-
-class TestMessageEndpoints:
-    """Test message-related endpoints."""
-
-    def test_send_message_text_success(self, client, mock_session_manager):
-        """Test sending a text message successfully."""
-        mock_session = MagicMock()
-        mock_queue = AsyncMock()
-        mock_runner = AsyncMock()
-        mock_adk_session = MagicMock()
-        mock_run_config = MagicMock()
-
-        # Set up metadata with required components
-        mock_session.metadata = {
-            "message_queue": mock_queue,
-            "runner": mock_runner,
-            "adk_session": mock_adk_session,
-            "run_config": mock_run_config,
-        }
-        mock_session_manager.get_session.return_value = mock_session
-
-        # Mock process_message to return empty events
-        async def mock_run_async(*args, **kwargs):
-            # Return an empty async iterator
-            for _ in []:
-                yield
-
-        mock_runner.run_async = mock_run_async
-
-        request_data = MessageRequest(
-            mime_type="text/plain", data="SGVsbG8gd29ybGQ="  # "Hello world" in base64
-        )
-
-        response = client.post("/api/send/test-123", json=request_data.model_dump())
-        assert response.status_code == 200
-        assert response.json()["status"] == "sent"
-        assert response.json()["error"] is None
-
-    def test_send_message_session_not_found(self, client, mock_session_manager):
-        """Test sending message when session doesn't exist."""
-        mock_session_manager.get_session.return_value = None
-
-        request_data = MessageRequest(mime_type="text/plain", data="SGVsbG8gd29ybGQ=")
-
-        response = client.post("/api/send/test-123", json=request_data.model_dump())
-        assert response.status_code == 404
-        assert response.json()["detail"] == "Session not found"
-
-    def test_send_message_unsupported_mime_type(self, client, mock_session_manager):
-        """Test sending message with unsupported mime type."""
-        mock_session = MagicMock()
-        mock_queue = AsyncMock()
-        mock_runner = AsyncMock()
-        mock_adk_session = MagicMock()
-        mock_run_config = MagicMock()
-
-        # Set up metadata with required components
-        mock_session.metadata = {
-            "message_queue": mock_queue,
-            "runner": mock_runner,
-            "adk_session": mock_adk_session,
-            "run_config": mock_run_config,
-        }
-        mock_session_manager.get_session.return_value = mock_session
-
-        request_data = MessageRequest(
-            mime_type="application/pdf", data="SGVsbG8gd29ybGQ="
-        )
-
-        response = client.post("/api/send/test-123", json=request_data.model_dump())
-        assert response.status_code == 415
-        assert "Mime type not supported" in response.json()["detail"]
-
-    def test_send_message_audio_not_implemented(
-        self, client, mock_session_manager, mock_audio_converter
-    ):
-        """Test sending audio message returns not implemented in request-response mode."""
-        mock_session = MagicMock()
-        mock_queue = AsyncMock()
-        mock_runner = AsyncMock()
-        mock_adk_session = MagicMock()
-        mock_run_config = MagicMock()
-
-        # Set up metadata with required components
-        mock_session.metadata = {
-            "message_queue": mock_queue,
-            "runner": mock_runner,
-            "adk_session": mock_adk_session,
-            "run_config": mock_run_config,
-        }
-        mock_session_manager.get_session.return_value = mock_session
-
-        request_data = MessageRequest(
-            mime_type="audio/wav", data="YXVkaW9fZGF0YQ=="  # "audio_data" in base64
-        )
-
-        response = client.post("/api/send/test-123", json=request_data.model_dump())
-        # Audio processing now returns 501 in request-response mode
-        assert response.status_code == 501
-        assert (
-            "Audio processing not yet implemented in request-response mode"
-            in response.json()["detail"]
-        )
-
-    def test_send_message_webm_not_implemented(self, client, mock_session_manager):
-        """Test sending WebM audio returns not implemented error."""
-        mock_session = MagicMock()
-        mock_queue = AsyncMock()
-        mock_runner = AsyncMock()
-        mock_adk_session = MagicMock()
-        mock_run_config = MagicMock()
-
-        # Set up metadata with required components
-        mock_session.metadata = {
-            "message_queue": mock_queue,
-            "runner": mock_runner,
-            "adk_session": mock_adk_session,
-            "run_config": mock_run_config,
-        }
-        mock_session_manager.get_session.return_value = mock_session
-
-        request_data = MessageRequest(mime_type="audio/webm", data="YXVkaW9fZGF0YQ==")
-
-        response = client.post("/api/send/test-123", json=request_data.model_dump())
-        assert response.status_code == 501
-        assert (
-            "Audio processing not yet implemented in request-response mode"
-            in response.json()["detail"]
-        )
-
-    def test_send_message_audio_conversion_not_implemented(
-        self, client, mock_session_manager, mock_audio_converter
-    ):
-        """Test audio conversion returns not implemented in request-response mode."""
-        mock_session = MagicMock()
-        mock_queue = AsyncMock()
-        mock_runner = AsyncMock()
-        mock_adk_session = MagicMock()
-        mock_run_config = MagicMock()
-
-        # Set up metadata with required components
-        mock_session.metadata = {
-            "message_queue": mock_queue,
-            "runner": mock_runner,
-            "adk_session": mock_adk_session,
-            "run_config": mock_run_config,
-        }
-        mock_session_manager.get_session.return_value = mock_session
-
-        request_data = MessageRequest(mime_type="audio/wav", data="YXVkaW9fZGF0YQ==")
-
-        response = client.post("/api/send/test-123", json=request_data.model_dump())
-        # Audio processing returns 501 in request-response mode
-        assert response.status_code == 501
-        assert (
-            "Audio processing not yet implemented in request-response mode"
-            in response.json()["detail"]
-        )
-
-
-class TestSSEEndpoint:
-    """Test Server-Sent Events endpoint."""
-
-    @pytest.mark.asyncio
-    @pytest.mark.skip(reason="SSE endpoint test needs update for new ADK architecture")
-    async def test_sse_endpoint_text_mode(self, async_client, mock_session_manager):
-        """Test SSE endpoint in text mode."""
-        # This test needs extensive refactoring to mock ADK components
-        # including InMemoryRunner, LlmAgent, and async message processing
-        mock_session = MagicMock()
-        mock_session.session_id = "test-123"
-        mock_session.response_queue = AsyncMock()
-        mock_session.response_queue.get.side_effect = [
-            ("content", "Hello"),
-            ("turn_complete", {"turn_complete": True}),
-        ]
-        mock_session_manager.get_session.return_value = mock_session
-
-        response = await async_client.get(
-            "/api/events/test-123?is_audio=false&language=en-US", follow_redirects=False
-        )
-
-        assert response.status_code == 200
-        assert response.headers["content-type"] == "text/event-stream; charset=utf-8"
-
-    # Removed test_sse_endpoint_session_not_found as SSE endpoint creates new sessions
-
-
-class TestLanguageDetection:
-    """Test language detection endpoint."""
-
-    def test_detect_language_not_implemented(self, client):
-        """Test language detection endpoint (currently not implemented)."""
-        request_data = LanguageDetectionRequest(text="Hello world")
-
-        response = client.post("/api/language/detect", json=request_data.model_dump())
-        assert response.status_code == 200
-
-        data = response.json()
-        assert data["status"] == "not_implemented"
-        assert "will be implemented" in data["message"]
-        assert data["language"] is None
-        assert data["confidence"] is None
-
-
-class TestPDFEndpoint:
-    """Test PDF download endpoint."""
-
-    def test_download_pdf(self, client):
-        """Test PDF download endpoint."""
-        response = client.get("/api/pdf/test-123")
-        assert response.status_code == 200
-        assert response.headers["content-type"] == "application/pdf"
-        assert (
-            response.headers["content-disposition"]
-            == 'attachment; filename="reframe-summary-test-123.pdf"'
-        )
-        assert response.content.startswith(b"Mock PDF content")
+        assert data["total_requests"] == 100
+        assert data["error_rate"] == 0.01
+        assert data["active_sessions"] == 0
+        assert "uptime_seconds" in data
+        assert data["uptime_seconds"] > 0
 
 
 class TestStartupShutdown:
-    """Test application startup and shutdown events."""
+    """Test startup and shutdown events."""
 
     @pytest.mark.asyncio
-    async def test_startup_event(self, mock_session_manager):
-        """Test startup event handler."""
-        mock_session_manager.start = AsyncMock()
+    async def test_startup_event(self):
+        """Test that startup event starts session managers."""
+        with (
+            patch("src.main.session_manager") as mock_session_manager,
+            patch("src.main.voice_session_manager") as mock_voice_session_manager,
+            patch("src.main.get_performance_monitor") as mock_get_monitor,
+        ):
+            # Setup mocks
+            mock_session_manager.start = AsyncMock()
+            mock_voice_session_manager.start = AsyncMock()
+            mock_monitor = MagicMock()
+            mock_monitor.log_periodic_summary = AsyncMock()
+            mock_get_monitor.return_value = mock_monitor
 
-        # Import and call the startup handler directly
-        from src.main import startup_event
+            # Import and run startup
+            from src.main import startup_event
 
-        await startup_event()
-        mock_session_manager.start.assert_called_once()
+            await startup_event()
+
+            # Verify session managers were started
+            mock_session_manager.start.assert_called_once()
+            mock_voice_session_manager.start.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_shutdown_event(self, mock_session_manager):
-        """Test shutdown event handler."""
-        mock_session_manager.stop = AsyncMock()
+    async def test_shutdown_event(self):
+        """Test that shutdown event stops session managers."""
+        with (
+            patch("src.main.session_manager") as mock_session_manager,
+            patch("src.main.voice_session_manager") as mock_voice_session_manager,
+        ):
+            # Setup mocks
+            mock_session_manager.stop = AsyncMock()
+            mock_voice_session_manager.stop = AsyncMock()
 
-        # Import and call the shutdown handler directly
-        from src.main import shutdown_event
+            # Import and run shutdown
+            from src.main import shutdown_event
 
-        await shutdown_event()
-        mock_session_manager.stop.assert_called_once()
+            await shutdown_event()
+
+            # Verify session managers were stopped
+            mock_session_manager.stop.assert_called_once()
+            mock_voice_session_manager.stop.assert_called_once()
 
 
 class TestCORSConfiguration:
-    """Test CORS configuration."""
+    """Test CORS middleware configuration."""
 
     def test_cors_headers(self, client):
-        """Test that CORS headers are properly set."""
-        response = client.options(
-            "/health",
-            headers={
-                "Origin": "http://localhost:3000",
-                "Access-Control-Request-Method": "GET",
-            },
-        )
+        """Test that CORS headers are set correctly for allowed origin."""
+        # Test GET request with Origin header to check CORS
+        response = client.get("/health", headers={"Origin": "http://localhost:3000"})
         assert response.status_code == 200
+        # Check that CORS headers are present
         assert "access-control-allow-origin" in response.headers
-        assert "access-control-allow-methods" in response.headers
+        assert (
+            response.headers["access-control-allow-origin"] == "http://localhost:3000"
+        )
 
 
 class TestOpenAPIGeneration:
     """Test OpenAPI schema generation."""
 
     def test_openapi_schema(self, client):
-        """Test that OpenAPI schema can be generated."""
+        """Test that OpenAPI schema is generated correctly."""
         response = client.get("/openapi.json")
         assert response.status_code == 200
 
         schema = response.json()
-        assert schema["openapi"] == "3.1.0"
-        assert "CBT Reframing Assistant API" in schema["info"]["title"]
+        assert schema["info"]["title"] == "CBT Reframing Assistant API"
+        assert schema["info"]["version"] == "1.0.0"
+        assert "/health" in schema["paths"]
+        assert "/api/metrics" in schema["paths"]
 
-        # Verify key endpoints are documented
-        paths = schema["paths"]
-        assert "/health" in paths
-        assert "/api/send/{session_id}" in paths
-        assert "/api/events/{session_id}" in paths
-        assert "/api/sessions" in paths
-
-        # Verify models are defined
-        components = schema["components"]["schemas"]
-        assert "HealthCheckResponse" in components
-        assert "MessageRequest" in components
-        assert "MessageResponse" in components
-        assert "SessionInfo" in components
+        # Check that text and voice endpoints are included via routers
+        assert "/api/events/{session_id}" in schema["paths"]  # Text router
+        assert "/api/voice/sessions" in schema["paths"]  # Voice router
