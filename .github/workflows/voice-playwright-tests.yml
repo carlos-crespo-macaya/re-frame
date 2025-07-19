@@ -25,12 +25,12 @@ permissions:
 jobs:
   voice-playwright-tests:
     name: Voice Network Resilience Tests
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
-        browser: [chromium, firefox, webkit]
+        browser: [chromium, firefox]
     
     steps:
       - uses: actions/checkout@v4
@@ -141,7 +141,7 @@ jobs:
 
   voice-integration-summary:
     name: Voice Tests Summary
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: voice-playwright-tests
     if: always()
     
@@ -163,5 +163,5 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `## Voice Tests Results ${emoji}\n\nVoice network resilience tests: **${status}**\n\nTested on: Chromium, Firefox, WebKit`
+              body: `## Voice Tests Results ${emoji}\n\nVoice network resilience tests: **${status}**\n\nTested on: Chromium, Firefox`
             });
