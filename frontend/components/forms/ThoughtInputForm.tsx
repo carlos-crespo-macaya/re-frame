@@ -4,7 +4,6 @@ import { useState, FormEvent, KeyboardEvent, useEffect, useRef } from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui'
 import { createDefaultAudioState, AudioState } from '@/lib/audio'
-import { useSSEClient } from '@/lib/streaming/use-sse-client'
 // import { arrayBufferToBase64 } from '@/lib/audio/audio-utils'
 import { usePCMRecorder } from '@/lib/audio/use-pcm-recorder'
 import { PCMPlayer } from '@/lib/audio/pcm-player'
@@ -29,18 +28,6 @@ export default function ThoughtInputForm({
   const maxLength = 1000
   const pcmPlayerRef = useRef<PCMPlayer | null>(null)
   
-  // Initialize SSE client for audio mode only - ensure only one instance
-  const sseClient = useSSEClient({
-    autoConnect: false,
-    enableRateLimit: false  // Disable rate limiting for audio
-  })
-  
-  // Store refs to avoid dependency issues
-  const sseClientRef = useRef(sseClient)
-  useEffect(() => {
-    sseClientRef.current = sseClient
-  }, [sseClient])
-  
 
   // Initialize PCM player and check audio support on mount
   useEffect(() => {
@@ -56,50 +43,6 @@ export default function ThoughtInputForm({
       }
     }
   }, [])
-  
-  
-  // Track last processed message index to avoid reprocessing
-  const lastProcessedIndexRef = useRef<number>(-1)
-  
-  
-  // Listen for SSE messages - process only new messages
-  useEffect(() => {
-    if (!sseClient.isConnected || !audioSessionActive) {
-      return
-    }
-    
-    const messages = sseClient.messages
-    const startIndex = lastProcessedIndexRef.current + 1
-    
-    // Process only new messages since last check
-    for (let i = startIndex; i < messages.length; i++) {
-      const msg = messages[i]
-      
-      // In audio mode, we don't show transcriptions
-      // Just handle the audio flow without text interference
-      
-      // Handle audio playback - play once immediately when received
-      if (msg.mime_type === 'audio/pcm' && msg.data && pcmPlayerRef.current) {
-        // Play audio asynchronously without blocking
-        pcmPlayerRef.current.playPCM(msg.data).catch(err => {
-          if (process.env.NODE_ENV === 'development') {
-            console.error('Error playing audio:', err)
-          }
-        })
-      }
-      
-      // Handle turn completion
-      if (msg.turn_complete === true && pcmPlayerRef.current) {
-        pcmPlayerRef.current.reset()
-        setAudioState(prev => ({ ...prev, isProcessing: false }))
-      }
-    }
-    
-    // Update last processed index
-    if (messages.length > 0) {
-      lastProcessedIndexRef.current = messages.length - 1
-    }
-  }, [sseClient.messages, sseClient.isConnected, audioSessionActive])
   
   
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
@@ -119,9 +62,7 @@ export default function ThoughtInputForm({
     // Cleanup audio session if active
     if (audioSessionActive) {
       pcmRecorder.cleanup()
-      sseClient.disconnect()
       setAudioSessionActive(false)
-      lastProcessedIndexRef.current = -1
     }
     // Reset PCM player
     if (pcmPlayerRef.current) {
@@ -242,9 +183,6 @@ export default function ThoughtInputForm({
       }
       if (pcmRecorderRef.current) {
         pcmRecorderRef.current.cleanup()
-      }
-      if (sseClientRef.current && sseClientRef.current.isConnected) {
-        sseClientRef.current.disconnect()
       }
     }
     

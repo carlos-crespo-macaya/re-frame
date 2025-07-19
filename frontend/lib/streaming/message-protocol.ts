@@ -96,20 +96,22 @@ export function isServerMessage(data: unknown): data is ServerMessage {
 }
 
 export function isErrorMessage(data: unknown): data is ErrorMessage {
-  return (
+  return !!(
     data &&
     typeof data === 'object' &&
-    data.message_type === 'error' &&
+    'message_type' in data &&
+    (data as any).message_type === 'error' &&
     'error_code' in data &&
     'error_message' in data
   );
 }
 
 export function isStatusMessage(data: unknown): data is StatusMessage {
-  return (
+  return !!(
     data &&
     typeof data === 'object' &&
-    data.message_type === 'status' &&
+    'message_type' in data &&
+    (data as any).message_type === 'status' &&
     'status' in data &&
     'session_id' in data
   );

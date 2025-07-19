@@ -71,8 +71,8 @@ async def start_agent_session(user_id, language_code="en-US"):
 
     log_agent_event(
         logger,
-        session.id,
         "session_initialized",
+        session_id=session.id,
         language=language_code,
     )
     return runner, session, run_config
