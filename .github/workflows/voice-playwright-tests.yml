@@ -18,6 +18,10 @@ on:
       - 'frontend/test-utils/audio-helpers.ts'
       - '.github/workflows/voice-playwright-tests.yml'
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   voice-playwright-tests:
     name: Voice Network Resilience Tests
