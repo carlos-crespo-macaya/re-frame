@@ -63,13 +63,23 @@ jobs:
 
       - name: Setup Python (Backend)
         if: matrix.service == 'backend'
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
+        run: |
+          # Check if Python 3.12 is already installed
+          if command -v python3.12 &> /dev/null; then
+            echo "Python 3.12 is already installed"
+            python3.12 --version
+          else
+            echo "Installing Python 3.12 from deadsnakes PPA"
+            sudo add-apt-repository ppa:deadsnakes/ppa -y
+            sudo apt-get update
+            sudo apt-get install -y python3.12 python3.12-venv python3.12-dev
+          fi
+          # Create symlink for python command
+          sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1
 
       - name: Install uv (Backend)
         if: matrix.service == 'backend'
-        run: pip install uv
+        run: python3.12 -m pip install uv
 
       - name: Backend Tests
         if: matrix.service == 'backend'
