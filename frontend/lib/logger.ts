@@ -8,7 +8,7 @@ interface LogContext {
   sessionId?: string;
   userId?: string;
   phase?: string;
-  [key: string]: any;
+  [key: string]: string | number | boolean | undefined;
 }
 
 class Logger {
@@ -28,7 +28,7 @@ class Logger {
     this.context = {};
   }
 
-  private formatMessage(level: LogLevel, message: string, data?: any): any {
+  private formatMessage(level: LogLevel, message: string, data?: Record<string, unknown>): Record<string, unknown> {
     const timestamp = new Date().toISOString();
     const logEntry = {
       timestamp,
@@ -41,7 +41,7 @@ class Logger {
     return logEntry;
   }
 
-  private log(level: LogLevel, message: string, data?: any) {
+  private log(level: LogLevel, message: string, data?: Record<string, unknown>) {
     const logEntry = this.formatMessage(level, message, data);
     
     // In production, we might want to send logs to a service
@@ -64,19 +64,19 @@ class Logger {
     }
   }
 
-  debug(message: string, data?: any) {
+  debug(message: string, data?: Record<string, unknown>) {
     this.log('debug', message, data);
   }
 
-  info(message: string, data?: any) {
+  info(message: string, data?: Record<string, unknown>) {
     this.log('info', message, data);
   }
 
-  warn(message: string, data?: any) {
+  warn(message: string, data?: Record<string, unknown>) {
     this.log('warn', message, data);
   }
 
-  error(message: string, data?: any, error?: Error) {
+  error(message: string, data?: Record<string, unknown>, error?: Error) {
     const errorData = {
       ...data,
       ...(error ? {
@@ -89,28 +89,28 @@ class Logger {
   }
 
   // Helper methods for common events
-  sessionEvent(eventType: string, data?: any) {
+  sessionEvent(eventType: string, data?: Record<string, unknown>) {
     this.info('session_event', {
       eventType,
       ...data
     });
   }
 
-  sseEvent(eventType: string, data?: any) {
+  sseEvent(eventType: string, data?: Record<string, unknown>) {
     this.info('sse_event', {
       eventType,
       ...data
     });
   }
 
-  audioEvent(eventType: string, data?: any) {
+  audioEvent(eventType: string, data?: Record<string, unknown>) {
     this.info('audio_event', {
       eventType,
       ...data
     });
   }
 
-  apiRequest(method: string, url: string, data?: any) {
+  apiRequest(method: string, url: string, data?: Record<string, unknown>) {
     this.info('api_request', {
       method,
       url,
@@ -118,7 +118,7 @@ class Logger {
     });
   }
 
-  apiResponse(method: string, url: string, status: number, data?: any) {
+  apiResponse(method: string, url: string, status: number, data?: Record<string, unknown>) {
     this.info('api_response', {
       method,
       url,
@@ -127,7 +127,7 @@ class Logger {
     });
   }
 
-  apiError(method: string, url: string, error: Error, data?: any) {
+  apiError(method: string, url: string, error: Error, data?: Record<string, unknown>) {
     this.error('api_error', {
       method,
       url,

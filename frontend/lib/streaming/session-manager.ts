@@ -9,7 +9,7 @@ export interface Session {
   createdAt: Date;
   lastActivity: Date;
   isActive: boolean;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export class SessionManager {
@@ -21,9 +21,9 @@ export class SessionManager {
    * @param sessionIdOrMetadata - Either a specific session ID string or metadata object
    * @param metadata - Metadata object when first parameter is session ID
    */
-  createSession(sessionIdOrMetadata?: string | Record<string, any>, metadata?: Record<string, any>): Session {
+  createSession(sessionIdOrMetadata?: string | Record<string, unknown>, metadata?: Record<string, unknown>): Session {
     let sessionId: string;
-    let sessionMetadata: Record<string, any> | undefined;
+    let sessionMetadata: Record<string, unknown> | undefined;
     
     // Handle overloaded parameters
     if (typeof sessionIdOrMetadata === 'string') {

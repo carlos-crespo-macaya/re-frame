@@ -1,8 +1,8 @@
 import { render, screen, act, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import ThoughtInputForm from '../ThoughtInputForm'
-import { AudioRecorder } from '@/lib/audio/audio-recorder'
-import { SSEClient } from '@/lib/streaming/sse-client'
+// import { AudioRecorder } from '@/lib/audio/audio-recorder'
+// import { SSEClient } from '@/lib/streaming/sse-client'
 import * as AudioUtils from '@/lib/audio/audio-utils'
 import { useAudioRecorder } from '@/lib/audio/use-audio-recorder'
 import { useSSEClient } from '@/lib/streaming/use-sse-client'
@@ -30,7 +30,7 @@ HTMLCanvasElement.prototype.getContext = jest.fn(() => ({
   save: jest.fn(),
   restore: jest.fn(),
   translate: jest.fn()
-})) as any
+})) as unknown as CanvasRenderingContext2D
 
 // Mock window.devicePixelRatio
 Object.defineProperty(window, 'devicePixelRatio', {
@@ -39,8 +39,8 @@ Object.defineProperty(window, 'devicePixelRatio', {
 })
 
 describe.skip('ThoughtInputForm - Audio Integration - SKIPPED: Audio moved to separate voice mode', () => {
-  let mockAudioRecorder: any
-  let mockSSEClient: any
+  let mockAudioRecorder: ReturnType<typeof useAudioRecorder>
+  let mockSSEClient: ReturnType<typeof useSSEClient>
   let mockStartRecording: jest.Mock
   let mockStopRecording: jest.Mock
   let mockConnect: jest.Mock

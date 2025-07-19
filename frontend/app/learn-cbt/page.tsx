@@ -32,7 +32,7 @@ export default function LearnCBT() {
             </h1>
             
             <p className="text-base text-[#999999] leading-relaxed mb-6">
-              Cognitive Behavioural Therapy (CBT) is an evidence-based approach that links <strong className="text-[#EDEDED]">thoughts, feelings, and actions</strong> <sup className="text-xs"><a href="#ref1" className="text-brand-green-400 hover:text-brand-green-300">[1]</a></sup>. By spotting common <strong className="text-[#EDEDED]">thinking traps</strong>—such as catastrophising, mind-reading, or "all-or-nothing" statements—you can practise kinder, more balanced perspectives.
+              Cognitive Behavioural Therapy (CBT) is an evidence-based approach that links <strong className="text-[#EDEDED]">thoughts, feelings, and actions</strong> <sup className="text-xs"><a href="#ref1" className="text-brand-green-400 hover:text-brand-green-300">[1]</a></sup>. By spotting common <strong className="text-[#EDEDED]">thinking traps</strong>—such as catastrophising, mind-reading, or &ldquo;all-or-nothing&rdquo; statements—you can practise kinder, more balanced perspectives.
             </p>
 
             <h2 className="text-2xl font-semibold text-[#EDEDED] mt-8 mb-4">
@@ -50,7 +50,7 @@ export default function LearnCBT() {
             </ul>
 
             <p className="text-base text-[#999999] leading-relaxed mb-6">
-              Consistent CBT exercises can gradually chip away at the belief <em>"I will always be rejected."</em>
+              Consistent CBT exercises can gradually chip away at the belief <em>&ldquo;I will always be rejected.&rdquo;</em>
             </p>
 
             <h2 className="text-2xl font-semibold text-[#EDEDED] mt-8 mb-4">
@@ -78,7 +78,7 @@ export default function LearnCBT() {
               <li className="flex items-start">
                 <span className="mr-2">•</span>
                 <div>
-                  <strong className="text-[#EDEDED]">"Unhelpful Thinking Styles"</strong> factsheet – CCI • 
+                  <strong className="text-[#EDEDED]">&ldquo;Unhelpful Thinking Styles&rdquo;</strong> factsheet – CCI • 
                   <a href="https://www.cci.health.wa.gov.au/~/media/CCI/Mental-Health-Professionals/Depression/Depression---Information-Sheets/Depression-Information-Sheet---11--Unhelpful-Thinking-Styles.pdf" className="text-brand-green-400 hover:text-brand-green-300 underline" target="_blank" rel="noopener noreferrer">
                     <span className="inline-flex items-center gap-1">
                       <svg className="inline w-[14px] h-[14px]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -156,7 +156,7 @@ export default function LearnCBT() {
 
             <div className="mt-6 p-4 bg-[#2a2a2a] border border-[#3a3a3a] rounded-lg">
               <p className="text-xs text-[#999999] leading-relaxed">
-                <strong>Note:</strong> CCI's "Unhelpful Thinking Styles" PDF and Psychology Tools workbooks are freely available, evidence-aligned handouts often recommended by clinicians.<br />
+                <strong>Note:</strong> CCI&apos;s &ldquo;Unhelpful Thinking Styles&rdquo; PDF and Psychology Tools workbooks are freely available, evidence-aligned handouts often recommended by clinicians.<br />
                 Link to CCI module: <a href="https://www.cci.health.wa.gov.au/Resources/Looking-After-Yourself/Unhelpful-Thinking-Styles" className="text-brand-green-400 hover:text-brand-green-300 underline break-words" target="_blank" rel="noopener noreferrer">https://www.cci.health.wa.gov.au/Resources/Looking-After-Yourself/Unhelpful-Thinking-Styles</a>
               </p>
             </div>
