@@ -51,7 +51,16 @@ export function useSSEClient(options: UseSSEClientOptions = {}) {
   const rateLimiterRef = useRef(new RateLimiter(rateLimitMs));
   
   // Memoize SSE options to prevent unnecessary re-renders
-  const memoizedSseOptions = useMemo(() => sseOptions, [sseOptions]);
+  const memoizedSseOptions = useMemo(() => ({
+    ...sseOptions
+  }), [
+    sseOptions.baseUrl,
+    sseOptions.reconnectInterval,
+    sseOptions.maxReconnectAttempts,
+    sseOptions.heartbeatInterval,
+    sseOptions.enableRateLimit,
+    sseOptions.rateLimitMs
+  ]);
   
   // Initialize SSE client
   useEffect(() => {
