@@ -1,31 +1,65 @@
 # CBT Assistant POC - Monorepo
 
-This is the monorepo for the CBT Assistant Proof of Concept, combining the re-frame.social frontend and the reframe-agents backend into a unified codebase.
+A transparent, AI-assisted cognitive behavioral therapy (CBT) tool designed for people with Avoidant Personality Disorder (AvPD) and social anxiety. This monorepo combines the re-frame.social frontend and the reframe-agents backend into a unified codebase.
 
 ## ✨ Features
 
 - **Text-based interaction**: Type your thoughts and receive gentle reframing suggestions
-- **Voice conversation**: Natural audio dialog with the AI assistant (NEW!)
-- **Real-time streaming**: Responses stream as they're generated
+- **Voice conversation**: Natural audio dialog with the AI assistant (Optional)
+- **Real-time streaming**: Responses stream as they're generated via Server-Sent Events
 - **Privacy-focused**: No audio storage, only transcriptions are kept
 - **Evidence-based**: Uses cognitive behavioral therapy techniques
+- **Multi-phase conversation**: Structured flow through greeting, discovery, reframing, and summary
+- **Safety first**: Crisis detection at every user input
+
+## 🛠️ Tech Stack
+
+### Frontend
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript with strict mode
+- **Styling**: Tailwind CSS v3
+- **Audio**: Web Audio API with AudioWorklets
+- **Real-time**: Server-Sent Events (SSE)
+- **Testing**: Jest + React Testing Library + Playwright
+- **API Client**: Generated from OpenAPI schema
+
+### Backend
+- **Framework**: FastAPI
+- **Language**: Python 3.12
+- **AI**: Google ADK with Gemini 2.0 Flash
+- **Package Manager**: uv (NOT pip or poetry)
+- **Testing**: pytest with 80% coverage requirement
+- **Code Quality**: black, isort, ruff, mypy
+- **Voice** (optional): Google Cloud Speech & TTS
 
 ## 🏗️ Monorepo Structure
 
 ```
 re-frame/
-├── frontend/            # Next.js 14 frontend application
-│   ├── app/            # Next.js App Router
-│   ├── components/     # React components
-│   ├── lib/            # Core functionality
-│   └── package.json    # Frontend dependencies
-├── backend/            # FastAPI backend with ADK (to be merged)
-│   ├── app/            # FastAPI application
-│   ├── agents/         # ADK agents
-│   └── requirements.txt # Python dependencies
-├── docs/               # Shared documentation
-├── scripts/            # Utility scripts
-└── docker-compose.yml  # Local development setup
+├── frontend/                # Next.js 14 frontend application
+│   ├── app/                # Next.js App Router pages
+│   ├── components/         # React components with tests
+│   ├── lib/                # Core functionality (SSE, audio, API)
+│   ├── public/worklets/    # Web Audio worklets
+│   └── CLAUDE.md          # Frontend-specific AI assistant guidance
+├── backend/                # FastAPI backend with Google ADK
+│   ├── src/               # Source code (NOT app/)
+│   │   ├── agents/        # ADK Sequential Agents
+│   │   ├── knowledge/     # CBT context and techniques
+│   │   ├── services/      # Session management, language detection
+│   │   └── main.py        # FastAPI app entry point
+│   ├── tests/             # Comprehensive test suite
+│   └── CLAUDE.md          # Backend-specific AI assistant guidance
+├── tests/                  # Integration and E2E tests
+│   ├── e2e/               # Python E2E tests with pytest-xdist
+│   └── load/              # Load testing (k6, locust)
+├── playwright-js/          # JavaScript Playwright tests
+│   └── tests/             # Voice modality E2E tests
+├── docs/                   # Project documentation
+├── scripts/                # Deployment and utility scripts
+├── docker-compose.yml      # Base Docker configuration
+├── Makefile               # Development commands
+└── CLAUDE.md              # Project-wide AI assistant guidance
 ```
 
 ## 🚀 Quick Start
@@ -34,8 +68,10 @@ re-frame/
 
 - Node.js 18+
 - pnpm 10.11.0+
-- Python 3.11+
+- Python 3.12 (specifically required)
+- uv (Python package manager)
 - Docker & Docker Compose
+- Gemini API key
 
 ### Development Setup
 
@@ -45,31 +81,42 @@ re-frame/
    cd re-frame
    ```
 
-2. **Install dependencies**
+2. **Quick setup with Make**
    ```bash
-   # Install root dependencies
-   npm install
+   make setup  # Installs pnpm, uv, and all dependencies
+   ```
 
-   # Install frontend dependencies
+   Or manually:
+   ```bash
+   # Install package managers
+   npm install -g pnpm
+   curl -LsSf https://astral.sh/uv/install.sh | sh
+
+   # Install dependencies
    cd frontend && pnpm install && cd ..
-
-   # Install backend dependencies (after merge)
-   cd backend && pip install -r requirements.txt && cd ..
+   cd backend && uv sync --all-extras && cd ..
    ```
 
-3. **Run development servers**
+3. **Set up environment variables**
    ```bash
-   # Run frontend only
-   npm run dev:frontend
-
-   # Run backend only (after merge)
-   npm run dev:backend
-
-   # Run both frontend and backend
-   npm run dev:all
+   # Backend (.env)
+   GEMINI_API_KEY=your-gemini-api-key
    ```
 
-4. **Access the applications**
+4. **Run development servers**
+   ```bash
+   # Using npm scripts
+   npm run dev:frontend    # Frontend only (http://localhost:3000)
+   npm run dev:backend     # Backend only (http://localhost:8000)
+   npm run dev:all         # Both concurrently
+
+   # Or using Make
+   make dev-frontend
+   make dev-backend
+   make dev  # Full Docker development environment
+   ```
+
+5. **Access the applications**
    - Frontend: http://localhost:3000
    - Backend API: http://localhost:8000
    - API docs: http://localhost:8000/docs
@@ -77,21 +124,48 @@ re-frame/
 ## 📚 Documentation
 
 - [Frontend README](./frontend/README.md) - Detailed frontend documentation
-- [Backend README](./backend/README.md) - Backend documentation (coming soon)
+- [Backend README](./backend/README.md) - Backend documentation
 - [Team Coordination Guide](./docs/TEAM_COORDINATION_GUIDE.md) - Development workflow
-- [Migration Checklist](./docs/MONOREPO_MIGRATION_CHECKLIST.md) - Monorepo setup progress
+- [CLAUDE.md Files](./CLAUDE.md) - AI assistant context and guidance
+- [Linear Project](https://linear.app/carlos-crespo/project/re-framesocial-cbt-assistant-6c36f6288cc8) - Primary project tracking
+
+## ✅ Quality Checks
+
+**IMPORTANT**: Always run checks before pushing:
+
+```bash
+# Frontend
+cd frontend && pnpm run lint && pnpm run typecheck && pnpm run test
+
+# Backend
+cd backend && uv run poe check  # Runs format-check, lint, typecheck, and tests
+
+# Or use Make
+make pre-commit  # Runs all checks
+```
 
 ## 🧪 Testing
 
 ```bash
 # Run all tests
 npm run test:all
+make test  # Alternative using Makefile
 
-# Run frontend tests
-npm run test:frontend
+# Frontend tests
+cd frontend && pnpm test        # Unit tests
+cd frontend && pnpm test:e2e    # E2E tests with Playwright
 
-# Run backend tests (after merge)
-npm run test:backend
+# Backend tests
+cd backend && uv run poe test   # All tests with coverage
+cd backend && uv run pytest -n auto  # Parallel execution with pytest-xdist
+
+# E2E tests
+cd tests/e2e && ./run_tests.sh  # Python E2E tests
+npm run e2e:js                   # JavaScript Playwright tests
+
+# Voice modality tests (optional)
+cd backend && uv run pytest tests/test_voice_*.py
+cd playwright-js && npm test tests/voice-network-resilience.spec.js
 ```
 
 ## 🐳 Docker Development
@@ -129,6 +203,38 @@ docker-compose down
 
 # Clean up volumes
 docker-compose down -v
+```
+
+## 🎤 Voice Modality (Optional)
+
+The backend supports voice functionality through Google Cloud services:
+
+### Setup
+```bash
+# Install voice dependencies
+cd backend && uv sync --extra voice
+
+# Required environment variables
+GOOGLE_CLOUD_PROJECT=your-project-id
+GOOGLE_APPLICATION_CREDENTIALS=path/to/service-account.json
+```
+
+### Features
+- **Speech-to-Text**: Transcribes user voice input
+- **Text-to-Speech**: Generates natural voice responses
+- **Real-time streaming**: Low-latency audio processing
+- **Multi-language support**: Automatic language detection
+
+### Testing
+```bash
+# Run voice unit tests
+cd backend && uv run pytest tests/test_voice_*.py
+
+# Run voice E2E tests
+cd playwright-js && npm test tests/voice-*.spec.js
+
+# Load testing
+cd tests/load && k6 run voice-load-test.js
 ```
 
 ## 🚢 Deployment
@@ -233,9 +339,15 @@ graph TD
 
 ## 📋 Project Management
 
-- **Project Board**: [GitHub Projects](https://github.com/users/macayaven/projects/7)
+- **Primary Tracking**: [Linear Project](https://linear.app/carlos-crespo/project/re-framesocial-cbt-assistant-6c36f6288cc8)
+- **GitHub Board**: [GitHub Projects](https://github.com/users/macayaven/projects/7)
 - **Issues**: [GitHub Issues](https://github.com/macayaven/re-frame/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/macayaven/re-frame/discussions)
+- **Active Issues**:
+  - CAR-24: Remove duplicate backend/main.py entry point (Urgent)
+  - CAR-25: Migrate to FastAPI lifespan protocol (Urgent)
+  - CAR-26: Fix performance monitor task tracking (High)
+  - CAR-27: Implement real language detection (High)
+  - CAR-28: Add missing test coverage for UI components (Medium)
 
 ## 🔐 Security
 
@@ -250,4 +362,4 @@ This project is proprietary. All rights reserved.
 
 ---
 
-**Note**: This is an active monorepo migration. The backend code will be merged via git subtree from the reframe-agents repository.
+**Status**: Monorepo migration complete. Both frontend and backend are fully integrated.

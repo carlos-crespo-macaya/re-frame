@@ -10,6 +10,7 @@ from fastapi.responses import StreamingResponse
 from google.adk.agents.run_config import RunConfig
 from google.adk.runners import InMemoryRunner
 from google.genai.types import Content, Part, SpeechConfig
+from langdetect import LangDetectException, detect_langs
 
 from src.agents.cbt_assistant import create_cbt_assistant
 from src.models import (
@@ -22,11 +23,15 @@ from src.models import (
 )
 from src.utils.logging import get_logger, log_agent_event, log_session_event
 from src.utils.performance_monitor import get_performance_monitor
+from src.utils.rate_limiter import RateLimiter
 from src.utils.session_manager import session_manager
 
 logger = get_logger(__name__)
 
 router = APIRouter(tags=["text"])
+
+# Rate limiter for language detection endpoint (100 requests per minute)
+language_limiter = RateLimiter(max_requests=100, window_seconds=60)
 
 APP_NAME = "CBT Reframing Assistant"
 
@@ -518,13 +523,69 @@ Thank you for using the CBT Reframing Assistant!
 )
 async def detect_language_endpoint(
     request: LanguageDetectionRequest,
+    req: Request,
 ) -> LanguageDetectionResponse:
     """Detect the language of the provided text."""
-    # For now, default to English
-    # TODO: Implement actual language detection
+    # Rate limiting
+    client_host = req.client.host if req.client else "unknown"
+    if not await language_limiter.check_request(client_host):
+        raise HTTPException(
+            status_code=429,
+            detail="Rate limit exceeded. Please try again later.",
+            headers={"Retry-After": "60"},
+        )
+
+    # Handle empty text
+    if not request.text or not request.text.strip():
+        return LanguageDetectionResponse(
+            status="success",
+            language="en",
+            confidence=1.0,
+            message="No text provided, defaulting to English",
+        )
+
+    try:
+        # Detect language using langdetect
+        results = detect_langs(request.text)
+        if results:
+            # Find best match among supported languages
+            supported_languages = ["en", "es"]
+
+            # First, try to find a supported language in the results
+            for result in results:
+                if result.lang in supported_languages:
+                    logger.info(
+                        "language_detected",
+                        language=result.lang,
+                        confidence=result.prob,
+                        text_length=len(request.text),
+                    )
+                    return LanguageDetectionResponse(
+                        status="success",
+                        language=result.lang,
+                        confidence=round(result.prob, 2),
+                        message=None,
+                    )
+
+            # If no supported language found, log and fall through to default
+            logger.info(
+                "unsupported_language_detected",
+                detected_language=results[0].lang,
+                confidence=results[0].prob,
+                text_length=len(request.text),
+            )
+    except LangDetectException as e:
+        logger.warning(
+            "language_detection_failed",
+            error=str(e),
+            text_length=len(request.text),
+        )
+
+    # Fallback to English if detection fails
+    logger.info("language_detection_fallback", text_length=len(request.text))
     return LanguageDetectionResponse(
         status="success",
         language="en",
-        confidence=0.95,
-        message=None,
+        confidence=0.5,
+        message="Language detection uncertain, defaulting to English",
     )

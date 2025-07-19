@@ -12,7 +12,6 @@ import {
   downloadPdf,
   sendMessage,
   detectLanguage,
-  getEventStream,
 } from './generated/sdk.gen'
 import type {
   MessageRequest,

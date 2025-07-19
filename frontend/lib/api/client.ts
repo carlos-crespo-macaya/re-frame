@@ -80,7 +80,7 @@ export class ApiClient {
     if (response.status === 204 || response.headers.get('content-length') === '0') {
       // For void returns, we can safely return undefined
       // The caller should expect void for these responses
-      return undefined as any
+      return undefined as unknown
     }
 
     const contentType = response.headers.get('content-type')

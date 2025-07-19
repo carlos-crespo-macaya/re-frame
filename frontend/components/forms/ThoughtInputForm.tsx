@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, FormEvent, KeyboardEvent, useCallback, useEffect, useRef } from 'react'
+import { useState, FormEvent, KeyboardEvent, useEffect, useRef } from 'react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui'
 import { createDefaultAudioState, AudioState } from '@/lib/audio'
 import { useSSEClient } from '@/lib/streaming/use-sse-client'
-import { arrayBufferToBase64 } from '@/lib/audio/audio-utils'
+// import { arrayBufferToBase64 } from '@/lib/audio/audio-utils'
 import { usePCMRecorder } from '@/lib/audio/use-pcm-recorder'
 import { PCMPlayer } from '@/lib/audio/pcm-player'
 
@@ -141,8 +141,8 @@ export default function ThoughtInputForm({
   // Initialize audio recording timer for continuous streaming
   const audioTimerRef = useRef<NodeJS.Timeout | null>(null)
   const audioBufferRef = useRef<Float32Array[]>([])
-  const silenceTimerRef = useRef<NodeJS.Timeout | null>(null)
-  const lastAudioLevelRef = useRef<number>(0)
+  // const silenceTimerRef = useRef<NodeJS.Timeout | null>(null)
+  // const lastAudioLevelRef = useRef<number>(0)
   
   // Send audio buffer periodically
   /* const sendAudioBuffer = useCallback(async () => {

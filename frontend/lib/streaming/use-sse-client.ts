@@ -53,14 +53,7 @@ export function useSSEClient(options: UseSSEClientOptions = {}) {
   // Memoize SSE options to prevent unnecessary re-renders
   const memoizedSseOptions = useMemo(() => ({
     ...sseOptions
-  }), [
-    sseOptions.baseUrl,
-    sseOptions.reconnectInterval,
-    sseOptions.maxReconnectAttempts,
-    sseOptions.heartbeatInterval,
-    sseOptions.enableRateLimit,
-    sseOptions.rateLimitMs
-  ]);
+  }), [sseOptions]);
   
   // Initialize SSE client
   useEffect(() => {

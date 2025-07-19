@@ -14,6 +14,7 @@
 
 """Tests for the FastAPI main application."""
 
+import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -164,11 +165,11 @@ class TestMetricsEndpoint:
 
 
 class TestStartupShutdown:
-    """Test startup and shutdown events."""
+    """Test lifespan events."""
 
     @pytest.mark.asyncio
-    async def test_startup_event(self):
-        """Test that startup event starts session managers."""
+    async def test_lifespan(self):
+        """Test that lifespan properly starts and stops session managers."""
         with (
             patch("src.main.session_manager") as mock_session_manager,
             patch("src.main.voice_session_manager") as mock_voice_session_manager,
@@ -176,39 +177,39 @@ class TestStartupShutdown:
         ):
             # Setup mocks
             mock_session_manager.start = AsyncMock()
-            mock_voice_session_manager.start = AsyncMock()
-            mock_monitor = MagicMock()
-            mock_monitor.log_periodic_summary = AsyncMock()
-            mock_get_monitor.return_value = mock_monitor
-
-            # Import and run startup
-            from src.main import startup_event
-
-            await startup_event()
-
-            # Verify session managers were started
-            mock_session_manager.start.assert_called_once()
-            mock_voice_session_manager.start.assert_called_once()
-
-    @pytest.mark.asyncio
-    async def test_shutdown_event(self):
-        """Test that shutdown event stops session managers."""
-        with (
-            patch("src.main.session_manager") as mock_session_manager,
-            patch("src.main.voice_session_manager") as mock_voice_session_manager,
-        ):
-            # Setup mocks
             mock_session_manager.stop = AsyncMock()
+            mock_voice_session_manager.start = AsyncMock()
             mock_voice_session_manager.stop = AsyncMock()
 
-            # Import and run shutdown
-            from src.main import shutdown_event
+            # Create monitor mock that returns an async function
+            mock_monitor = MagicMock()
 
-            await shutdown_event()
+            # Create a real async function that will be used as the task
+            async def mock_log_periodic():
+                try:
+                    await asyncio.sleep(300)  # Simulate periodic logging
+                except asyncio.CancelledError:
+                    raise
 
-            # Verify session managers were stopped
+            mock_monitor.log_periodic_summary = mock_log_periodic
+            mock_get_monitor.return_value = mock_monitor
+
+            # Import lifespan
+            from src.main import app, lifespan
+
+            # Run lifespan context manager
+            async with lifespan(app):
+                # Verify startup calls
+                mock_session_manager.start.assert_called_once()
+                mock_voice_session_manager.start.assert_called_once()
+                assert hasattr(app.state, "monitor_task")
+                assert isinstance(app.state.monitor_task, asyncio.Task)
+
+            # Verify shutdown calls
             mock_session_manager.stop.assert_called_once()
             mock_voice_session_manager.stop.assert_called_once()
+            # The task should be cancelled
+            assert app.state.monitor_task.cancelled()
 
 
 class TestCORSConfiguration:
