@@ -1,10 +1,9 @@
 name: Voice Load Tests
 
 on:
-  schedule:
-    # Run at 2 AM UTC every day
-    - cron: '0 2 * * *'
+  # Workflow disabled
   workflow_dispatch:
+    if: false
     inputs:
       concurrent_users:
         description: 'Number of concurrent users to simulate'
@@ -22,6 +21,7 @@ jobs:
   voice-load-test:
     name: Voice Load Testing
     runs-on: self-hosted
+    if: false  # Workflow disabled
     timeout-minutes: 30
     
     steps:

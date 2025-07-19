@@ -1,9 +1,9 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - 'v*'
+  # Workflow disabled
+  workflow_dispatch:
+    if: false
 
 permissions:
   contents: write
@@ -13,6 +13,7 @@ jobs:
   release:
     name: Create Release
     runs-on: self-hosted
+    if: false  # Workflow disabled
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

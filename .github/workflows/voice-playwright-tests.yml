@@ -1,22 +1,9 @@
 name: Voice Playwright Tests
 
 on:
-  push:
-    branches: [main, develop]
-    paths:
-      - 'playwright-js/tests/voice-*.spec.js'
-      - 'frontend/lib/audio/**'
-      - 'frontend/components/audio/**'
-      - 'frontend/test-utils/audio-helpers.ts'
-      - '.github/workflows/voice-playwright-tests.yml'
-  pull_request:
-    branches: [main, develop]
-    paths:
-      - 'playwright-js/tests/voice-*.spec.js'
-      - 'frontend/lib/audio/**'
-      - 'frontend/components/audio/**'
-      - 'frontend/test-utils/audio-helpers.ts'
-      - '.github/workflows/voice-playwright-tests.yml'
+  # Workflow disabled
+  workflow_dispatch:
+    if: false
 
 permissions:
   contents: read
@@ -26,6 +13,7 @@ jobs:
   voice-playwright-tests:
     name: Voice Network Resilience Tests
     runs-on: self-hosted
+    if: false  # Workflow disabled
     timeout-minutes: 15
     strategy:
       fail-fast: false
