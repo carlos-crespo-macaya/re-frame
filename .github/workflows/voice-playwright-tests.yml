@@ -48,9 +48,26 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
       
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: playwright-js/node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('playwright-js/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-modules-
+      
       - name: Install dependencies
         working-directory: playwright-js
         run: npm ci
+      
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ matrix.browser }}-${{ hashFiles('playwright-js/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-${{ matrix.browser }}-
+            ${{ runner.os }}-playwright-
             
       - name: Install Playwright browsers
         working-directory: playwright-js
@@ -61,6 +78,17 @@ jobs:
           echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
           echo "VOICE_MODE_ENABLED=true" >> .env
           echo "FRONTEND_URL=http://localhost:3000" >> .env
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
       
       - name: Build and start services
         run: |

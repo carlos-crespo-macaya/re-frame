@@ -34,9 +34,19 @@ jobs:
       
       - name: Install uv
         uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
       
       - name: Set up Python
         run: uv python install 3.12
+      
+      - name: Cache uv dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('backend/pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-
         
       - name: Create .env file
         run: |
@@ -44,6 +54,17 @@ jobs:
           echo "VOICE_MODE_ENABLED=true" >> .env
           echo "CONCURRENT_USERS=${{ github.event.inputs.concurrent_users || '50' }}" >> .env
           echo "TEST_DURATION=${{ github.event.inputs.test_duration || '60' }}" >> .env
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
       
       - name: Build services for load testing
         run: |
