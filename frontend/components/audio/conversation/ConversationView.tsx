@@ -10,7 +10,6 @@ export function ConversationView({
   messages = [],
   isRecording = false,
   isAISpeaking = false,
-  currentTranscription = '',
   onStartRecording,
   onStopRecording,
   onEndSession
@@ -91,9 +90,6 @@ export function ConversationView({
         )}
         {isAISpeaking && (
           <div className="text-sm font-medium text-primary-600">[🔊 Speaking...]</div>
-        )}
-        {isRecording && currentTranscription && (
-          <div className="mt-2 text-sm text-neutral-600 italic">{currentTranscription}</div>
         )}
       </div>
       
