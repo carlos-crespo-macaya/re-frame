@@ -72,6 +72,19 @@ export interface AudioStreamConfig {
 }
 
 /**
+ * SSE message format from backend (matches backend SSEMessage model)
+ */
+export interface SSEMessage {
+  type: 'connected' | 'content' | 'turn_complete' | 'error' | 'heartbeat';
+  session_id?: string;
+  message?: string;
+  turn_complete?: boolean;
+  interrupted?: boolean;
+  content_type?: string;
+  data?: string;
+}
+
+/**
  * SSE event data wrapper
  */
 export interface SSEEventData {
@@ -87,12 +100,26 @@ export function isServerMessage(data: unknown): data is ServerMessage {
     return false;
   }
   
-  // Backend sends minimal format: just mime_type and data
-  // or turn_complete flag (with optional interrupted)
-  return (
-    ('mime_type' in data && 'data' in data) ||
-    ('turn_complete' in data && typeof data.turn_complete === 'boolean')
-  );
+  const msg = data as any;
+  
+  // Handle SSEMessage format from backend
+  if (msg.type === 'content' && msg.content_type && msg.data !== undefined) {
+    // Transform to ServerMessage format
+    (data as any).mime_type = msg.content_type;
+    return true;
+  }
+  
+  // Handle turn_complete messages
+  if ('turn_complete' in data && typeof msg.turn_complete === 'boolean') {
+    return true;
+  }
+  
+  // Handle legacy format (if any)
+  if ('mime_type' in data && 'data' in data) {
+    return true;
+  }
+  
+  return false;
 }
 
 export function isErrorMessage(data: unknown): data is ErrorMessage {

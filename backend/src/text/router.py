@@ -263,6 +263,13 @@ async def sse_endpoint(request: Request, session_id: str, language: str = "en-US
                             if event is None:
                                 continue
 
+                            logger.debug(
+                                "processing_event",
+                                session_id=session_id,
+                                event_type=type(event).__name__,
+                                has_turn_complete=hasattr(event, "turn_complete"),
+                            )
+
                             # Handle string messages
                             if isinstance(event, str):
                                 if event == "STREAM_END":
@@ -271,11 +278,11 @@ async def sse_endpoint(request: Request, session_id: str, language: str = "en-US
                                     )
                                     break
                                 else:
-                                    # Regular string message
+                                    # Regular string message - use SSEMessage format
                                     message = {
-                                        "type": "message",
-                                        "content": event,
-                                        "timestamp": datetime.now(UTC).isoformat(),
+                                        "type": "content",
+                                        "content_type": "text/plain",
+                                        "data": event,  # Text content directly, no base64 encoding needed
                                     }
                                     yield f"data: {json.dumps(message)}\n\n"
                                     logger.debug(
@@ -289,12 +296,11 @@ async def sse_endpoint(request: Request, session_id: str, language: str = "en-US
                                 if hasattr(content, "parts") and content.parts:
                                     for part in content.parts:
                                         if hasattr(part, "text") and part.text:
+                                            # Use SSEMessage format
                                             message = {
-                                                "type": "message",
-                                                "content": part.text,
-                                                "timestamp": datetime.now(
-                                                    UTC
-                                                ).isoformat(),
+                                                "type": "content",
+                                                "content_type": "text/plain",
+                                                "data": part.text,  # Text content directly
                                             }
                                             yield f"data: {json.dumps(message)}\n\n"
                                             logger.debug(
@@ -302,6 +308,21 @@ async def sse_endpoint(request: Request, session_id: str, language: str = "en-US
                                                 session_id=session_id,
                                                 content_length=len(part.text),
                                             )
+                            # Handle turn_complete events
+                            elif (
+                                hasattr(event, "turn_complete") and event.turn_complete
+                            ):
+                                message = {
+                                    "type": "turn_complete",
+                                    "turn_complete": True,
+                                    "interrupted": getattr(event, "interrupted", False),
+                                }
+                                yield f"data: {json.dumps(message)}\n\n"
+                                logger.debug(
+                                    "turn_complete_sent",
+                                    session_id=session_id,
+                                    interrupted=getattr(event, "interrupted", False),
+                                )
                         except Exception as e:
                             logger.error(
                                 "event_processing_error",
@@ -397,18 +418,20 @@ async def send_message_endpoint(
                 event_count += 1
 
             # Send a final turn_complete event after all content
-            turn_complete_event = type(
-                "Event",
-                (),
-                {
-                    "turn_complete": True,
-                    "interrupted": False,
-                    "content": None,
-                    "partial": False,
-                },
-            )()
+            # Create a simple object with the required attributes
+            class TurnCompleteEvent:
+                turn_complete = True
+                interrupted = False
+
+            turn_complete_event = TurnCompleteEvent()
+            logger.info(
+                "creating_turn_complete_event",
+                session_id=session_id,
+                has_queue=message_queue is not None,
+            )
             if message_queue:
                 await message_queue.put(turn_complete_event)
+                logger.info("turn_complete_queued", session_id=session_id)
 
             log_agent_event(
                 logger,

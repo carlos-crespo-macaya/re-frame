@@ -8,6 +8,7 @@ import {
   // StatusMessage,
   ClientMessage,
   ConnectionState,
+  SSEMessage,
   isServerMessage,
   isErrorMessage,
   isStatusMessage
@@ -171,13 +172,56 @@ export class SSEClient {
     try {
       const data = JSON.parse(event.data);
       
-      // Handle heartbeat messages
+      // Handle different SSE message types from backend
       if (data.type === 'heartbeat') {
         // Just update last event time, no need to process further
         return;
       }
       
-      if (isServerMessage(data)) {
+      if (data.type === 'connected') {
+        // Connection confirmation from backend
+        console.log('SSE connection confirmed:', data.session_id);
+        return;
+      }
+      
+      if (data.type === 'content') {
+        // Transform SSEMessage to ServerMessage format
+        const serverMessage: ServerMessage = {
+          mime_type: data.content_type || 'text/plain',
+          data: data.data || '',
+          message_type: 'response',
+          session_id: this.session?.id
+        };
+        
+        this.messageBuffer.push(serverMessage);
+        this.options.onMessage(serverMessage);
+        
+        if (this.session) {
+          sessionManager.updateActivity(this.session.id);
+        }
+      } else if (data.type === 'turn_complete') {
+        // Handle turn complete message
+        console.log('🎯 SSE received turn_complete:', data);
+        const serverMessage: ServerMessage = {
+          turn_complete: data.turn_complete,
+          interrupted: data.interrupted
+        };
+        
+        this.messageBuffer.push(serverMessage);
+        this.options.onMessage(serverMessage);
+        console.log('🎯 Turn complete message sent to onMessage callback');
+      } else if (data.type === 'error') {
+        // Handle error message
+        const errorMessage: ErrorMessage = {
+          message_type: 'error',
+          error_code: 'SSE_ERROR',
+          error_message: data.message || 'Unknown error',
+          session_id: this.session?.id || '',
+          timestamp: Date.now()
+        };
+        this.options.onError(errorMessage);
+      } else if (isServerMessage(data)) {
+        // Legacy format support
         this.messageBuffer.push(data);
         this.options.onMessage(data);
         
