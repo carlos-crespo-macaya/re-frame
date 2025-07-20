@@ -7,8 +7,7 @@ export function useConversation() {
   const [state, setState] = useState<ConversationState>({
     messages: [],
     isRecording: false,
-    isAISpeaking: false,
-    currentTranscription: ''
+    isAISpeaking: false
   })
   
   const messageIdRef = useRef(0)
@@ -38,8 +37,7 @@ export function useConversation() {
   const setRecording = useCallback((isRecording: boolean) => {
     setState(prev => ({
       ...prev,
-      isRecording,
-      currentTranscription: isRecording ? prev.currentTranscription : ''
+      isRecording
     }))
   }, [])
   
@@ -50,19 +48,12 @@ export function useConversation() {
     }))
   }, [])
   
-  const setCurrentTranscription = useCallback((transcription: string) => {
-    setState(prev => ({
-      ...prev,
-      currentTranscription: transcription
-    }))
-  }, [])
   
   const clearConversation = useCallback(() => {
     setState({
       messages: [],
       isRecording: false,
-      isAISpeaking: false,
-      currentTranscription: ''
+      isAISpeaking: false
     })
     messageIdRef.current = 0
   }, [])
@@ -87,7 +78,6 @@ export function useConversation() {
     addMessage,
     setRecording,
     setAISpeaking,
-    setCurrentTranscription,
     clearConversation,
     getSessionSummary
   }
