@@ -8,7 +8,6 @@ describe('useConversation', () => {
     expect(result.current.messages).toEqual([])
     expect(result.current.isRecording).toBe(false)
     expect(result.current.isAISpeaking).toBe(false)
-    expect(result.current.currentTranscription).toBe('')
   })
   
   it('should add messages', () => {
@@ -48,17 +47,10 @@ describe('useConversation', () => {
     expect(result.current.isRecording).toBe(true)
     
     act(() => {
-      result.current.setCurrentTranscription('Testing...')
-    })
-    
-    expect(result.current.currentTranscription).toBe('Testing...')
-    
-    act(() => {
       result.current.setRecording(false)
     })
     
     expect(result.current.isRecording).toBe(false)
-    expect(result.current.currentTranscription).toBe('')
   })
   
   it('should manage AI speaking state', () => {
@@ -85,7 +77,6 @@ describe('useConversation', () => {
       result.current.addMessage('user', 'Message 1')
       result.current.addMessage('ai', 'Response 1')
       result.current.setRecording(true)
-      result.current.setCurrentTranscription('Test')
     })
     
     expect(result.current.messages).toHaveLength(2)
@@ -99,7 +90,6 @@ describe('useConversation', () => {
     expect(result.current.messages).toEqual([])
     expect(result.current.isRecording).toBe(false)
     expect(result.current.isAISpeaking).toBe(false)
-    expect(result.current.currentTranscription).toBe('')
   })
   
   it('should generate unique message IDs', () => {

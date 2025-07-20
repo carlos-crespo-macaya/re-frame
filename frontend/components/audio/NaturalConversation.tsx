@@ -16,11 +16,7 @@ export function NaturalConversation({ language = 'en-US' }: NaturalConversationP
     stopConversation
   } = useNaturalConversation({
     language,
-    onTranscription: (text) => {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('User said:', text)
-      }
-    },
+    // Voice mode is audio-only - no transcript display
     onError: (error) => {
       if (process.env.NODE_ENV === 'development') {
         console.error('Conversation error:', error)

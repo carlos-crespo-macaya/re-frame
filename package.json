@@ -20,16 +20,11 @@
     "docker:build": "docker-compose build",
     "docker:up": "docker-compose up",
     "docker:down": "docker-compose down",
-    "e2e": "npx playwright test --config playwright.config.ts",
-    "e2e:ui": "npx playwright test --ui --config playwright.config.ts",
-    "e2e:js": "npx playwright test --config playwright-js/playwright.config.ts",
-    "e2e:js:ui": "npx playwright test --ui --config playwright-js/playwright.config.ts",
-    "test:e2e": "cd frontend && pnpm playwright test",
-    "test:e2e:ui": "cd frontend && pnpm playwright test --ui",
-    "test:e2e:debug": "cd frontend && pnpm playwright test --debug",
-    "test:e2e:headed": "cd frontend && pnpm playwright test --headed",
-    "test:e2e:report": "cd frontend && pnpm playwright show-report",
-    "test:e2e:install": "cd frontend && pnpm playwright install"
+    "e2e": "cd playwright-js && npm test",
+    "e2e:ui": "cd playwright-js && npm run test:ui",
+    "e2e:headed": "cd playwright-js && npm run test:headed",
+    "e2e:debug": "cd playwright-js && npm run test:debug",
+    "e2e:install": "cd playwright-js && npm run install"
   },
   "devDependencies": {
     "concurrently": "^7.6.0"
