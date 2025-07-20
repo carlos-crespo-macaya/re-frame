@@ -1,12 +1,11 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { PCMPlayer } from './pcm-player'
 import { arrayBufferToBase64 } from './audio-utils'
-import { ApiClient, logApiError, EventSourceParams } from '../api'
-import { generateAudioSessionId } from '../utils/session'
-import { createClientMessage } from '../streaming/message-protocol'
+import { ApiClient, logApiError } from '../api'
 
 // Audio configuration - aligned with backend expectation
-const AUDIO_SAMPLE_RATE = 16000
+const AUDIO_SAMPLE_RATE = 16000  // For recording/input
+const TTS_SAMPLE_RATE = 24000    // For TTS playback
 
 export interface UseNaturalConversationOptions {
   language?: string
@@ -41,6 +40,7 @@ export function useNaturalConversation(options: UseNaturalConversationOptions = 
   const pcmPlayerRef = useRef<PCMPlayer | null>(null)
   const eventSourceRef = useRef<EventSource | null>(null)
   const sessionIdRef = useRef<string | null>(null)
+  const isSSEConnectedRef = useRef<boolean>(false)
 
   // Audio buffering for 0.2s intervals
   const audioBufferRef = useRef<Uint8Array[]>([])
@@ -50,7 +50,7 @@ export function useNaturalConversation(options: UseNaturalConversationOptions = 
 
   // Initialize PCM player on mount
   useEffect(() => {
-    pcmPlayerRef.current = new PCMPlayer(AUDIO_SAMPLE_RATE)
+    pcmPlayerRef.current = new PCMPlayer(TTS_SAMPLE_RATE)
 
     return () => {
       if (pcmPlayerRef.current) {
@@ -120,15 +120,8 @@ export function useNaturalConversation(options: UseNaturalConversationOptions = 
     if (!sessionIdRef.current) return
 
     try {
-      const message = createClientMessage({
-        mimeType: 'audio/pcm',
-        data,
-        messageType: 'thought',
-        sessionId: sessionIdRef.current,
-        turnComplete
-      })
-
-      await ApiClient.sendMessage(sessionIdRef.current, message)
+      // Use voice-specific API for sending audio with sample rate
+      await ApiClient.sendVoiceAudio(sessionIdRef.current, data, turnComplete, AUDIO_SAMPLE_RATE)
     } catch (error) {
       logApiError(error, `sendAudioMessage(${sessionIdRef.current})`)
       if (onError) {
@@ -149,7 +142,7 @@ export function useNaturalConversation(options: UseNaturalConversationOptions = 
 
   // Send buffered audio data every 0.2 seconds
   const sendBufferedAudio = useCallback(async () => {
-    if (audioBufferRef.current.length === 0 || !sessionIdRef.current) {
+    if (audioBufferRef.current.length === 0 || !sessionIdRef.current || !isSSEConnectedRef.current) {
       return
     }
 
@@ -207,19 +200,16 @@ export function useNaturalConversation(options: UseNaturalConversationOptions = 
     }
   }, [sendTurnComplete, sendAudioMessage])
 
-  // Setup SSE connection
+  // Setup voice SSE connection
   const setupSSEConnection = useCallback((sessionId: string) => {
-    const params: EventSourceParams = {
-      is_audio: true,
-      language
-    }
-    
-    const eventSource = ApiClient.createEventSource(sessionId, params)
+    // For voice mode, use the voice-specific EventSource
+    const eventSource = REDACTED(sessionId)
 
     eventSource.onopen = () => {
       if (process.env.NODE_ENV === 'development') {
         console.log('Connected to audio session:', sessionId)
       }
+      isSSEConnectedRef.current = true
       setState(prev => ({ ...prev, status: 'Connected - Speak naturally!' }))
     }
 
@@ -227,24 +217,40 @@ export function useNaturalConversation(options: UseNaturalConversationOptions = 
       try {
         const data = JSON.parse(event.data)
 
-        // Handle audio playback
-        if (data.mime_type === 'audio/pcm' && data.data && pcmPlayerRef.current) {
+        // Mark as truly connected when we receive the first message
+        if (data.type === 'connected') {
+          isSSEConnectedRef.current = true
+          if (process.env.NODE_ENV === 'development') {
+            console.log('Session established, ready to send audio')
+          }
+        }
+
+        // Handle audio playback - match backend VoiceStreamMessage format
+        if (data.type === 'audio' && data.data && pcmPlayerRef.current) {
           await pcmPlayerRef.current.playPCM(data.data)
         }
 
-        // Handle transcriptions
-        if (data.mime_type === 'text/plain' && data.message_type === 'transcription') {
+        // Handle transcriptions - match backend format
+        if (data.type === 'transcript' && data.text) {
           if (process.env.NODE_ENV === 'development') {
-            console.log('Transcription:', data.data)
+            console.log('Transcription:', data.text)
           }
           if (onTranscription) {
-            onTranscription(data.data)
+            onTranscription(data.text)
           }
         }
 
-        // Reset on turn complete
-        if (data.turn_complete === true && pcmPlayerRef.current) {
+        // Handle turn complete - match backend format
+        if (data.type === 'turn_complete' && pcmPlayerRef.current) {
           pcmPlayerRef.current.reset()
+        }
+        
+        // Handle errors
+        if (data.type === 'error' && data.error) {
+          console.error('Voice stream error:', data.error)
+          if (onError) {
+            onError(new Error(data.error))
+          }
         }
       } catch (err) {
         if (process.env.NODE_ENV === 'development') {
@@ -257,6 +263,7 @@ export function useNaturalConversation(options: UseNaturalConversationOptions = 
       if (process.env.NODE_ENV === 'development') {
         console.error('SSE error:', error)
       }
+      isSSEConnectedRef.current = false
       setState(prev => ({ ...prev, status: 'Connection error - click to restart' }))
       if (onError) {
         onError(new Error('SSE connection error'))
@@ -359,12 +366,12 @@ export function useNaturalConversation(options: UseNaturalConversationOptions = 
       const testStream = await navigator.mediaDevices.getUserMedia({ audio: true })
       testStream.getTracks().forEach(track => track.stop())
 
-      // Generate session ID using centralized utility
-      const sessionId = generateAudioSessionId()
-      sessionIdRef.current = sessionId
+      // Create voice session via API
+      const voiceSession = await ApiClient.createVoiceSession(language)
+      sessionIdRef.current = voiceSession.session_id
 
-      // Setup SSE connection
-      setupSSEConnection(sessionId)
+      // Setup SSE connection with the voice session
+      setupSSEConnection(voiceSession.session_id)
 
       // Setup audio recording
       await setupAudioRecording()
@@ -420,6 +427,9 @@ export function useNaturalConversation(options: UseNaturalConversationOptions = 
       eventSourceRef.current.close()
       eventSourceRef.current = null
     }
+
+    // Reset connection flag
+    isSSEConnectedRef.current = false
 
     // Clear audio buffer
     audioBufferRef.current = []

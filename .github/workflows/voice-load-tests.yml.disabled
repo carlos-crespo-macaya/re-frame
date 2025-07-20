@@ -1,0 +1,152 @@
+name: Voice Load Tests
+
+on:
+  # Workflow disabled
+  workflow_dispatch:
+    if: false
+    inputs:
+      concurrent_users:
+        description: 'Number of concurrent users to simulate'
+        required: false
+        default: '50'
+      test_duration:
+        description: 'Test duration in seconds'
+        required: false
+        default: '60'
+
+env:
+  VOICE_MODE_ENABLED: true
+
+jobs:
+  voice-load-test:
+    name: Voice Load Testing
+    runs-on: self-hosted
+    if: false  # Workflow disabled
+    timeout-minutes: 30
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg sox libasound2-dev
+      
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+      
+      - name: Set up Python
+        run: uv python install 3.12
+      
+      - name: Cache uv dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('backend/pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-
+        
+      - name: Create .env file
+        run: |
+          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
+          echo "VOICE_MODE_ENABLED=true" >> .env
+          echo "CONCURRENT_USERS=${{ github.event.inputs.concurrent_users || '50' }}" >> .env
+          echo "TEST_DURATION=${{ github.event.inputs.test_duration || '60' }}" >> .env
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+      
+      - name: Build services for load testing
+        run: |
+          docker compose build
+          docker compose up -d
+          
+      - name: Wait for services
+        run: |
+          echo "Waiting for services to be ready..."
+          timeout 120 bash -c 'until curl -f http://localhost:8000/health; do sleep 2; done'
+      
+      - name: Run voice load tests
+        working-directory: backend
+        run: |
+          uv sync --all-extras
+          uv run pytest tests/load/test_voice_concurrency.py -v -m load --tb=short
+      
+      - name: Collect performance metrics
+        run: |
+          # Collect docker stats
+          docker stats --no-stream > docker-stats.txt
+          
+          # Get service logs for analysis
+          docker compose logs backend --tail=1000 > backend-logs.txt
+          
+      - name: Generate performance report
+        run: |
+          cat > performance-report.md << EOF
+          # Voice Load Test Report
+          
+          **Date**: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          **Commit**: ${{ github.sha }}
+          **Branch**: ${{ github.ref_name }}
+          
+          ## Test Configuration
+          - Concurrent Users: ${{ github.event.inputs.concurrent_users || '50' }}
+          - Test Duration: ${{ github.event.inputs.test_duration || '60' }}s
+          
+          ## Results Summary
+          $(grep -E "(Success rate|Average response time|P95|P99)" backend-logs.txt || echo "No metrics found")
+          
+          ## Resource Usage
+          \`\`\`
+          $(cat docker-stats.txt)
+          \`\`\`
+          
+          ## Recommendations
+          - Monitor memory usage during peak load
+          - Consider implementing request queuing for overload scenarios
+          - Add circuit breakers for external service calls
+          EOF
+          
+      - name: Upload performance artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: voice-load-test-results-${{ github.run_number }}
+          path: |
+            performance-report.md
+            docker-stats.txt
+            backend-logs.txt
+            
+      - name: Post results to Slack
+        if: always()
+        uses: slackapi/slack-github-action@v1
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        with:
+          payload: |
+            {
+              "text": "Voice Load Test Results",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Voice Load Test Completed*\n*Status*: ${{ job.status }}\n*Run*: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Results>"
+                  }
+                }
+              ]
+            }
+      
+      - name: Stop services
+        if: always()
+        run: |
+          docker compose down -v

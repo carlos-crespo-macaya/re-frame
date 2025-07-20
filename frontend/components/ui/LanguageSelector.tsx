@@ -9,9 +9,6 @@ interface LanguageSelectorProps {
 const languages = [
   { code: 'en-US', name: 'English' },
   { code: 'es-ES', name: 'Español' },
-  { code: 'fr-FR', name: 'Français' },
-  { code: 'de-DE', name: 'Deutsch' },
-  { code: 'pt-BR', name: 'Português' },
 ]
 
 export function LanguageSelector({ value, onChange, className = '' }: LanguageSelectorProps) {

@@ -1,4 +1,4 @@
-"""Minimal audio roundtrip test to verify audio processing works end-to-end."""
+"""Minimal audio roundtrip test to verify voice processing works end-to-end."""
 
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -6,7 +6,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from src.main import app
-from src.utils.session_manager import session_manager
+from src.voice.session_manager import VoiceSession
 from tests.fixtures import AudioSamples
 
 
@@ -22,50 +22,58 @@ def audio_samples():
     return AudioSamples
 
 
-def test_audio_roundtrip_minimal(client, audio_samples):
-    """Minimal test to verify audio processing works end-to-end."""
-    session_id = "test-session-123"
+@pytest.fixture
+def mock_voice_session_manager():
+    """Mock voice session manager."""
+    with patch("src.voice.router.voice_session_manager") as mock:
+        yield mock
 
-    # Create a mock session with required metadata
-    mock_session = MagicMock()
-    mock_queue = AsyncMock()
-    mock_runner = AsyncMock()
-    mock_adk_session = MagicMock()
-    mock_run_config = MagicMock()
 
-    # Mock process_message to return empty events
-    async def mock_process_message(*args, **kwargs):
-        return []
+def test_audio_roundtrip_minimal(client, audio_samples, mock_voice_session_manager):
+    """Minimal test to verify voice processing works end-to-end."""
 
-    # Set up metadata with required components
-    mock_session.metadata = {
-        "message_queue": mock_queue,
-        "runner": mock_runner,
-        "adk_session": mock_adk_session,
-        "run_config": mock_run_config,
-    }
+    # Step 1: Create a voice session
+    mock_session = MagicMock(spec=VoiceSession)
+    mock_session.session_id = "voice-test-123"
+    mock_session.status = "active"
+    mock_session.language = "en-US"
+    mock_session.send_audio = AsyncMock()
+    mock_session.send_control = AsyncMock()
 
-    # Enable voice mode for this test by patching the config module directly
-    with (
-        patch("src.config.VOICE_MODE_ENABLED", True),
-        patch.object(session_manager, "get_session", return_value=mock_session),
-        patch("src.main.process_message", mock_process_message),
-    ):
-        resp = client.post(
-            f"/api/send/{session_id}",
-            json={
-                "mime_type": "audio/pcm",
-                "data": audio_samples.get_sample("hello"),
-            },
-        )
+    mock_voice_session_manager.create_session = AsyncMock(return_value=mock_session)
+    mock_voice_session_manager.get_session.return_value = mock_session
+    mock_voice_session_manager.remove_session = AsyncMock()
 
-    # Now we expect 200 since basic audio processing is implemented
-    assert resp.status_code == 200, f"Expected 200, got {resp.status_code}: {resp.text}"
+    # Create session
+    resp = client.post("/api/voice/sessions", json={"language": "en-US"})
+    assert resp.status_code == 200
+    session_data = resp.json()
+    assert session_data["session_id"] == "voice-test-123"
+    assert session_data["status"] == "active"
 
-    # Verify response structure
-    response_data = resp.json()
-    assert response_data["status"] == "sent"
-    assert response_data["error"] is None
+    # Step 2: Send audio data
+    resp = client.post(
+        f"/api/voice/sessions/{session_data['session_id']}/audio",
+        json={"data": audio_samples.get_sample("hello"), "timestamp": 1234567890},
+    )
+    assert resp.status_code == 200
+    assert resp.json()["status"] == "received"
 
-    # The endpoint returns a simple status response, not the actual messages
-    # Messages are delivered via SSE to the message_queue
+    # Verify send_audio was called
+    mock_session.send_audio.assert_called_once()
+
+    # Step 3: Test control commands
+    resp = client.post(
+        f"/api/voice/sessions/{session_data['session_id']}/control",
+        json={"action": "end_turn"},
+    )
+    assert resp.status_code == 200
+    assert resp.json()["status"] == "ok"
+
+    # Step 4: End session
+    resp = client.delete(f"/api/voice/sessions/{session_data['session_id']}")
+    assert resp.status_code == 200
+    assert resp.json()["status"] == "ended"
+
+    # Verify remove_session was called
+    mock_voice_session_manager.remove_session.assert_called_once_with("voice-test-123")

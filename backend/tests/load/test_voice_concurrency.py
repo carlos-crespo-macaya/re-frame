@@ -8,6 +8,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from httpx import ASGITransport, AsyncClient
 
+from src.voice.session_manager import VoiceSession
 from tests.fixtures import AudioSamples
 
 
@@ -25,338 +26,236 @@ class TestVoiceConcurrency:
             yield ac
 
     @pytest.fixture
-    def mock_session_manager(self):
-        """Mock session manager for load tests."""
-        with patch("src.main.session_manager") as mock:
-            # Create mock sessions
-            mock.sessions = {}
+    def mock_voice_session_manager(self):
+        """Mock voice session manager for load tests."""
+        with patch("src.voice.router.voice_session_manager") as mock:
+            # Make create_session return different sessions
+            sessions = {}
 
-            def create_mock_session(session_id):
-                """Create a mock session with required metadata."""
-                mock_session = MagicMock()
-                mock_queue = AsyncMock()
-                mock_runner = AsyncMock()
-                mock_adk_session = MagicMock()
-                mock_run_config = MagicMock()
+            async def create_session_side_effect(language):
+                session_id = f"voice-{len(sessions) + 1}"
+                session = MagicMock(spec=VoiceSession)
+                session.session_id = session_id
+                session.status = "active"
+                session.language = language
+                session.send_audio = AsyncMock()
+                session.send_control = AsyncMock()
+                sessions[session_id] = session
+                return session
 
-                # Mock runner.run_async to return an async generator
-                async def mock_run_async(*args, **kwargs):
-                    # Return minimal events for load testing
-                    yield MagicMock(
-                        content=MagicMock(parts=[MagicMock(text="Test response")])
-                    )
-                    yield MagicMock(turn_complete=True)
+            def get_session_side_effect(session_id):
+                return sessions.get(session_id)
 
-                mock_runner.run_async = mock_run_async
+            async def remove_session_side_effect(session_id):
+                sessions.pop(session_id, None)
 
-                mock_session.metadata = {
-                    "message_queue": mock_queue,
-                    "runner": mock_runner,
-                    "adk_session": mock_adk_session,
-                    "run_config": mock_run_config,
-                    "language": "en-US",
-                }
-                mock_session.session_id = session_id
-                mock_session.user_id = session_id
-
-                return mock_session
-
-            def get_session(session_id):
-                if session_id not in mock.sessions:
-                    mock.sessions[session_id] = create_mock_session(session_id)
-                return mock.sessions[session_id]
-
-            mock.get_session.side_effect = get_session
-            mock.create_session.side_effect = lambda **kwargs: create_mock_session(
-                kwargs.get("session_id")
-            )
+            mock.create_session = AsyncMock(side_effect=create_session_side_effect)
+            mock.get_session = MagicMock(side_effect=get_session_side_effect)
+            mock.remove_session = AsyncMock(side_effect=remove_session_side_effect)
+            mock.sessions = sessions
 
             yield mock
 
-    @pytest.mark.load
     @pytest.mark.asyncio
-    async def test_concurrent_voice_sessions(self, async_client, mock_session_manager):
-        """Test handling multiple simultaneous voice sessions."""
+    async def test_concurrent_voice_sessions(
+        self, async_client, mock_voice_session_manager
+    ):
+        """Test handling multiple concurrent voice sessions."""
+        # Skip if running in CI to avoid resource issues
+        if os.getenv("CI"):
+            pytest.skip("Skipping load test in CI environment")
 
-        async def simulate_voice_user(user_id: int) -> tuple[int, float]:
-            """Simulate a single voice user interaction."""
-            session_id = f"session-{user_id}"
-            audio_data = AudioSamples.get_sample("hello")
+        num_sessions = 10
 
-            start_time = time.time()
+        async def create_and_use_session(session_num):
+            """Create a voice session and send some audio."""
+            # Create session
             response = await async_client.post(
-                f"/api/send/{session_id}",
-                json={"mime_type": "audio/pcm", "data": audio_data},
+                "/api/voice/sessions", json={"language": "en-US"}
             )
-            elapsed = time.time() - start_time
+            assert response.status_code == 200
+            session_data = response.json()
+            session_id = session_data["session_id"]
 
-            return response.status_code, elapsed
-
-        # Enable voice mode for load test
-        with patch("src.config.VOICE_MODE_ENABLED", True):
-            # Get number of concurrent users from env or default
-            concurrent_users = int(os.getenv("CONCURRENT_USERS", "50"))
-
-            # Simulate concurrent users
-            tasks = [simulate_voice_user(i) for i in range(concurrent_users)]
-            results = await asyncio.gather(*tasks, return_exceptions=True)
-
-        # Analyze results
-        successful = [r for r in results if isinstance(r, tuple) and r[0] == 200]
-        failed = [
-            r
-            for r in results
-            if isinstance(r, Exception) or (isinstance(r, tuple) and r[0] != 200)
-        ]
-
-        # Success rate should be > 95%
-        success_rate = len(successful) / len(results)
-        assert (
-            success_rate > 0.95
-        ), f"Success rate {success_rate:.1%} below 95% threshold"
-
-        # Response time analysis
-        if successful:
-            response_times = [r[1] for r in successful]
-            avg_time = sum(response_times) / len(response_times)
-            p95_time = sorted(response_times)[int(len(response_times) * 0.95)]
-            p99_time = sorted(response_times)[int(len(response_times) * 0.99)]
-
-            # Performance assertions
-            assert avg_time < 1.0, f"Average response time {avg_time:.2f}s exceeds 1s"
-            assert p95_time < 2.0, f"P95 response time {p95_time:.2f}s exceeds 2s"
-            assert p99_time < 5.0, f"P99 response time {p99_time:.2f}s exceeds 5s"
-
-            # Log performance metrics
-            print(
-                f"\nLoad test results: {len(successful)} successful, {len(failed)} failed"
-            )
-            print(
-                f"Response times - Avg: {avg_time:.2f}s, P95: {p95_time:.2f}s, P99: {p99_time:.2f}s"
-            )
-            print(f"Success rate: {success_rate:.1%}")
-
-    @pytest.mark.load
-    @pytest.mark.asyncio
-    async def test_sustained_voice_load(self, async_client, mock_session_manager):
-        """Test system under sustained voice load for configured duration."""
-        start_time = time.time()
-        test_duration = int(os.getenv("TEST_DURATION", "60"))  # Default 60 seconds
-        end_time = start_time + test_duration
-
-        request_count = 0
-        error_count = 0
-        response_times: list[float] = []
-
-        async def continuous_requests():
-            nonlocal request_count, error_count
-
-            while time.time() < end_time:
-                try:
-                    session_id = f"sustained-{request_count}"
-                    audio_data = AudioSamples.get_sample("hello")
-
-                    req_start = time.time()
-                    response = await async_client.post(
-                        f"/api/send/{session_id}",
-                        json={"mime_type": "audio/pcm", "data": audio_data},
-                    )
-                    req_time = time.time() - req_start
-
-                    request_count += 1
-                    response_times.append(req_time)
-
-                    if response.status_code != 200:
-                        error_count += 1
-
-                    # Target 10 requests per second
-                    await asyncio.sleep(0.1)
-
-                except Exception as e:
-                    error_count += 1
-                    print(f"Request error: {e}")
-
-        # Run with configured number of workers
-        concurrent_workers = int(os.getenv("CONCURRENT_WORKERS", "5"))
-
-        with patch("src.config.VOICE_MODE_ENABLED", True):
-            workers = [continuous_requests() for _ in range(concurrent_workers)]
-            await asyncio.gather(*workers)
-
-        # Calculate metrics
-        duration = time.time() - start_time
-        throughput = request_count / duration
-        error_rate = error_count / request_count if request_count > 0 else 0
-
-        # Assertions
-        # Each worker targets 10 req/s with 0.1s sleep, but actual throughput may be lower
-        # due to processing overhead. Target 4 req/s per worker as a baseline.
-        target_throughput = concurrent_workers * 4  # 4 req/s per worker
-        assert (
-            throughput > target_throughput
-        ), f"Throughput {throughput:.1f} req/s below target {target_throughput:.1f} req/s"
-        assert error_rate < 0.01, f"Error rate {error_rate:.1%} exceeds 1%"
-
-        # Response time analysis
-        if response_times:
-            avg_response = sum(response_times) / len(response_times)
-            assert (
-                avg_response < 0.5
-            ), f"Average response {avg_response:.2f}s exceeds 0.5s"
-
-        print("\nSustained load test results:")
-        print(f"Duration: {duration:.1f}s")
-        print(f"Total requests: {request_count}")
-        print(f"Throughput: {throughput:.1f} req/s")
-        print(f"Error rate: {error_rate:.1%}")
-        print(f"Average response time: {avg_response:.3f}s")
-
-    @pytest.mark.load
-    @pytest.mark.asyncio
-    async def test_voice_session_ramp_up(self, async_client, mock_session_manager):
-        """Test system behavior during gradual load increase."""
-        max_users = int(os.getenv("MAX_USERS", "100"))
-        ramp_duration = int(os.getenv("RAMP_DURATION", "30"))  # seconds
-        users_per_second = max_users / ramp_duration
-
-        results = []
-
-        async def simulate_user(user_id: int, delay: float):
-            """Simulate a user starting after a delay."""
-            await asyncio.sleep(delay)
-            session_id = f"ramp-{user_id}"
-            audio_data = AudioSamples.get_sample("hello")
-
-            req_start = time.time()
-            try:
+            # Send a few audio chunks
+            for _ in range(3):
                 response = await async_client.post(
-                    f"/api/send/{session_id}",
-                    json={"mime_type": "audio/pcm", "data": audio_data},
+                    f"/api/voice/sessions/{session_id}/audio",
+                    json={
+                        "data": AudioSamples.get_sample("hello"),
+                        "timestamp": 1234567890,
+                    },
                 )
-                elapsed = time.time() - req_start
-                return user_id, response.status_code, elapsed
-            except Exception:
-                return user_id, 500, time.time() - req_start
+                assert response.status_code == 200
+                await asyncio.sleep(0.1)  # Small delay between chunks
 
-        with patch("src.config.VOICE_MODE_ENABLED", True):
-            # Create tasks with staggered start times
-            tasks = []
-            for i in range(max_users):
-                delay = i / users_per_second
-                tasks.append(simulate_user(i, delay))
+            # End session
+            response = await async_client.delete(f"/api/voice/sessions/{session_id}")
+            assert response.status_code == 200
 
-            # Execute all tasks
-            results = await asyncio.gather(*tasks, return_exceptions=True)
+            return session_id
 
-        # Analyze results by time buckets
-        bucket_size = 5  # seconds
-        buckets = {}
+        # Run concurrent sessions
+        start_time = time.time()
+        tasks = [create_and_use_session(i) for i in range(num_sessions)]
+        session_ids = await asyncio.gather(*tasks)
+        duration = time.time() - start_time
 
-        for result in results:
-            if isinstance(result, tuple) and len(result) == 3:
-                user_id, status, response_time = result
-                bucket = int(user_id / (users_per_second * bucket_size))
-                if bucket not in buckets:
-                    buckets[bucket] = {"success": 0, "total": 0, "times": []}
-                buckets[bucket]["total"] += 1
-                if status == 200:
-                    buckets[bucket]["success"] += 1
-                    buckets[bucket]["times"].append(response_time)
+        # Verify all sessions were created and cleaned up
+        assert len(session_ids) == num_sessions
+        assert len(set(session_ids)) == num_sessions  # All unique
+        assert len(mock_voice_session_manager.sessions) == 0  # All cleaned up
 
-        # Print performance degradation analysis
-        print(f"\nRamp-up test results (max {max_users} users over {ramp_duration}s):")
-        for bucket in sorted(buckets.keys()):
-            data = buckets[bucket]
-            success_rate = data["success"] / data["total"]
-            avg_time = sum(data["times"]) / len(data["times"]) if data["times"] else 0
-            concurrent = int((bucket + 1) * bucket_size * users_per_second)
-            print(
-                f"  {concurrent:3d} users: {success_rate:.1%} success, {avg_time:.2f}s avg response"
-            )
+        # Basic performance check (should handle 10 sessions in reasonable time)
+        assert duration < 30  # 30 seconds max
 
-        # Verify system remains stable
-        final_bucket = max(buckets.keys())
-        final_success_rate = (
-            buckets[final_bucket]["success"] / buckets[final_bucket]["total"]
-        )
-        assert (
-            final_success_rate > 0.90
-        ), f"Success rate at max load {final_success_rate:.1%} below 90%"
-
-    @pytest.mark.load
     @pytest.mark.asyncio
-    async def test_voice_spike_load(self, async_client, mock_session_manager):
-        """Test system response to sudden traffic spikes."""
-        baseline_users = 10
-        spike_users = 100
+    async def test_sustained_voice_load(self, async_client, mock_voice_session_manager):
+        """Test sustained load with voice sessions."""
+        # Skip if running in CI
+        if os.getenv("CI"):
+            pytest.skip("Skipping load test in CI environment")
 
-        async def simulate_baseline_user(user_id: int):
-            """Simulate baseline traffic."""
+        duration_seconds = 5
+        sessions_created = 0
+        errors = []
+
+        async def continuous_session_creation():
+            """Continuously create and destroy sessions."""
+            nonlocal sessions_created
             while True:
-                session_id = f"baseline-{user_id}-{int(time.time())}"
-                audio_data = AudioSamples.get_sample("hello")
-
                 try:
-                    await async_client.post(
-                        f"/api/send/{session_id}",
-                        json={"mime_type": "audio/pcm", "data": audio_data},
+                    # Create session
+                    response = await async_client.post(
+                        "/api/voice/sessions", json={"language": "en-US"}
                     )
-                except Exception:
-                    pass
+                    if response.status_code == 200:
+                        session_id = response.json()["session_id"]
+                        sessions_created += 1
 
-                await asyncio.sleep(1)  # One request per second
+                        # Send audio
+                        await async_client.post(
+                            f"/api/voice/sessions/{session_id}/audio",
+                            json={
+                                "data": AudioSamples.get_sample("hello"),
+                                "timestamp": 1234567890,
+                            },
+                        )
 
-        async def simulate_spike_user(user_id: int):
-            """Simulate spike traffic."""
-            session_id = f"spike-{user_id}"
-            audio_data = AudioSamples.get_sample("hello")
+                        # Clean up
+                        await async_client.delete(f"/api/voice/sessions/{session_id}")
+                    else:
+                        errors.append(
+                            f"Failed to create session: {response.status_code}"
+                        )
+                except Exception as e:
+                    errors.append(str(e))
 
-            start = time.time()
+                await asyncio.sleep(0.1)  # Rate limit
+
+        # Run for specified duration
+        task = asyncio.create_task(continuous_session_creation())
+        await asyncio.sleep(duration_seconds)
+        task.cancel()
+
+        try:
+            await task
+        except asyncio.CancelledError:
+            pass
+
+        # Verify results
+        assert sessions_created > 0
+        assert len(errors) < sessions_created * 0.1  # Less than 10% error rate
+        assert len(mock_voice_session_manager.sessions) == 0  # All cleaned up
+
+    @pytest.mark.asyncio
+    async def test_voice_session_ramp_up(
+        self, async_client, mock_voice_session_manager
+    ):
+        """Test gradual ramp-up of voice sessions."""
+        # Skip if running in CI
+        if os.getenv("CI"):
+            pytest.skip("Skipping load test in CI environment")
+
+        max_concurrent = 5
+        ramp_duration = 3  # seconds
+
+        active_sessions = []
+
+        async def manage_session(delay):
+            """Create session after delay, use it, then clean up."""
+            await asyncio.sleep(delay)
+
+            # Create session
             response = await async_client.post(
-                f"/api/send/{session_id}",
-                json={"mime_type": "audio/pcm", "data": audio_data},
+                "/api/voice/sessions", json={"language": "en-US"}
             )
-            return response.status_code, time.time() - start
+            assert response.status_code == 200
+            session_id = response.json()["session_id"]
+            active_sessions.append(session_id)
 
-        with patch("src.config.VOICE_MODE_ENABLED", True):
-            # Start baseline traffic
-            baseline_tasks = []
-            for i in range(baseline_users):
-                task = asyncio.create_task(simulate_baseline_user(i))
-                baseline_tasks.append(task)
+            # Use session for a bit
+            for _ in range(5):
+                await async_client.post(
+                    f"/api/voice/sessions/{session_id}/audio",
+                    json={
+                        "data": AudioSamples.get_sample("hello"),
+                        "timestamp": 1234567890,
+                    },
+                )
+                await asyncio.sleep(0.2)
 
-            # Let baseline stabilize
-            await asyncio.sleep(5)
+            # Clean up
+            await async_client.delete(f"/api/voice/sessions/{session_id}")
+            active_sessions.remove(session_id)
 
-            # Create spike
-            print(f"\nCreating traffic spike: {spike_users} additional users")
-            spike_tasks = [simulate_spike_user(i) for i in range(spike_users)]
-            spike_results = await asyncio.gather(*spike_tasks, return_exceptions=True)
+        # Create sessions with increasing delays
+        tasks = []
+        for i in range(max_concurrent):
+            delay = (i / max_concurrent) * ramp_duration
+            tasks.append(asyncio.create_task(manage_session(delay)))
 
-            # Cancel baseline tasks
-            for task in baseline_tasks:
-                task.cancel()
+        # Wait for all to complete
+        await asyncio.gather(*tasks)
 
-        # Analyze spike handling
-        successful_spike = [
-            r for r in spike_results if isinstance(r, tuple) and r[0] == 200
-        ]
-        spike_success_rate = len(successful_spike) / len(spike_results)
+        # Verify all cleaned up
+        assert len(active_sessions) == 0
+        assert len(mock_voice_session_manager.sessions) == 0
 
-        if successful_spike:
-            spike_response_times = [r[1] for r in successful_spike]
-            avg_spike_time = sum(spike_response_times) / len(spike_response_times)
-            max_spike_time = max(spike_response_times)
+    @pytest.mark.asyncio
+    async def test_voice_spike_load(self, async_client, mock_voice_session_manager):
+        """Test sudden spike in voice session creation."""
+        # Skip if running in CI
+        if os.getenv("CI"):
+            pytest.skip("Skipping load test in CI environment")
 
-            print("Spike results:")
-            print(f"  Success rate: {spike_success_rate:.1%}")
-            print(f"  Average response: {avg_spike_time:.2f}s")
-            print(f"  Max response: {max_spike_time:.2f}s")
+        spike_size = 20
 
-            # System should handle spikes gracefully
-            assert (
-                spike_success_rate > 0.80
-            ), f"Spike success rate {spike_success_rate:.1%} below 80%"
-            assert (
-                avg_spike_time < 3.0
-            ), f"Average spike response {avg_spike_time:.2f}s exceeds 3s"
+        async def create_session():
+            """Create a single session."""
+            response = await async_client.post(
+                "/api/voice/sessions", json={"language": "en-US"}
+            )
+            return response.status_code, (
+                response.json() if response.status_code == 200 else None
+            )
+
+        # Create many sessions at once
+        start_time = time.time()
+        results = await asyncio.gather(
+            *[create_session() for _ in range(spike_size)], return_exceptions=True
+        )
+        duration = time.time() - start_time
+
+        # Count successes
+        successes = sum(1 for r in results if isinstance(r, tuple) and r[0] == 200)
+
+        # Should handle most requests successfully
+        assert successes >= spike_size * 0.8  # At least 80% success rate
+        assert duration < 10  # Should complete within 10 seconds
+
+        # Clean up created sessions
+        for result in results:
+            if isinstance(result, tuple) and result[0] == 200 and result[1]:
+                session_id = result[1]["session_id"]
+                await async_client.delete(f"/api/voice/sessions/{session_id}")

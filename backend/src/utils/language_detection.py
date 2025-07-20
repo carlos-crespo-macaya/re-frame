@@ -11,7 +11,10 @@ DetectorFactory.seed = 0
 class LanguageDetector:
     """Handles automatic language detection for user input."""
 
-    SUPPORTED_LANGUAGES: ClassVar[dict[str, str]] = {"en": "English", "es": "Spanish"}
+    SUPPORTED_LANGUAGES: ClassVar[dict[str, str]] = {
+        "en": "English",
+        "es": "Spanish",
+    }
     DEFAULT_LANGUAGE: ClassVar[str] = "en"
     CONFIDENCE_THRESHOLD: ClassVar[float] = 0.7
 

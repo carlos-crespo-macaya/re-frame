@@ -12,7 +12,10 @@ import {
   downloadPdf,
   sendMessage,
   detectLanguage,
-  getEventStream,
+  createVoiceSessionApiVoiceSessionsPost,
+  sendAudioChunkREDACTED,
+  voiceControlREDACTED,
+  endVoiceSessionREDACTED,
 } from './generated/sdk.gen'
 import type {
   MessageRequest,
@@ -22,6 +25,10 @@ import type {
   HealthCheckResponse,
   LanguageDetectionRequest,
   LanguageDetectionResponse,
+  CreateVoiceSessionRequest,
+  VoiceSessionResponse,
+  AudioChunkRequest,
+  VoiceControlRequest,
 } from './generated/types.gen'
 
 // Configure the generated client with our API settings
@@ -65,6 +72,23 @@ export const generatedApi = {
   },
 
   /**
+   * Voice endpoints
+   */
+  voice: {
+    createSession: (requestBody: CreateVoiceSessionRequest) =>
+      createVoiceSessionApiVoiceSessionsPost({ requestBody }),
+    sendAudio: (sessionId: string, requestBody: AudioChunkRequest) =>
+      sendAudioChunkREDACTED({ sessionId, requestBody }),
+    sendControl: (sessionId: string, requestBody: VoiceControlRequest) =>
+      voiceControlREDACTED({ sessionId, requestBody }),
+    endSession: (sessionId: string) =>
+      endVoiceSessionREDACTED({ sessionId }),
+    // Voice SSE stream endpoint (EventSource handled separately)
+    getStreamEndpoint: (sessionId: string) =>
+      `/api/voice/sessions/${sessionId}/stream`,
+  },
+
+  /**
    * SSE Events (Note: EventSource is handled separately)
    */
   events: {
@@ -84,6 +108,10 @@ export type {
   HealthCheckResponse,
   LanguageDetectionRequest,
   LanguageDetectionResponse,
+  CreateVoiceSessionRequest,
+  VoiceSessionResponse,
+  AudioChunkRequest,
+  VoiceControlRequest,
 }
 
 // Direct exports of SDK functions (getHealthCheck, sendMessage, etc.) were removed
