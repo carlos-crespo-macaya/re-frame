@@ -180,8 +180,19 @@ export default function Home() {
   useEffect(() => {
     if (latestResponse) {
       console.log('Latest response:', latestResponse);
-      // Append new response to the array
-      setResponses(prev => [...prev, latestResponse])
+      // Append new response to the array (idempotent to handle StrictMode)
+      setResponses(prev => {
+        // Check if this exact response already exists (handles StrictMode double-render)
+        const isDuplicate = prev.some(r => 
+          r.response === latestResponse.response && 
+          r.frameworks_used.join(',') === latestResponse.frameworks_used.join(',')
+        );
+        
+        if (!isDuplicate) {
+          return [...prev, latestResponse];
+        }
+        return prev;
+      })
       
       // Clear loading state when turn is complete
       if (latestResponse.turnComplete) {
