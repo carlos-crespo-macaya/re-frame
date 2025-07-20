@@ -11,7 +11,7 @@ export class PCMPlayer {
   private isFirstChunk = true
   private startDelay = 0.1 // 100ms initial buffer
   
-  constructor(sampleRate = 24000) {
+  constructor(sampleRate = 16000) {
     this.sampleRate = sampleRate
   }
   

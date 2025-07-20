@@ -20,6 +20,10 @@ env:
   NODE_VERSION: '18.x'
   PNPM_VERSION: '10.11.0'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     name: Frontend Tests

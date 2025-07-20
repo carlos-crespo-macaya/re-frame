@@ -10,6 +10,9 @@ Always use `uv` as the Python package manager for this project:
 # Install dependencies
 uv sync --all-extras
 
+# Install with voice modality support (optional)
+uv sync --extra voice
+
 # Run quality checks
 uv run poe check
 
@@ -19,6 +22,14 @@ uv run poe lint
 uv run poe typecheck
 uv run poe test
 ```
+
+### Voice Modality (Optional)
+The backend supports voice functionality through Google Cloud services:
+- **Speech-to-Text**: For transcribing user voice input
+- **Text-to-Speech**: For generating voice responses
+- Install with: `uv sync --extra voice`
+- Voice tests: `uv run pytest tests/test_voice_*.py`
+- Load tests: `uv run pytest tests/load/test_voice_concurrency.py`
 
 ## Implementation Philosophy
 
@@ -33,9 +44,19 @@ uv run poe test
 
 ## Project Management Guidelines
 
-**GitHub Issues are the single source of truth for project management.**
+**GitHub Issues and Linear are used for project management.**
 
-All progress and current status should always be kept up to date in the issues created in the GitHub project. This will be the only and unique source of truth for project management. Let's prevent having scattered to-do documents, etc. Let's use issues exclusively for that.
+### Linear Project Tracking
+- **Primary project tracking in Linear**: https://linear.app/carlos-crespo/project/re-framesocial-cbt-assistant-6c36f6288cc8
+- **IMPORTANT**: Always update Linear issues as you make progress:
+  - Mark tasks as "In Progress" when starting work
+  - Check off completed subtasks in the issue description
+  - Add comments for important findings or blockers
+  - Update status to "Done" when complete
+  - Use the Linear MCP tools to update issues programmatically
+
+### GitHub Integration
+All progress and current status should always be kept up to date in both Linear and GitHub issues. This dual tracking ensures complete visibility.
 
 - Update issue status as work progresses
 - Add comments to issues for important decisions or blockers
@@ -147,6 +168,7 @@ When implementing features:
 - Include edge case testing (empty inputs, crisis scenarios)
 - Mock external dependencies (PDF generation, etc.)
 - Aim for 80% code coverage minimum
+- Use pytest-xdist for parallel test execution: `uv run pytest -n auto`
 
 ### Safety Implementation
 - Crisis detection must be checked at every user input

@@ -42,7 +42,7 @@ export default function Privacy() {
               </li>
               <li className="flex items-start">
                 <span className="mr-2">•</span>
-                <div><strong className="text-[#EDEDED]">Anonymous by default.</strong> If you don't create an account, we store only a random session ID and your text (so the app can respond).</div>
+                <div><strong className="text-[#EDEDED]">Anonymous by default.</strong> If you don&apos;t create an account, we store only a random session ID and your text (so the app can respond).</div>
               </li>
               <li className="flex items-start">
                 <span className="mr-2">•</span>
@@ -63,7 +63,7 @@ export default function Privacy() {
             </ul>
 
             <p className="text-base text-[#999999] leading-relaxed">
-              We'll never sell or share your words. Read the full policy at <strong className="text-[#EDEDED]">re-frame.social/privacy</strong>.
+              We&apos;ll never sell or share your words. Read the full policy at <strong className="text-[#EDEDED]">re-frame.social/privacy</strong>.
             </p>
 
             <div className="mt-12 text-center">
