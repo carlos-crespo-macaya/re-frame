@@ -1,5 +1,6 @@
 """Stream handler for ADK voice integration."""
 
+import asyncio
 import base64
 import logging
 from collections.abc import AsyncGenerator
@@ -70,9 +71,22 @@ async def create_voice_stream(session: VoiceSession) -> AsyncGenerator[str, None
                 )
                 yield f"data: {msg.model_dump_json()}\n\n"
 
+        except asyncio.CancelledError:
+            # Handle cancellation gracefully
+            logger.info(f"Voice stream cancelled for session {session.session_id}")
+            msg = VoiceStreamMessage(type="turn_complete", data="stream_cancelled")
+            yield f"data: {msg.model_dump_json()}\n\n"
+            break
         except Exception as e:
             logger.error(f"Error in voice stream: {e}")
-            msg = VoiceStreamMessage(type="error", error=str(e))
+            # Provide more specific error messages
+            error_msg = str(e)
+            if "1007" in error_msg:
+                error_msg = "Audio format error. Please check audio encoding."
+            elif "WebSocket" in error_msg:
+                error_msg = "Connection error. Please try again."
+
+            msg = VoiceStreamMessage(type="error", error=error_msg)
             yield f"data: {msg.model_dump_json()}\n\n"
             break
 

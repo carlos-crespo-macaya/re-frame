@@ -4,7 +4,8 @@ import { arrayBufferToBase64 } from './audio-utils'
 import { ApiClient, logApiError } from '../api'
 
 // Audio configuration - aligned with backend expectation
-const AUDIO_SAMPLE_RATE = 16000
+const AUDIO_SAMPLE_RATE = 16000  // For recording/input
+const TTS_SAMPLE_RATE = 24000    // For TTS playback
 
 export interface UseNaturalConversationOptions {
   language?: string
@@ -49,7 +50,7 @@ export function useNaturalConversation(options: UseNaturalConversationOptions = 
 
   // Initialize PCM player on mount
   useEffect(() => {
-    pcmPlayerRef.current = new PCMPlayer(AUDIO_SAMPLE_RATE)
+    pcmPlayerRef.current = new PCMPlayer(TTS_SAMPLE_RATE)
 
     return () => {
       if (pcmPlayerRef.current) {
@@ -119,8 +120,8 @@ export function useNaturalConversation(options: UseNaturalConversationOptions = 
     if (!sessionIdRef.current) return
 
     try {
-      // Use voice-specific API for sending audio
-      await ApiClient.sendVoiceAudio(sessionIdRef.current, data, turnComplete)
+      // Use voice-specific API for sending audio with sample rate
+      await ApiClient.sendVoiceAudio(sessionIdRef.current, data, turnComplete, AUDIO_SAMPLE_RATE)
     } catch (error) {
       logApiError(error, `sendAudioMessage(${sessionIdRef.current})`)
       if (onError) {
@@ -224,24 +225,32 @@ export function useNaturalConversation(options: UseNaturalConversationOptions = 
           }
         }
 
-        // Handle audio playback
-        if (data.mime_type === 'audio/pcm' && data.data && pcmPlayerRef.current) {
+        // Handle audio playback - match backend VoiceStreamMessage format
+        if (data.type === 'audio' && data.data && pcmPlayerRef.current) {
           await pcmPlayerRef.current.playPCM(data.data)
         }
 
-        // Handle transcriptions
-        if (data.mime_type === 'text/plain' && data.message_type === 'transcription') {
+        // Handle transcriptions - match backend format
+        if (data.type === 'transcript' && data.text) {
           if (process.env.NODE_ENV === 'development') {
-            console.log('Transcription:', data.data)
+            console.log('Transcription:', data.text)
           }
           if (onTranscription) {
-            onTranscription(data.data)
+            onTranscription(data.text)
           }
         }
 
-        // Reset on turn complete
-        if (data.turn_complete === true && pcmPlayerRef.current) {
+        // Handle turn complete - match backend format
+        if (data.type === 'turn_complete' && pcmPlayerRef.current) {
           pcmPlayerRef.current.reset()
+        }
+        
+        // Handle errors
+        if (data.type === 'error' && data.error) {
+          console.error('Voice stream error:', data.error)
+          if (onError) {
+            onError(new Error(data.error))
+          }
         }
       } catch (err) {
         if (process.env.NODE_ENV === 'development') {

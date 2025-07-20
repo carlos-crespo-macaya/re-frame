@@ -244,7 +244,7 @@ export function createReconnectingClient<T extends object>(
   // Proxy all client methods and add reconnection logic
   return new Proxy(client, {
     get(target, prop) {
-      const value = target[prop];
+      const value = (target as any)[prop];
       
       if (typeof value === 'function') {
         return async (...args: unknown[]) => {
@@ -253,7 +253,7 @@ export function createReconnectingClient<T extends object>(
           } catch (error) {
             console.error(`Error calling ${String(prop)}:`, error);
             const newClient = await reconnect();
-            return newClient[prop](...args);
+            return (newClient as any)[prop](...args);
           }
         };
       }

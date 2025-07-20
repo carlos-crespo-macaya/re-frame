@@ -24,6 +24,7 @@ class AudioChunkRequest(BaseModel):
 
     data: str  # base64 encoded PCM audio
     timestamp: int
+    sample_rate: int = 48000  # Audio sample rate (default 48kHz)
 
 
 class VoiceControlRequest(BaseModel):
