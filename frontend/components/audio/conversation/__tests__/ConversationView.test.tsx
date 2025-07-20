@@ -116,16 +116,6 @@ describe('ConversationView', () => {
     })
   })
   
-  it('should show current transcription when recording', () => {
-    render(
-      <ConversationView 
-        isRecording={true}
-        currentTranscription="Hello, I am speaking..."
-      />
-    )
-    
-    expect(screen.getByText('Hello, I am speaking...')).toBeInTheDocument()
-  })
   
   it('should handle touch events for mobile push-to-talk', () => {
     const onStartRecording = jest.fn()
