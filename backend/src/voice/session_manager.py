@@ -41,7 +41,7 @@ class VoiceSession:
         logger.info(f"Initializing voice session {self.session_id}")
 
         # Create CBT assistant agent
-        cbt_agent = create_cbt_assistant(language_code=self.language)
+        cbt_agent = create_cbt_assistant(model="gemini-2.0-flash-live-001", language_code=self.language)
 
         # Create runner
         self.runner = InMemoryRunner(
