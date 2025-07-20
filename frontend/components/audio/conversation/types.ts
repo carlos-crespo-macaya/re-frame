@@ -10,14 +10,12 @@ export interface ConversationState {
   messages: ConversationMessage[]
   isRecording: boolean
   isAISpeaking: boolean
-  currentTranscription: string
 }
 
 export interface ConversationViewProps {
   messages?: ConversationMessage[]
   isRecording?: boolean
   isAISpeaking?: boolean
-  currentTranscription?: string
   onStartRecording?: () => void
   onStopRecording?: () => void
   onEndSession?: () => void

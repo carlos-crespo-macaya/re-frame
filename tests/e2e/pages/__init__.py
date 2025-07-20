@@ -1,1 +1,0 @@
-# Page Object Model classes for E2E tests
