@@ -171,6 +171,8 @@ Example: `[BE-141] Update CORS configuration for local API routes`
 - **Real-time**: Server-Sent Events (SSE) for streaming
 - **Testing**: Jest with React Testing Library + Playwright
 - **API Client**: Generated from OpenAPI schema using @hey-api/openapi-ts
+  - **STRICT RULE**: Always use the auto-generated API client to prevent contract mismatches
+  - Never manually implement API calls - use `/frontend/lib/api/generated-client.ts`
 
 ### Backend Tech Stack
 - **Framework**: FastAPI

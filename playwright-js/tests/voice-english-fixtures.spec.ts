@@ -3,11 +3,17 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 test.describe('English Voice Conversation with Pre-generated Audio', () => {
-  const fixturesDir = path.join(__dirname, 'fixtures', 'audio', 'english');
+  const fixturesDir = path.join(__dirname, '..', 'fixtures', 'audio', 'english');
   
-  test.beforeEach(async ({ context }) => {
-    // Grant microphone permissions
-    await context.grantPermissions(['microphone']);
+  test.beforeEach(async ({ context, page, browserName }) => {
+    // Only grant permissions for browsers that support it
+    if (browserName !== 'webkit') {
+      await context.grantPermissions(['microphone']);
+    }
+    
+    // Log console messages
+    page.on('console', msg => console.log('Browser console:', msg.type(), msg.text()));
+    page.on('pageerror', error => console.log('Page error:', error));
   });
 
   test('complete English CBT conversation using audio fixtures', async ({ page }) => {
@@ -35,9 +41,12 @@ test.describe('English Voice Conversation with Pre-generated Audio', () => {
       }
     ];
 
-    // Mock MediaRecorder to use our pre-generated audio files
-    await page.addInitScript((audioFixtures) => {
-      window.audioFixtures = audioFixtures;
+    // Load fixtures BEFORE addInitScript
+    const audioFixtures = await loadAudioFixtures(conversationFlow);
+
+    // Pass pre-loaded data to browser
+    await page.addInitScript((fixtures) => {
+      window.audioFixtures = fixtures;
       window.currentFixtureIndex = 0;
       
       // Override MediaRecorder
@@ -86,13 +95,20 @@ test.describe('English Voice Conversation with Pre-generated Audio', () => {
           }, 100);
         }
       };
-    }, await loadAudioFixtures(conversationFlow));
+    }, audioFixtures);
 
     await page.goto('/');
     
-    // Wait for initial AI greeting
-    await expect(page.getByTestId('assistant-message')).toBeVisible({ timeout: 15000 });
-    const greeting = await page.getByTestId('assistant-message').first().textContent();
+    // Wait for connection to establish
+    await page.waitForTimeout(3000);
+    
+    // Check if we're connected by looking for the input field
+    const thoughtInput = page.getByPlaceholder(/share.*thought|what happened/i);
+    await expect(thoughtInput).toBeVisible({ timeout: 10000 });
+    
+    // Wait for initial AI greeting by looking for AI role
+    await expect(page.getByText('AI:')).toBeVisible({ timeout: 15000 });
+    const greeting = await page.getByText('AI:').locator('..').textContent();
     console.log('AI Greeting:', greeting);
     
     // Process each phrase
@@ -120,12 +136,12 @@ test.describe('English Voice Conversation with Pre-generated Audio', () => {
       
       // Wait for AI response
       const expectedMessageCount = index + 2; // Initial greeting + responses
-      await expect(page.getByTestId('assistant-message')).toHaveCount(expectedMessageCount, { 
+      await expect(page.getByText('AI:')).toHaveCount(expectedMessageCount, { 
         timeout: 30000 
       });
       
       // Get and verify AI response
-      const aiResponse = await page.getByTestId('assistant-message').last().textContent();
+      const aiResponse = await page.getByText('AI:').last().locator('..').textContent();
       console.log('AI Response:', aiResponse?.substring(0, 100) + '...');
       
       // Check for expected keywords in response
@@ -137,7 +153,7 @@ test.describe('English Voice Conversation with Pre-generated Audio', () => {
       expect(hasExpectedContent).toBeTruthy();
       
       // Check if audio playback is available for AI response
-      const lastMessage = page.getByTestId('assistant-message').last();
+      const lastMessage = page.getByText('AI:').last().locator('..');
       const playButton = lastMessage.getByRole('button', { name: /play|audio/i });
       
       if (await playButton.count() > 0) {
@@ -158,7 +174,7 @@ test.describe('English Voice Conversation with Pre-generated Audio', () => {
     }
     
     // Verify complete conversation
-    const totalMessages = await page.getByTestId('message-bubble').count();
+    const totalMessages = await page.locator('[data-role]').count();
     expect(totalMessages).toBe(9); // 1 greeting + 4 user + 4 assistant
     
     console.log('\n✅ English conversation completed successfully!');
@@ -172,15 +188,19 @@ test.describe('English Voice Conversation with Pre-generated Audio', () => {
       expectedKeywords: ['sleep', 'worry', 'rest', 'night', 'anxiety']
     };
 
-    await page.addInitScript((audioFixture) => {
-      window.audioFixtures = [audioFixture];
+    // Load fixtures BEFORE addInitScript
+    const audioFixtures = await loadAudioFixtures([fixture]);
+
+    // Pass pre-loaded data to browser
+    await page.addInitScript((fixtures) => {
+      window.audioFixtures = fixtures;
       window.currentFixtureIndex = 0;
-    }, await loadAudioFixtures([fixture]));
+    }, audioFixtures);
 
     await page.goto('/');
     
     // Wait for greeting
-    await expect(page.getByTestId('assistant-message')).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText('AI:')).toBeVisible({ timeout: 15000 });
     
     // Send audio
     const recordButton = page.getByRole('button', { name: /start.*recording|microphone/i });
@@ -189,8 +209,8 @@ test.describe('English Voice Conversation with Pre-generated Audio', () => {
     await page.getByRole('button', { name: /stop.*recording|recording/i }).click();
     
     // Verify response addresses sleep/worry
-    await expect(page.getByTestId('assistant-message')).toHaveCount(2, { timeout: 30000 });
-    const response = await page.getByTestId('assistant-message').last().textContent();
+    await expect(page.getByText('AI:')).toHaveCount(2, { timeout: 30000 });
+    const response = await page.getByText('AI:').last().locator('..').textContent();
     
     const hasRelevantContent = fixture.expectedKeywords.some(keyword =>
       response?.toLowerCase().includes(keyword)
@@ -205,15 +225,19 @@ test.describe('English Voice Conversation with Pre-generated Audio', () => {
       transcription: "Hello, I'm feeling anxious about an upcoming presentation at work"
     };
 
-    await page.addInitScript((audioFixture) => {
-      window.audioFixtures = [audioFixture];
+    // Load fixtures BEFORE addInitScript
+    const audioFixtures = await loadAudioFixtures([voiceFixture]);
+
+    // Pass pre-loaded data to browser
+    await page.addInitScript((fixtures) => {
+      window.audioFixtures = fixtures;
       window.currentFixtureIndex = 0;
-    }, await loadAudioFixtures([voiceFixture]));
+    }, audioFixtures);
 
     await page.goto('/');
     
     // Wait for greeting
-    await expect(page.getByTestId('assistant-message')).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText('AI:')).toBeVisible({ timeout: 15000 });
     
     // Send voice message
     const recordButton = page.getByRole('button', { name: /start.*recording|microphone/i });
@@ -222,7 +246,7 @@ test.describe('English Voice Conversation with Pre-generated Audio', () => {
     await page.getByRole('button', { name: /stop.*recording|recording/i }).click();
     
     // Wait for response
-    await expect(page.getByTestId('assistant-message')).toHaveCount(2, { timeout: 30000 });
+    await expect(page.getByText('AI:')).toHaveCount(2, { timeout: 30000 });
     
     // Now use text input
     const thoughtInput = page.getByPlaceholder(/share.*thought/i);
@@ -233,17 +257,17 @@ test.describe('English Voice Conversation with Pre-generated Audio', () => {
     await expect(page.getByText("I prefer to type this")).toBeVisible();
     
     // Wait for another AI response
-    await expect(page.getByTestId('assistant-message')).toHaveCount(3, { timeout: 30000 });
+    await expect(page.getByText('AI:')).toHaveCount(3, { timeout: 30000 });
     
     // Verify conversation maintains context
-    const lastResponse = await page.getByTestId('assistant-message').last().textContent();
+    const lastResponse = await page.getByText('AI:').last().locator('..').textContent();
     expect(lastResponse?.toLowerCase()).toMatch(/(technique|strategy|practice|prepare)/);
   });
 });
 
 // Helper function to load audio fixtures as base64
 async function loadAudioFixtures(flows: Array<{audioFile: string, transcription: string}>) {
-  const fixturesDir = path.join(__dirname, 'fixtures', 'audio', 'english');
+  const fixturesDir = '/Users/carlos/workspace/re-frame/tests/e2e/fixtures/audio/english';
   const fixtures = [];
   
   for (const flow of flows) {

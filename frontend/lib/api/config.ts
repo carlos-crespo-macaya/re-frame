@@ -9,7 +9,11 @@ export const API_CONFIG = {
     send: (sessionId: string) => `/api/send/${sessionId}`,
     events: (sessionId: string) => `/api/events/${sessionId}`,
     pdf: (sessionId: string) => `/pdf/${sessionId}`,
-    health: '/api/health'
+    health: '/api/health',
+    // Voice endpoints
+    createVoiceSession: '/api/voice/sessions',
+    voiceStream: (sessionId: string) => `/api/voice/sessions/${sessionId}/stream`,
+    sendVoiceAudio: (sessionId: string) => `/api/voice/sessions/${sessionId}/audio`
   },
   defaultHeaders: {
     'Content-Type': 'application/json'
