@@ -1,5 +1,5 @@
 """
-Pytest configuration and fixtures for E2E tests.
+Pytest configuration for E2E tests using REAL backend services without mocks.
 """
 import asyncio
 import os
@@ -27,34 +27,37 @@ def docker_services() -> Generator[None, None, None]:
     """Start Docker Compose services for the test session."""
     print("Starting Docker Compose services...")
     
-    # Start services
+    # Ensure we're in the correct directory
+    test_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    # Start services with both compose files
     compose_command = [
         'docker-compose',
-        '-f', DOCKER_COMPOSE_FILE,
-        'up', '-d'
+        '-f', os.path.join(test_dir, '../../docker-compose.yml'),
+        '-f', os.path.join(test_dir, 'docker-compose.test.yml'),
+        'up', '-d', '--build'
     ]
     
-    # Add test override file if it exists
-    test_compose = '../../docker-compose.test.yml'
-    if os.path.exists(test_compose):
-        compose_command.extend(['-f', test_compose])
-    
-    subprocess.run(compose_command, check=True, cwd=os.path.dirname(__file__))
+    print(f"Running command: {' '.join(compose_command)}")
+    subprocess.run(compose_command, check=True)
     
     # Wait for services to be healthy
     if not wait_for_services():
+        # Show logs if services fail to start
+        subprocess.run(['docker-compose', 'logs'], cwd=test_dir)
         raise RuntimeError("Services did not become healthy in time")
     
     yield
     
-    # Teardown (optional - comment out to keep services running)
+    # Teardown
     if os.getenv('KEEP_SERVICES', 'false').lower() != 'true':
         print("Stopping Docker Compose services...")
         subprocess.run([
             'docker-compose',
-            '-f', DOCKER_COMPOSE_FILE,
-            'down'
-        ], check=True, cwd=os.path.dirname(__file__))
+            '-f', os.path.join(test_dir, '../../docker-compose.yml'),
+            '-f', os.path.join(test_dir, 'docker-compose.test.yml'),
+            'down', '-v'
+        ], check=True)
 
 
 @pytest.fixture(scope='function')
@@ -63,7 +66,12 @@ async def browser() -> AsyncGenerator[Browser, None]:
     async with async_playwright() as p:
         browser = await p.chromium.launch(
             headless=HEADLESS,
-            args=['--no-sandbox', '--disable-setuid-sandbox']
+            args=[
+                '--no-sandbox', 
+                '--disable-setuid-sandbox',
+                '--use-fake-ui-for-media-stream',
+                '--use-fake-device-for-media-stream',
+            ]
         )
         yield browser
         await browser.close()
@@ -71,12 +79,14 @@ async def browser() -> AsyncGenerator[Browser, None]:
 
 @pytest.fixture(scope='function')
 async def context(browser: Browser) -> AsyncGenerator[BrowserContext, None]:
-    """Create a new browser context for each test."""
+    """Create a new browser context for each test - NO MOCKS."""
     context = await browser.new_context(
         viewport={'width': 1280, 'height': 720},
         ignore_https_errors=True,
         locale='en-US',
         timezone_id='America/New_York',
+        # Grant permissions for voice tests
+        permissions=['microphone']
     )
     
     # Set up console message collection
@@ -88,10 +98,13 @@ async def context(browser: Browser) -> AsyncGenerator[BrowserContext, None]:
 
 @pytest.fixture(scope='function')
 async def page(context: BrowserContext) -> AsyncGenerator[Page, None]:
-    """Create a new page for each test."""
+    """Create a new page for each test - NO ROUTE MOCKS."""
     page = await context.new_page()
     
-    # Set up request/response logging for debugging
+    # Set up logging for debugging
+    # page.on('console', lambda msg: print(f'Console message'))
+    # page.on('pageerror', lambda error: print(f'Page error'))
+    
     if os.getenv('DEBUG_NETWORK', 'false').lower() == 'true':
         page.on('request', lambda req: print(f'Request: {req.method} {req.url}'))
         page.on('response', lambda res: print(f'Response: {res.status} {res.url}'))
@@ -102,9 +115,7 @@ async def page(context: BrowserContext) -> AsyncGenerator[Page, None]:
 
 @pytest.fixture
 def session_id(worker_id) -> str:
-    """Generate a unique session ID for each test, including worker ID for parallel execution."""
-    # worker_id is provided by pytest-xdist (e.g., 'gw0', 'gw1', etc.)
-    # If not running in parallel, worker_id is 'master'
+    """Generate a unique session ID for each test."""
     return f"test-session-{worker_id}-{uuid.uuid4().hex[:8]}"
 
 
@@ -114,12 +125,12 @@ async def authenticated_page(page: Page) -> Page:
     await page.goto(FRONTEND_URL)
     # Don't wait for networkidle as SSE keeps connection open
     await page.wait_for_load_state('domcontentloaded')
-    # Wait a bit for React to render
+    # Wait for React to render
     await page.wait_for_timeout(2000)
     return page
 
 
-def wait_for_services(timeout: int = 60) -> bool:
+def wait_for_services(timeout: int = 120) -> bool:
     """Wait for Docker services to be healthy."""
     import requests
     
@@ -128,39 +139,44 @@ def wait_for_services(timeout: int = 60) -> bool:
     while time.time() - start_time < timeout:
         try:
             # Check backend health
-            backend_response = requests.get(f"{BACKEND_URL}/health", timeout=2)
-            if backend_response.status_code != 200:
-                time.sleep(1)
-                continue
-            
-            # Check frontend (Next.js might not have a health endpoint)
-            frontend_response = requests.get(FRONTEND_URL, timeout=2)
-            if frontend_response.status_code == 200:
-                print("Services are healthy!")
-                return True
+            backend_response = requests.get(f"{BACKEND_URL}/health", timeout=5)
+            backend_data = backend_response.json()
+            if backend_response.status_code == 200 and backend_data.get("status") == "healthy":
+                print(f"Backend healthy: {backend_data}")
                 
-        except requests.exceptions.RequestException:
-            pass
+                # Check frontend
+                frontend_response = requests.get(FRONTEND_URL, timeout=5)
+                if frontend_response.status_code == 200:
+                    print("Frontend is accessible!")
+                    
+                    # Give services a bit more time to fully initialize
+                    time.sleep(5)
+                    return True
+                    
+        except requests.exceptions.RequestException as e:
+            print(f"Waiting for services... {e}")
         
-        time.sleep(1)
+        time.sleep(2)
     
     return False
 
 
 @pytest.fixture
-async def backend_ready(page: Page) -> None:
+async def wait_for_backend(page: Page) -> None:
     """Ensure backend is ready before test execution."""
     max_retries = 30
     
     for i in range(max_retries):
         try:
             response = await page.request.get(f"{BACKEND_URL}/health")
-            if response.status == 200:
+            data = await response.json()
+            if response.status == 200 and data.get("status") == "healthy":
+                print(f"Backend ready: {data}")
                 return
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"Backend not ready yet: {e}")
         
-        await asyncio.sleep(1)
+        await asyncio.sleep(2)
     
     raise RuntimeError("Backend did not become ready in time")
 
@@ -168,21 +184,15 @@ async def backend_ready(page: Page) -> None:
 # Pytest hooks
 def pytest_configure(config):
     """Configure pytest with custom markers."""
-    config.addinivalue_line("markers", "smoke: mark test as smoke test")
-    config.addinivalue_line("markers", "text_mode: mark test as text mode test")
-    config.addinivalue_line("markers", "voice_mode: mark test as voice mode test")
+    config.addinivalue_line("markers", "real_backend: test uses real backend without mocks")
+    config.addinivalue_line("markers", "text_workflow: test for text conversation workflow")
+    config.addinivalue_line("markers", "voice_workflow: test for voice conversation workflow")
     config.addinivalue_line("markers", "integration: mark test as integration test")
-    config.addinivalue_line("markers", "slow: mark test as slow")
 
 
 def pytest_collection_modifyitems(config, items):
-    """Modify test collection to add markers based on test names."""
+    """Modify test collection to add markers."""
     for item in items:
-        # Add integration marker to all tests by default
+        # Add real_backend marker to all tests
+        item.add_marker(pytest.mark.real_backend)
         item.add_marker(pytest.mark.integration)
-        
-        # Add mode-specific markers based on test name
-        if 'voice' in item.nodeid:
-            item.add_marker(pytest.mark.voice_mode)
-        elif 'text' in item.nodeid:
-            item.add_marker(pytest.mark.text_mode)

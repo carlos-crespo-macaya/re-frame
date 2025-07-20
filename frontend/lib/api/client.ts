@@ -218,13 +218,15 @@ export class ApiClient {
   static async sendVoiceAudio(
     sessionId: string,
     audioData: string,
-    turnComplete: boolean = false
+    turnComplete: boolean = false,
+    sampleRate: number = 48000
   ): Promise<void> {
     try {
-      // Send audio data with timestamp
+      // Send audio data with timestamp and sample rate
       await generatedApi.voice.sendAudio(sessionId, {
         data: audioData,
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        sample_rate: sampleRate
       })
       
       // If turn complete, send control command
