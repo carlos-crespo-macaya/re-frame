@@ -52,12 +52,12 @@ export function useSSEClient(options: UseSSEClientOptions = {}) {
   
   // Memoize SSE options to prevent unnecessary re-renders
   // Extract individual properties to ensure stable dependencies
-  const { baseUrl, reconnectDelay, maxReconnectAttempts } = sseOptions;
+  const { baseUrl, reconnectInterval, maxReconnectAttempts } = sseOptions;
   const memoizedSseOptions = useMemo(() => ({
     baseUrl,
-    reconnectDelay,
+    reconnectInterval,
     maxReconnectAttempts
-  }), [baseUrl, reconnectDelay, maxReconnectAttempts]);
+  }), [baseUrl, reconnectInterval, maxReconnectAttempts]);
   
   // Initialize SSE client
   useEffect(() => {

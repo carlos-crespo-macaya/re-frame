@@ -54,8 +54,8 @@ async def send_audio_chunk(session_id: str, audio: AudioChunkRequest):
         # Decode base64 audio
         audio_data = base64.b64decode(audio.data)
 
-        # Send to ADK
-        await session.send_audio(audio_data)
+        # Send to ADK with sample rate
+        await session.send_audio(audio_data, audio.sample_rate)
 
         return {"status": "received"}
     except Exception as e:
