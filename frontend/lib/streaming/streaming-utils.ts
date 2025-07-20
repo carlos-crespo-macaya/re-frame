@@ -8,7 +8,7 @@ import { ClientMessage, ServerMessage } from './message-protocol';
  * Convert text to base64-encoded PCM audio data
  * This is a placeholder - real implementation would use text-to-speech
  */
-export function textToPCM(text: string, sampleRate: number = 16000): string {
+export function textToPCM(text: string, _sampleRate: number = 16000): string {
   // Placeholder implementation
   console.warn('textToPCM is not yet implemented');
   return '';
@@ -18,7 +18,7 @@ export function textToPCM(text: string, sampleRate: number = 16000): string {
  * Convert base64-encoded PCM audio data to text
  * This is a placeholder - real implementation would use speech-to-text
  */
-export function pcmToText(pcmData: string): Promise<string> {
+export function pcmToText(_pcmData: string): Promise<string> {
   // Placeholder implementation
   console.warn('pcmToText is not yet implemented');
   return Promise.resolve('');
@@ -208,14 +208,14 @@ export class RateLimiter {
 /**
  * Create a reconnecting SSE client wrapper
  */
-export function createReconnectingClient(
-  clientFactory: () => any,
+export function createReconnectingClient<T extends object>(
+  clientFactory: () => T,
   options: {
     maxAttempts?: number;
     backoffMs?: number;
     onReconnect?: (attempt: number) => void;
   } = {}
-): any {
+): T {
   const {
     maxAttempts = 5,
     backoffMs = 1000,
@@ -244,21 +244,21 @@ export function createReconnectingClient(
   // Proxy all client methods and add reconnection logic
   return new Proxy(client, {
     get(target, prop) {
-      const value = target[prop];
+      const value = (target as any)[prop];
       
       if (typeof value === 'function') {
-        return async (...args: any[]) => {
+        return async (...args: unknown[]) => {
           try {
             return await value.apply(target, args);
           } catch (error) {
             console.error(`Error calling ${String(prop)}:`, error);
             const newClient = await reconnect();
-            return newClient[prop](...args);
+            return (newClient as any)[prop](...args);
           }
         };
       }
       
       return value;
     }
-  });
+  }) as T;
 }

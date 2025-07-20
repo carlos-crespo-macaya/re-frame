@@ -72,7 +72,7 @@ export default defineConfig({
       timeout: 120 * 1000,
     },
     {
-      command: 'cd ../backend && python -m uvicorn src.main:app --reload --port 8000',
+      command: 'cd ../backend && uv run python -m uvicorn src.main:app --reload --port 8000',
       url: 'http://localhost:8000',
       reuseExistingServer: !process.env.CI,
       timeout: 120 * 1000,

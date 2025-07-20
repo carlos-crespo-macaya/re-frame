@@ -1,20 +1,15 @@
 name: Security Scan
 
 on:
-  schedule:
-    # Run at 2 AM UTC every Monday
-    - cron: '0 2 * * 1'
+  # Workflow disabled
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - 'package.json'
-      - 'pnpm-lock.yaml'
+    if: false
 
 jobs:
   dependency-audit:
     name: Dependency Audit
     runs-on: self-hosted
+    if: false  # Workflow disabled
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

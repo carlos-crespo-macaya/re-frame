@@ -1,0 +1,10 @@
+{
+  "id": "es-insight",
+  "text": "Tienes razón, creo que estoy asumiendo lo peor sin evidencia real",
+  "description": "Reconocimiento de distorsión cognitiva",
+  "voice": {
+    "languageCode": "es-ES",
+    "name": "es-ES-Polyglot-1"
+  },
+  "generated": "2025-07-19T18:31:18.093Z"
+}

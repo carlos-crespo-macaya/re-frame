@@ -78,3 +78,9 @@ Thumbs.db
 *.bak
 .env.local
 .env.*.local
+
+docs/HANDOFF.md
+errors.txt
+errors.md
+error.txt
+error.md

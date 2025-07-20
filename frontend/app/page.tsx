@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import Link from 'next/link'
 import ThoughtInputForm from '@/components/forms/ThoughtInputForm'
 import { FrameworkBadge, LanguageSelector } from '@/components/ui'
@@ -12,7 +12,7 @@ import { appLogger } from '@/lib/logger'
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false)
-  const [response, setResponse] = useState<ReframeResponse | null>(null)
+  const [responses, setResponses] = useState<ReframeResponse[]>([])
   const [selectedLanguage, setSelectedLanguage] = useState('en-US')
   const [useAudioMode, setUseAudioMode] = useState(false)
   const [isConnecting, setIsConnecting] = useState(false)
@@ -21,11 +21,14 @@ export default function Home() {
   const previousAudioModeRef = useRef(useAudioMode)
   const connectionAttemptRef = useRef<number>(0)
   
-  // Initialize SSE client (text mode only)
-  const sseClient = useSSEClient({
+  // Memoize SSE client options to prevent recreating the client on every render
+  const sseOptions = useMemo(() => ({
     baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
     autoConnect: false,
-  })
+  }), [])
+  
+  // Initialize SSE client (text mode only)
+  const sseClient = useSSEClient(sseOptions)
   
   // Extract specific values to avoid object identity issues in useEffect
   const { isConnected, messages, connect, disconnect, sendText, error } = sseClient
@@ -41,7 +44,7 @@ export default function Home() {
     
     const performConnect = async () => {
       try {
-        if (mounted && !useAudioMode && !isConnecting) {
+        if (mounted && !useAudioMode) {
           // Only reconnect if language changed or first connection
           const shouldConnect = !hasConnectedRef.current || 
                                previousLanguageRef.current !== selectedLanguage ||
@@ -53,16 +56,8 @@ export default function Home() {
               attempt: currentAttempt,
               language: selectedLanguage,
               audioMode: useAudioMode,
-              isConnected,
               shouldConnect
             })
-            
-            // Disconnect any existing connection first
-            if (isConnected) {
-              appLogger.info('Disconnecting existing connection')
-              disconnect()
-              await new Promise(resolve => setTimeout(resolve, 100))
-            }
             
             // Only proceed if this is still the latest connection attempt
             if (currentAttempt === connectionAttemptRef.current && mounted) {
@@ -90,7 +85,7 @@ export default function Home() {
         // Retry connection after delay if still mounted
         if (mounted && currentAttempt === connectionAttemptRef.current) {
           setTimeout(() => {
-            if (mounted && !isConnected && !useAudioMode) {
+            if (mounted && !useAudioMode) {
               performConnect()
             }
           }, 2000)
@@ -110,39 +105,39 @@ export default function Home() {
       }
     } else if (useAudioMode) {
       // Disconnect text mode when switching to audio
-      if (isConnected) {
-        appLogger.info('Disconnecting text mode for audio mode switch')
-        disconnect()
-        hasConnectedRef.current = false
-      }
+      appLogger.info('Disconnecting text mode for audio mode switch')
+      disconnect()
+      hasConnectedRef.current = false
       previousAudioModeRef.current = useAudioMode
     }
     
     return () => {
       mounted = false
-      if (isConnected) {
-        disconnect()
-      }
+      // Always try to disconnect on unmount
+      disconnect()
     }
-  }, [selectedLanguage, useAudioMode, isConnected, isConnecting, connect, disconnect])
+  }, [selectedLanguage, useAudioMode, connect, disconnect])
   
   // Track the start of current response
   const [responseStartIndex, setResponseStartIndex] = useState(0)
   
-  // Process SSE messages
-  useEffect(() => {
-    if (!isConnected) return
-    
-    // Get all messages and filter for text responses
-    const allMessages = messages
-    
-    // Debug logging
-    if (allMessages.length > 0 && process.env.NODE_ENV === 'development') {
-      console.log('All messages:', allMessages)
-    }
+  // Get the latest response from messages
+  const latestResponse = useMemo(() => {
+    if (!isConnected || messages.length === 0) return null
     
     // Only process messages from the current response
-    const currentMessages = allMessages.slice(responseStartIndex)
+    const currentMessages = messages.slice(responseStartIndex)
+    
+    // Debug logging for messages
+    if (currentMessages.length > 0 && process.env.NODE_ENV === 'development') {
+      console.log('Current messages:', currentMessages.map(msg => ({
+        mime_type: msg.mime_type,
+        has_data: !!msg.data,
+        turn_complete: msg.turn_complete,
+        interrupted: msg.interrupted
+      })))
+    }
+    
     const textMessages = currentMessages.filter(msg => 
       msg.mime_type === 'text/plain' && msg.data
     )
@@ -150,50 +145,66 @@ export default function Home() {
     // Check for turn completion in current messages
     const turnComplete = currentMessages.some(msg => msg.turn_complete === true)
     
-    // Update response as messages arrive
+    if (process.env.NODE_ENV === 'development' && turnComplete) {
+      console.log('🎯 Turn complete found in messages!')
+    }
+    
     if (textMessages.length > 0 || turnComplete) {
       // Combine text messages from current response only
       const fullResponse = textMessages.map(msg => msg.data).join('')
       
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Text messages found:', textMessages.length, 'Full response:', fullResponse)
-      }
-      
-      // Only set response if we have content OR turn is complete
-      if (fullResponse || turnComplete) {
-        // Create response from backend message
-        setResponse({
-          success: true,
-          response: fullResponse,
-          frameworks_used: ['CBT'],
-          transparency: {
-            agents_used: ['cbt_assistant'],
-            techniques_applied: ['Cognitive restructuring'],
-            framework_details: {
-              CBT: {
-                techniques: ['Cognitive restructuring'],
-                confidence: 0.85,
-                patterns_addressed: []
-              }
-            },
-            selection_rationale: 'CBT framework applied based on the thought pattern.'
-          }
-        })
+      return {
+        success: true,
+        response: fullResponse,
+        frameworks_used: ['CBT'],
+        transparency: {
+          agents_used: ['cbt_assistant'],
+          techniques_applied: ['Cognitive restructuring'],
+          framework_details: {
+            CBT: {
+              techniques: ['Cognitive restructuring'],
+              confidence: 0.85,
+              patterns_addressed: []
+            }
+          },
+          selection_rationale: 'CBT framework applied based on the thought pattern.'
+        },
+        turnComplete
       }
     }
     
-    // Clear loading state when turn is complete
-    if (turnComplete && isLoading) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Turn complete, clearing loading state')
+    return null
+  }, [messages, responseStartIndex, isConnected])
+  
+  // Update response state when latest response changes
+  useEffect(() => {
+    if (latestResponse) {
+      console.log('Latest response:', latestResponse);
+      // Append new response to the array (idempotent to handle StrictMode)
+      setResponses(prev => {
+        // Check if this exact response already exists (handles StrictMode double-render)
+        const isDuplicate = prev.some(r => 
+          r.response === latestResponse.response && 
+          r.frameworks_used.join(',') === latestResponse.frameworks_used.join(',')
+        );
+        
+        if (!isDuplicate) {
+          return [...prev, latestResponse];
+        }
+        return prev;
+      })
+      
+      // Clear loading state when turn is complete
+      if (latestResponse.turnComplete) {
+        console.log('🚀 Turn complete detected, clearing loading state');
+        setIsLoading(false)
       }
-      setIsLoading(false)
     }
-  }, [messages, isConnected, isLoading, responseStartIndex])
+  }, [latestResponse])
 
   const handleSubmit = async (thought: string) => {
     setIsLoading(true)
-    setResponse(null)
+    // Don't clear responses - we want to maintain conversation history
     
     // Mark where the new response will start
     setResponseStartIndex(messages.length)
@@ -210,7 +221,7 @@ export default function Home() {
   }
 
   const handleClear = () => {
-    setResponse(null)
+    setResponses([])
   }
 
   return (
@@ -320,30 +331,34 @@ export default function Home() {
                 </>
               )}
 
-                {response && !useAudioMode && (
-                  <div className="mt-8 p-6 bg-[#2a2a2a] border border-[#3a3a3a] rounded-xl animate-fade-in">
-                    {/* Framework badges */}
-                    {response.frameworks_used.length > 0 && (
-                      <div className="flex gap-2 mb-4">
-                        {response.frameworks_used.map(fw => (
-                          <FrameworkBadge key={fw} framework={fw as Framework} />
-                        ))}
+                {responses.length > 0 && !useAudioMode && (
+                  <div className="mt-8 space-y-4">
+                    {responses.map((response, index) => (
+                      <div key={index} className="p-6 bg-[#2a2a2a] border border-[#3a3a3a] rounded-xl animate-fade-in">
+                        {/* Framework badges */}
+                        {response.frameworks_used.length > 0 && (
+                          <div className="flex gap-2 mb-4">
+                            {response.frameworks_used.map(fw => (
+                              <FrameworkBadge key={fw} framework={fw as Framework} />
+                            ))}
+                          </div>
+                        )}
+                        
+                        {/* Main response with markdown */}
+                        <div className="text-sm text-[#EDEDED] leading-relaxed prose prose-sm prose-invert max-w-none">
+                          <ReactMarkdown
+                            components={{
+                              p: ({children}) => <p className="mb-4">{children}</p>,
+                              ul: ({children}) => <ul className="list-disc list-inside mb-4 space-y-2">{children}</ul>,
+                              li: ({children}) => <li className="ml-4">{children}</li>,
+                              strong: ({children}) => <strong className="font-semibold text-[#FFFFFF]">{children}</strong>,
+                            }}
+                          >
+                            {response.response}
+                          </ReactMarkdown>
+                        </div>
                       </div>
-                    )}
-                    
-                    {/* Main response with markdown */}
-                    <div className="text-sm text-[#EDEDED] leading-relaxed prose prose-sm prose-invert max-w-none">
-                      <ReactMarkdown
-                        components={{
-                          p: ({children}) => <p className="mb-4">{children}</p>,
-                          ul: ({children}) => <ul className="list-disc list-inside mb-4 space-y-2">{children}</ul>,
-                          li: ({children}) => <li className="ml-4">{children}</li>,
-                          strong: ({children}) => <strong className="font-semibold text-[#FFFFFF]">{children}</strong>,
-                        }}
-                      >
-                        {response.response}
-                      </ReactMarkdown>
-                    </div>
+                    ))}
                   </div>
                 )}
 

@@ -11,6 +11,8 @@ import type {
   ApiRequestConfig
 } from './types'
 import { apiLogger } from '../logger'
+import { generatedApi } from './generated-client'
+import type { CreateVoiceSessionRequest } from './generated-client'
 
 /**
  * Main API client class
@@ -80,7 +82,7 @@ export class ApiClient {
     if (response.status === 204 || response.headers.get('content-length') === '0') {
       // For void returns, we can safely return undefined
       // The caller should expect void for these responses
-      return undefined as any
+      return undefined as unknown as T
     }
 
     const contentType = response.headers.get('content-type')
@@ -194,6 +196,71 @@ export class ApiClient {
     } catch {
       return false
     }
+  }
+
+  /**
+   * Create a voice session
+   */
+  static async createVoiceSession(language: string = 'en-US'): Promise<{ session_id: string; status: string; language: string }> {
+    try {
+      const request: CreateVoiceSessionRequest = { language }
+      const response = await generatedApi.voice.createSession(request)
+      return response
+    } catch (error) {
+      logApiError(error, 'createVoiceSession')
+      throw error
+    }
+  }
+
+  /**
+   * Send audio chunk to voice session
+   */
+  static async sendVoiceAudio(
+    sessionId: string,
+    audioData: string,
+    turnComplete: boolean = false,
+    sampleRate: number = 48000
+  ): Promise<void> {
+    try {
+      // Send audio data with timestamp and sample rate
+      await generatedApi.voice.sendAudio(sessionId, {
+        data: audioData,
+        timestamp: Date.now(),
+        sample_rate: sampleRate
+      })
+      
+      // If turn complete, send control command
+      if (turnComplete) {
+        await generatedApi.voice.sendControl(sessionId, {
+          action: 'end_turn'
+        })
+      }
+    } catch (error) {
+      logApiError(error, `sendVoiceAudio(${sessionId})`)
+      throw error
+    }
+  }
+
+  /**
+   * Create voice EventSource for SSE streaming
+   */
+  static createVoiceEventSource(sessionId: string): EventSource {
+    const url = `${API_CONFIG.baseUrl}${generatedApi.voice.getStreamEndpoint(sessionId)}`
+    
+    apiLogger.info('SSE connection start', { url })
+    
+    const eventSource = new EventSource(url)
+    
+    // Add basic event listeners for debugging
+    eventSource.addEventListener('open', () => {
+      apiLogger.info('SSE connection opened', { url })
+    })
+    
+    eventSource.addEventListener('error', (error) => {
+      apiLogger.error('SSE connection error', { url }, new Error(`SSE connection failed: ${error.type}`))
+    })
+    
+    return eventSource
   }
 }
 

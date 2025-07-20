@@ -102,7 +102,7 @@ export class AudioDebugger {
     try {
       const result = await navigator.permissions.query({ name: 'microphone' as PermissionName })
       return result.state
-    } catch (error) {
+    } catch {
       // Fallback: try to get user media
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
@@ -317,14 +317,14 @@ export const audioDebugConsole = {
   /**
    * Log with audio debug prefix
    */
-  log(...args: any[]) {
+  log(...args: unknown[]) {
     console.log('[Audio Debug]', ...args)
   },
   
   /**
    * Error with audio debug prefix
    */
-  error(...args: any[]) {
+  error(...args: unknown[]) {
     console.error('[Audio Debug]', ...args)
   },
   
@@ -333,10 +333,10 @@ export const audioDebugConsole = {
    */
   createLogger(prefix: string) {
     return {
-      log: (...args: any[]) => console.log(`[Audio Debug: ${prefix}]`, ...args),
-      error: (...args: any[]) => console.error(`[Audio Debug: ${prefix}]`, ...args),
-      warn: (...args: any[]) => console.warn(`[Audio Debug: ${prefix}]`, ...args),
-      info: (...args: any[]) => console.info(`[Audio Debug: ${prefix}]`, ...args)
+      log: (...args: unknown[]) => console.log(`[Audio Debug: ${prefix}]`, ...args),
+      error: (...args: unknown[]) => console.error(`[Audio Debug: ${prefix}]`, ...args),
+      warn: (...args: unknown[]) => console.warn(`[Audio Debug: ${prefix}]`, ...args),
+      info: (...args: unknown[]) => console.info(`[Audio Debug: ${prefix}]`, ...args)
     }
   }
 }

@@ -57,10 +57,17 @@ pnpm run lint && pnpm run typecheck && pnpm run test
 - Show loading states during streaming
 
 ### API Integration
+- **STRICT RULE: Always use the auto-generated API client from `/lib/api/generated-client.ts`**
+- **NEVER manually implement API calls - this prevents contract mismatches**
 - Type-safe client generated from OpenAPI schema
 - Run `pnpm run generate:api` after backend API changes
 - API client exports from `/lib/api/`
 - Always handle errors with user-friendly messages
+- When adding new endpoints:
+  1. Update backend first
+  2. Run `pnpm run generate:api` to regenerate types
+  3. Add wrapper methods to `generated-client.ts`
+  4. Use the wrapper methods in `client.ts` or directly in components
 
 ### Testing Approach
 - Unit tests with Jest and React Testing Library
