@@ -208,7 +208,7 @@ export class RateLimiter {
 /**
  * Create a reconnecting SSE client wrapper
  */
-export function createReconnectingClient<T>(
+export function createReconnectingClient<T extends object>(
   clientFactory: () => T,
   options: {
     maxAttempts?: number;
@@ -260,5 +260,5 @@ export function createReconnectingClient<T>(
       
       return value;
     }
-  });
+  }) as T;
 }

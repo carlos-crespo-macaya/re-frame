@@ -12,7 +12,7 @@ import { appLogger } from '@/lib/logger'
 
 export default function Home() {
   const [isLoading, setIsLoading] = useState(false)
-  const [response, setResponse] = useState<ReframeResponse | null>(null)
+  const [responses, setResponses] = useState<ReframeResponse[]>([])
   const [selectedLanguage, setSelectedLanguage] = useState('en-US')
   const [useAudioMode, setUseAudioMode] = useState(false)
   const [isConnecting, setIsConnecting] = useState(false)
@@ -127,6 +127,17 @@ export default function Home() {
     
     // Only process messages from the current response
     const currentMessages = messages.slice(responseStartIndex)
+    
+    // Debug logging for messages
+    if (currentMessages.length > 0 && process.env.NODE_ENV === 'development') {
+      console.log('Current messages:', currentMessages.map(msg => ({
+        mime_type: msg.mime_type,
+        has_data: !!msg.data,
+        turn_complete: msg.turn_complete,
+        interrupted: msg.interrupted
+      })))
+    }
+    
     const textMessages = currentMessages.filter(msg => 
       msg.mime_type === 'text/plain' && msg.data
     )
@@ -134,29 +145,31 @@ export default function Home() {
     // Check for turn completion in current messages
     const turnComplete = currentMessages.some(msg => msg.turn_complete === true)
     
+    if (process.env.NODE_ENV === 'development' && turnComplete) {
+      console.log('🎯 Turn complete found in messages!')
+    }
+    
     if (textMessages.length > 0 || turnComplete) {
       // Combine text messages from current response only
       const fullResponse = textMessages.map(msg => msg.data).join('')
       
-      if (fullResponse || turnComplete) {
-        return {
-          success: true,
-          response: fullResponse,
-          frameworks_used: ['CBT'],
-          transparency: {
-            agents_used: ['cbt_assistant'],
-            techniques_applied: ['Cognitive restructuring'],
-            framework_details: {
-              CBT: {
-                techniques: ['Cognitive restructuring'],
-                confidence: 0.85,
-                patterns_addressed: []
-              }
-            },
-            selection_rationale: 'CBT framework applied based on the thought pattern.'
+      return {
+        success: true,
+        response: fullResponse,
+        frameworks_used: ['CBT'],
+        transparency: {
+          agents_used: ['cbt_assistant'],
+          techniques_applied: ['Cognitive restructuring'],
+          framework_details: {
+            CBT: {
+              techniques: ['Cognitive restructuring'],
+              confidence: 0.85,
+              patterns_addressed: []
+            }
           },
-          turnComplete
-        }
+          selection_rationale: 'CBT framework applied based on the thought pattern.'
+        },
+        turnComplete
       }
     }
     
@@ -166,21 +179,21 @@ export default function Home() {
   // Update response state when latest response changes
   useEffect(() => {
     if (latestResponse) {
-      setResponse(latestResponse)
+      console.log('Latest response:', latestResponse);
+      // Append new response to the array
+      setResponses(prev => [...prev, latestResponse])
       
       // Clear loading state when turn is complete
-      if (latestResponse.turnComplete && isLoading) {
-        if (process.env.NODE_ENV === 'development') {
-          console.log('Turn complete, clearing loading state')
-        }
+      if (latestResponse.turnComplete) {
+        console.log('🚀 Turn complete detected, clearing loading state');
         setIsLoading(false)
       }
     }
-  }, [latestResponse, isLoading])
+  }, [latestResponse])
 
   const handleSubmit = async (thought: string) => {
     setIsLoading(true)
-    setResponse(null)
+    // Don't clear responses - we want to maintain conversation history
     
     // Mark where the new response will start
     setResponseStartIndex(messages.length)
@@ -197,7 +210,7 @@ export default function Home() {
   }
 
   const handleClear = () => {
-    setResponse(null)
+    setResponses([])
   }
 
   return (
@@ -307,30 +320,34 @@ export default function Home() {
                 </>
               )}
 
-                {response && !useAudioMode && (
-                  <div className="mt-8 p-6 bg-[#2a2a2a] border border-[#3a3a3a] rounded-xl animate-fade-in">
-                    {/* Framework badges */}
-                    {response.frameworks_used.length > 0 && (
-                      <div className="flex gap-2 mb-4">
-                        {response.frameworks_used.map(fw => (
-                          <FrameworkBadge key={fw} framework={fw as Framework} />
-                        ))}
+                {responses.length > 0 && !useAudioMode && (
+                  <div className="mt-8 space-y-4">
+                    {responses.map((response, index) => (
+                      <div key={index} className="p-6 bg-[#2a2a2a] border border-[#3a3a3a] rounded-xl animate-fade-in">
+                        {/* Framework badges */}
+                        {response.frameworks_used.length > 0 && (
+                          <div className="flex gap-2 mb-4">
+                            {response.frameworks_used.map(fw => (
+                              <FrameworkBadge key={fw} framework={fw as Framework} />
+                            ))}
+                          </div>
+                        )}
+                        
+                        {/* Main response with markdown */}
+                        <div className="text-sm text-[#EDEDED] leading-relaxed prose prose-sm prose-invert max-w-none">
+                          <ReactMarkdown
+                            components={{
+                              p: ({children}) => <p className="mb-4">{children}</p>,
+                              ul: ({children}) => <ul className="list-disc list-inside mb-4 space-y-2">{children}</ul>,
+                              li: ({children}) => <li className="ml-4">{children}</li>,
+                              strong: ({children}) => <strong className="font-semibold text-[#FFFFFF]">{children}</strong>,
+                            }}
+                          >
+                            {response.response}
+                          </ReactMarkdown>
+                        </div>
                       </div>
-                    )}
-                    
-                    {/* Main response with markdown */}
-                    <div className="text-sm text-[#EDEDED] leading-relaxed prose prose-sm prose-invert max-w-none">
-                      <ReactMarkdown
-                        components={{
-                          p: ({children}) => <p className="mb-4">{children}</p>,
-                          ul: ({children}) => <ul className="list-disc list-inside mb-4 space-y-2">{children}</ul>,
-                          li: ({children}) => <li className="ml-4">{children}</li>,
-                          strong: ({children}) => <strong className="font-semibold text-[#FFFFFF]">{children}</strong>,
-                        }}
-                      >
-                        {response.response}
-                      </ReactMarkdown>
-                    </div>
+                    ))}
                   </div>
                 )}
 

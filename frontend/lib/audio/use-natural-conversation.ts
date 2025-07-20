@@ -1,9 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { PCMPlayer } from './pcm-player'
 import { arrayBufferToBase64 } from './audio-utils'
-import { ApiClient, logApiError, EventSourceParams } from '../api'
-import { generateAudioSessionId } from '../utils/session'
-import { createClientMessage } from '../streaming/message-protocol'
+import { ApiClient, logApiError } from '../api'
 
 // Audio configuration - aligned with backend expectation
 const AUDIO_SAMPLE_RATE = 16000
@@ -121,15 +119,8 @@ export function useNaturalConversation(options: UseNaturalConversationOptions = 
     if (!sessionIdRef.current) return
 
     try {
-      const message = createClientMessage({
-        mimeType: 'audio/pcm',
-        data,
-        messageType: 'thought',
-        sessionId: sessionIdRef.current,
-        turnComplete
-      })
-
-      await ApiClient.sendMessage(sessionIdRef.current, message)
+      // Use voice-specific API for sending audio
+      await ApiClient.sendVoiceAudio(sessionIdRef.current, data, turnComplete)
     } catch (error) {
       logApiError(error, `sendAudioMessage(${sessionIdRef.current})`)
       if (onError) {
@@ -208,14 +199,10 @@ export function useNaturalConversation(options: UseNaturalConversationOptions = 
     }
   }, [sendTurnComplete, sendAudioMessage])
 
-  // Setup SSE connection
+  // Setup voice SSE connection
   const setupSSEConnection = useCallback((sessionId: string) => {
-    const params: EventSourceParams = {
-      is_audio: true,
-      language
-    }
-    
-    const eventSource = ApiClient.createEventSource(sessionId, params)
+    // For voice mode, use the voice-specific EventSource
+    const eventSource = ApiClient.createVoiceEventSource(sessionId)
 
     eventSource.onopen = () => {
       if (process.env.NODE_ENV === 'development') {
@@ -370,12 +357,12 @@ export function useNaturalConversation(options: UseNaturalConversationOptions = 
       const testStream = await navigator.mediaDevices.getUserMedia({ audio: true })
       testStream.getTracks().forEach(track => track.stop())
 
-      // Generate session ID using centralized utility
-      const sessionId = generateAudioSessionId()
-      sessionIdRef.current = sessionId
+      // Create voice session via API
+      const voiceSession = await ApiClient.createVoiceSession(language)
+      sessionIdRef.current = voiceSession.session_id
 
-      // Setup SSE connection
-      setupSSEConnection(sessionId)
+      // Setup SSE connection with the voice session
+      setupSSEConnection(voiceSession.session_id)
 
       // Setup audio recording
       await setupAudioRecording()
