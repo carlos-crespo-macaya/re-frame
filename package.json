@@ -27,7 +27,7 @@
     "e2e:install": "cd playwright-js && npm run install"
   },
   "devDependencies": {
-    "concurrently": "^7.6.0"
+    "concurrently": "^9.2.0"
   },
   "repository": {
     "type": "git",
