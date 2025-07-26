@@ -71,6 +71,36 @@ class PhaseManager:
         return target_phase in PHASE_TRANSITIONS.get(current_phase, [])
 
     @staticmethod
+    def transition_to_phase(context: dict, target_phase: str) -> dict:
+        """
+        Transition to a new phase while preserving context.
+
+        Args:
+            context: The current context dictionary
+            target_phase: The target phase name
+
+        Returns:
+            Updated context with new phase
+        """
+        # Create a copy of the context to avoid mutation
+        new_context = context.copy()
+        
+        # Update the phase
+        new_context["current_phase"] = target_phase
+        
+        # Preserve important fields including language
+        # Language, user_id, session_id, and other metadata should be preserved
+        
+        logger.debug(
+            "phase_transition",
+            from_phase=context.get("current_phase"),
+            to_phase=target_phase,
+            language=context.get("language"),
+        )
+        
+        return new_context
+
+    @staticmethod
     def get_phase_instruction(phase: ConversationPhase) -> str:
         """
         Get the instruction for a specific phase.

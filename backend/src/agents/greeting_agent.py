@@ -5,6 +5,8 @@ This module implements the greeting phase of the conversation flow,
 welcoming users and explaining the process.
 """
 
+from typing import Optional
+
 from google.adk.agents import LlmAgent
 
 from src.agents.phase_manager import (
@@ -14,6 +16,7 @@ from src.agents.phase_manager import (
 )
 from src.knowledge.cbt_context import BASE_CBT_CONTEXT
 from src.utils.language_detection import LanguageDetector
+from src.utils.language_utils import get_language_instruction
 
 
 def detect_user_language(user_input: str) -> dict:
@@ -36,52 +39,51 @@ def detect_user_language(user_input: str) -> dict:
     }
 
 
-def create_greeting_agent(model: str = "gemini-2.0-flash") -> LlmAgent:
+def create_greeting_agent(
+    model: str = "gemini-2.0-flash", language_code: Optional[str] = None
+) -> LlmAgent:
     """
     Create a greeting phase agent.
 
     Args:
         model: The Gemini model to use
+        language_code: The language code for responses (e.g., 'en-US', 'es-ES')
 
     Returns:
         An LlmAgent configured for the greeting phase
     """
+    # Get language-specific instruction
+    language_instruction = get_language_instruction(language_code)
     greeting_instruction = (
         BASE_CBT_CONTEXT
+        + f"\n\n## IMPORTANT: Language Requirement\n{language_instruction}\n"
         + "\n\n## Greeting Phase Instructions\n\n"
         + PhaseManager.get_phase_instruction(ConversationPhase.GREETING)
-        + "\n\n## Language Detection and Support\n"
-        + "1. ALWAYS use the detect_user_language tool on the first user message\n"
-        + "2. Store the detected language in session state as 'user_language' and 'language_name'\n"
-        + "3. Respond in the detected language automatically\n"
-        + "4. Currently supported languages: English (en) and Spanish (es)\n"
-        + "5. If an unsupported language is detected, acknowledge it and continue in English\n\n"
+        + "\n\n## Language Support\n"
+        + "1. You MUST respond in the language specified in the Language Requirement section above\n"
+        + "2. The language has been pre-selected by the user\n"
+        + "3. DO NOT switch languages based on user input\n"
+        + "4. Maintain consistent language throughout the conversation\n\n"
         + "## Your Specific Tasks:\n"
-        + "1. Detect the user's language using detect_user_language tool\n"
-        + "2. Welcome the user warmly in their language and introduce yourself\n"
-        + "3. Explain that this is a 4-phase cognitive reframing process:\n"
+        + "1. Welcome the user warmly in the specified language and introduce yourself\n"
+        + "2. Explain that this is a 4-phase cognitive reframing process:\n"
         + "   - Greeting (current): Introduction and overview\n"
         + "   - Discovery: Understanding thoughts and feelings\n"
         + "   - Reframing: Identifying and challenging unhelpful thoughts\n"
         + "   - Summary: Review insights and next steps\n"
-        + "4. Include a clear disclaimer that this tool does not replace professional therapy\n"
-        + "5. Ask if they're ready to begin the process\n"
-        + "6. When the user acknowledges and is ready, use the check_phase_transition tool to move to 'discovery'\n\n"
+        + "3. Include a clear disclaimer that this tool does not replace professional therapy\n"
+        + "4. Ask if they're ready to begin the process\n"
+        + "5. When the user acknowledges and is ready, use the check_phase_transition tool to move to 'discovery'\n\n"
         + "## Important Guidelines:\n"
         + "- Use a warm, welcoming tone\n"
         + "- Be clear but not overwhelming with information\n"
         + "- Keep the greeting concise (3-4 sentences)\n"
         + "- Wait for user acknowledgment before transitioning\n"
-        + "- Never explicitly mention that you detected their language\n\n"
-        + "## Localized Greetings:\n"
-        + "Use the Localizer class to get appropriate greetings:\n"
-        + "- English: Use Localizer.get('en', 'greeting.welcome'), etc.\n"
-        + "- Spanish: Use Localizer.get('es', 'greeting.welcome'), etc.\n"
     )
 
     return LlmAgent(
         model=model,
         name="GreetingAgent",
         instruction=greeting_instruction,
-        tools=[detect_user_language, check_phase_transition],
+        tools=[check_phase_transition],
     )

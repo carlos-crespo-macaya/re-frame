@@ -5,6 +5,8 @@ This module implements the reframing phase where users work through
 cognitive restructuring to create balanced alternative thoughts.
 """
 
+from typing import Optional
+
 from google.adk.agents import LlmAgent
 
 from src.agents.phase_manager import (
@@ -19,6 +21,7 @@ from src.knowledge.cbt_context import (
     EVIDENCE_GATHERING,
     MICRO_ACTION_PRINCIPLES,
 )
+from src.utils.language_utils import get_language_instruction
 
 
 def gather_evidence_for_thought(thought: str, evidence_type: str) -> dict:
@@ -124,16 +127,21 @@ def design_micro_action(thought: str, distortion: str) -> dict:
     }
 
 
-def create_reframing_agent(model: str = "gemini-2.0-flash") -> LlmAgent:
+def create_reframing_agent(
+    model: str = "gemini-2.0-flash", language_code: Optional[str] = None
+) -> LlmAgent:
     """
     Create a reframing phase agent.
 
     Args:
         model: The Gemini model to use
+        language_code: The language code for responses (e.g., 'en-US', 'es-ES')
 
     Returns:
         An LlmAgent configured for the reframing phase
     """
+    # Get language-specific instruction
+    language_instruction = get_language_instruction(language_code)
     # Build distortion reference
     distortion_quick_ref = "\n\n## Quick Distortion Reference:\n"
     for _, dist in COGNITIVE_DISTORTIONS.items():
@@ -141,10 +149,7 @@ def create_reframing_agent(model: str = "gemini-2.0-flash") -> LlmAgent:
 
     reframing_instruction = (
         BASE_CBT_CONTEXT
-        + "\n\n## Language Support\n"
-        + "The user's language preference is stored in session state as 'user_language'.\n"
-        + "Load the appropriate prompt using: PromptLoader.load_prompt('reframing', state.get('user_language', 'en'))\n"
-        + "Use Localizer for getting localized UI strings and distortion names.\n\n"
+        + f"\n\n## IMPORTANT: Language Requirement\n{language_instruction}\n"
         + "## Reframing Phase Instructions\n\n"
         + PhaseManager.get_phase_instruction(ConversationPhase.REFRAMING)
         + "\n\n## Your Specific Role:\n"

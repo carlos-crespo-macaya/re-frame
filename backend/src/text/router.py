@@ -5,7 +5,7 @@ import json
 import os
 from datetime import UTC, datetime
 
-from fastapi import APIRouter, HTTPException, Request, Response
+from fastapi import APIRouter, HTTPException, Query, Request, Response
 from fastapi.responses import StreamingResponse
 from google.adk.agents.run_config import RunConfig
 from google.adk.runners import InMemoryRunner
@@ -20,6 +20,11 @@ from src.models import (
     MessageResponse,
     SessionInfo,
     SessionListResponse,
+)
+from src.utils.language_utils import (
+    get_default_language,
+    normalize_language_code,
+    validate_language_code,
 )
 from src.utils.logging import get_logger, log_agent_event, log_session_event
 from src.utils.performance_monitor import get_performance_monitor
@@ -108,8 +113,21 @@ async def agent_to_client_sse(live_events):
     summary="SSE endpoint HEAD",
     operation_id="headEventStream",
 )
-async def sse_endpoint(request: Request, session_id: str, language: str = "en-US"):
+async def sse_endpoint(
+    request: Request, session_id: str, language: str = Query(default="en-US")
+):
     """SSE endpoint for agent to client communication"""
+
+    # Validate and normalize language
+    normalized_language = normalize_language_code(language)
+    if not validate_language_code(normalized_language):
+        logger.warning(
+            "invalid_language_code",
+            session_id=session_id,
+            requested_language=language,
+            fallback=get_default_language(),
+        )
+        normalized_language = get_default_language()
 
     # Handle HEAD requests
     if request.method == "HEAD":
@@ -124,7 +142,9 @@ async def sse_endpoint(request: Request, session_id: str, language: str = "en-US
 
     # Start agent session for GET requests
     # Use session_id as user_id for ADK
-    runner, adk_session, run_config = await start_agent_session(session_id, language)
+    runner, adk_session, run_config = await start_agent_session(
+        session_id, normalized_language
+    )
 
     # Store the session with session manager
     session_info = session_manager.create_session(
@@ -132,13 +152,13 @@ async def sse_endpoint(request: Request, session_id: str, language: str = "en-US
         user_id=session_id,  # Using session_id as user_id for POC
         request_queue=None,  # No longer using LiveRequestQueue
     )
-    session_info.metadata["language"] = language
+    session_info.metadata["language"] = normalized_language
     session_info.metadata["runner"] = runner
     session_info.metadata["adk_session"] = adk_session
     session_info.metadata["run_config"] = run_config
     session_info.metadata["message_queue"] = asyncio.Queue()
 
-    log_session_event(logger, session_id, "connected", language=language)
+    log_session_event(logger, session_id, "connected", language=normalized_language)
 
     # Track session start for performance monitoring
     performance_monitor = get_performance_monitor()
