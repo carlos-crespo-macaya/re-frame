@@ -5,6 +5,8 @@ This module implements the discovery phase of the conversation flow,
 helping users explore their thoughts and emotions.
 """
 
+from typing import Optional
+
 from google.adk.agents import LlmAgent
 
 from src.agents.phase_manager import (
@@ -13,6 +15,7 @@ from src.agents.phase_manager import (
     check_phase_transition,
 )
 from src.knowledge.cbt_context import BASE_CBT_CONTEXT, CBT_MODEL
+from src.utils.language_utils import get_language_instruction
 
 
 def extract_thought_details(user_input: str) -> dict:
@@ -75,23 +78,24 @@ def identify_emotions(emotion_description: str) -> dict:
     }
 
 
-def create_discovery_agent(model: str = "gemini-2.0-flash") -> LlmAgent:
+def create_discovery_agent(
+    model: str = "gemini-2.0-flash", language_code: Optional[str] = None
+) -> LlmAgent:
     """
     Create a discovery phase agent.
 
     Args:
         model: The Gemini model to use
+        language_code: The language code for responses (e.g., 'en-US', 'es-ES')
 
     Returns:
         An LlmAgent configured for the discovery phase
     """
+    # Get language-specific instruction
+    language_instruction = get_language_instruction(language_code)
     discovery_instruction = (
         BASE_CBT_CONTEXT
-        + "\n\n## Language Support\n"
-        + "The user's language preference is stored in session state as 'user_language'.\n"
-        + "Load the appropriate prompt using: PromptLoader.load_prompt('discovery', state.get('user_language', 'en'))\n"
-        + "If the language-specific prompt is available, follow those instructions.\n"
-        + "Otherwise, use the default English instructions below.\n\n"
+        + f"\n\n## IMPORTANT: Language Requirement\n{language_instruction}\n"
         + "## Discovery Phase Instructions\n\n"
         + PhaseManager.get_phase_instruction(ConversationPhase.DISCOVERY)
         + "\n\n## Your Specific Tasks:\n"
@@ -108,15 +112,15 @@ def create_discovery_agent(model: str = "gemini-2.0-flash") -> LlmAgent:
         + "7. Once you have a clear picture of the situation, thoughts, and emotions, use check_phase_transition to move to 'reframing'\n\n"
         + "## Important Guidelines:\n"
         + "- Be curious and non-judgmental\n"
-        + "- Use empathetic reflections in the user's language\n"
+        + "- Use empathetic reflections\n"
         + "- Ask one question at a time\n"
         + "- Allow the user to express themselves fully\n"
         + "- Don't rush - take time to understand\n"
         + "- Validate emotions before exploring thoughts\n\n"
         + "## Crisis Detection:\n"
         + "If the user expresses thoughts of self-harm or suicide, immediately:\n"
-        + "1. Express concern for their safety in their language\n"
-        + "2. Provide crisis resources localized to their language\n"
+        + "1. Express concern for their safety\n"
+        + "2. Provide appropriate crisis resources\n"
         + "3. Encourage immediate professional help\n"
         + "4. Do not continue with CBT exercises"
     )

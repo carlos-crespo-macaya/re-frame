@@ -2,6 +2,46 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Core Programming Principles
+
+### The Essence of Code Quality
+- **Clean code is professional responsibility** - It reflects commitment to craftsmanship
+- **Boy Scout Rule**: Always leave code cleaner than you found it
+- **Simplicity over ease**: Simple (one role, one purpose) is better than easy (familiar, convenient)
+- **Design lives in code**: Code should be a beautiful articulation of design efforts
+
+### Naming Excellence
+- **Intention-revealing**: Names should explain why, what, and how
+- **Avoid disinformation**: Don't use `List` suffix unless it's actually a List
+- **Pronounceable & searchable**: If you can't pronounce it, you can't discuss it
+- **One word per concept**: Be consistent - use `fetch`, `retrieve`, or `get`, but pick one
+- **No encodings**: Modern IDEs make Hungarian notation unnecessary
+
+### Function Principles
+- **Small is beautiful**: Functions should do one thing well
+- **Descriptive names**: Spend time finding the perfect name
+- **Few arguments**: Zero is ideal, one is good, two is okay, three needs justification
+- **No side effects**: Functions should be predictable
+- **Command Query Separation**: Either do something or answer something, not both
+
+### Comments Philosophy
+- **Code > Comments**: Don't comment bad code—rewrite it
+- **Good comments are rare**: Legal notices, TODOs, intent clarification
+- **Never comment out code**: Use version control instead
+- **Keep comments local**: Don't describe distant code
+
+### Managing Complexity
+- **Complexity kills**: It makes products hard to plan, build, and test
+- **State is complexity**: Prefer immutable values where possible
+- **Declarative > Imperative**: Use SQL, LINQ, rules engines when appropriate
+- **Postpone decisions**: Wait until the last responsible moment
+
+### Testing & Design
+- **TDD Second Law**: Write only enough production code to pass the failing test
+- **Clean tests are first-class**: Maintain tests as diligently as production code
+- **F.I.R.S.T**: Fast, Independent, Repeatable, Self-Validating, Timely
+- **Emergent design**: Good design emerges from: tests passing, no duplication, clear expression, minimal entities
+
 ## Project Overview
 
 This is the CBT Assistant POC monorepo, combining:
@@ -75,12 +115,45 @@ npm run test:all        # Test everything
 
 # Additional commands from Makefile
 make setup              # Initial project setup (installs pnpm, uv, dependencies)
+make dev                # Start all services in development mode with Docker
+make dev-frontend       # Start only frontend in development mode
+make dev-backend        # Start only backend in development mode
+make dev-docker-build   # Build all Docker images for development
+make test               # Run all tests (frontend and backend)
+make test-frontend      # Run frontend tests
+make test-backend       # Run backend tests
 make test-integration   # Run integration tests with Docker
+make test-e2e           # Run E2E tests with Docker
+make test-e2e-text      # Run text-only E2E tests
+make test-e2e-voice     # Run voice-only E2E tests
+make test-e2e-ui        # Run E2E tests in UI mode
+make lint               # Run all linters
+make lint-frontend      # Run frontend linter
+make lint-backend       # Run backend linter
+make format             # Format all code
+make format-frontend    # Format frontend code
+make format-backend     # Format backend code
+make typecheck          # Run type checking
+make typecheck-frontend # Run frontend type checking
+make typecheck-backend  # Run backend type checking
+make build              # Build all components
+make build-frontend     # Build frontend
+make build-backend      # Build backend Docker image
+make docker-up          # Start all services with Docker Compose
+make docker-down        # Stop all services
+make docker-logs        # Show logs from all services
+make docker-clean       # Clean up Docker resources
+make install            # Install all dependencies
+make install-frontend   # Install frontend dependencies
+make install-backend    # Install backend dependencies
 make pre-commit         # Run all pre-commit checks (lint, typecheck, test)
 make clean              # Clean generated files and caches
 make update-deps        # Update all dependencies (frontend and backend)
 make deploy-frontend    # Deploy frontend via GitHub workflow
 make deploy-backend     # Deploy backend via GitHub workflow
+make ci-test            # Run tests as in CI
+make check-docs         # Check if CLAUDE.md files need updating
+make update-docs        # Update CLAUDE.md files (interactive)
 make docs               # Serve documentation locally with MkDocs Material
 ```
 
@@ -99,16 +172,45 @@ cd tests/e2e && ./run_tests.sh
 docker-compose down -v
 ```
 
+### Utility Scripts
+```bash
+# From scripts/ directory
+./run-e2e-tests.sh              # Run E2E tests with Docker environment
+./run-e2e-tests.sh --text       # Run only text E2E tests
+./run-e2e-tests.sh --voice      # Run only voice E2E tests
+./run-e2e-tests.sh --ui         # Run E2E tests with UI mode
+./export-openapi.sh             # Export OpenAPI schema from backend
+./docker-build-with-schema.sh   # Build Docker images with OpenAPI schema
+./check-github-secrets.sh       # Verify GitHub secrets are configured
+./create_labels.sh              # Create GitHub issue labels
+./setup-gcp.sh                  # Set up GCP project (requires gcloud CLI)
+./setup-gcp-infrastructure.sh   # Set up full GCP infrastructure
+./setup-workload-identity.sh    # Configure workload identity for GitHub Actions
+```
+
 ### E2E Testing
 ```bash
-# From root directory
-npm run e2e                      # Run Playwright tests with main config
-npm run e2e:ui                   # Run Playwright tests with UI mode
-npm run e2e:js                   # Run JavaScript Playwright tests (playwright-js/)
-npm run e2e:js:ui                # Run JavaScript Playwright tests with UI mode
-npm run test:e2e:install         # Install Playwright browsers
+# From root directory (JavaScript E2E tests in playwright-js/)
+npm run e2e                      # Run all JavaScript Playwright tests
+npm run e2e:ui                   # Run with UI mode
+npm run e2e:headed               # Run with browser visible
+npm run e2e:debug                # Run in debug mode
+npm run e2e:install              # Install Playwright browsers
 
-# From frontend directory
+# From playwright-js directory
+cd playwright-js
+npm test                         # Run all tests
+npm run test:ui                  # Run with UI mode
+npm run test:headed              # Run with browser visible
+npm run test:debug               # Run in debug mode
+npm run install                  # Install Playwright browsers
+
+# Specific test patterns
+cd playwright-js && npm test tests/voice-*.spec.js              # All voice tests
+cd playwright-js && npm test tests/text-*.spec.js               # All text tests
+cd playwright-js && npm test tests/voice-network-resilience.spec.js  # Specific test
+
+# From frontend directory (deprecated - use playwright-js instead)
 cd frontend
 pnpm run test:e2e                # Run Playwright tests
 pnpm run test:e2e:ui             # Run with UI mode
@@ -119,8 +221,11 @@ pnpm run test:e2e:report         # Show test report
 # Python E2E tests (separate infrastructure)
 cd tests/e2e && ./run_tests.sh   # Run Python E2E tests with pytest-xdist
 
-# Voice E2E tests
-cd playwright-js && npm test tests/voice-network-resilience.spec.js
+# Run E2E tests with Docker (recommended)
+./scripts/run-e2e-tests.sh       # Run all E2E tests
+./scripts/run-e2e-tests.sh --text  # Text tests only
+./scripts/run-e2e-tests.sh --voice # Voice tests only
+./scripts/run-e2e-tests.sh --ui    # With UI mode
 ```
 
 ## Project Management
@@ -292,6 +397,14 @@ make docker-logs
 3. **Maintain test coverage**: Backend requires 80% minimum
 4. **Handle errors gracefully**: Especially for SSE connections and external API calls
 5. **Keep security in mind**: Never log sensitive data, use environment variables for secrets
+
+### Code Quality Checklist
+- [ ] **Names reveal intent**: Would a new developer understand what this does?
+- [ ] **Functions do one thing**: Can you describe the function without using "and"?
+- [ ] **No duplication**: Is this logic repeated elsewhere?
+- [ ] **Tests are clean**: Are tests as readable as production code?
+- [ ] **Complexity is managed**: Can you reason about this code easily?
+- [ ] **Boy Scout Rule applied**: Is the code cleaner than when you started?
 
 ### Backend-Specific Guidelines
 - Use `uv` as package manager (NOT pip or poetry)
