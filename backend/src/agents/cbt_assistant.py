@@ -9,6 +9,7 @@ from google.adk.agents import LlmAgent
 
 from src.agents.phase_manager import check_phase_transition, get_current_phase_info
 from src.knowledge.cbt_context import BASE_CBT_CONTEXT
+from src.utils.language_utils import get_language_instruction
 from src.utils.logging import get_logger
 
 logger = get_logger(__name__)
@@ -30,22 +31,19 @@ def create_cbt_assistant(
     Returns:
         An LlmAgent configured for CBT assistance
     """
-    # Map language codes to full instructions
-    language_instructions = {
-        "en-US": "",  # English is the default
-        "es-ES": "\n\n## IMPORTANT: Language Requirement\nYou MUST respond entirely in Spanish. All your messages, questions, and explanations should be in Spanish. Translate all CBT concepts and maintain a warm, professional tone in Spanish.",
-        "fr-FR": "\n\n## IMPORTANT: Language Requirement\nYou MUST respond entirely in French. All your messages, questions, and explanations should be in French. Translate all CBT concepts and maintain a warm, professional tone in French.",
-        "de-DE": "\n\n## IMPORTANT: Language Requirement\nYou MUST respond entirely in German. All your messages, questions, and explanations should be in German. Translate all CBT concepts and maintain a warm, professional tone in German.",
-        "it-IT": "\n\n## IMPORTANT: Language Requirement\nYou MUST respond entirely in Italian. All your messages, questions, and explanations should be in Italian. Translate all CBT concepts and maintain a warm, professional tone in Italian.",
-        "pt-BR": "\n\n## IMPORTANT: Language Requirement\nYou MUST respond entirely in Portuguese (Brazilian). All your messages, questions, and explanations should be in Portuguese. Translate all CBT concepts and maintain a warm, professional tone in Portuguese.",
-    }
-
-    language_instruction = language_instructions.get(language_code, "")
+    # Get language-specific instruction
+    language_instruction = get_language_instruction(language_code)
+    
+    # Format it for the CBT context
+    formatted_language_instruction = (
+        f"\n\n## IMPORTANT: Language Requirement\n{language_instruction}\n"
+        f"Translate all CBT concepts appropriately and maintain a warm, professional tone."
+    )
 
     # Enhanced instruction that makes use of session state and phase management
     enhanced_instruction = (
         BASE_CBT_CONTEXT
-        + language_instruction
+        + formatted_language_instruction
         + "\n\n## Session State Management\n"
         + "You have access to session state that persists between turns. "
         + "The session state includes:\n"
