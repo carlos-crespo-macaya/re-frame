@@ -13,6 +13,7 @@ from src.agents.phase_manager import (
     check_phase_transition,
 )
 from src.knowledge.cbt_context import BASE_CBT_CONTEXT
+from src.utils.language_utils import get_language_instruction
 
 
 def extract_key_insights(
@@ -119,22 +120,24 @@ def format_session_summary(
     }
 
 
-def create_summary_agent(model: str = "gemini-2.0-flash") -> LlmAgent:
+def create_summary_agent(
+    model: str = "gemini-2.0-flash", language_code: str | None = None
+) -> LlmAgent:
     """
     Create a summary phase agent.
 
     Args:
         model: The Gemini model to use
+        language_code: The language code for responses (e.g., 'en-US', 'es-ES')
 
     Returns:
         An LlmAgent configured for the summary phase
     """
+    # Get language-specific instruction
+    language_instruction = get_language_instruction(language_code)
     summary_instruction = (
         BASE_CBT_CONTEXT
-        + "\n\n## Language Support\n"
-        + "The user's language preference is stored in session state as 'user_language'.\n"
-        + "Load the appropriate prompt using: PromptLoader.load_prompt('summary', state.get('user_language', 'en'))\n"
-        + "Use Localizer for getting localized UI strings.\n\n"
+        + f"\n\n## IMPORTANT: Language Requirement\n{language_instruction}\n"
         + "## Summary Phase Instructions\n\n"
         + PhaseManager.get_phase_instruction(ConversationPhase.SUMMARY)
         + "\n\n## Your Specific Role:\n"
