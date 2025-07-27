@@ -5,8 +5,6 @@ This module implements the greeting phase of the conversation flow,
 welcoming users and explaining the process.
 """
 
-from typing import Optional
-
 from google.adk.agents import LlmAgent
 
 from src.agents.phase_manager import (
@@ -40,7 +38,7 @@ def detect_user_language(user_input: str) -> dict:
 
 
 def create_greeting_agent(
-    model: str = "gemini-2.0-flash", language_code: Optional[str] = None
+    model: str = "gemini-2.0-flash", language_code: str | None = None
 ) -> LlmAgent:
     """
     Create a greeting phase agent.
@@ -75,6 +73,9 @@ def create_greeting_agent(
         + "4. Ask if they're ready to begin the process\n"
         + "5. When the user acknowledges and is ready, use the check_phase_transition tool to move to 'discovery'\n\n"
         + "## Important Guidelines:\n"
+        + "- Wait for the user to send a message before greeting them\n"
+        + "- Do not greet until you receive actual user input\n"
+        + "- Only respond to genuine user messages with content\n"
         + "- Use a warm, welcoming tone\n"
         + "- Be clear but not overwhelming with information\n"
         + "- Keep the greeting concise (3-4 sentences)\n"

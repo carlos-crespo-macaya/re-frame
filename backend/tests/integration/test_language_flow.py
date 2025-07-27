@@ -1,7 +1,5 @@
 """Integration tests for complete language flow."""
 
-import asyncio
-import json
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -16,7 +14,6 @@ with (
 
 from src.utils.language_utils import SUPPORTED_LANGUAGES
 from src.utils.session_manager import SessionInfo as SessionInfoModel
-from tests.fixtures.language_fixtures import AGENT_GREETING_PATTERNS
 
 
 @pytest.fixture
@@ -61,7 +58,7 @@ class TestLanguageFlowIntegration:
                 mock_session = AsyncMock()
                 mock_session.id = "test-id"
                 mock_session.user_id = "test-user"
-                
+
                 # Mock the run_async to return Spanish content
                 async def mock_run_async(*args, **kwargs):
                     # Simulate Spanish greeting
@@ -74,7 +71,7 @@ class TestLanguageFlowIntegration:
                             ]
                         )
                     )
-                
+
                 mock_runner.run_async = mock_run_async
                 mock_runner.session_service.create_session.return_value = mock_session
                 mock_runner_class.return_value = mock_runner
@@ -86,7 +83,7 @@ class TestLanguageFlowIntegration:
 
                 # Verify Spanish was passed to agent creation
                 mock_create.assert_called_once_with(language_code="es-ES")
-                
+
                 # Verify run config includes Spanish
                 assert run_config.speech_config.language_code == "es-ES"
 
@@ -94,7 +91,7 @@ class TestLanguageFlowIntegration:
         """Test that all supported languages work through the integration."""
         from src.text.router import start_agent_session
 
-        for lang_code, lang_name in SUPPORTED_LANGUAGES.items():
+        for lang_code, _lang_name in SUPPORTED_LANGUAGES.items():
             with patch("src.text.router.create_cbt_assistant") as mock_create:
                 mock_agent = AsyncMock()
                 mock_agent.name = f"TestAgent_{lang_code}"
@@ -121,8 +118,9 @@ class TestLanguageFlowIntegration:
 
     async def test_language_normalization_integration(self):
         """Test that language codes are normalized in the full flow."""
-        from src.text.router import sse_endpoint
         from fastapi import Request
+
+        from src.text.router import sse_endpoint
 
         test_cases = [
             ("en", "en-US"),
@@ -155,9 +153,7 @@ class TestLanguageFlowIntegration:
 
                         # Call the endpoint with unnormalized language
                         try:
-                            await sse_endpoint(
-                                mock_request, "test-session", input_lang
-                            )
+                            await sse_endpoint(mock_request, "test-session", input_lang)
                         except Exception:
                             # Expected to fail due to mocking limitations
                             pass
@@ -169,8 +165,9 @@ class TestLanguageFlowIntegration:
 
     async def test_invalid_language_fallback_integration(self):
         """Test that invalid languages fall back to default."""
-        from src.text.router import sse_endpoint
         from fastapi import Request
+
+        from src.text.router import sse_endpoint
 
         invalid_languages = ["klingon", "elvish", "xx-XX", "123", ""]
 
@@ -210,15 +207,14 @@ class TestLanguageFlowIntegration:
 
     async def test_language_persistence_in_session(self):
         """Test that language persists in session metadata."""
-        from src.text.router import sse_endpoint, get_session_info
-        from fastapi import Request
+
+        from src.text.router import get_session_info
 
         # Setup session with language
         with patch("src.text.router.session_manager") as mock_sm:
             # Create a session with Spanish language
             mock_session = SessionInfoModel(
-                session_id="test-persist",
-                user_id="user-persist"
+                session_id="test-persist", user_id="user-persist"
             )
             mock_session.metadata = {"language": "es-ES"}
             mock_sm.get_session_readonly.return_value = mock_session
@@ -232,19 +228,19 @@ class TestLanguageFlowIntegration:
     async def test_e2e_spanish_conversation_simulation(self, async_client):
         """Simulate an E2E Spanish conversation flow."""
         from src.text.router import start_agent_session
-        
+
         # Test Spanish language parameter is passed correctly to agent creation
         with patch("src.text.router.create_cbt_assistant") as mock_create:
             mock_agent = AsyncMock()
             mock_agent.name = "TestAgent"
             mock_create.return_value = mock_agent
-            
+
             with patch("src.text.router.InMemoryRunner") as mock_runner_class:
                 mock_runner = AsyncMock()
                 mock_session = AsyncMock()
                 mock_session.id = "test-id"
                 mock_session.user_id = "test-user"
-                
+
                 # Mock Spanish response
                 async def mock_run_async(*args, **kwargs):
                     yield AsyncMock(
@@ -256,28 +252,28 @@ class TestLanguageFlowIntegration:
                             ]
                         )
                     )
-                
+
                 mock_runner.run_async = mock_run_async
                 mock_runner.session_service.create_session.return_value = mock_session
                 mock_runner_class.return_value = mock_runner
-                
+
                 # Call start_agent_session with Spanish
                 runner, session, run_config = await start_agent_session(
                     "test-user", "es-ES"
                 )
-                
+
                 # Verify language parameter was passed correctly
                 mock_create.assert_called_once_with(language_code="es-ES")
                 assert run_config.speech_config.language_code == "es-ES"
-                
+
                 # Verify we can simulate a conversation
                 messages = []
                 async for msg in mock_runner.run_async():
                     if msg.content and msg.content.parts:
                         for part in msg.content.parts:
-                            if hasattr(part, 'text'):
+                            if hasattr(part, "text"):
                                 messages.append(part.text)
-                
+
                 # Verify Spanish response
                 assert len(messages) > 0
                 assert "¡Hola!" in messages[0]

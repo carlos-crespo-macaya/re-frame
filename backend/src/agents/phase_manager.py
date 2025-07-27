@@ -84,20 +84,20 @@ class PhaseManager:
         """
         # Create a copy of the context to avoid mutation
         new_context = context.copy()
-        
+
         # Update the phase
         new_context["current_phase"] = target_phase
-        
+
         # Preserve important fields including language
         # Language, user_id, session_id, and other metadata should be preserved
-        
+
         logger.debug(
             "phase_transition",
             from_phase=context.get("current_phase"),
             to_phase=target_phase,
             language=context.get("language"),
         )
-        
+
         return new_context
 
     @staticmethod

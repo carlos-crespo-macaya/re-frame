@@ -5,8 +5,6 @@ This module implements the summary phase where users receive a comprehensive
 recap of their session with key insights and actionable takeaways.
 """
 
-from typing import Optional
-
 from google.adk.agents import LlmAgent
 
 from src.agents.phase_manager import (
@@ -123,7 +121,7 @@ def format_session_summary(
 
 
 def create_summary_agent(
-    model: str = "gemini-2.0-flash", language_code: Optional[str] = None
+    model: str = "gemini-2.0-flash", language_code: str | None = None
 ) -> LlmAgent:
     """
     Create a summary phase agent.

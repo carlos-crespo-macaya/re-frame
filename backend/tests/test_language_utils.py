@@ -1,7 +1,5 @@
 """Tests for language utilities."""
 
-import pytest
-
 from src.utils.language_utils import (
     get_default_language,
     get_language_instruction,
