@@ -30,10 +30,6 @@ from src.utils.performance_monitor import get_performance_monitor
 from src.utils.rate_limiter import RateLimiter
 from src.utils.session_manager import session_manager
 
-# Language detection imports removed - using URL parameter only
-# from langdetect import LangDetectException, detect_langs
-
-
 logger = get_logger(__name__)
 
 router = APIRouter(tags=["text"])
