@@ -39,15 +39,23 @@ class TestGreetingAgentI18n:
 
     def test_greeting_agent_has_language_detection_tool(self):
         """Test that greeting agent has language detection tool."""
+        # In reactive implementation, language detection happens in router, not agent
         agent = create_greeting_agent()
         tool_names = [tool.__name__ for tool in agent.tools]
-        assert "detect_user_language" in tool_names
+        # Greeting agent should only have phase transition tool
+        assert "check_phase_transition" in tool_names
+        assert "detect_user_language" not in tool_names
 
     def test_greeting_agent_instruction_mentions_language(self):
         """Test that greeting agent instructions mention language detection."""
         agent = create_greeting_agent()
         assert "language" in agent.instruction.lower()
-        assert "detect_user_language" in agent.instruction
+        # In reactive implementation, agent doesn't detect language itself
+        # but should still be aware of the user's language
+        assert (
+            "pre-selected language" in agent.instruction.lower()
+            or "specified language" in agent.instruction.lower()
+        )
 
     @pytest.mark.parametrize(
         "user_input,expected_code",
