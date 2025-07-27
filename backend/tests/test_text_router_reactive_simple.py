@@ -60,7 +60,7 @@ class TestReactiveSSEBehavior:
 
     @pytest.mark.asyncio
     async def test_first_message_triggers_greeting(self):
-        """Test that first user message triggers greeting response."""
+        """Test that first user message marks greeting as sent."""
         from src.models import MessageRequest
         from src.text.router import send_message_endpoint
 
@@ -69,10 +69,11 @@ class TestReactiveSSEBehavior:
             mock_session = MagicMock()
             mock_runner = MagicMock()
             mock_adk_session = MagicMock()
-            mock_run_config = {}
+            mock_run_config = MagicMock()
             mock_queue = AsyncMock()
 
-            mock_session.metadata = {
+            # Use a dict that we can check later
+            metadata_dict = {
                 "runner": mock_runner,
                 "adk_session": mock_adk_session,
                 "run_config": mock_run_config,
@@ -80,55 +81,12 @@ class TestReactiveSSEBehavior:
                 "language": "en-US",
                 "greeting_sent": False,  # Not sent yet
             }
+            mock_session.metadata = metadata_dict
             mock_sm.get_session.return_value = mock_session
 
-            # Mock process_message
-            with patch("src.text.router.process_message") as mock_process:
-                mock_process.return_value = []
-
-                # Mock performance monitor
-                with patch("src.text.router.get_performance_monitor") as mock_perf:
-                    mock_monitor = MagicMock()
-                    mock_monitor.track_request = MagicMock()
-                    mock_monitor.track_request.return_value.__aenter__ = AsyncMock()
-                    mock_monitor.track_request.return_value.__aexit__ = AsyncMock()
-                    mock_perf.return_value = mock_monitor
-
-                    # Send first message
-                    message = MessageRequest(data="Hello", mime_type="text/plain")
-                    await send_message_endpoint("test-session-123", message)
-
-                    # EXPECTED TO FAIL: Need to check for greeting trigger
-                    # The implementation should check greeting_sent and trigger greeting
-                    assert mock_session.metadata.get("greeting_sent") is True
-
-    @pytest.mark.asyncio
-    async def test_language_detection_on_first_message(self):
-        """Test that language is detected on first message and overrides URL parameter."""
-        from src.models import MessageRequest
-        from src.text.router import send_message_endpoint
-
-        with patch("src.text.router.session_manager") as mock_sm:
-            # Mock session with Spanish from URL
-            mock_session = MagicMock()
-            mock_runner = MagicMock()
-            mock_adk_session = MagicMock()
-            mock_run_config = {}
-            mock_queue = AsyncMock()
-
-            mock_session.metadata = {
-                "runner": mock_runner,
-                "adk_session": mock_adk_session,
-                "run_config": mock_run_config,
-                "message_queue": mock_queue,
-                "language": "es-ES",  # Spanish from URL
-                "greeting_sent": False,
-            }
-            mock_sm.get_session.return_value = mock_session
-
-            # Mock language detection
+            # Mock detect_language
             with patch("src.text.router.detect_language") as mock_detect:
-                mock_detect.return_value = ("en", 0.95)  # Detect English
+                mock_detect.return_value = ("en", 0.95)
 
                 # Mock process_message
                 with patch("src.text.router.process_message") as mock_process:
@@ -142,19 +100,84 @@ class TestReactiveSSEBehavior:
                         mock_monitor.track_request.return_value.__aexit__ = AsyncMock()
                         mock_perf.return_value = mock_monitor
 
-                        # Send English message
-                        message = MessageRequest(
-                            data="Hello, I need help with anxiety",
-                            mime_type="text/plain",
-                        )
+                        # Send first message
+                        message = MessageRequest(data="Hello", mime_type="text/plain")
                         await send_message_endpoint("test-session-123", message)
 
-                        # EXPECTED TO FAIL: Language detection not implemented
-                        # Should detect language and update session
-                        mock_detect.assert_called_once_with(
-                            "Hello, I need help with anxiety"
-                        )
-                        assert mock_session.metadata["language"] == "en-US"
+                        # Verify greeting_sent flag is set
+                        assert metadata_dict.get("greeting_sent") is True
+
+    @pytest.mark.asyncio
+    async def test_language_detection_on_first_message(self):
+        """Test that language is detected on first message and overrides URL parameter."""
+        from src.models import MessageRequest
+        from src.text.router import send_message_endpoint
+
+        with patch("src.text.router.session_manager") as mock_sm:
+            # Mock session with Spanish from URL
+            mock_session = MagicMock()
+            mock_runner = MagicMock()
+            mock_adk_session = MagicMock()
+            mock_run_config = MagicMock()
+            mock_queue = AsyncMock()
+
+            # Use a dict that we can check later
+            metadata_dict = {
+                "runner": mock_runner,
+                "adk_session": mock_adk_session,
+                "run_config": mock_run_config,
+                "message_queue": mock_queue,
+                "language": "es-ES",  # Spanish from URL
+                "greeting_sent": False,
+            }
+            mock_session.metadata = metadata_dict
+            mock_sm.get_session.return_value = mock_session
+
+            # Mock language detection
+            with patch("src.text.router.detect_language") as mock_detect:
+                mock_detect.return_value = ("en", 0.95)  # Detect English
+
+                # Mock create_cbt_assistant
+                with patch("src.text.router.create_cbt_assistant") as mock_create:
+                    mock_create.return_value = MagicMock()
+
+                    # Mock InMemoryRunner
+                    with patch("src.text.router.InMemoryRunner") as mock_runner_class:
+                        mock_new_runner = MagicMock()
+                        mock_new_runner.session_service.create_session = AsyncMock()
+                        mock_runner_class.return_value = mock_new_runner
+
+                        # Mock process_message
+                        with patch("src.text.router.process_message") as mock_process:
+                            mock_process.return_value = []
+
+                            # Mock performance monitor
+                            with patch(
+                                "src.text.router.get_performance_monitor"
+                            ) as mock_perf:
+                                mock_monitor = MagicMock()
+                                mock_monitor.track_request = MagicMock()
+                                mock_monitor.track_request.return_value.__aenter__ = (
+                                    AsyncMock()
+                                )
+                                mock_monitor.track_request.return_value.__aexit__ = (
+                                    AsyncMock()
+                                )
+                                mock_perf.return_value = mock_monitor
+
+                                # Send English message
+                                message = MessageRequest(
+                                    data="Hello, I need help with anxiety",
+                                    mime_type="text/plain",
+                                )
+                                await send_message_endpoint("test-session-123", message)
+
+                                # Verify language detection was called
+                                mock_detect.assert_called_once_with(
+                                    "Hello, I need help with anxiety"
+                                )
+                                # Verify language was updated
+                                assert metadata_dict["language"] == "en-US"
 
     @pytest.mark.asyncio
     async def test_no_language_detection_on_subsequent_messages(self):

@@ -22,10 +22,12 @@ class TestGreetingPhase:
         agent = create_greeting_agent()
         assert agent is not None
         assert agent.name == "GreetingAgent"
-        assert len(agent.tools) == 2
+        # In reactive implementation, only phase transition tool
+        assert len(agent.tools) == 1
         tool_names = [tool.__name__ for tool in agent.tools]
-        assert "detect_user_language" in tool_names
         assert "check_phase_transition" in tool_names
+        # Language detection happens in router, not agent
+        assert "detect_user_language" not in tool_names
 
     def test_greeting_explains_process(self):
         """Test that greeting explains the 4-phase process."""
@@ -105,11 +107,12 @@ class TestGreetingPhase:
         """Test that greeting agent has proper phase transition tools."""
         agent = create_greeting_agent()
 
-        # Should have detect_user_language and check_phase_transition tools
-        assert len(agent.tools) == 2
+        # In reactive implementation, only check_phase_transition tool
+        assert len(agent.tools) == 1
         tool_names = [tool.__name__ for tool in agent.tools]
-        assert "detect_user_language" in tool_names
         assert "check_phase_transition" in tool_names
+        # Language detection happens in router
+        assert "detect_user_language" not in tool_names
 
         # Test check_phase_transition tool functionality
         check_tool = next(
