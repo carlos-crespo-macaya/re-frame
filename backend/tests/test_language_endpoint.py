@@ -14,18 +14,9 @@ class TestLanguageDetectionEndpoint:
 
     @pytest.mark.asyncio
     async def test_detect_english_text(self):
-        """Test detection of English text."""
+        """Test that language detection endpoint returns English (deprecated)."""
 
-        # Create mock language result
-        mock_result = MagicMock()
-        mock_result.lang = "en"
-        mock_result.prob = 0.9999
-
-        with (
-            patch("src.text.router.detect_langs") as mock_detect,
-            patch("src.text.router.language_limiter") as mock_limiter,
-        ):
-            mock_detect.return_value = [mock_result]
+        with patch("src.text.router.language_limiter") as mock_limiter:
             mock_limiter.check_request = AsyncMock(return_value=True)
 
             from src.text.router import detect_language_endpoint
@@ -39,21 +30,13 @@ class TestLanguageDetectionEndpoint:
 
             assert result.status == "success"
             assert result.language == "en"
-            assert result.confidence == 1.0  # rounded from 0.9999
-            assert result.message is None
+            assert result.confidence == 1.0
+            assert "deprecated" in result.message.lower()
 
     @pytest.mark.asyncio
     async def test_detect_spanish_text(self):
-        """Test detection of Spanish text."""
-        mock_result = MagicMock()
-        mock_result.lang = "es"
-        mock_result.prob = 0.98
-
-        with (
-            patch("src.text.router.detect_langs") as mock_detect,
-            patch("src.text.router.language_limiter") as mock_limiter,
-        ):
-            mock_detect.return_value = [mock_result]
+        """Test that Spanish text still returns English (deprecated)."""
+        with patch("src.text.router.language_limiter") as mock_limiter:
             mock_limiter.check_request = AsyncMock(return_value=True)
 
             from src.text.router import detect_language_endpoint
@@ -64,28 +47,16 @@ class TestLanguageDetectionEndpoint:
 
             result = await detect_language_endpoint(request, mock_req)
 
+            # Always returns English now
             assert result.status == "success"
-            assert result.language == "es"
-            assert result.confidence == 0.98
-            assert result.message is None
+            assert result.language == "en"
+            assert result.confidence == 1.0
+            assert "deprecated" in result.message.lower()
 
     @pytest.mark.asyncio
     async def test_detect_multiple_languages(self):
-        """Test detection with multiple language results."""
-        # Create multiple language results - one supported, one not
-        mock_result1 = MagicMock()
-        mock_result1.lang = "fr"  # French - no longer supported
-        mock_result1.prob = 0.85
-
-        mock_result2 = MagicMock()
-        mock_result2.lang = "es"  # Spanish - supported
-        mock_result2.prob = 0.15
-
-        with (
-            patch("src.text.router.detect_langs") as mock_detect,
-            patch("src.text.router.language_limiter") as mock_limiter,
-        ):
-            mock_detect.return_value = [mock_result1, mock_result2]
+        """Test that mixed language text still returns English (deprecated)."""
+        with patch("src.text.router.language_limiter") as mock_limiter:
             mock_limiter.check_request = AsyncMock(return_value=True)
 
             from src.text.router import detect_language_endpoint
@@ -96,29 +67,16 @@ class TestLanguageDetectionEndpoint:
 
             result = await detect_language_endpoint(request, mock_req)
 
-            # Should return Spanish since French is not supported
+            # Always returns English now
             assert result.status == "success"
-            assert result.language == "es"
-            assert result.confidence == 0.15
-            assert result.message is None
+            assert result.language == "en"
+            assert result.confidence == 1.0
+            assert "deprecated" in result.message.lower()
 
     @pytest.mark.asyncio
     async def test_no_supported_language_fallback(self):
-        """Test fallback when no supported languages are detected."""
-        # Create results with only unsupported languages
-        mock_result1 = MagicMock()
-        mock_result1.lang = "fr"  # French - not supported
-        mock_result1.prob = 0.85
-
-        mock_result2 = MagicMock()
-        mock_result2.lang = "de"  # German - not supported
-        mock_result2.prob = 0.15
-
-        with (
-            patch("src.text.router.detect_langs") as mock_detect,
-            patch("src.text.router.language_limiter") as mock_limiter,
-        ):
-            mock_detect.return_value = [mock_result1, mock_result2]
+        """Test that unsupported languages return English (deprecated)."""
+        with patch("src.text.router.language_limiter") as mock_limiter:
             mock_limiter.check_request = AsyncMock(return_value=True)
 
             from src.text.router import detect_language_endpoint
@@ -129,22 +87,16 @@ class TestLanguageDetectionEndpoint:
 
             result = await detect_language_endpoint(request, mock_req)
 
-            # Should fallback to English with low confidence
+            # Always returns English now
             assert result.status == "success"
             assert result.language == "en"
-            assert result.confidence == 0.5
-            assert "defaulting to English" in result.message
+            assert result.confidence == 1.0
+            assert "deprecated" in result.message.lower()
 
     @pytest.mark.asyncio
     async def test_detection_failure_fallback(self):
-        """Test fallback to English when detection fails."""
-        from langdetect import LangDetectException
-
-        with (
-            patch("src.text.router.detect_langs") as mock_detect,
-            patch("src.text.router.language_limiter") as mock_limiter,
-        ):
-            mock_detect.side_effect = LangDetectException("Detection failed", "error")
+        """Test that detection failures still return English (deprecated)."""
+        with patch("src.text.router.language_limiter") as mock_limiter:
             mock_limiter.check_request = AsyncMock(return_value=True)
 
             from src.text.router import detect_language_endpoint
@@ -155,12 +107,11 @@ class TestLanguageDetectionEndpoint:
 
             result = await detect_language_endpoint(request, mock_req)
 
+            # Always returns English now
             assert result.status == "success"
             assert result.language == "en"
-            assert result.confidence == 0.5
-            assert (
-                result.message == "Language detection uncertain, defaulting to English"
-            )
+            assert result.confidence == 1.0
+            assert "deprecated" in result.message.lower()
 
     @pytest.mark.asyncio
     async def test_rate_limiting(self):
@@ -184,15 +135,7 @@ class TestLanguageDetectionEndpoint:
     @pytest.mark.asyncio
     async def test_no_client_host(self):
         """Test handling when client host is not available."""
-        mock_result = MagicMock()
-        mock_result.lang = "en"
-        mock_result.prob = 0.95
-
-        with (
-            patch("src.text.router.detect_langs") as mock_detect,
-            patch("src.text.router.language_limiter") as mock_limiter,
-        ):
-            mock_detect.return_value = [mock_result]
+        with patch("src.text.router.language_limiter") as mock_limiter:
             mock_limiter.check_request = AsyncMock(return_value=True)
 
             from src.text.router import detect_language_endpoint
@@ -207,6 +150,8 @@ class TestLanguageDetectionEndpoint:
             mock_limiter.check_request.assert_called_once_with("unknown")
             assert result.status == "success"
             assert result.language == "en"
+            assert result.confidence == 1.0
+            assert "deprecated" in result.message.lower()
 
 
 class TestRateLimiter:

@@ -30,6 +30,7 @@ dev = [
     "pytest>=8.0.0",
     "pytest-cov>=5.0.0",
     "pytest-asyncio>=0.23.0",
+    "pytest-env>=1.1.5",
     "pre-commit>=3.7.0",
     "poethepoet>=0.26.0",
 ]
@@ -115,6 +116,13 @@ addopts = [
 asyncio_mode = "auto"
 markers = [
     "load: marks tests as load tests (deselect with '-m \"not load\"')",
+    "integration: marks tests as integration tests",
+    "sse: marks tests that use Server-Sent Events",
+    "reactive: marks tests for reactive greeting behavior",
+    "voice: marks tests that require voice dependencies",
+]
+env = [
+    "CBT_SKIP_AGENT_INIT=1",
 ]
 
 # Coverage configuration
