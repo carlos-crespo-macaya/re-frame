@@ -13,15 +13,7 @@ from src.agents.phase_manager import (
     check_phase_transition,
 )
 from src.knowledge.cbt_context import BASE_CBT_CONTEXT
-
-# Language detection removed - using URL parameter only
-# from src.utils.language_detection import LanguageDetector
 from src.utils.language_utils import get_language_instruction
-
-# Language detection function removed - using URL parameter only
-# def detect_user_language(user_input: str) -> dict:
-#     """Deprecated - language is determined by URL parameter only."""
-#     pass
 
 
 def create_greeting_agent(
