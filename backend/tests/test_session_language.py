@@ -66,9 +66,18 @@ class TestSessionLanguageManagement:
         session3.metadata["language"] = "de-DE"
 
         # Verify each session maintains its language
-        assert session_manager.get_session("session-en").metadata.get("language") == "en-US"
-        assert session_manager.get_session("session-es").metadata.get("language") == "es-ES"
-        assert session_manager.get_session("session-de").metadata.get("language") == "de-DE"
+        assert (
+            session_manager.get_session("session-en").metadata.get("language")
+            == "en-US"
+        )
+        assert (
+            session_manager.get_session("session-es").metadata.get("language")
+            == "es-ES"
+        )
+        assert (
+            session_manager.get_session("session-de").metadata.get("language")
+            == "de-DE"
+        )
 
     def test_session_language_update(self, session_manager):
         """Test updating session language (though not recommended)."""
@@ -101,7 +110,7 @@ class TestSessionLanguageManagement:
     def test_session_info_includes_language(self, session_manager):
         """Test that session info includes language in metadata."""
         from datetime import UTC, datetime
-        
+
         session = session_manager.create_session(
             session_id="test-info", user_id="user-info"
         )
@@ -112,7 +121,9 @@ class TestSessionLanguageManagement:
             session_id=session.session_id,
             user_id=session.user_id,
             created_at=datetime.fromtimestamp(session.created_at, tz=UTC).isoformat(),
-            last_activity=datetime.fromtimestamp(session.last_activity, tz=UTC).isoformat(),
+            last_activity=datetime.fromtimestamp(
+                session.last_activity, tz=UTC
+            ).isoformat(),
             age_seconds=session.age_seconds,
             inactive_seconds=session.inactive_seconds,
             has_request_queue=session.request_queue is not None,

@@ -41,6 +41,31 @@ language_limiter = RateLimiter(max_requests=100, window_seconds=60)
 APP_NAME = "CBT Reframing Assistant"
 
 
+def detect_language(text: str) -> tuple[str, float]:
+    """
+    Detect the language of the given text.
+
+    Args:
+        text: The text to analyze
+
+    Returns:
+        Tuple of (language_code, confidence)
+    """
+    if not text or not text.strip():
+        return ("en", 1.0)
+
+    try:
+        results = detect_langs(text)
+        if results:
+            # Return the most confident result
+            return (results[0].lang, results[0].prob)
+    except LangDetectException:
+        pass
+
+    # Default to English
+    return ("en", 0.5)
+
+
 async def start_agent_session(user_id, language_code="en-US"):
     """Starts an agent session"""
     logger.info(
@@ -140,6 +165,20 @@ async def sse_endpoint(
             }
         )
 
+    # Check if session already exists (reconnection)
+    existing_session = session_manager.get_session_readonly(session_id)
+    if existing_session:
+        # Reconnecting to existing session
+        greeting_sent = existing_session.metadata.get("greeting_sent", False)
+        logger.info(
+            "reconnecting_to_existing_session",
+            session_id=session_id,
+            greeting_sent=greeting_sent,
+            existing_language=existing_session.metadata.get("language"),
+        )
+    else:
+        greeting_sent = False
+
     # Start agent session for GET requests
     # Use session_id as user_id for ADK
     runner, adk_session, run_config = await start_agent_session(
@@ -158,40 +197,16 @@ async def sse_endpoint(
     session_info.metadata["run_config"] = run_config
     session_info.metadata["message_queue"] = asyncio.Queue()
 
+    # Preserve greeting state on reconnection
+    session_info.metadata["greeting_sent"] = greeting_sent
+
     log_session_event(logger, session_id, "connected", language=normalized_language)
 
     # Track session start for performance monitoring
     performance_monitor = get_performance_monitor()
     await performance_monitor.start_session(session_id)
 
-    # Send initial greeting message
-    logger.info("sending_initial_greeting", session_id=session_id)
-    initial_content = Content(
-        role="user",
-        parts=[Part(text="START_CONVERSATION")],
-    )
-
-    # Process initial message to trigger greeting
     message_queue = session_info.metadata["message_queue"]
-
-    async def process_initial():
-        """Process initial greeting in background."""
-        try:
-            async for event in runner.run_async(
-                user_id=session_id,
-                session_id=adk_session.id,
-                new_message=initial_content,
-                run_config=run_config,
-            ):
-                await message_queue.put(event)
-            await message_queue.put("STREAM_END")
-        except Exception as e:
-            logger.error("initial_greeting_error", error=str(e), session_id=session_id)
-            await message_queue.put(f"Error: {e!s}")
-
-    # Start processing initial greeting
-    initial_task = asyncio.create_task(process_initial())
-    session_info.metadata["initial_task"] = initial_task
 
     # Create the SSE stream with heartbeats
     async def stream_generator():
@@ -415,6 +430,77 @@ async def send_message_endpoint(
                 status_code=415,
                 detail="Only text/plain messages are supported. Use /api/voice endpoints for audio.",
             )
+
+        # Skip empty messages
+        if not message.data or not message.data.strip():
+            logger.info("empty_message_received", session_id=session_id)
+            return MessageResponse(status="sent", error=None)
+
+        # Check if this is the first user message (reactive greeting)
+        greeting_sent = session.metadata.get("greeting_sent", False)
+        if not greeting_sent:
+            # Detect language from first message
+            detected_lang, confidence = detect_language(message.data)
+            logger.info(
+                "language_detected_from_first_message",
+                session_id=session_id,
+                detected_language=detected_lang,
+                confidence=confidence,
+                original_language=session.metadata.get("language"),
+            )
+
+            # Update language if detection is confident
+            if confidence > 0.8:
+                # Map detected language to full language code
+                if detected_lang == "es":
+                    new_language = "es-ES"
+                elif detected_lang == "en":
+                    new_language = "en-US"
+                else:
+                    # Default to English for unsupported languages
+                    new_language = "en-US"
+
+                # Update session language if different
+                if new_language != session.metadata.get("language"):
+                    logger.info(
+                        "updating_session_language",
+                        session_id=session_id,
+                        from_language=session.metadata.get("language"),
+                        to_language=new_language,
+                    )
+                    session.metadata["language"] = new_language
+
+                    # Recreate agent with new language
+                    cbt_agent = create_cbt_assistant(language_code=new_language)
+                    new_runner = InMemoryRunner(
+                        app_name=APP_NAME,
+                        agent=cbt_agent,
+                    )
+
+                    # Create new session with same IDs
+                    new_adk_session = await new_runner.session_service.create_session(
+                        app_name=APP_NAME,
+                        user_id=session_id,
+                    )
+
+                    # Update run config with new language
+                    new_run_config = RunConfig(
+                        response_modalities=["TEXT"],
+                        speech_config=SpeechConfig(language_code=new_language),
+                    )
+
+                    # Update session metadata
+                    session.metadata["runner"] = new_runner
+                    session.metadata["adk_session"] = new_adk_session
+                    session.metadata["run_config"] = new_run_config
+
+                    # Update local variables
+                    runner = new_runner
+                    adk_session = new_adk_session
+                    run_config = new_run_config
+
+            # Mark greeting as sent
+            session.metadata["greeting_sent"] = True
 
         content = Content(role="user", parts=[Part.from_text(text=message.data)])
 

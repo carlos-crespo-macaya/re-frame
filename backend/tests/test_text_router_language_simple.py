@@ -128,7 +128,7 @@ class TestSSEEndpointLanguage:
 
                     # Test with invalid language (should validate/normalize)
                     try:
-                        result = await sse_endpoint(
+                        await sse_endpoint(
                             mock_request, "test-session", "invalid-lang"
                         )
                     except Exception:

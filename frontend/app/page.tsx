@@ -268,7 +268,7 @@ export default function Home() {
           <section className="max-w-2xl mx-auto">
             <div className="relative">
               
-              <div className="relative bg-[#F7F4F2] rounded-2xl shadow-lg border border-[#2a2a2a] p-8 md:p-10" style={{ 
+              <div className="relative bg-[#F7F4F2] rounded-2xl shadow-lg border border-[#2a2a2a] p-8 md:p-10" data-testid="conversation-interface" style={{ 
                 boxShadow: '0 4px 24px rgba(0, 0, 0, 0.1)',
                 animation: 'fadeIn 250ms cubic-bezier(0.25, 0.1, 0.25, 1)'
               }}>
@@ -345,7 +345,7 @@ export default function Home() {
                         )}
                         
                         {/* Main response with markdown */}
-                        <div className="text-sm text-[#EDEDED] leading-relaxed prose prose-sm prose-invert max-w-none">
+                        <div className="text-sm text-[#EDEDED] leading-relaxed prose prose-sm prose-invert max-w-none" data-testid="message-content">
                           <ReactMarkdown
                             components={{
                               p: ({children}) => <p className="mb-4">{children}</p>,

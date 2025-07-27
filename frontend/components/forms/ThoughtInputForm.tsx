@@ -300,10 +300,11 @@ export default function ThoughtInputForm({
           {!audioState.isRecording ? (
             <textarea
               id="thought-input"
+              data-testid="message-input"
               value={thought}
               onChange={(e) => setThought(e.target.value.slice(0, maxLength))}
               onKeyDown={handleKeyDown}
-              placeholder="What happened? How did it feel?"
+              placeholder="Type your message..."
               className={cn(
                 "w-full min-h-[140px] resize-y rounded-xl",
                 "bg-white",
@@ -369,16 +370,18 @@ export default function ThoughtInputForm({
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-6 items-center justify-center">
           <Button
             type="submit"
+            data-testid="send-button"
             disabled={isSubmitDisabled}
             loading={isLoading}
             variant="primary"
             size="large"
             className="w-full sm:w-auto group relative overflow-hidden"
+            aria-label={isLoading ? "Sending message" : "Send message"}
           >
             {isLoading ? (
-                <span>Processing...</span>
+                <span>Sending...</span>
               ) : (
-                <span>Generate perspective</span>
+                <span>Send</span>
               )}
           </Button>
           <Button
@@ -411,7 +414,7 @@ export default function ThoughtInputForm({
             <span className="inline-block w-2 h-2 bg-accent-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
           </div>
           <p className="text-sm text-neutral-600">
-            Analyzing your input...
+            Sending message...
           </p>
         </div>
       )}

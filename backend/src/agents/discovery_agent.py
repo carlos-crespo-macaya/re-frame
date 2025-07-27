@@ -5,8 +5,6 @@ This module implements the discovery phase of the conversation flow,
 helping users explore their thoughts and emotions.
 """
 
-from typing import Optional
-
 from google.adk.agents import LlmAgent
 
 from src.agents.phase_manager import (
@@ -79,7 +77,7 @@ def identify_emotions(emotion_description: str) -> dict:
 
 
 def create_discovery_agent(
-    model: str = "gemini-2.0-flash", language_code: Optional[str] = None
+    model: str = "gemini-2.0-flash", language_code: str | None = None
 ) -> LlmAgent:
     """
     Create a discovery phase agent.
