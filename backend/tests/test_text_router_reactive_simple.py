@@ -51,9 +51,7 @@ class TestReactiveSSEBehavior:
                     mock_perf.return_value = mock_monitor
 
                     # Call the endpoint
-                    await sse_endpoint(
-                        mock_request, "test-session-123", "en-US"
-                    )
+                    await sse_endpoint(mock_request, "test-session-123", "en-US")
 
                     # EXPECTED TO FAIL: Currently calls run_async with START_CONVERSATION
                     # The current implementation sends a greeting on connection
@@ -149,9 +147,7 @@ class TestReactiveSSEBehavior:
                             data="Hello, I need help with anxiety",
                             mime_type="text/plain",
                         )
-                        await send_message_endpoint(
-                            "test-session-123", message
-                        )
+                        await send_message_endpoint("test-session-123", message)
 
                         # EXPECTED TO FAIL: Language detection not implemented
                         # Should detect language and update session
@@ -204,9 +200,7 @@ class TestReactiveSSEBehavior:
                         message = MessageRequest(
                             data="Hola, tengo otra pregunta", mime_type="text/plain"
                         )
-                        await send_message_endpoint(
-                            "test-session-123", message
-                        )
+                        await send_message_endpoint("test-session-123", message)
 
                         # EXPECTED TO FAIL: Language detection happens on all messages currently
                         # Should NOT detect language on subsequent messages

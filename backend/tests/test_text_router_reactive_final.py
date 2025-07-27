@@ -59,9 +59,9 @@ class TestReactiveSSEBehavior:
         if spec:
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
-            assert not hasattr(module, "detect_language"), (
-                "detect_language should not exist yet"
-            )
+            assert not hasattr(
+                module, "detect_language"
+            ), "detect_language should not exist yet"
 
     def test_session_metadata_greeting_tracking(self):
         """Test that session metadata doesn't track greeting state."""
