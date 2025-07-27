@@ -20,16 +20,22 @@ LANGUAGE_TEST_CASES = [
     ("en-US", "Hello! I'm here to help you with cognitive reframing."),
     ("es-ES", "¡Hola! Estoy aquí para ayudarte con el reencuadre cognitivo."),
     ("pt-BR", "Olá! Estou aqui para ajudá-lo com a reestruturação cognitiva."),
-    ("de-DE", "Hallo! Ich bin hier, um Ihnen bei der kognitiven Umstrukturierung zu helfen."),
-    ("fr-FR", "Bonjour! Je suis ici pour vous aider avec la restructuration cognitive."),
+    (
+        "de-DE",
+        "Hallo! Ich bin hier, um Ihnen bei der kognitiven Umstrukturierung zu helfen.",
+    ),
+    (
+        "fr-FR",
+        "Bonjour! Je suis ici pour vous aider avec la restructuration cognitive.",
+    ),
     ("it-IT", "Ciao! Sono qui per aiutarti con la ristrutturazione cognitiva."),
     ("nl-NL", "Hallo! Ik ben hier om je te helpen met cognitieve herstructurering."),
     ("pl-PL", "Cześć! Jestem tutaj, aby pomóc ci w restrukturyzacji poznawczej."),
     ("hi-IN", "नमस्ते! मैं यहाँ संज्ञानात्मक पुनर्रचना में आपकी मदद करने के लिए हूँ।"),
-    ("ja-JP", "こんにちは！認知の再構築をお手伝いします。"),
+    ("ja-JP", "こんにちは！認知の再構築をお手伝いします。"),  # noqa: RUF001
     ("ko-KR", "안녕하세요! 인지 재구성을 도와드리기 위해 여기 있습니다."),
-    ("zh-CN", "你好！我在这里帮助您进行认知重构。"),
-    ("zh-TW", "你好！我在這裡幫助您進行認知重構。"),
+    ("zh-CN", "你好！我在这里帮助您进行认知重构。"),  # noqa: RUF001
+    ("zh-TW", "你好！我在這裡幫助您進行認知重構。"),  # noqa: RUF001
 ]
 
 # Language-specific greetings that agents should use

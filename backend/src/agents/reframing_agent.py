@@ -5,8 +5,6 @@ This module implements the reframing phase where users work through
 cognitive restructuring to create balanced alternative thoughts.
 """
 
-from typing import Optional
-
 from google.adk.agents import LlmAgent
 
 from src.agents.phase_manager import (
@@ -128,7 +126,7 @@ def design_micro_action(thought: str, distortion: str) -> dict:
 
 
 def create_reframing_agent(
-    model: str = "gemini-2.0-flash", language_code: Optional[str] = None
+    model: str = "gemini-2.0-flash", language_code: str | None = None
 ) -> LlmAgent:
     """
     Create a reframing phase agent.

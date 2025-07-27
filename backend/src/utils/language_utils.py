@@ -1,7 +1,5 @@
 """Language utilities for consistent language handling."""
 
-from typing import Optional
-
 # Supported languages with their full names
 SUPPORTED_LANGUAGES = {
     "en-US": "English",
@@ -39,7 +37,7 @@ SHORT_CODE_MAPPINGS = {
 }
 
 
-def validate_language_code(language_code: Optional[str]) -> bool:
+def validate_language_code(language_code: str | None) -> bool:
     """Validate if language code is supported.
 
     Args:
@@ -53,7 +51,7 @@ def validate_language_code(language_code: Optional[str]) -> bool:
     return language_code in SUPPORTED_LANGUAGES
 
 
-def normalize_language_code(language_code: Optional[str]) -> str:
+def normalize_language_code(language_code: str | None) -> str:
     """Normalize language code to standard format.
 
     Args:
@@ -97,7 +95,7 @@ def get_default_language() -> str:
     return DEFAULT_LANGUAGE
 
 
-def get_language_instruction(language_code: Optional[str] = None) -> str:
+def get_language_instruction(language_code: str | None = None) -> str:
     """Generate language-specific instruction for agents.
 
     Args:

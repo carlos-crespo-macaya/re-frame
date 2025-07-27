@@ -3,7 +3,6 @@
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from fastapi.testclient import TestClient
 from httpx import ASGITransport, AsyncClient
 
 # Patch dependencies before importing
@@ -46,13 +45,14 @@ class TestSSELanguageHandling:
 
     async def test_sse_endpoint_stores_language(self):
         """Test that SSE endpoint stores language parameter."""
-        from src.text.router import sse_endpoint
         from fastapi import Request
-        
+
+        from src.text.router import sse_endpoint
+
         # Create a mock request
         mock_request = AsyncMock(spec=Request)
         mock_request.method = "GET"
-        
+
         with patch("src.text.router.start_agent_session") as mock_start:
             mock_runner = AsyncMock()
             mock_session = AsyncMock()
@@ -60,16 +60,16 @@ class TestSSELanguageHandling:
             mock_session.user_id = "test-session-123"
             mock_run_config = {}
             mock_start.return_value = (mock_runner, mock_session, mock_run_config)
-            
+
             # Mock the session manager
             with patch("src.text.router.session_manager") as mock_sm:
                 mock_session_info = AsyncMock()
                 mock_session_info.metadata = {}
                 mock_sm.create_session.return_value = mock_session_info
-                
+
                 # Call the endpoint directly
                 await sse_endpoint(mock_request, "test-session-123", "es-ES")
-                
+
                 # Verify language was passed to agent creation
                 mock_start.assert_called_once_with("test-session-123", "es-ES")
 
@@ -84,7 +84,7 @@ class TestSSELanguageHandling:
             mock_start.return_value = (mock_runner, mock_session, mock_run_config)
 
             # Connect without language parameter
-            response = await async_client.get("/api/events/test-session-456")
+            await async_client.get("/api/events/test-session-456")
 
             # Should use default language
             mock_start.assert_called_once_with("test-session-456", "en-US")
@@ -100,7 +100,7 @@ class TestSSELanguageHandling:
             mock_start.return_value = (mock_runner, mock_session, mock_run_config)
 
             # Connect with invalid language
-            response = await async_client.get(
+            await async_client.get(
                 "/api/events/test-session-789?language=invalid"
             )
 
@@ -124,12 +124,14 @@ class TestSSELanguageHandling:
                 mock_start.return_value = (mock_runner, mock_session, mock_run_config)
 
                 # Connect with each supported language
-                response = await async_client.get(
+                await async_client.get(
                     f"/api/events/test-session-{lang_code}?language={lang_code}"
                 )
 
                 # Verify language was passed correctly
-                mock_start.assert_called_once_with(f"test-session-{lang_code}", lang_code)
+                mock_start.assert_called_once_with(
+                    f"test-session-{lang_code}", lang_code
+                )
 
     async def test_sse_normalized_language_codes(self, async_client: AsyncClient):
         """Test that language codes are normalized properly."""
@@ -139,17 +141,17 @@ class TestSSELanguageHandling:
             ("pt-br", "pt-BR"),  # Case normalization
         ]
 
-        for input_lang, expected_lang in test_cases:
+        for input_lang, _expected_lang in test_cases:
             with patch("src.text.router.start_agent_session") as mock_start:
                 mock_runner = AsyncMock()
                 mock_session = AsyncMock()
-                mock_session.id = f"adk-session-norm"
-                mock_session.user_id = f"test-session-norm"
+                mock_session.id = "adk-session-norm"
+                mock_session.user_id = "test-session-norm"
                 mock_run_config = {}
                 mock_start.return_value = (mock_runner, mock_session, mock_run_config)
 
                 # Connect with language that needs normalization
-                response = await async_client.get(
+                await async_client.get(
                     f"/api/events/test-session-norm?language={input_lang}"
                 )
 
@@ -174,7 +176,7 @@ class TestSSELanguageHandling:
                 mock_session_manager.create_session.return_value = mock_session_info
 
                 # Connect with language
-                response = await async_client.get(
+                await async_client.get(
                     "/api/events/test-session-meta?language=fr-FR"
                 )
 

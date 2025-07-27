@@ -33,7 +33,7 @@ def create_cbt_assistant(
     """
     # Get language-specific instruction
     language_instruction = get_language_instruction(language_code)
-    
+
     # Format it for the CBT context
     formatted_language_instruction = (
         f"\n\n## IMPORTANT: Language Requirement\n{language_instruction}\n"
@@ -63,10 +63,10 @@ def create_cbt_assistant(
         + "4. SUMMARY - Recap and next steps\n\n"
         + "You must follow the phases in order and cannot skip ahead. "
         + "Use the phase management tools to check and transition between phases."
-        + "\n\n## IMPORTANT: Initial Greeting\n"
-        + "When a new session starts and you're in the greeting phase, immediately provide "
-        + "a warm welcome message without waiting for user input. Introduce yourself and "
-        + "explain how you can help with cognitive reframing."
+        + "\n\n## IMPORTANT: Reactive Behavior\n"
+        + "Wait for the user to send their first message before greeting them. "
+        + "When they do, provide a warm welcome message in response. "
+        + "Do not send any messages until the user initiates the conversation."
     )
 
     logger.info(
