@@ -100,9 +100,7 @@ class TestSSELanguageHandling:
             mock_start.return_value = (mock_runner, mock_session, mock_run_config)
 
             # Connect with invalid language
-            await async_client.get(
-                "/api/events/test-session-789?language=invalid"
-            )
+            await async_client.get("/api/events/test-session-789?language=invalid")
 
             # Should fallback to default - but first need to check if validation happens
             # For now, let's check what was actually called
@@ -176,9 +174,7 @@ class TestSSELanguageHandling:
                 mock_session_manager.create_session.return_value = mock_session_info
 
                 # Connect with language
-                await async_client.get(
-                    "/api/events/test-session-meta?language=fr-FR"
-                )
+                await async_client.get("/api/events/test-session-meta?language=fr-FR")
 
                 # Verify session metadata includes language
                 assert mock_session_info.metadata.get("language") == "fr-FR"
