@@ -3,7 +3,6 @@ name: Release
 on:
   # Workflow disabled
   workflow_dispatch:
-    if: false
 
 permissions:
   contents: write
