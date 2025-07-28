@@ -8,7 +8,9 @@ import pytest
 
 from src.agents.cbt_assistant import create_cbt_assistant
 from src.agents.greeting_agent import create_greeting_agent
-from src.utils.language_detection import LanguageDetector
+
+# Language detection removed - using URL parameter only
+# from src.utils.language_detection import LanguageDetector
 
 
 class TestReactiveGreetingAgent:
@@ -37,19 +39,10 @@ class TestReactiveGreetingAgent:
         )
 
     @pytest.mark.asyncio
-    async def test_greeting_agent_responds_in_detected_language(self):
-        """Test that greeting agent responds in the language detected from user's message."""
-        # Test with Spanish input (longer for reliable detection)
-        user_message = (
-            "Hola, me siento ansioso hoy y necesito hablar con alguien sobre esto"
-        )
-
-        # Detect language from user's message
-        detected_language = LanguageDetector.detect_with_fallback(user_message)
-        assert detected_language == "es"
-
-        # Create greeting agent with detected language
-        agent = create_greeting_agent(language_code=f"{detected_language}-ES")
+    async def test_greeting_agent_responds_in_specified_language(self):
+        """Test that greeting agent responds in the language specified via parameter."""
+        # Create greeting agent with Spanish language parameter
+        agent = create_greeting_agent(language_code="es-ES")
 
         # Agent instruction should include Spanish language requirement
         assert (
@@ -58,22 +51,14 @@ class TestReactiveGreetingAgent:
         )
 
     @pytest.mark.asyncio
-    async def test_greeting_agent_handles_empty_messages(self):
-        """Test that greeting agent handles empty/whitespace messages gracefully."""
-        # Test with empty and whitespace messages
-        test_cases = ["", " ", "   ", "\n", "\t", " \n\t "]
+    async def test_greeting_agent_handles_default_language(self):
+        """Test that greeting agent uses default language when not specified."""
+        # Create greeting agent with default language
+        agent = create_greeting_agent(language_code="en-US")
 
-        for message in test_cases:
-            # Detect language (should fallback to English)
-            detected_language = LanguageDetector.detect_with_fallback(message)
-            assert detected_language == "en"
-
-            # Create greeting agent with fallback language
-            agent = create_greeting_agent(language_code="en-US")
-
-            # Agent should still be configured properly
-            assert agent.instruction is not None
-            assert "english" in agent.instruction.lower()
+        # Agent should still be configured properly
+        assert agent.instruction is not None
+        assert "english" in agent.instruction.lower()
 
     @pytest.mark.asyncio
     async def test_greeting_agent_no_start_conversation_trigger(self):
@@ -98,40 +83,21 @@ class TestReactiveGreetingAgent:
         )
 
     @pytest.mark.parametrize(
-        "user_input,expected_language",
+        "language_code,expected_instruction_word",
         [
-            ("Hello, I'm feeling anxious", "en"),
-            ("Hola, estoy preocupado por mi salud mental y necesito ayuda", "es"),
-            ("Good morning, I need help", "en"),
-            ("Buenos días, necesito ayuda con mis pensamientos negativos", "es"),
-            ("", "en"),  # Empty should fallback to English
-            ("   ", "en"),  # Whitespace should fallback to English
+            ("en-US", "english"),
+            ("es-ES", "español"),
         ],
     )
-    async def test_reactive_greeting_with_various_inputs(
-        self, user_input, expected_language
+    async def test_reactive_greeting_with_various_languages(
+        self, language_code, expected_instruction_word
     ):
-        """Test reactive greeting behavior with various user inputs."""
-        # Detect language from user input
-        detected_language = LanguageDetector.detect_with_fallback(user_input)
-        assert detected_language == expected_language
-
-        # Create agent with detected language
-        language_code = (
-            f"{expected_language}-US"
-            if expected_language == "en"
-            else f"{expected_language}-ES"
-        )
+        """Test reactive greeting behavior with various language parameters."""
+        # Create greeting agent with specified language
         agent = create_greeting_agent(language_code=language_code)
 
-        # Verify agent is configured for the detected language
-        if expected_language == "en":
-            assert "english" in agent.instruction.lower()
-        else:
-            assert (
-                "español" in agent.instruction.lower()
-                or "spanish" in agent.instruction.lower()
-            )
+        # Verify agent is configured for the specified language
+        assert expected_instruction_word in agent.instruction.lower()
 
     @pytest.mark.asyncio
     async def test_sse_endpoint_no_proactive_greeting(self):

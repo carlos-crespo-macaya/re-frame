@@ -1,0 +1,8 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.7, pytest-8.4.1, pluggy-1.6.0 -- /Users/carlos/workspace/re-frame/backend/.venv/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/carlos/workspace/re-frame/backend
+configfile: pyproject.toml
+plugins: anyio-4.9.0, env-1.1.5, cov-6.2.1, asyncio-1.0.0
+asyncio: mode=Mode.AUTO, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... 

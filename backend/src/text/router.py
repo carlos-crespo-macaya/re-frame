@@ -4,13 +4,13 @@ import asyncio
 import json
 import os
 from datetime import UTC, datetime
+from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query, Request, Response
 from fastapi.responses import StreamingResponse
 from google.adk.agents.run_config import RunConfig
 from google.adk.runners import InMemoryRunner
 from google.genai.types import Content, Part, SpeechConfig
-from langdetect import LangDetectException, detect_langs
 
 from src.agents.cbt_assistant import create_cbt_assistant
 from src.models import (
@@ -41,29 +41,7 @@ language_limiter = RateLimiter(max_requests=100, window_seconds=60)
 APP_NAME = "CBT Reframing Assistant"
 
 
-def detect_language(text: str) -> tuple[str, float]:
-    """
-    Detect the language of the given text.
-
-    Args:
-        text: The text to analyze
-
-    Returns:
-        Tuple of (language_code, confidence)
-    """
-    if not text or not text.strip():
-        return ("en", 1.0)
-
-    try:
-        results = detect_langs(text)
-        if results:
-            # Return the most confident result
-            return (results[0].lang, results[0].prob)
-    except LangDetectException:
-        pass
-
-    # Default to English
-    return ("en", 0.5)
+# Language detection function removed - using URL parameter only
 
 
 async def start_agent_session(user_id, language_code="en-US"):
@@ -209,12 +187,12 @@ async def sse_endpoint(
     message_queue = session_info.metadata["message_queue"]
 
     # Create the SSE stream with heartbeats
-    async def stream_generator():
+    async def stream_generator(request: Request):
         """Generate SSE stream with heartbeats."""
         yield f"data: {json.dumps({'type': 'connected', 'session_id': session_id})}\n\n"
 
         heartbeat_interval = int(os.getenv("HEARTBEAT_INTERVAL_SECONDS", "20"))
-        heartbeat_queue = asyncio.Queue()
+        heartbeat_queue: asyncio.Queue[dict[str, Any]] = asyncio.Queue()
 
         async def send_heartbeats():
             """Send periodic heartbeats to keep connection alive."""
@@ -243,18 +221,32 @@ async def sse_endpoint(
 
             async def get_next_event():
                 try:
-                    event = await message_queue.get()
+                    # Add 1-second timeout to prevent hanging when client disconnects
+                    event = await asyncio.wait_for(message_queue.get(), timeout=1.0)
                     logger.debug(
                         "event_retrieved",
                         session_id=session_id,
                         event_type=type(event).__name__,
                     )
                     return event
+                except TimeoutError:
+                    # Timeout is normal - it allows checking for disconnection
+                    return None
                 except Exception as e:
                     logger.error("queue_get_error", error=str(e))
                     return None
 
             while True:
+                # Check if client has disconnected
+                if await request.is_disconnected():
+                    logger.info("client_disconnected", session_id=session_id)
+                    break
+
+                # Check if we should shutdown
+                if session_info and session_info.metadata.get("sse_shutdown", False):
+                    logger.info("sse_shutdown_requested", session_id=session_id)
+                    break
+
                 # Wait for either a heartbeat or a queued message
                 tasks = []
 
@@ -266,12 +258,22 @@ async def sse_endpoint(
                 event_task = asyncio.create_task(get_next_event())
                 tasks.append(event_task)
 
-                # Wait for first task to complete
+                # Wait for first task to complete, with a timeout to allow disconnect checks
                 done, pending = await asyncio.wait(
-                    tasks, return_when=asyncio.FIRST_COMPLETED
+                    tasks, return_when=asyncio.FIRST_COMPLETED, timeout=1.0
                 )
 
-                # Cancel pending tasks
+                # If timeout occurred, cancel pending tasks and loop again
+                if not done:
+                    for task in pending:
+                        task.cancel()
+                        try:
+                            await task
+                        except asyncio.CancelledError:
+                            pass
+                    continue
+
+                # Cancel any remaining pending tasks
                 for task in pending:
                     task.cancel()
                     try:
@@ -314,12 +316,12 @@ async def sse_endpoint(
                                     break
                                 else:
                                     # Regular string message - use SSEMessage format
-                                    message = {
+                                    string_message = {
                                         "type": "content",
                                         "content_type": "text/plain",
                                         "data": event,  # Text content directly, no base64 encoding needed
                                     }
-                                    yield f"data: {json.dumps(message)}\n\n"
+                                    yield f"data: {json.dumps(string_message)}\n\n"
                                     logger.debug(
                                         "message_sent",
                                         session_id=session_id,
@@ -332,12 +334,12 @@ async def sse_endpoint(
                                     for part in content.parts:
                                         if hasattr(part, "text") and part.text:
                                             # Use SSEMessage format
-                                            message = {
+                                            part_message = {
                                                 "type": "content",
                                                 "content_type": "text/plain",
                                                 "data": part.text,  # Text content directly
                                             }
-                                            yield f"data: {json.dumps(message)}\n\n"
+                                            yield f"data: {json.dumps(part_message)}\n\n"
                                             logger.debug(
                                                 "event_message_sent",
                                                 session_id=session_id,
@@ -347,12 +349,12 @@ async def sse_endpoint(
                             elif (
                                 hasattr(event, "turn_complete") and event.turn_complete
                             ):
-                                message = {
+                                turn_message: dict[str, Any] = {
                                     "type": "turn_complete",
                                     "turn_complete": True,
                                     "interrupted": getattr(event, "interrupted", False),
                                 }
-                                yield f"data: {json.dumps(message)}\n\n"
+                                yield f"data: {json.dumps(turn_message)}\n\n"
                                 logger.debug(
                                     "turn_complete_sent",
                                     session_id=session_id,
@@ -385,7 +387,7 @@ async def sse_endpoint(
             logger.info("sse_stream_ended", session_id=session_id)
 
     return StreamingResponse(
-        stream_generator(),
+        stream_generator(request),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",
@@ -439,68 +441,13 @@ async def send_message_endpoint(
         # Check if this is the first user message (reactive greeting)
         greeting_sent = session.metadata.get("greeting_sent", False)
         if not greeting_sent:
-            # Detect language from first message
-            detected_lang, confidence = detect_language(message.data)
-            logger.info(
-                "language_detected_from_first_message",
-                session_id=session_id,
-                detected_language=detected_lang,
-                confidence=confidence,
-                original_language=session.metadata.get("language"),
-            )
-
-            # Update language if detection is confident
-            if confidence > 0.8:
-                # Map detected language to full language code
-                if detected_lang == "es":
-                    new_language = "es-ES"
-                elif detected_lang == "en":
-                    new_language = "en-US"
-                else:
-                    # Default to English for unsupported languages
-                    new_language = "en-US"
-
-                # Update session language if different
-                if new_language != session.metadata.get("language"):
-                    logger.info(
-                        "updating_session_language",
-                        session_id=session_id,
-                        from_language=session.metadata.get("language"),
-                        to_language=new_language,
-                    )
-                    session.metadata["language"] = new_language
-
-                    # Recreate agent with new language
-                    cbt_agent = create_cbt_assistant(language_code=new_language)
-                    new_runner = InMemoryRunner(
-                        app_name=APP_NAME,
-                        agent=cbt_agent,
-                    )
-
-                    # Create new session with same IDs
-                    new_adk_session = await new_runner.session_service.create_session(
-                        app_name=APP_NAME,
-                        user_id=session_id,
-                    )
-
-                    # Update run config with new language
-                    new_run_config = RunConfig(
-                        response_modalities=["TEXT"],
-                        speech_config=SpeechConfig(language_code=new_language),
-                    )
-
-                    # Update session metadata
-                    session.metadata["runner"] = new_runner
-                    session.metadata["adk_session"] = new_adk_session
-                    session.metadata["run_config"] = new_run_config
-
-                    # Update local variables
-                    runner = new_runner
-                    adk_session = new_adk_session
-                    run_config = new_run_config
-
-            # Mark greeting as sent
+            # Mark greeting as sent - the agent will send greeting on first message
             session.metadata["greeting_sent"] = True
+            logger.info(
+                "first_user_message_received",
+                session_id=session_id,
+                language=session.metadata.get("language"),
+            )
 
         content = Content(role="user", parts=[Part.from_text(text=message.data)])
 
@@ -654,7 +601,7 @@ async def detect_language_endpoint(
     request: LanguageDetectionRequest,
     req: Request,
 ) -> LanguageDetectionResponse:
-    """Detect the language of the provided text."""
+    """Detect the language of the provided text - DEPRECATED: Always returns English."""
     # Rate limiting
     client_host = req.client.host if req.client else "unknown"
     if not await language_limiter.check_request(client_host):
@@ -664,57 +611,39 @@ async def detect_language_endpoint(
             headers={"Retry-After": "60"},
         )
 
-    # Handle empty text
-    if not request.text or not request.text.strip():
-        return LanguageDetectionResponse(
-            status="success",
-            language="en",
-            confidence=1.0,
-            message="No text provided, defaulting to English",
-        )
+    # Language detection is deprecated - always return English
+    # Language should be specified via URL parameter instead
+    logger.info(
+        "language_detection_endpoint_called_deprecated",
+        text_length=len(request.text) if request.text else 0,
+    )
 
-    try:
-        # Detect language using langdetect
-        results = detect_langs(request.text)
-        if results:
-            # Find best match among supported languages
-            supported_languages = ["en", "es"]
-
-            # First, try to find a supported language in the results
-            for result in results:
-                if result.lang in supported_languages:
-                    logger.info(
-                        "language_detected",
-                        language=result.lang,
-                        confidence=result.prob,
-                        text_length=len(request.text),
-                    )
-                    return LanguageDetectionResponse(
-                        status="success",
-                        language=result.lang,
-                        confidence=round(result.prob, 2),
-                        message=None,
-                    )
-
-            # If no supported language found, log and fall through to default
-            logger.info(
-                "unsupported_language_detected",
-                detected_language=results[0].lang,
-                confidence=results[0].prob,
-                text_length=len(request.text),
-            )
-    except LangDetectException as e:
-        logger.warning(
-            "language_detection_failed",
-            error=str(e),
-            text_length=len(request.text),
-        )
-
-    # Fallback to English if detection fails
-    logger.info("language_detection_fallback", text_length=len(request.text))
     return LanguageDetectionResponse(
         status="success",
         language="en",
-        confidence=0.5,
-        message="Language detection uncertain, defaulting to English",
+        confidence=1.0,
+        message="Language detection is deprecated. Use language URL parameter instead.",
     )
+
+
+@router.delete(
+    "/api/session/{session_id}/sse",
+    summary="Close SSE connection",
+    operation_id="closeSSEConnection",
+)
+async def close_sse_connection(session_id: str):
+    """Close an SSE connection gracefully by setting shutdown flag."""
+    session = session_manager.get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    # Set shutdown flag
+    session.metadata["sse_shutdown"] = True
+
+    # Also put STREAM_END in the queue if it exists
+    message_queue = session.metadata.get("message_queue")
+    if message_queue:
+        await message_queue.put("STREAM_END")
+
+    logger.info("sse_close_requested", session_id=session_id)
+    return {"status": "closing"}

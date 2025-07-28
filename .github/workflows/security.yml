@@ -3,7 +3,6 @@ name: Security Scan
 on:
   # Workflow disabled
   workflow_dispatch:
-    if: false
 
 jobs:
   dependency-audit:

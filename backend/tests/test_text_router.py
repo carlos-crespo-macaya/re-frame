@@ -171,8 +171,8 @@ class TestLanguageDetection:
     """Test language detection endpoint."""
 
     def test_detect_language(self, client):
-        """Test language detection for all supported languages."""
-        # Test cases with phrases in different languages
+        """Test that language detection endpoint is deprecated."""
+        # Language detection is deprecated - always returns English
         test_cases = [
             {
                 "text": "Hello, how are you today? I hope you're doing well.",
@@ -181,7 +181,7 @@ class TestLanguageDetection:
             },
             {
                 "text": "Hola, ¿cómo estás? Espero que tengas un buen día.",
-                "expected_lang": "es",
+                "expected_lang": "en",  # Always returns English now
                 "description": "Spanish",
             },
         ]
@@ -195,17 +195,13 @@ class TestLanguageDetection:
 
             data = response.json()
             assert data["status"] == "success"
-            assert (
-                data["language"] == test_case["expected_lang"]
-            ), f"Failed for {test_case['description']}: expected {test_case['expected_lang']}, got {data['language']}"
-            # Confidence should be reasonable for clear language samples
-            assert (
-                0.7 <= data["confidence"] <= 1.0
-            ), f"Low confidence for {test_case['description']}: {data['confidence']}"
+            assert data["language"] == "en", "Should always return English"
+            assert data["confidence"] == 1.0, "Should have full confidence"
+            assert "deprecated" in data["message"].lower()
 
     def test_detect_unsupported_languages(self, client):
-        """Test that unsupported languages fall back to English."""
-        # French text (no longer supported)
+        """Test that all languages return English (deprecated endpoint)."""
+        # All texts return English now
         response = client.post(
             "/api/language/detect",
             json={
@@ -214,10 +210,10 @@ class TestLanguageDetection:
         )
         assert response.status_code == 200
         data = response.json()
-        assert data["language"] == "en"  # Should fall back to English
-        assert data["confidence"] == 0.5  # Low confidence for fallback
+        assert data["language"] == "en"  # Always returns English
+        assert data["confidence"] == 1.0  # Full confidence
 
-        # German text (no longer supported)
+        # German text also returns English
         response = client.post(
             "/api/language/detect",
             json={
@@ -226,8 +222,8 @@ class TestLanguageDetection:
         )
         assert response.status_code == 200
         data = response.json()
-        assert data["language"] == "en"  # Should fall back to English
-        assert data["confidence"] == 0.5  # Low confidence for fallback
+        assert data["language"] == "en"  # Always returns English
+        assert data["confidence"] == 1.0  # Full confidence
 
     def test_detect_language_edge_cases(self, client):
         """Test language detection edge cases."""
