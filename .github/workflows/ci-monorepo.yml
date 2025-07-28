@@ -13,7 +13,8 @@ permissions:
 jobs:
   changes:
     name: Detect Changes
-    runs-on: ubuntu-latest
+    runs-on: [ubuntu-latest, self-hosted]
+    timeout-minutes: 5
     outputs:
       backend: ${{ steps.changes.outputs.backend }}
       frontend: ${{ steps.changes.outputs.frontend }}
@@ -38,7 +39,8 @@ jobs:
   summary:
     name: CI Summary
     needs: changes
-    runs-on: ubuntu-latest
+    runs-on: [ubuntu-latest, self-hosted]
+    timeout-minutes: 5
     if: always()
     steps:
       - name: Summary
