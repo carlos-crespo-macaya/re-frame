@@ -13,28 +13,7 @@ from src.agents.phase_manager import (
     check_phase_transition,
 )
 from src.knowledge.cbt_context import BASE_CBT_CONTEXT
-from src.utils.language_detection import LanguageDetector
 from src.utils.language_utils import get_language_instruction
-
-
-def detect_user_language(user_input: str) -> dict:
-    """
-    Detect the language of user input and return language information.
-
-    Args:
-        user_input: The user's message
-
-    Returns:
-        dict: Language detection results
-    """
-    language_code = LanguageDetector.detect_with_fallback(user_input)
-    language_name = LanguageDetector.get_language_name(language_code)
-
-    return {
-        "language_code": language_code,
-        "language_name": language_name,
-        "supported": LanguageDetector.is_supported(language_code),
-    }
 
 
 def create_greeting_agent(
