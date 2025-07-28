@@ -435,6 +435,9 @@ async def send_message_endpoint(
                 status_code=500, detail="Session not properly initialized"
             )
 
+        # Type assertion after validation
+        assert isinstance(message_queue, asyncio.Queue)
+
         # Only accept text/plain messages
         if message.mime_type != "text/plain":
             raise HTTPException(
