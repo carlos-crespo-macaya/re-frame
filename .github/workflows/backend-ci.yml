@@ -19,7 +19,8 @@ concurrency:
 jobs:
   test:
     name: Backend Tests
-    runs-on: self-hosted
+    runs-on: [ubuntu-latest, self-hosted]
+    timeout-minutes: 5
     strategy:
       matrix:
         python-version: ["3.12"]

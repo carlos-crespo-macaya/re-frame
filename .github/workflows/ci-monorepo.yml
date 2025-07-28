@@ -17,7 +17,8 @@ concurrency:
 jobs:
   changes:
     name: Detect Changes
-    runs-on: self-hosted
+    runs-on: [ubuntu-latest, self-hosted]
+    timeout-minutes: 5
     outputs:
       backend: ${{ steps.changes.outputs.backend }}
       frontend: ${{ steps.changes.outputs.frontend }}
@@ -50,7 +51,8 @@ jobs:
   summary:
     name: CI Summary
     needs: changes
-    runs-on: self-hosted
+    runs-on: [ubuntu-latest, self-hosted]
+    timeout-minutes: 5
     if: always()
     steps:
       - name: Summary

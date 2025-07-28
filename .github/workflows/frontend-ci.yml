@@ -27,7 +27,8 @@ concurrency:
 jobs:
   test:
     name: Frontend Tests
-    runs-on: self-hosted
+    runs-on: [ubuntu-latest, self-hosted]
+    timeout-minutes: 5
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
