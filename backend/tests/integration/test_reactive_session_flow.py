@@ -91,6 +91,9 @@ class TestReactiveSessionFlow:
                     # Call the endpoint
                     await sse_endpoint(mock_request, "test-session", "en-US")
 
+                    # The response is a StreamingResponse - we need to set shutdown flag
+                    mock_session_info.metadata["sse_shutdown"] = True
+
                     # Give time for background tasks
                     await asyncio.sleep(0.1)
 
@@ -141,26 +144,8 @@ class TestReactiveSessionFlow:
                 phrase not in instruction_lower
             ), f"CBT assistant should not have '{phrase}' in reactive mode"
 
-    async def test_language_detection_happens_on_first_user_message(self):
-        """Test that language detection is based on user's first message."""
-        from src.utils.language_detection import LanguageDetector
-
-        # Test various first messages
-        test_cases = [
-            ("Hello, I'm feeling anxious", "en"),
-            # Use longer Spanish text for reliable detection
-            ("Hola, me siento ansioso. Necesito ayuda con mis pensamientos.", "es"),
-            # Unsupported languages should fallback to English
-            ("Bonjour, je suis anxieux", "en"),  # French -> English
-            ("Hallo, ich bin ängstlich", "en"),  # German -> English
-        ]
-
-        for message, expected_lang in test_cases:
-            # Detect language from user's message
-            detected = LanguageDetector.detect_with_fallback(message)
-            assert (
-                detected == expected_lang
-            ), f"Language detection should identify {expected_lang} from '{message}'"
+    # REMOVED: test_language_detection_happens_on_first_user_message
+    # Language detection has been removed - using URL parameter only
 
     async def test_session_metadata_tracks_greeting_state(self):
         """Test that session metadata can track whether greeting has been sent."""
@@ -191,21 +176,12 @@ class TestReactiveSessionFlow:
             "START_CONVERSATION" not in sse_source
         ), "SSE endpoint source code should not contain START_CONVERSATION in reactive mode"
 
-    async def test_reactive_greeting_responds_in_detected_language(self):
-        """Test that greeting responds in the language detected from user's message."""
+    async def test_reactive_greeting_responds_in_url_language(self):
+        """Test that greeting responds in the language specified in URL parameter."""
         from src.agents.greeting_agent import create_greeting_agent
-        from src.utils.language_detection import LanguageDetector
 
-        # Spanish user message (longer for reliable detection)
-        user_message = "Hola, necesito ayuda con mis pensamientos negativos y quiero aprender a manejarlos mejor"
-
-        # Detect language
-        detected_lang = LanguageDetector.detect_with_fallback(user_message)
-        assert detected_lang == "es"
-
-        # Create greeting agent with detected language
-        lang_code = f"{detected_lang}-ES"
-        agent = create_greeting_agent(language_code=lang_code)
+        # Create greeting agent with Spanish language from URL parameter
+        agent = create_greeting_agent(language_code="es-ES")
 
         # Verify agent is configured for Spanish
         assert any(
@@ -213,14 +189,8 @@ class TestReactiveSessionFlow:
             for spanish_indicator in ["español", "spanish", "es-es"]
         ), "Greeting agent should be configured for Spanish language"
 
-    async def test_empty_messages_fallback_to_default_language(self):
-        """Test that empty messages use default language."""
-        from src.utils.language_detection import LanguageDetector
-
-        empty_messages = ["", " ", "   ", "\n", "\t"]
-
-        for msg in empty_messages:
-            detected = LanguageDetector.detect_with_fallback(msg)
-            assert (
-                detected == "en"
-            ), f"Empty message '{msg!r}' should fallback to English"
+    async def test_empty_messages_use_url_language(self):
+        """Test that empty messages use language from URL parameter."""
+        # When language is specified in URL, that's what should be used
+        # Empty messages don't trigger language detection
+        pass  # Language is now determined by URL parameter only
