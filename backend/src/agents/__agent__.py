@@ -10,6 +10,7 @@ import sys
 from functools import lru_cache
 from pathlib import Path
 from types import SimpleNamespace
+from typing import Any
 
 # Add project root to path for imports
 project_root = Path(__file__).parent.parent.parent
@@ -18,6 +19,9 @@ if str(project_root) not in sys.path:
 
 # Check if we're in test mode
 _TEST_MODE = os.getenv("CBT_SKIP_AGENT_INIT", "0") in ("1", "true", "True", "TRUE")
+
+# Define agent with proper type annotation
+agent: Any
 
 if _TEST_MODE:
     # Provide a cheap stub that satisfies attribute access in tests

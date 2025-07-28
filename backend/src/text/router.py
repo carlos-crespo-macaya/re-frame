@@ -4,6 +4,7 @@ import asyncio
 import json
 import os
 from datetime import UTC, datetime
+from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query, Request, Response
 from fastapi.responses import StreamingResponse
@@ -191,7 +192,7 @@ async def sse_endpoint(
         yield f"data: {json.dumps({'type': 'connected', 'session_id': session_id})}\n\n"
 
         heartbeat_interval = int(os.getenv("HEARTBEAT_INTERVAL_SECONDS", "20"))
-        heartbeat_queue = asyncio.Queue()
+        heartbeat_queue: asyncio.Queue[dict[str, Any]] = asyncio.Queue()
 
         async def send_heartbeats():
             """Send periodic heartbeats to keep connection alive."""
@@ -315,12 +316,12 @@ async def sse_endpoint(
                                     break
                                 else:
                                     # Regular string message - use SSEMessage format
-                                    message = {
+                                    string_message = {
                                         "type": "content",
                                         "content_type": "text/plain",
                                         "data": event,  # Text content directly, no base64 encoding needed
                                     }
-                                    yield f"data: {json.dumps(message)}\n\n"
+                                    yield f"data: {json.dumps(string_message)}\n\n"
                                     logger.debug(
                                         "message_sent",
                                         session_id=session_id,
@@ -333,12 +334,12 @@ async def sse_endpoint(
                                     for part in content.parts:
                                         if hasattr(part, "text") and part.text:
                                             # Use SSEMessage format
-                                            message = {
+                                            part_message = {
                                                 "type": "content",
                                                 "content_type": "text/plain",
                                                 "data": part.text,  # Text content directly
                                             }
-                                            yield f"data: {json.dumps(message)}\n\n"
+                                            yield f"data: {json.dumps(part_message)}\n\n"
                                             logger.debug(
                                                 "event_message_sent",
                                                 session_id=session_id,
@@ -348,12 +349,12 @@ async def sse_endpoint(
                             elif (
                                 hasattr(event, "turn_complete") and event.turn_complete
                             ):
-                                message = {
+                                turn_message: dict[str, Any] = {
                                     "type": "turn_complete",
                                     "turn_complete": True,
                                     "interrupted": getattr(event, "interrupted", False),
                                 }
-                                yield f"data: {json.dumps(message)}\n\n"
+                                yield f"data: {json.dumps(turn_message)}\n\n"
                                 logger.debug(
                                     "turn_complete_sent",
                                     session_id=session_id,
