@@ -1,14 +1,19 @@
+import createNextIntlPlugin from 'next-intl/plugin';
+
+const withNextIntl = createNextIntlPlugin();
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
+  // Temporarily disabled static export for i18n development
+  // output: 'export',
+  trailingSlash: true,
   images: {
     unoptimized: true,
   },
-  trailingSlash: true,
-  // Disable x-powered-by header for security
-  poweredByHeader: false,
-  // Strict mode for better React development
   reactStrictMode: true,
-};
+  experimental: {
+    optimizePackageImports: ['@headlessui/react'],
+  },
+}
 
-export default nextConfig;
+export default withNextIntl(nextConfig);

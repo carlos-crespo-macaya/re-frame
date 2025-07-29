@@ -8,7 +8,6 @@ import {
   // StatusMessage,
   ClientMessage,
   ConnectionState,
-  SSEMessage,
   isServerMessage,
   isErrorMessage,
   isStatusMessage

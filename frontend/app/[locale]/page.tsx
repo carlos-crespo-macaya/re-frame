@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import ThoughtInputForm from '@/components/forms/ThoughtInputForm'
 import { FrameworkBadge, LanguageSelector } from '@/components/ui'
 import { ReframeResponse, Framework } from '@/types/api'
@@ -9,8 +10,10 @@ import { useSSEClient } from '@/lib/streaming/use-sse-client'
 import ReactMarkdown from 'react-markdown'
 import { NaturalConversation } from '@/components/audio/NaturalConversation'
 import { appLogger } from '@/lib/logger'
+import { useTextModeEnabled, useVoiceModeEnabled } from '@/lib/feature-flags'
 
 export default function Home() {
+  const t = useTranslations()
   const [isLoading, setIsLoading] = useState(false)
   const [responses, setResponses] = useState<ReframeResponse[]>([])
   const [selectedLanguage, setSelectedLanguage] = useState('en-US')
@@ -20,6 +23,25 @@ export default function Home() {
   const previousLanguageRef = useRef(selectedLanguage)
   const previousAudioModeRef = useRef(useAudioMode)
   const connectionAttemptRef = useRef<number>(0)
+  
+  // Feature flags
+  const textMode = useTextModeEnabled()
+  const voiceMode = useVoiceModeEnabled()
+  
+  // Set initial mode based on feature flags
+  useEffect(() => {
+    if (!textMode.loading && !voiceMode.loading) {
+      // If only voice mode is enabled, default to voice
+      if (voiceMode.value && !textMode.value) {
+        setUseAudioMode(true)
+      }
+      // If only text mode is enabled, default to text
+      else if (textMode.value && !voiceMode.value) {
+        setUseAudioMode(false)
+      }
+      // If both or neither are enabled, keep current state
+    }
+  }, [textMode.loading, textMode.value, voiceMode.loading, voiceMode.value])
   
   // Memoize SSE client options to prevent recreating the client on every render
   const sseOptions = useMemo(() => ({
@@ -232,10 +254,10 @@ export default function Home() {
           <div className="flex items-start justify-between">
             <div>
               <h1 className="text-2xl font-heading font-semibold text-brand-green-400">
-                re-frame
+                {t('home.title')}
               </h1>
               <p className="text-sm text-[#999999] mt-1">
-                Cognitive reframing support
+                {t('home.subtitle')}
               </p>
             </div>
             <div className="w-48">
@@ -281,31 +303,35 @@ export default function Home() {
                       A few sentences are enough — share what feels right.
                     </p>
                   </div>
-                  <button
-                    onClick={() => setUseAudioMode(!useAudioMode)}
-                    className="flex items-center gap-2 px-3 py-1.5 text-sm text-neutral-800 rounded-full bg-neutral-200 hover:bg-neutral-300 transition-colors"
-                  >
-                    {useAudioMode ? (
-                      <>
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                        </svg>
-                        Switch to Text
-                      </>
-                    ) : (
-                      <>
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                        </svg>
-                        Switch to Voice
-                      </>
-                    )}
-                  </button>
+                  {/* Only show mode toggle if both modes are enabled */}
+                  {textMode.value && voiceMode.value && !textMode.loading && !voiceMode.loading && (
+                    <button
+                      onClick={() => setUseAudioMode(!useAudioMode)}
+                      className="flex items-center gap-2 px-3 py-1.5 text-sm text-neutral-800 rounded-full bg-neutral-200 hover:bg-neutral-300 transition-colors"
+                    >
+                      {useAudioMode ? (
+                        <>
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                          </svg>
+                          Switch to Text
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                          </svg>
+                          Switch to Voice
+                        </>
+                      )}
+                    </button>
+                  )}
                 </div>
               
-              {useAudioMode ? (
+              {/* Show appropriate mode based on feature flags */}
+              {useAudioMode && voiceMode.value ? (
                 <NaturalConversation language={selectedLanguage} />
-              ) : (
+              ) : (!useAudioMode && textMode.value) ? (
                 <>
                   {/* Connection status for debugging */}
                   {process.env.NODE_ENV === 'development' && (
@@ -316,9 +342,9 @@ export default function Home() {
                         'bg-red-500'
                       }`} />
                       <span>
-                        {isConnecting ? 'Connecting...' : 
-                         isConnected ? 'Connected' : 
-                         `Disconnected${error ? ` - ${error.message}` : ''}`}
+                        {isConnecting ? t('home.connecting') : 
+                         isConnected ? t('home.connected') : 
+                         `${t('home.disconnected')}${error ? ` - ${error.message}` : ''}`}
                       </span>
                     </div>
                   )}
@@ -329,6 +355,12 @@ export default function Home() {
                     language={selectedLanguage}
                   />
                 </>
+              ) : (
+                // Fallback when no modes are enabled
+                <div className="text-center py-8 text-neutral-600">
+                  <p>{t('home.no_modes_available')}</p>
+                  <p className="text-sm mt-2">{t('home.check_back_later')}</p>
+                </div>
               )}
 
                 {responses.length > 0 && !useAudioMode && (
@@ -363,7 +395,7 @@ export default function Home() {
                 )}
 
                 <p className="mt-6 text-sm text-neutral-500 text-center">
-                  Private session — we don&apos;t store personal data.
+                  {t('home.privacy_notice')}
                 </p>
               </div>
             </div>

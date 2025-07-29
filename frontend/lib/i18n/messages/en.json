@@ -1,0 +1,121 @@
+{
+  "metadata": {
+    "title": "re-frame.social - Cognitive Reframing Support",
+    "description": "A transparent, AI-assisted cognitive reframing tool designed for people with Avoidant Personality Disorder (AvPD) and social anxiety."
+  },
+  "nav": {
+    "skip_to_content": "Skip to main content",
+    "about": "About",
+    "learn_cbt": "Learn CBT",
+    "support": "Support"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "try_again": "Try again",
+    "submit": "Submit",
+    "clear": "Clear",
+    "cancel": "Cancel"
+  },
+  "home": {
+    "title": "re-frame",
+    "subtitle": "Cognitive reframing support",
+    "privacy_notice": "Private session — we don't store personal data.",
+    "connecting": "Connecting...",
+    "connected": "Connected",
+    "disconnected": "Disconnected",
+    "no_modes_available": "No communication modes are currently available.",
+    "check_back_later": "Please check back later."
+  },
+  "language_selector": {
+    "label": "Select Language",
+    "english": "English",
+    "spanish": "Español"
+  },
+  "thought_form": {
+    "placeholder": "What's on your mind? Share a thought or situation you'd like help reframing...",
+    "submit": "Get Support",
+    "clear": "Clear",
+    "voice_mode": "Voice Mode",
+    "text_mode": "Text Mode"
+  },
+  "about": {
+    "title": "ℹ️ About re-frame",
+    "mission": "Mission – give people who struggle with avoidant patterns a gentle way to challenge harsh thoughts—without shame, ads, or data mining.",
+    "what_it_is": "What it is:",
+    "what_it_is_desc": "a therapeutic framework-informed cognitive restructuring tool that spots thinking traps (catastrophising, mind-reading, etc.) and offers kinder perspectives.",
+    "what_it_isnt": "What it isn't:",
+    "what_it_isnt_desc": "full psychotherapy, medical advice, or a crisis service.",
+    "who_builds": "Who builds it:",
+    "who_builds_desc": "just me—Carlos, a software engineer who's lived with AvPD for years and is investing my own time, skills, and will to create the tool I wish I'd had.",
+    "why_open_source": "Why open source:",
+    "why_open_source_desc": "transparency builds trust; anyone can inspect or improve the code.",
+    "transparency_title": "🔍 Transparency",
+    "open_source_desc": "The entire codebase is open-source and available on GitHub. You can see exactly how your data is handled (it isn't stored) and how the AI generates responses.",
+    "no_tracking_title": "🔒 No tracking",
+    "no_tracking_desc": "We don't use analytics, store conversations, or track you across the web. Your sessions are completely private.",
+    "research_backed_title": "📚 Research-backed",
+    "research_backed_desc": "Built on evidence-based cognitive behavioral therapy (CBT) techniques specifically helpful for avoidant patterns and social anxiety.",
+    "limitations_title": "⚠️ Important limitations",
+    "not_replacement": "This is not a replacement for professional therapy or medical treatment.",
+    "crisis_warning": "If you're in crisis, please contact your local emergency services or a crisis helpline.",
+    "getting_help": "If you're looking for professional support, consider reaching out to a qualified therapist who specializes in CBT or personality disorders."
+  },
+  "learn_cbt": {
+    "title": "What is CBT?",
+    "intro": "Cognitive Behavioural Therapy (CBT) is an evidence-based approach that links thoughts, feelings, and actions. By spotting common thinking traps—such as catastrophising, mind-reading, or \"all-or-nothing\" statements—you can practise kinder, more balanced perspectives.",
+    "why_helps_title": "Why it helps with AvPD",
+    "why_helps_intro": "People living with Avoidant Personality Disorder often battle intense self-criticism and fear of negative evaluation. CBT offers practical tools to:",
+    "name_thoughts": "Name unhelpful thoughts rather than accept them as facts.",
+    "test_thoughts": "Test those thoughts against real-world evidence.",
+    "practice_alternatives": "Practise alternative interpretations in small, safe steps.",
+    "common_traps_title": "Common thinking traps",
+    "catastrophising": "Catastrophising",
+    "catastrophising_desc": "Assuming the worst possible outcome will happen.",
+    "mind_reading": "Mind reading",
+    "mind_reading_desc": "Believing you know what others are thinking about you.",
+    "all_or_nothing": "All-or-nothing thinking",
+    "all_or_nothing_desc": "Seeing situations in black and white terms only.",
+    "personalisation": "Personalisation",
+    "personalisation_desc": "Blaming yourself for things outside your control.",
+    "getting_started_title": "Getting started",
+    "getting_started_desc": "Start by simply noticing your thoughts without judgment. When you catch yourself in a thinking trap, gently ask: \"Is there another way to look at this situation?\"",
+    "references_title": "References",
+    "beck_reference": "Beck, J. S. (2011). Cognitive behavior therapy: Basics and beyond (2nd ed.).",
+    "avpd_reference": "Lampe, L., & Malhi, G. S. (2018). Avoidant personality disorder: current insights.",
+    "exposure_reference": "Wolitzky-Taylor, K. B., et al. (2008). Psychological approaches in the treatment of specific phobias."
+  },
+  "support": {
+    "title": "🤝 Get Support",
+    "intro": "If re-frame isn't meeting your needs, or if you're looking for additional support, here are some helpful resources:",
+    "crisis_title": "🚨 Crisis support",
+    "crisis_desc": "If you're in immediate danger or having thoughts of self-harm:",
+    "us_crisis": "US: National Suicide Prevention Lifeline - 988",
+    "uk_crisis": "UK: Samaritans - 116 123",
+    "emergency": "Or contact your local emergency services (911, 999, etc.)",
+    "therapy_title": "🎯 Professional therapy",
+    "therapy_desc": "For ongoing support with AvPD or social anxiety, consider working with:",
+    "cbt_therapists": "CBT therapists who specialize in personality disorders",
+    "dbt_therapists": "DBT (Dialectical Behavior Therapy) practitioners",
+    "group_therapy": "Group therapy programs for social anxiety",
+    "finding_help_title": "Finding help",
+    "psychology_today": "Psychology Today (US) - therapist directory",
+    "bacp": "BACP (UK) - therapist directory",
+    "insurance": "Check with your insurance provider for covered therapists",
+    "community_title": "🌐 Community support",
+    "online_communities": "Online communities for AvPD and social anxiety",
+    "support_groups": "Local or virtual support groups",
+    "peer_support": "Peer support networks",
+    "feedback_title": "💬 Feedback on re-frame",
+    "feedback_desc": "Have suggestions or encountered issues? I'd love to hear from you:",
+    "github_issues": "Report bugs or request features on GitHub",
+    "email_contact": "Email me directly (coming soon)",
+    "remember": "Remember: You're not alone in this. Taking the step to seek support shows real courage."
+  },
+  "error": {
+    "generic": "Something went wrong. Please try again.",
+    "connection_failed": "Failed to connect. Please check your internet connection.",
+    "session_expired": "Your session has expired. Please refresh the page.",
+    "try_again": "Try Again"
+  }
+} 

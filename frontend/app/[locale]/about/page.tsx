@@ -1,8 +1,13 @@
-'use client'
-
 import Link from 'next/link'
+import { getTranslations } from 'next-intl/server'
+import { locales } from '@/lib/i18n/config'
 
-export default function About() {
+export function generateStaticParams() {
+  return locales.map((locale) => ({ locale }))
+}
+
+export default async function About() {
+  const t = await getTranslations()
   return (
     <>
       {/* Header */}
@@ -28,29 +33,29 @@ export default function About() {
         <div className="container-safe py-8 md:py-12">
           <article className="max-w-3xl mx-auto">
             <h1 className="text-[32px] font-semibold text-[#EDEDED] mb-8">
-              ℹ️ About re-frame
+              {t('about.title')}
             </h1>
             
             <p className="text-lg text-[#999999] leading-relaxed mb-8">
-              <strong className="text-[#EDEDED]">Mission</strong> – give people who struggle with avoidant patterns a gentle way to challenge harsh thoughts—without shame, ads, or data mining.
+              <strong className="text-[#EDEDED]">{t('about.mission')}</strong>
             </p>
 
             <ul className="space-y-3 text-[#999999] mb-8">
               <li className="flex items-start">
                 <span className="mr-2">•</span>
-                <div><strong className="text-[#EDEDED]">What it is:</strong> a therapeutic framework-informed cognitive restructuring tool that spots thinking traps (catastrophising, mind-reading, etc.) and offers kinder perspectives.</div>
+                <div><strong className="text-[#EDEDED]">{t('about.what_it_is')}</strong> {t('about.what_it_is_desc')}</div>
               </li>
               <li className="flex items-start">
                 <span className="mr-2">•</span>
-                <div><strong className="text-[#EDEDED]">What it isn&apos;t:</strong> full psychotherapy, medical advice, or a crisis service.</div>
+                <div><strong className="text-[#EDEDED]">{t('about.what_it_isnt')}</strong> {t('about.what_it_isnt_desc')}</div>
               </li>
               <li className="flex items-start">
                 <span className="mr-2">•</span>
-                <div><strong className="text-[#EDEDED]">Who builds it:</strong> just me—<strong className="text-[#EDEDED]">Carlos</strong>, a software engineer who&apos;s lived with AvPD for years and is investing my own time, skills, and will to create the tool I wish I&apos;d had.</div>
+                <div><strong className="text-[#EDEDED]">{t('about.who_builds')}</strong> {t('about.who_builds_desc')}</div>
               </li>
               <li className="flex items-start">
                 <span className="mr-2">•</span>
-                <div><strong className="text-[#EDEDED]">Why open source:</strong> transparency builds trust; anyone can inspect or improve the code.</div>
+                <div><strong className="text-[#EDEDED]">{t('about.why_open_source')}</strong> {t('about.why_open_source_desc')}</div>
               </li>
               <li className="flex items-start">
                 <span className="mr-2">•</span>

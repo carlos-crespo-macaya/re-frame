@@ -6,6 +6,7 @@ import RootErrorBoundary from "@/components/error/RootErrorBoundary";
 import { ThemeProvider } from "@/lib/theme/ThemeContext";
 import { themeScript } from "@/lib/theme/theme-script";
 import { TestSetup } from "@/components/test/TestSetup";
+import { FeatureFlagProvider } from "@/lib/feature-flags";
 
 const inter = Inter({
   subsets: ['latin'],
@@ -62,11 +63,13 @@ export const viewport: Viewport = {
 
 export default function RootLayout({
   children,
+  params,
 }: Readonly<{
   children: React.ReactNode;
+  params?: { locale?: string };
 }>) {
   return (
-    <html lang="en" className="scroll-smooth" suppressHydrationWarning>
+    <html lang={params?.locale || 'en'} className="scroll-smooth" suppressHydrationWarning>
       <head>
         {/* Preconnect to potential external domains */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -84,19 +87,17 @@ export default function RootLayout({
         className={`${inter.variable} ${geistSans.variable} ${geistMono.variable} font-sans antialiased min-h-screen`}
         suppressHydrationWarning
       >
-        {/* Skip to main content link for screen readers */}
-        <a href="#main-content" className="skip-link">
-          Skip to main content
-        </a>
-        
         {/* Theme provider wrapper */}
         <ThemeProvider>
-          {/* Main application with error boundary */}
-          <RootErrorBoundary>
-            <div className="flex flex-col min-h-screen">
-              {children}
-            </div>
-          </RootErrorBoundary>
+          {/* Feature flags provider */}
+          <FeatureFlagProvider>
+            {/* Main application with error boundary */}
+            <RootErrorBoundary>
+              <div className="flex flex-col min-h-screen">
+                {children}
+              </div>
+            </RootErrorBoundary>
+          </FeatureFlagProvider>
         </ThemeProvider>
         
         {/* Test setup for E2E testing */}
