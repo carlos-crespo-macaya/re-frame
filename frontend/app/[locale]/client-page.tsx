@@ -2,15 +2,15 @@
 
 import { useRouter } from 'next/navigation'
 
-export default function HomePage() {
+export function ClientPage({ params }: { params: { locale: string } }) {
   const router = useRouter()
 
   const handleStartSession = () => {
-    router.push('/chat')
+    router.push(`/${params.locale}/chat`)
   }
 
   const handleLearnMore = () => {
-    router.push('/about')
+    router.push(`/${params.locale}/about`)
   }
 
   return (
