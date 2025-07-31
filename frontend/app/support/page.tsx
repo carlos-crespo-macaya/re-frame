@@ -1,8 +1,12 @@
 'use client'
 
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 
 export default function Support() {
+  const pathname = usePathname()
+  const first = pathname.split('/')[1] || ''
+  const homeHref = first === 'en' || first === 'es' ? `/${first}` : '/'
   return (
     <>
       {/* Header */}
@@ -10,7 +14,7 @@ export default function Support() {
         <div className="container-safe py-8">
           <div className="flex items-start justify-between">
             <div>
-              <Link href="/" className="inline-block">
+              <Link href={homeHref} className="inline-block">
                 <h1 className="text-2xl font-heading font-semibold text-brand-green-400 hover:text-brand-green-300 transition-colors">
                   re-frame
                 </h1>
@@ -94,7 +98,7 @@ export default function Support() {
             </div>
 
             <div className="mt-12 text-center">
-              <Link href="/" className="inline-flex items-center gap-2 text-brand-green-400 hover:text-brand-green-300 underline">
+              <Link href={homeHref} className="inline-flex items-center gap-2 text-brand-green-400 hover:text-brand-green-300 underline">
                 ← Return to re-frame
               </Link>
             </div>

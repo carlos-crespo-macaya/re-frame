@@ -1,8 +1,43 @@
 'use client'
 
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 
 export default function LearnCBT() {
+  const pathname = usePathname()
+  const first = pathname.split('/')[1] || ''
+  const locale = first === 'es' ? 'es' : 'en'
+  const homeHref = locale === 'en' || locale === 'es' ? `/${locale}` : '/'
+
+  const t = {
+    en: {
+      appSubtitle: 'Cognitive reframing support',
+      title: 'What is CBT?',
+      quickLinkText: 'CBT summary in 2 minutes ↗',
+      whyHelps: 'Why it helps with AvPD',
+      howWeUse: 'How re-frame uses CBT',
+      furtherReading: 'Further reading',
+      reminderPrefix: 'Reminder:',
+      reminderBody:
+        're-frame is a self-help companion, not a substitute for professional care. If you feel unsafe with your thoughts, please reach out to a qualified therapist or crisis line.',
+      references: 'References',
+      return: '← Return to re-frame'
+    },
+    es: {
+      appSubtitle: 'Apoyo para el replanteamiento cognitivo',
+      title: '¿Qué es la TCC?',
+      quickLinkText: 'Resumen de la TCC en 2 minutos ↗',
+      whyHelps: 'Por qué ayuda con el TPA',
+      howWeUse: 'Cómo re-frame utiliza la TCC',
+      furtherReading: 'Lecturas recomendadas',
+      reminderPrefix: 'Recordatorio:',
+      reminderBody:
+        're-frame es un acompañante de autoayuda, no un sustituto de la atención profesional. Si te sientes en riesgo con tus pensamientos, contacta con un profesional cualificado o una línea de ayuda.',
+      references: 'Referencias',
+      return: '← Volver a re-frame'
+    }
+  }[locale]
+
   return (
     <>
       {/* Header */}
@@ -10,13 +45,13 @@ export default function LearnCBT() {
         <div className="container-safe py-8">
           <div className="flex items-start justify-between">
             <div>
-              <Link href="/" className="inline-block">
+              <Link href={homeHref} className="inline-block">
                 <h1 className="text-2xl font-heading font-semibold text-brand-green-400 hover:text-brand-green-300 transition-colors">
                   re-frame
                 </h1>
               </Link>
               <p className="text-sm text-[#999999] mt-1">
-                Cognitive reframing support
+                {t.appSubtitle}
               </p>
             </div>
           </div>
@@ -27,16 +62,21 @@ export default function LearnCBT() {
       <main className="flex-1">
         <div className="container-safe py-8 md:py-12">
           <article className="max-w-3xl mx-auto">
-            <h1 className="text-[32px] font-semibold text-[#EDEDED] mb-8">
-              What is CBT?
+            <h1 className="text-[32px] font-semibold text-[#EDEDED] mb-2">
+              {t.title}
             </h1>
+            <p className="text-sm text-brand-green-400 mb-8">
+              <a href="#ref1" className="underline hover:text-brand-green-300">
+                {t.quickLinkText}
+              </a>
+            </p>
             
             <p className="text-base text-[#999999] leading-relaxed mb-6">
               Cognitive Behavioural Therapy (CBT) is an evidence-based approach that links <strong className="text-[#EDEDED]">thoughts, feelings, and actions</strong> <sup className="text-xs"><a href="#ref1" className="text-brand-green-400 hover:text-brand-green-300">[1]</a></sup>. By spotting common <strong className="text-[#EDEDED]">thinking traps</strong>—such as catastrophising, mind-reading, or &ldquo;all-or-nothing&rdquo; statements—you can practise kinder, more balanced perspectives.
             </p>
 
             <h2 className="text-2xl font-semibold text-[#EDEDED] mt-8 mb-4">
-              Why it helps with AvPD
+              {t.whyHelps}
             </h2>
             
             <p className="text-base text-[#999999] leading-relaxed mb-4">
@@ -54,7 +94,7 @@ export default function LearnCBT() {
             </p>
 
             <h2 className="text-2xl font-semibold text-[#EDEDED] mt-8 mb-4">
-              How re-frame uses CBT
+              {t.howWeUse}
             </h2>
             
             <p className="text-base text-[#999999] leading-relaxed mb-6">
@@ -62,7 +102,7 @@ export default function LearnCBT() {
             </p>
 
             <h2 className="text-2xl font-semibold text-[#EDEDED] mt-8 mb-4">
-              Further reading
+              {t.furtherReading}
             </h2>
 
             <ul className="space-y-2 text-[#999999] mb-8">
@@ -106,15 +146,14 @@ export default function LearnCBT() {
 
             <div className="mt-8 p-6 bg-[#2a2a2a] border border-[#3a3a3a] rounded-lg">
               <p className="text-sm text-[#999999] leading-relaxed">
-                <strong className="text-[#EDEDED]">Reminder:</strong> re-frame is a self-help companion, not a substitute for professional care.
-                If you feel unsafe with your thoughts, please reach out to a qualified therapist or crisis line.
+                <strong className="text-[#EDEDED]">{t.reminderPrefix}</strong> {t.reminderBody}
               </p>
             </div>
 
             <hr className="my-8 border-[#3a3a3a]" />
 
             <h3 className="text-xl font-semibold text-[#EDEDED] mb-4">
-              References
+              {t.references}
             </h3>
 
             <div className="overflow-x-auto">
@@ -162,8 +201,8 @@ export default function LearnCBT() {
             </div>
 
             <div className="mt-8 text-center">
-              <Link href="/" className="inline-flex items-center gap-2 text-brand-green-400 hover:text-brand-green-300 underline">
-                ← Return to re-frame
+              <Link href={homeHref} className="inline-flex items-center gap-2 text-brand-green-400 hover:text-brand-green-300 underline">
+                {t.return}
               </Link>
             </div>
           </article>
