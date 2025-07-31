@@ -1,8 +1,33 @@
 'use client'
 
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 
 export default function Privacy() {
+  const pathname = usePathname()
+  const first = pathname.split('/')[1] || ''
+  const locale = first === 'es' ? 'es' : 'en'
+  const homeHref = locale === 'en' || locale === 'es' ? `/${locale}` : '/'
+
+  const t = {
+    en: {
+      subtitle: 'Cognitive reframing support',
+      title: '🔒 Privacy',
+      leadStart: 'We believe your reflections belong to ',
+      leadStrong: 'you alone',
+      tail: "We'll never sell or share your words. Read the full policy at ",
+      back: '← Return to re-frame'
+    },
+    es: {
+      subtitle: 'Apoyo para el replanteamiento cognitivo',
+      title: '🔒 Privacidad',
+      leadStart: 'Creemos que tus reflexiones te pertenecen ',
+      leadStrong: 'solo a ti',
+      tail: 'Nunca venderemos ni compartiremos tus palabras. Lee la política completa en ',
+      back: '← Volver a re-frame'
+    }
+  }[locale]
+
   return (
     <>
       {/* Header */}
@@ -10,13 +35,13 @@ export default function Privacy() {
         <div className="container-safe py-8">
           <div className="flex items-start justify-between">
             <div>
-              <Link href="/" className="inline-block">
+              <Link href={homeHref} className="inline-block">
                 <h1 className="text-2xl font-heading font-semibold text-brand-green-400 hover:text-brand-green-300 transition-colors">
                   re-frame
                 </h1>
               </Link>
               <p className="text-sm text-[#999999] mt-1">
-                Cognitive reframing support
+                {t.subtitle}
               </p>
             </div>
           </div>
@@ -28,11 +53,11 @@ export default function Privacy() {
         <div className="container-safe py-8 md:py-12">
           <article className="max-w-3xl mx-auto">
             <h1 className="text-[32px] font-semibold text-[#EDEDED] mb-8">
-              🔒 Privacy
+              {t.title}
             </h1>
             
             <p className="text-lg text-[#999999] leading-relaxed mb-8">
-              We believe your reflections belong to <strong className="text-[#EDEDED]">you alone</strong>.
+              {t.leadStart}<strong className="text-[#EDEDED]">{t.leadStrong}</strong>.
             </p>
 
             <ul className="space-y-3 text-[#999999] mb-8">
@@ -67,8 +92,8 @@ export default function Privacy() {
             </p>
 
             <div className="mt-12 text-center">
-              <Link href="/" className="inline-flex items-center gap-2 text-brand-green-400 hover:text-brand-green-300 underline">
-                ← Return to re-frame
+              <Link href={homeHref} className="inline-flex items-center gap-2 text-brand-green-400 hover:text-brand-green-300 underline">
+                {t.back}
               </Link>
             </div>
           </article>
