@@ -1,13 +1,93 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSSEClient } from '@/lib/streaming/use-sse-client'
 
 export function ChatClient({ locale }: { locale: string }) {
   const router = useRouter()
   const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant', content: string }>>([])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [assistantBuffer, setAssistantBuffer] = useState('')
+  const processedIndexRef = useRef(0)
+  const bufferRef = useRef('')
+  
+  // Initialize SSE client
+  const sseClient = useSSEClient({
+    baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
+    autoConnect: false,
+  })
+
+  // Connect to SSE on mount
+  useEffect(() => {
+    const connectToSSE = async () => {
+      try {
+        await sseClient.connect(undefined, locale, false)
+      } catch (error) {
+        console.error('Failed to connect to SSE:', error)
+      }
+    }
+    
+    connectToSSE()
+    
+    return () => {
+      sseClient.disconnect()
+    }
+  }, [locale]) // eslint-disable-line react-hooks/exhaustive-deps
+  
+  // Handle incoming SSE messages: accumulate 'response' chunks and flush on turn_complete
+  // Fix: ensure chunks received in the same tick as turn_complete are flushed by using a local buffer
+  useEffect(() => {
+    const msgs = sseClient.messages || []
+    let localBuffer = bufferRef.current
+    let didTurnComplete = false
+
+    for (let i = processedIndexRef.current; i < msgs.length; i++) {
+      const msg = msgs[i] as any
+
+      // Accept multiple possible shapes to be robust to transport differences
+      // 1) Normalized ServerMessage: { message_type: 'response', data: string }
+      // 2) Raw SSE payload (if it ever leaks through): { type: 'content', data: string }
+      // 3) Fallback: any object with text/plain and data
+      if (msg) {
+        if (msg.message_type === 'response' && typeof msg.data === 'string') {
+          localBuffer += msg.data
+        } else if (msg.type === 'content' && typeof msg.data === 'string') {
+          localBuffer += msg.data
+        } else if (msg.mime_type === 'text/plain' && typeof msg.data === 'string') {
+          localBuffer += msg.data
+        }
+      }
+
+      if (msg && 'turn_complete' in msg && msg.turn_complete) {
+        didTurnComplete = true
+      }
+    }
+
+    // Reflect any new chunks in UI
+    if (localBuffer !== bufferRef.current) {
+      setAssistantBuffer(localBuffer)
+    }
+
+    // If the turn completed, flush everything we've accumulated (including chunks from this loop)
+    if (didTurnComplete) {
+      const finalContent = localBuffer
+      if (finalContent) {
+        setMessages(prev => [...prev, { role: 'assistant', content: finalContent }])
+      }
+      bufferRef.current = ''
+      setAssistantBuffer('')
+      setIsLoading(false)
+    }
+
+    processedIndexRef.current = msgs.length
+  }, [sseClient.messages])
+
+  // Keep a ref in sync with assistantBuffer to avoid stale closures during flush
+  useEffect(() => {
+    bufferRef.current = assistantBuffer
+  }, [assistantBuffer])
 
   const handleBack = () => {
     router.push(`/${locale}`)
@@ -20,18 +100,19 @@ export function ChatClient({ locale }: { locale: string }) {
     setMessages(prev => [...prev, userMessage])
     setInput('')
     setIsLoading(true)
+    setAssistantBuffer('')
 
     try {
-      setTimeout(() => {
-        setMessages(prev => [...prev, {
-          role: 'assistant',
-          content: 'Hello! I\'m your CBT assistant. How are you feeling today?'
-        }])
-        setIsLoading(false)
-      }, 1000)
+      // Send message via SSE
+      await sseClient.sendText(input)
     } catch (error) {
       console.error('Error sending message:', error)
       setIsLoading(false)
+      // Add error message to chat
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: 'Sorry, I encountered an error. Please try again.'
+      }])
     }
   }
 
@@ -78,7 +159,16 @@ export function ChatClient({ locale }: { locale: string }) {
           </div>
         ))}
         
-        {isLoading && (
+        {/* Show streaming message buffer */}
+        {assistantBuffer && (
+          <div className="flex justify-start">
+            <div className="max-w-xs lg:max-w-md px-4 py-2 rounded-lg bg-[#2a2a2a] text-[#EDEDED]">
+              {assistantBuffer}
+            </div>
+          </div>
+        )}
+        
+        {isLoading && !assistantBuffer && (
           <div className="flex justify-start">
             <div className="bg-[#2a2a2a] px-4 py-2 rounded-lg">
               <div className="flex space-x-1">
