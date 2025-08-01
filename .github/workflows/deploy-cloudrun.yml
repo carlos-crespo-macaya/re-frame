@@ -97,7 +97,7 @@ jobs:
                 owner, repo, workflow_id: wf.id, branch: 'main', per_page: 100
               });
               const match = runs.find(r => r.head_sha === sha);
-              return match ? (match.conclusion || match.status || 'unknown') : 'none';
+              return match ? (match.conclusion || 'unknown') : 'none';
             }
 
             const backendConc = await latestConclusionForWorkflowByName('Backend CI');
