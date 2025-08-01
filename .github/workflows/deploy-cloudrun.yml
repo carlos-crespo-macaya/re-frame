@@ -91,9 +91,16 @@ jobs:
               const firstPage = await github.rest.actions.listRepoWorkflows({ owner, repo });
               let wf = firstPage.data.workflows.find(w => w.name === name);
               if (!wf) {
-                // If not found, paginate through all workflows
-                const wfs = await github.paginate(github.rest.actions.listRepoWorkflows, { owner, repo, per_page: 100 });
-                wf = wfs.find(w => w.name === name);
+                // If not found, paginate through workflows with an iterator
+                const perPage = 100; // Limit results per page
+                let page = 1;
+                do {
+                  const response = await github.rest.actions.listRepoWorkflows({ owner, repo, per_page: perPage, page });
+                  const workflows = response.data.workflows;
+                  wf = workflows.find(w => w.name === name);
+                  if (wf) break; // Stop pagination early if workflow is found
+                  page++;
+                } while (wf === undefined && page <= 10); // Add a reasonable limit to prevent excessive API calls
               }
               if (!wf) return 'not_found';
               // List runs for that workflow on main, find matching head_sha
