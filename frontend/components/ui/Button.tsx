@@ -20,36 +20,29 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary: `
-    bg-primary-500 text-white 
-    hover:bg-primary-600 active:bg-primary-700
-    focus-visible:ring-primary-500
-    dark:bg-primary-600 dark:hover:bg-primary-700 dark:active:bg-primary-800
+    bg-brand-green-600 text-white 
+    hover:bg-brand-green-700 active:bg-brand-green-800
+    focus-visible:ring-brand-green-500
   `,
   secondary: `
-    bg-neutral-100 text-neutral-900 border border-neutral-300
-    hover:bg-neutral-200 active:bg-neutral-300
-    focus-visible:ring-neutral-500
-    dark:bg-neutral-800 dark:text-neutral-100 dark:border-neutral-700
-    dark:hover:bg-neutral-700 dark:active:bg-neutral-600
+    bg-[#3a3a3a] text-[#EDEDED] border border-[#4a4a4a]
+    hover:bg-[#4a4a4a] active:bg-[#5a5a5a]
+    focus-visible:ring-brand-green-500
   `,
   outline: `
-    bg-transparent text-primary-600 border-2 border-primary-500
-    hover:bg-primary-50 active:bg-primary-100
-    focus-visible:ring-primary-500
-    dark:text-primary-400 dark:border-primary-400
-    dark:hover:bg-primary-950/20 dark:active:bg-primary-950/30
+    bg-transparent text-brand-green-400 border border-brand-green-400
+    hover:bg-brand-green-400/10 active:bg-brand-green-400/20
+    focus-visible:ring-brand-green-500
   `,
   ghost: `
-    bg-transparent text-neutral-700
-    hover:bg-neutral-100 active:bg-neutral-200
-    focus-visible:ring-neutral-500
-    dark:text-neutral-300 dark:hover:bg-neutral-800 dark:active:bg-neutral-700
+    bg-transparent text-[#999999]
+    hover:bg-[#3a3a3a] active:bg-[#4a4a4a]
+    focus-visible:ring-brand-green-500
   `,
   danger: `
-    bg-error-500 text-white
-    hover:bg-error-600 active:bg-error-700
-    focus-visible:ring-error-500
-    dark:bg-error-600 dark:hover:bg-error-700 dark:active:bg-error-800
+    bg-red-600 text-white
+    hover:bg-red-700 active:bg-red-800
+    focus-visible:ring-red-500
   `,
 };
 
@@ -152,7 +145,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         type={type}
         className={baseClasses}
         disabled={disabled || loading}
-        aria-busy={loading}
+        aria-busy={loading || undefined}
         {...props}
       >
         {content}

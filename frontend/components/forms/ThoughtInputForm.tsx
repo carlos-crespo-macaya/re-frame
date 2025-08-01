@@ -307,13 +307,13 @@ export default function ThoughtInputForm({
               placeholder="Type your message..."
               className={cn(
                 "w-full min-h-[140px] resize-y rounded-xl",
-                "bg-white",
-                "border-2 border-neutral-200",
-                "focus:border-primary-400",
-                "focus:ring-4 focus:ring-primary-400/20",
+                "bg-[#3a3a3a]",
+                "border border-[#4a4a4a]",
+                "focus:border-brand-green-400",
+                "focus:ring-2 focus:ring-brand-green-400/20",
                 "px-5 py-4 pr-16", // Added right padding for audio button
-                "text-base text-neutral-800",
-                "placeholder:text-neutral-400",
+                "text-base text-[#EDEDED]",
+                "placeholder:text-[#999999]",
                 "transition-all duration-200",
                 isLoading && "opacity-60 cursor-not-allowed"
               )}
@@ -350,14 +350,14 @@ export default function ThoughtInputForm({
           <div className="flex justify-between items-end">
             <p 
               id="encouraging-message"
-              className="text-sm text-neutral-600 italic"
+              className="text-sm text-[#999999] italic"
               aria-live="polite"
             >
               {getStatusMessage()}
             </p>
             <div 
               id="character-count" 
-              className="text-sm text-neutral-500"
+              className="text-sm text-[#999999]"
               aria-live="polite"
             >
               {thought.length} / {maxLength}
@@ -420,9 +420,9 @@ export default function ThoughtInputForm({
       )}
 
       {/* Tip for keyboard shortcut */}
-      <p className="text-xs text-neutral-500 text-center">
-        <kbd className="px-2 py-1 bg-neutral-100 rounded text-xs">Ctrl</kbd> + 
-        <kbd className="px-2 py-1 bg-neutral-100 rounded text-xs ml-1">Enter</kbd>
+      <p className="text-xs text-[#999999] text-center">
+        <kbd className="px-2 py-1 bg-[#3a3a3a] rounded text-xs">Ctrl</kbd> + 
+        <kbd className="px-2 py-1 bg-[#3a3a3a] rounded text-xs ml-1">Enter</kbd>
         <span className="ml-2">to submit</span>
       </p>
     </form>

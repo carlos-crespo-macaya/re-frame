@@ -1,0 +1,48 @@
+{
+  "chat": {
+    "title": "CBT Session",
+    "placeholder": "Tell me what's on your mind...",
+    "thinking": "Thinking...",
+    "analyzing": "Analyzing patterns...",
+    "processing": "Processing your thoughts...",
+    "sendMessage": "Send message",
+    "startRecording": "Start recording",
+    "stopRecording": "Stop recording",
+    "microphoneAccess": "This app needs microphone access for voice conversations."
+  },
+  "session": {
+    "greeting": "Hello! I'm here to help you explore your thoughts using CBT techniques. What's been on your mind lately?",
+    "ending": "Thank you for this session. Remember, challenging thoughts takes practice and patience.",
+    "summary": "Session Summary",
+    "downloadSummary": "Download session summary",
+    "newSession": "Start new session"
+  },
+  "patterns": {
+    "catastrophizing": "Catastrophizing",
+    "mindReading": "Mind reading",
+    "allOrNothing": "All-or-nothing thinking",
+    "fortuneTelling": "Fortune telling",
+    "labeling": "Labeling",
+    "shouldStatements": "Should statements",
+    "emotionalReasoning": "Emotional reasoning",
+    "mentaFilter": "Mental filter",
+    "personalization": "Personalization",
+    "magnification": "Magnification"
+  },
+  "reframing": {
+    "alternativePerspectives": "Alternative perspectives:",
+    "considerThis": "Consider this perspective:",
+    "anotherWayToThink": "Another way to think about this:",
+    "whatIfInstead": "What if instead...",
+    "evidenceFor": "Evidence for this thought:",
+    "evidenceAgainst": "Evidence against this thought:",
+    "balancedThought": "More balanced thought:"
+  },
+  "audio": {
+    "microphonePermissionDenied": "Microphone permission denied. Please enable microphone access in your browser settings.",
+    "microphoneNotSupported": "Microphone not supported in this browser.",
+    "recordingError": "Recording error occurred. Please try again.",
+    "playbackError": "Playback error occurred.",
+    "connectionError": "Connection error. Please check your internet connection."
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "title": "What is CBT?",
+  "quickLink": "CBT summary in 2 minutes ↗",
+  "introduction": "Cognitive Behavioural Therapy (CBT) is an evidence-based approach that links thoughts, feelings, and actions. By spotting common thinking traps—such as catastrophising, mind-reading, or \"all-or-nothing\" statements—you can practise kinder, more balanced perspectives.",
+  "whyHelpsAvpd": {
+    "title": "Why it helps with AvPD",
+    "description": "People living with Avoidant Personality Disorder often battle intense self-criticism and fear of negative evaluation. CBT offers practical tools to:",
+    "tools": [
+      "Name unhelpful thoughts rather than accept them as facts.",
+      "Test those thoughts against real-world evidence.",
+      "Practise alternative interpretations in small, safe steps."
+    ],
+    "conclusion": "Consistent CBT exercises can gradually chip away at the belief \"I will always be rejected.\""
+  },
+  "howWeUse": {
+    "title": "How re-frame uses CBT",
+    "description": "When you describe a situation, re-frame highlights likely thinking traps and suggests gentler viewpoints. You remain in control—choose what feels true and helpful, discard the rest."
+  },
+  "furtherReading": {
+    "title": "Further reading",
+    "resources": [
+      {
+        "title": "CBT Basics",
+        "source": "Anxiety UK",
+        "link": "Resource page ↗"
+      },
+      {
+        "title": "\"Unhelpful Thinking Styles\" factsheet",
+        "source": "CCI",
+        "link": "PDF (200 KB) ↗"
+      },
+      {
+        "title": "Avoidant Personality: CBT Workbook",
+        "source": "Psychology Tools",
+        "link": "Sign in & download ↗"
+      }
+    ]
+  },
+  "reminder": {
+    "prefix": "Reminder:",
+    "text": "re-frame is a self-help companion, not a substitute for professional care. If you feel unsafe with your thoughts, please reach out to a qualified therapist or crisis line."
+  },
+  "references": {
+    "title": "References",
+    "tableHeaders": {
+      "number": "#",
+      "source": "Source",
+      "keyPoint": "Key Point Supported"
+    },
+    "entries": [
+      {
+        "number": "[1]",
+        "source": "Beck, A.T. Cognitive Therapy and the Emotional Disorders. International Universities Press, 1976.",
+        "keyPoint": "Definition of CBT & thought–emotion–behaviour link"
+      },
+      {
+        "number": "[2]",
+        "source": "Lampe, L., & Sunderland, M. (2013). Avoidant Personality Disorder: current status and future directions. Australian & New Zealand Journal of Psychiatry, 47(6), 515-22.",
+        "keyPoint": "AvPD features: fear of evaluation, self-criticism"
+      },
+      {
+        "number": "[3]",
+        "source": "Clark, D.A. & Beck, A.T. Cognitive Therapy of Anxiety Disorders. The Guilford Press, 2010.",
+        "keyPoint": "CBT techniques: naming, testing, practising alternatives"
+      }
+    ]
+  },
+  "note": {
+    "title": "Note:",
+    "text": "CCI's \"Unhelpful Thinking Styles\" PDF and Psychology Tools workbooks are freely available, evidence-aligned handouts often recommended by clinicians."
+  },
+  "navigation": {
+    "return": "← Return to re-frame"
+  }
+}

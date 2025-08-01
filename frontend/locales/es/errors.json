@@ -1,0 +1,52 @@
+{
+  "general": {
+    "somethingWentWrong": "Algo salió mal",
+    "unexpectedError": "Ocurrió un error inesperado",
+    "tryAgainLater": "Por favor, inténtalo de nuevo más tarde",
+    "contactSupport": "Si el problema persiste, por favor contacta al soporte"
+  },
+  "errorFallback": {
+    "title": "Algo salió mal",
+    "description": "Pedimos disculpas por la inconveniencia. Este error ha sido registrado y lo investigaremos.",
+    "tryAgain": "Reintentar",
+    "returnHome": "Volver al inicio",
+    "errorDetailsLabel": "Detalles del error (solo en desarrollo)"
+  },
+  "network": {
+    "connectionLost": "Conexión perdida",
+    "connectionRestored": "Conexión restaurada",
+    "retryConnection": "Reintentar conexión",
+    "offline": "Parece que estás sin conexión",
+    "slowConnection": "La conexión es lenta"
+  },
+  "session": {
+    "sessionExpired": "Tu sesión ha expirado",
+    "sessionError": "Error de sesión ocurrido",
+    "unableToStart": "No se puede iniciar la sesión",
+    "sessionInterrupted": "La sesión fue interrumpida",
+    "reconnecting": "Reconectando a la sesión..."
+  },
+  "audio": {
+    "microphoneError": "Error de micrófono",
+    "recordingFailed": "Grabación falló",
+    "playbackFailed": "Reproducción falló",
+    "audioNotSupported": "Audio no compatible en este navegador",
+    "permissionDenied": "Permiso de micrófono denegado"
+  },
+  "validation": {
+    "required": "Este campo es obligatorio",
+    "tooShort": "La entrada es demasiado corta",
+    "tooLong": "La entrada es demasiado larga",
+    "invalidFormat": "Formato inválido",
+    "pleaseEnterMessage": "Por favor, ingresa un mensaje"
+  },
+  "api": {
+    "serverError": "Error del servidor",
+    "networkError": "Error de red",
+    "timeout": "Tiempo de espera agotado",
+    "unauthorized": "Acceso no autorizado",
+    "notFound": "Recurso no encontrado",
+    "badRequest": "Solicitud incorrecta",
+    "serviceUnavailable": "Servicio temporalmente no disponible"
+  }
+}
