@@ -8,12 +8,19 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: "Environment label (used only for summaries)"
+        description: "Environment to deploy"
         type: choice
         default: production
         options:
           - production
           - staging
+      imageTag:
+        description: "Image tag to deploy (default: latest successful workflow build for this branch). You can also set a specific commit SHA."
+        required: false
+      force:
+        description: "Force deploy without checking CI status (use with caution)"
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -41,13 +48,20 @@ jobs:
     outputs:
       proceed: ${{ steps.check.outputs.proceed }}
       head_sha: ${{ steps.vars.outputs.head_sha }}
+      image_tag: ${{ steps.vars.outputs.image_tag }}
     steps:
       - name: Set variables
         id: vars
         run: |
-          # Use the head SHA from the workflow_run event; fallback to github.sha for manual dispatch
+          # Head SHA from workflow_run; for manual dispatch use github.sha by default
           HEAD_SHA="${{ github.event.workflow_run.head_sha || github.sha }}"
           echo "head_sha=$HEAD_SHA" >> "$GITHUB_OUTPUT"
+          # Image tag: allow override via input, else use SHA
+          IMG_TAG="${{ inputs.imageTag || '' }}"
+          if [ -z "$IMG_TAG" ]; then
+            IMG_TAG="$HEAD_SHA"
+          fi
+          echo "image_tag=$IMG_TAG" >> "$GITHUB_OUTPUT"
       - name: Install GitHub CLI
         run: |
           sudo apt-get update -y
@@ -58,7 +72,14 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # If manual dispatch, allow deploy
+          # If manual dispatch with force=true, bypass CI checks
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.force }}" = "true" ]; then
+            echo "proceed=true" >> "$GITHUB_OUTPUT"
+            echo "Bypassing CI checks due to force=true"
+            exit 0
+          fi
+
+          # If manual without force, still allow deploy (assumes operator responsibility)
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "proceed=true" >> "$GITHUB_OUTPUT"
             exit 0
@@ -69,7 +90,6 @@ jobs:
           REPO="${{ github.event.repository.name || github.repository }}"
           echo "Checking CI statuses for $OWNER/$REPO @ $HEAD_SHA"
 
-          # Helper to get latest run conclusion for a workflow name and sha on branch main
           get_conclusion () {
             local name="$1"
             gh api repos/$OWNER/$REPO/actions/workflows --jq ".workflows[] | select(.name==\"$name\") | .id" | while read -r wid; do
@@ -98,7 +118,7 @@ jobs:
   build-and-push:
     name: Build and Push Images
     needs: gate
-    if: needs.gate.outputs.proceed == 'true'
+    if: needs.gate.outputs.proceed == 'true' && github.event_name != 'workflow_dispatch'
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -141,7 +161,7 @@ jobs:
           file: ${{ matrix.dockerfile }}
           push: true
           tags: |
-            ${{ env.REGISTRY }}/re-frame-${{ matrix.service }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/re-frame-${{ matrix.service }}:${{ needs.gate.outputs.head_sha }}
             ${{ env.REGISTRY }}/re-frame-${{ matrix.service }}:${{ github.ref_name }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
@@ -167,7 +187,7 @@ jobs:
       - name: Deploy backend to Cloud Run
         run: |
           gcloud run deploy ${{ env.BACKEND_SERVICE }} \
-            --image ${{ env.REGISTRY }}/re-frame-backend:${{ github.sha }} \
+            --image ${{ env.REGISTRY }}/re-frame-backend:${{ needs.gate.outputs.image_tag }} \
             --region ${{ env.REGION }} \
             --platform managed \
             --allow-unauthenticated \
@@ -211,7 +231,7 @@ jobs:
       - name: Deploy frontend to Cloud Run
         run: |
           gcloud run deploy ${{ env.FRONTEND_SERVICE }} \
-            --image ${{ env.REGISTRY }}/re-frame-frontend:${{ github.sha }} \
+            --image ${{ env.REGISTRY }}/re-frame-frontend:${{ needs.gate.outputs.image_tag }} \
             --region ${{ env.REGION }} \
             --platform managed \
             --allow-unauthenticated \
