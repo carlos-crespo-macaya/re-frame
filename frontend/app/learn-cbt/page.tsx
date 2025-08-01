@@ -13,7 +13,7 @@ export default function LearnCBT() {
     en: {
       appSubtitle: 'Cognitive reframing support',
       title: 'What is CBT?',
-      quickLinkText: 'CBT summary in 2 minutes ↗',
+      quickLinkText: 'CBT in 2 minutes: a clear, high‑level overview ↗',
       whyHelps: 'Why it helps with AvPD',
       howWeUse: 'How re-frame uses CBT',
       furtherReading: 'Further reading',
@@ -26,7 +26,7 @@ export default function LearnCBT() {
     es: {
       appSubtitle: 'Apoyo para el replanteamiento cognitivo',
       title: '¿Qué es la TCC?',
-      quickLinkText: 'Resumen de la TCC en 2 minutos ↗',
+      quickLinkText: 'TCC en 2 minutos: una visión general clara ↗',
       whyHelps: 'Por qué ayuda con el TPA',
       howWeUse: 'Cómo re-frame utiliza la TCC',
       furtherReading: 'Lecturas recomendadas',

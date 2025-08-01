@@ -15,8 +15,8 @@ const translations = {
     hero: {
       title: 'Explore a new perspective',
       description: "We'll use evidence-based therapeutic techniques to spot thinking patterns and suggest gentler perspectives.",
-      learnMore: 'Learn about',
-      learnMoreLink: 'therapeutic frameworks in 2 minutes ↗',
+      learnMore: 'CBT in 2 minutes:',
+      learnMoreLink: 'a clear, high‑level overview ↗',
     },
     cta: {
       title: 'Ready to start?',
@@ -58,8 +58,8 @@ const translations = {
     hero: {
       title: 'Explora una nueva perspectiva',
       description: 'Usaremos técnicas terapéuticas basadas en evidencia para identificar patrones de pensamiento y sugerir perspectivas más amables.',
-      learnMore: 'Aprende sobre',
-      learnMoreLink: 'marcos terapéuticos en 2 minutos ↗',
+      learnMore: 'TCC en 2 minutos:',
+      learnMoreLink: 'una visión general clara ↗',
     },
     cta: {
       title: '¿Listo para comenzar?',

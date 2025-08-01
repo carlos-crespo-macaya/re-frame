@@ -63,32 +63,73 @@ export default function Privacy() {
             <ul className="space-y-3 text-[#999999] mb-8">
               <li className="flex items-start">
                 <span className="mr-2">•</span>
-                <div><strong className="text-[#EDEDED]">No tracking pixels, no ads.</strong></div>
+                <div>
+                  <strong className="text-[#EDEDED]">
+                    {locale === 'es' ? 'Sin píxeles de seguimiento, sin anuncios.' : 'No tracking pixels, no ads.'}
+                  </strong>
+                </div>
               </li>
               <li className="flex items-start">
                 <span className="mr-2">•</span>
-                <div><strong className="text-[#EDEDED]">Anonymous by default.</strong> If you don&apos;t create an account, we store only a random session ID and your text (so the app can respond).</div>
+                <div>
+                  <strong className="text-[#EDEDED]">
+                    {locale === 'es' ? 'Anónimo por defecto.' : 'Anonymous by default.'}
+                  </strong>{' '}
+                  {locale === 'es'
+                    ? 'Si no creas una cuenta, solo almacenamos un ID de sesión aleatorio y tu texto (para que la app pueda responder).'
+                    : "If you don't create an account, we store only a random session ID and your text (so the app can respond)."}
+                </div>
               </li>
               <li className="flex items-start">
                 <span className="mr-2">•</span>
-                <div><strong className="text-[#EDEDED]">Optional account = optional data.</strong> Sign up (email or Google) only if you want to save entries across devices.</div>
+                <div>
+                  <strong className="text-[#EDEDED]">
+                    {locale === 'es' ? 'Cuenta opcional = datos opcionales.' : 'Optional account = optional data.'}
+                  </strong>{' '}
+                  {locale === 'es'
+                    ? 'Regístrate (email o Google) solo si quieres guardar tus entradas entre dispositivos.'
+                    : 'Sign up (email or Google) only if you want to save entries across devices.'}
+                </div>
               </li>
               <li className="flex items-start">
                 <span className="mr-2">•</span>
-                <div><strong className="text-[#EDEDED]">Delete anytime.</strong> One click in <strong className="text-[#EDEDED]">Settings → Delete data</strong> wipes every entry, vector embedding, and log.</div>
+                <div>
+                  <strong className="text-[#EDEDED]">
+                    {locale === 'es' ? 'Elimina cuando quieras.' : 'Delete anytime.'}
+                  </strong>{' '}
+                  {locale === 'es'
+                    ? 'Un clic en <strong className="text-[#EDEDED]">Ajustes → Eliminar datos</strong> borra cada entrada, embedding vectorial y registro.'
+                    : 'One click in <strong className="text-[#EDEDED]">Settings → Delete data</strong> wipes every entry, vector embedding, and log.'}
+                </div>
               </li>
               <li className="flex items-start">
                 <span className="mr-2">•</span>
-                <div><strong className="text-[#EDEDED]">End-to-end TLS.</strong> Traffic is encrypted in transit; stored text is encrypted at rest.</div>
+                <div>
+                  <strong className="text-[#EDEDED]">
+                    {locale === 'es' ? 'TLS de extremo a extremo.' : 'End-to-end TLS.'}
+                  </strong>{' '}
+                  {locale === 'es'
+                    ? 'El tráfico está cifrado en tránsito; el texto almacenado está cifrado en reposo.'
+                    : 'Traffic is encrypted in transit; stored text is encrypted at rest.'}
+                </div>
               </li>
               <li className="flex items-start">
                 <span className="mr-2">•</span>
-                <div><strong className="text-[#EDEDED]">Open source.</strong> Our code and security model are public so anyone can audit them.</div>
+                <div>
+                  <strong className="text-[#EDEDED]">
+                    {locale === 'es' ? 'Código abierto.' : 'Open source.'}
+                  </strong>{' '}
+                  {locale === 'es'
+                    ? 'Nuestro código y modelo de seguridad son públicos para que cualquiera pueda auditarlos.'
+                    : 'Our code and security model are public so anyone can audit them.'}
+                </div>
               </li>
             </ul>
 
             <p className="text-base text-[#999999] leading-relaxed">
-              We&apos;ll never sell or share your words. Read the full policy at <strong className="text-[#EDEDED]">re-frame.social/privacy</strong>.
+              {locale === 'es'
+                ? 'Nunca venderemos ni compartiremos tus palabras.'
+                : "We’ll never sell or share your words."}
             </p>
 
             <div className="mt-12 text-center">
