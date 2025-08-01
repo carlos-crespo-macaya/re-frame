@@ -4,6 +4,12 @@ FROM python:3.12-slim
 # Set build arguments
 ARG PYTHON_VERSION=3.12
 ARG UV_VERSION=0.4.15
+ARG GCP_BILLING_ACCOUNT_ID
+ARG GCP_REFRAME_IAP_CLIENT_ID
+ARG GCP_REFRAME_IAP_CLIENT_SECRET
+ARG GCP_SA_KEY
+ARG GEMINI_API_KEY
+ARG NEXT_PUBLIC_API_URL
 
 # Install system dependencies for audio processing and healthcheck
 RUN apt-get update && apt-get install -y --no-install-recommends \

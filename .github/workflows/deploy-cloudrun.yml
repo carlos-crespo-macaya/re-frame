@@ -183,6 +183,13 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          build-args: |
+            GCP_BILLING_ACCOUNT_ID=${{ secrets.GCP_BILLING_ACCOUNT_ID }}
+            GCP_REFRAME_IAP_CLIENT_ID=${{ secrets.GCP_REFRAME_IAP_CLIENT_ID }}
+            GCP_REFRAME_IAP_CLIENT_SECRET=${{ secrets.GCP_REFRAME_IAP_CLIENT_SECRET }}
+            GCP_SA_KEY=${{ secrets.GCP_SA_KEY }}
+            GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
+            NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
 
   deploy-backend:
     name: Deploy Backend

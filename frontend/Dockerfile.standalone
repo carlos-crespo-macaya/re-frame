@@ -58,6 +58,11 @@ RUN test -f ./lib/api/generated/sdk.gen.ts || pnpm run generate:api || echo "War
 # Build arguments for environment variables
 ARG NEXT_PUBLIC_API_URL
 ARG NEXT_PUBLIC_ENVIRONMENT=production
+ARG GCP_BILLING_ACCOUNT_ID
+ARG GCP_REFRAME_IAP_CLIENT_ID
+ARG GCP_REFRAME_IAP_CLIENT_SECRET
+ARG GCP_SA_KEY
+ARG GEMINI_API_KEY
 
 # Set build-time environment variables
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
