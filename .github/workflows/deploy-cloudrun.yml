@@ -97,10 +97,19 @@ jobs:
               }
               if (!wf) return 'not_found';
               // List runs for that workflow on main, find matching head_sha
-              const runs = await github.paginate(github.rest.actions.listWorkflowRuns, {
-                owner, repo, workflow_id: wf.id, branch: 'main', per_page: 100
-              });
-              const match = runs.find(r => r.head_sha === sha);
+              const perPage = 50; // Limit results per page
+              let runs = [];
+              let page = 1;
+              let match = null;
+              do {
+                const response = await github.rest.actions.listWorkflowRuns({
+                  owner, repo, workflow_id: wf.id, branch: 'main', per_page: perPage, page
+                });
+                runs = response.data.workflow_runs;
+                match = runs.find(r => r.head_sha === sha);
+                if (match) break; // Stop pagination early if match is found
+                page++;
+              } while (runs.length > 0);
               return match ? (match.conclusion || 'unknown') : 'none';
             }
 
