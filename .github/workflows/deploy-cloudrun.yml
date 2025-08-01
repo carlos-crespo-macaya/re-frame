@@ -75,7 +75,7 @@ jobs:
           tags: |
             ${{ env.REGISTRY }}/re-frame-${{ matrix.service }}:${{ github.sha }}
             ${{ env.REGISTRY }}/re-frame-${{ matrix.service }}:${{ github.ref_name }}
-            ${{ github.ref == 'refs/heads/main' && format('{0}/re-frame-{1}:latest', env.REGISTRY, matrix.service) || '' }}
+          labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -98,7 +98,7 @@ jobs:
       - name: Deploy backend to Cloud Run
         run: |
           gcloud run deploy ${{ env.BACKEND_SERVICE }} \
-            --image ${{ env.REGISTRY }}/re-frame-backend:${{ github.ref_name }} \
+            --image ${{ env.REGISTRY }}/re-frame-backend:${{ github.sha }} \
             --region ${{ env.REGION }} \
             --platform managed \
             --allow-unauthenticated \
@@ -107,7 +107,8 @@ jobs:
             --memory 1Gi \
             --min-instances 0 \
             --max-instances 10 \
-            --set-env-vars "ENVIRONMENT=${{ inputs.environment || 'production' }},GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }},LOG_LEVEL=info"
+            --set-env-vars "ENVIRONMENT=${{ inputs.environment || 'production' }},LOG_LEVEL=info" \
+            --update-secrets "GEMINI_API_KEY=projects/${{ env.PROJECT_ID }}/secrets/GEMINI_API_KEY:latest"
 
       - name: Capture backend URL
         id: be
@@ -140,7 +141,7 @@ jobs:
       - name: Deploy frontend to Cloud Run
         run: |
           gcloud run deploy ${{ env.FRONTEND_SERVICE }} \
-            --image ${{ env.REGISTRY }}/re-frame-frontend:${{ github.ref_name }} \
+            --image ${{ env.REGISTRY }}/re-frame-frontend:${{ github.sha }} \
             --region ${{ env.REGION }} \
             --platform managed \
             --allow-unauthenticated \
