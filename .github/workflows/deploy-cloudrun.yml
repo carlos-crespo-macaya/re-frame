@@ -37,13 +37,63 @@ jobs:
     if: >
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'workflow_run' &&
-       github.event.workflow_run.conclusion == 'success' &&
-       github.ref == 'refs/heads/main')
+       github.event.workflow_run.conclusion == 'success')
     outputs:
-      proceed: ${{ steps.set.outputs.proceed }}
+      proceed: ${{ steps.check.outputs.proceed }}
+      head_sha: ${{ steps.vars.outputs.head_sha }}
     steps:
-      - id: set
-        run: echo "proceed=true" >> "$GITHUB_OUTPUT"
+      - name: Set variables
+        id: vars
+        run: |
+          # Use the head SHA from the workflow_run event; fallback to github.sha for manual dispatch
+          HEAD_SHA="${{ github.event.workflow_run.head_sha || github.sha }}"
+          echo "head_sha=$HEAD_SHA" >> "$GITHUB_OUTPUT"
+      - name: Install GitHub CLI
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y jq
+          type -p gh >/dev/null || (curl -fsSL https://raw.githubusercontent.com/cli/cli/trunk/script/install.sh | bash)
+      - name: Check Backend CI and Frontend CI status for same commit on main
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # If manual dispatch, allow deploy
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "proceed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          HEAD_SHA="${{ steps.vars.outputs.head_sha }}"
+          OWNER="${{ github.repository_owner }}"
+          REPO="${{ github.event.repository.name || github.repository }}"
+          echo "Checking CI statuses for $OWNER/$REPO @ $HEAD_SHA"
+
+          # Helper to get latest run conclusion for a workflow name and sha on branch main
+          get_conclusion () {
+            local name="$1"
+            gh api repos/$OWNER/$REPO/actions/workflows --jq ".workflows[] | select(.name==\"$name\") | .id" | while read -r wid; do
+              if [ -z "$wid" ]; then
+                echo "not_found"
+                return
+              fi
+              gh api repos/$OWNER/$REPO/actions/workflows/$wid/runs -f per_page=50 -f branch=main --jq ".workflow_runs[] | select(.head_sha==\"$HEAD_SHA\") | .conclusion" | head -n1
+              return
+            done
+          }
+
+          BACKEND_CONC=$(get_conclusion "Backend CI")
+          FRONTEND_CONC=$(get_conclusion "Frontend CI")
+
+          echo "Backend CI: ${BACKEND_CONC:-none}"
+          echo "Frontend CI: ${FRONTEND_CONC:-none}"
+
+          if [ "$BACKEND_CONC" = "success" ] && [ "$FRONTEND_CONC" = "success" ]; then
+            echo "proceed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+            echo "One or both CI workflows not successful for $HEAD_SHA. Skipping deploy."
+          fi
 
   build-and-push:
     name: Build and Push Images
