@@ -8,7 +8,7 @@ import { ClientMessage, ServerMessage } from './message-protocol';
  * Convert text to base64-encoded PCM audio data
  * This is a placeholder - real implementation would use text-to-speech
  */
-export function textToPCM(text: string, _sampleRate: number = 16000): string {
+export function textToPCM(): string {
   // Placeholder implementation
   console.warn('textToPCM is not yet implemented');
   return '';
@@ -18,7 +18,7 @@ export function textToPCM(text: string, _sampleRate: number = 16000): string {
  * Convert base64-encoded PCM audio data to text
  * This is a placeholder - real implementation would use speech-to-text
  */
-export function pcmToText(_pcmData: string): Promise<string> {
+export function pcmToText(): Promise<string> {
   // Placeholder implementation
   console.warn('pcmToText is not yet implemented');
   return Promise.resolve('');

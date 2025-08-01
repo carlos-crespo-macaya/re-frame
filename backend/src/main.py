@@ -19,6 +19,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from src.models import HealthCheckResponse
+from src.routers.feature_flags import router as feature_flags_router
 from src.text.router import router as text_router
 from src.utils.logging import get_logger, setup_logging
 from src.utils.performance_monitor import get_performance_monitor
@@ -93,11 +94,16 @@ if ENVIRONMENT == "production":
         "https://cbt-assistant-web-*.run.app",  # Cloud Run URLs
     ]
 else:
-    allowed_origins = [
-        "http://localhost:3000",  # Frontend dev server
-        "http://127.0.0.1:3000",  # Alternative localhost
-        "http://frontend:3000",  # Docker service name
-    ]
+    # Check for CORS_ORIGINS environment variable first
+    cors_env = os.getenv("CORS_ORIGINS", "")
+    if cors_env:
+        allowed_origins = [origin.strip() for origin in cors_env.split(",") if origin.strip()]
+    else:
+        allowed_origins = [
+            "http://localhost:3000",  # Frontend dev server
+            "http://127.0.0.1:3000",  # Alternative localhost
+            "http://frontend:3000",  # Docker service name
+        ]
 
 logger.info("cors_configured", environment=ENVIRONMENT, origins=allowed_origins)
 
@@ -113,6 +119,7 @@ app.add_middleware(
 # Include routers
 app.include_router(text_router)
 app.include_router(voice_router)
+app.include_router(feature_flags_router)
 
 STATIC_DIR = Path("static")
 # Only mount static files if the directory exists

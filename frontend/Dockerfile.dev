@@ -1,0 +1,26 @@
+# Simple development Dockerfile
+FROM node:18-alpine
+
+RUN corepack enable && corepack prepare pnpm@10.11.0 --activate
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json pnpm-lock.yaml ./
+
+# Install dependencies
+RUN pnpm install
+
+# Copy source code
+COPY . .
+
+# Create i18n.ts if missing
+RUN test -f i18n.ts || echo "export { default } from './lib/i18n/config';" > i18n.ts
+
+EXPOSE 3000
+
+ENV NODE_ENV=development
+ENV HOSTNAME=0.0.0.0
+ENV PORT=3000
+
+CMD ["pnpm", "dev"]

@@ -48,9 +48,8 @@ RUN pnpm install --frozen-lockfile
 # Copy source code
 COPY . .
 
-# Copy OpenAPI schema from backend build (if using docker-compose)
-# Or generate a placeholder if not available
-COPY --from=backend /tmp/openapi.json ./openapi.json 2>/dev/null || echo '{"openapi":"3.1.0","info":{"title":"API","version":"1.0.0"},"paths":{}}' > ./openapi.json
+# Use the existing OpenAPI schema if available, otherwise create placeholder
+RUN test -f ./openapi.json || echo '{"openapi":"3.1.0","info":{"title":"API","version":"1.0.0"},"paths":{}}' > ./openapi.json
 
 # Generate TypeScript client from OpenAPI schema
 RUN pnpm run generate:api || echo "Warning: API client generation failed"

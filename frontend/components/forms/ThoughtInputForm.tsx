@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, FormEvent, KeyboardEvent, useEffect, useRef } from 'react'
+import { useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui'
 import { createDefaultAudioState, AudioState } from '@/lib/audio'
@@ -21,6 +22,7 @@ export default function ThoughtInputForm({
   isLoading = false,
   // language = 'en-US'
 }: ThoughtInputFormProps) {
+  const t = useTranslations()
   const [thought, setThought] = useState('')
   const [audioState, setAudioState] = useState<AudioState>(createDefaultAudioState())
   // const [audioSupported, setAudioSupported] = useState(false)
@@ -304,7 +306,7 @@ export default function ThoughtInputForm({
               value={thought}
               onChange={(e) => setThought(e.target.value.slice(0, maxLength))}
               onKeyDown={handleKeyDown}
-              placeholder="Type your message..."
+              placeholder={t('thought_form.placeholder')}
               className={cn(
                 "w-full min-h-[140px] resize-y rounded-xl",
                 "bg-white",
@@ -379,9 +381,9 @@ export default function ThoughtInputForm({
             aria-label={isLoading ? "Sending message" : "Send message"}
           >
             {isLoading ? (
-                <span>Sending...</span>
+                <span>{t('common.loading')}</span>
               ) : (
-                <span>Send</span>
+                <span>{t('thought_form.submit')}</span>
               )}
           </Button>
           <Button
@@ -396,7 +398,7 @@ export default function ThoughtInputForm({
               <span className="group-hover:rotate-180 transition-transform duration-300">
                 ↻
               </span>
-              <span>Clear</span>
+              <span>{t('thought_form.clear')}</span>
             </span>
           </Button>
         </div>

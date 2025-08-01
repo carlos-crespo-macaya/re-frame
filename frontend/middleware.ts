@@ -1,56 +1,24 @@
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+import createMiddleware from 'next-intl/middleware';
+import { locales, defaultLocale } from './lib/i18n/config';
 
-const locales = ['en', 'es']
-const defaultLocale = 'en'
-
-function getLocale(request: NextRequest): string {
-  // Check if there's a locale in the pathname
-  const pathname = request.nextUrl.pathname
-  const pathnameHasLocale = locales.some(
-    (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
-  )
-
-  if (pathnameHasLocale) {
-    return pathname.split('/')[1]
-  }
-
-  // Check Accept-Language header
-  const acceptLanguage = request.headers.get('Accept-Language')
-  if (acceptLanguage) {
-    const languages = acceptLanguage.split(',')
-    for (const lang of languages) {
-      const locale = lang.split('-')[0].trim()
-      if (locales.includes(locale)) {
-        return locale
-      }
-    }
-  }
-
-  return defaultLocale
-}
-
-export function middleware(request: NextRequest) {
-  const pathname = request.nextUrl.pathname
+export default createMiddleware({
+  // A list of all locales that are supported
+  locales,
   
-  // Check if the pathname already has a locale
-  const pathnameHasLocale = locales.some(
-    (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
-  )
-
-  if (pathnameHasLocale) {
-    return NextResponse.next()
-  }
-
-  // Redirect if no locale
-  const locale = getLocale(request)
-  const newUrl = new URL(`/${locale}${pathname}`, request.url)
-  return NextResponse.redirect(newUrl)
-}
+  // Used when no locale matches
+  defaultLocale,
+  
+  // Never redirect to default locale
+  localePrefix: 'as-needed'
+});
 
 export const config = {
+  // Match only internationalized pathnames
   matcher: [
-    // Skip all internal paths (_next, api, etc.)
-    '/((?!_next|api|favicon.ico|.*\\..*).*)',
-  ],
-}
+    // Match all pathnames except for:
+    // - API routes (/api)
+    // - Static files (_next, favicon.ico, etc.)
+    // - Public files (files with extensions)
+    '/((?!api|_next|.*\\..*).*)'
+  ]
+}; 

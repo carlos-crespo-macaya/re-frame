@@ -43,3 +43,11 @@ export function isValidSessionId(sessionId: string): boolean {
   const uuidRegex = /^(?:[\w-]+-)?[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
   return uuidRegex.test(sessionId)
 }
+
+/**
+ * Get current session ID from sessionStorage
+ */
+export function getSessionId(): string | null {
+  if (typeof window === 'undefined') return null
+  return sessionStorage.getItem('sessionId')
+}

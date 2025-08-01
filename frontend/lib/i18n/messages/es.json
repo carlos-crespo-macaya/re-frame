@@ -1,0 +1,121 @@
+{
+  "metadata": {
+    "title": "re-frame.social - Apoyo para Reestructuración Cognitiva",
+    "description": "Una herramienta transparente de reestructuración cognitiva asistida por IA diseñada para personas con Trastorno de la Personalidad por Evitación (TPE) y ansiedad social."
+  },
+  "nav": {
+    "skip_to_content": "Saltar al contenido principal",
+    "about": "Acerca de",
+    "learn_cbt": "Aprender TCC",
+    "support": "Apoyo"
+  },
+  "common": {
+    "loading": "Cargando...",
+    "error": "Error",
+    "try_again": "Intentar de nuevo",
+    "submit": "Enviar",
+    "clear": "Limpiar",
+    "cancel": "Cancelar"
+  },
+  "home": {
+    "title": "re-frame",
+    "subtitle": "Apoyo para reestructuración cognitiva",
+    "privacy_notice": "Sesión privada — no almacenamos datos personales.",
+    "connecting": "Conectando...",
+    "connected": "Conectado",
+    "disconnected": "Desconectado",
+    "no_modes_available": "No hay modos de comunicación disponibles actualmente.",
+    "check_back_later": "Por favor, vuelve más tarde."
+  },
+  "language_selector": {
+    "label": "Seleccionar Idioma",
+    "english": "English",
+    "spanish": "Español"
+  },
+  "thought_form": {
+    "placeholder": "¿Qué tienes en mente? Comparte un pensamiento o situación que te gustaría ayuda para reencuadrar...",
+    "submit": "Obtener Apoyo",
+    "clear": "Limpiar",
+    "voice_mode": "Modo de Voz",
+    "text_mode": "Modo de Texto"
+  },
+  "about": {
+    "title": "ℹ️ Acerca de re-frame",
+    "mission": "Misión – dar a las personas que luchan con patrones evitativos una manera gentil de desafiar pensamientos duros—sin vergüenza, anuncios, o minería de datos.",
+    "what_it_is": "Qué es:",
+    "what_it_is_desc": "una herramienta de reestructuración cognitiva informada por marcos terapéuticos que detecta trampas de pensamiento (catastrofización, lectura de mente, etc.) y ofrece perspectivas más amables.",
+    "what_it_isnt": "Qué no es:",
+    "what_it_isnt_desc": "psicoterapia completa, consejo médico, o un servicio de crisis.",
+    "who_builds": "Quién lo construye:",
+    "who_builds_desc": "solo yo—Carlos, un ingeniero de software que ha vivido con TPE durante años y está invirtiendo mi propio tiempo, habilidades y voluntad para crear la herramienta que desearía haber tenido.",
+    "why_open_source": "Por qué código abierto:",
+    "why_open_source_desc": "la transparencia genera confianza; cualquiera puede inspeccionar o mejorar el código.",
+    "transparency_title": "🔍 Transparencia",
+    "open_source_desc": "Todo el código fuente es de código abierto y está disponible en GitHub. Puedes ver exactamente cómo se manejan tus datos (no se almacenan) y cómo la IA genera respuestas.",
+    "no_tracking_title": "🔒 Sin seguimiento",
+    "no_tracking_desc": "No usamos analíticas, no almacenamos conversaciones, ni te rastreamos en la web. Tus sesiones son completamente privadas.",
+    "research_backed_title": "📚 Respaldado por investigación",
+    "research_backed_desc": "Construido sobre técnicas de terapia cognitivo-conductual (TCC) basadas en evidencia, específicamente útiles para patrones evitativos y ansiedad social.",
+    "limitations_title": "⚠️ Limitaciones importantes",
+    "not_replacement": "Esto no es un reemplazo para terapia profesional o tratamiento médico.",
+    "crisis_warning": "Si estás en crisis, por favor contacta tus servicios de emergencia locales o una línea de crisis.",
+    "getting_help": "Si buscas apoyo profesional, considera contactar a un terapeuta calificado que se especialice en TCC o trastornos de personalidad."
+  },
+  "learn_cbt": {
+    "title": "¿Qué es la TCC?",
+    "intro": "La Terapia Cognitivo-Conductual (TCC) es un enfoque basado en evidencia que vincula pensamientos, sentimientos y acciones. Al detectar trampas de pensamiento comunes—como catastrofización, lectura de mente, o declaraciones de \"todo o nada\"—puedes practicar perspectivas más amables y equilibradas.",
+    "why_helps_title": "Por qué ayuda con el TPE",
+    "why_helps_intro": "Las personas que viven con Trastorno de la Personalidad por Evitación a menudo luchan con autocrítica intensa y miedo a la evaluación negativa. La TCC ofrece herramientas prácticas para:",
+    "name_thoughts": "Nombrar pensamientos inútiles en lugar de aceptarlos como hechos.",
+    "test_thoughts": "Probar esos pensamientos contra evidencia del mundo real.",
+    "practice_alternatives": "Practicar interpretaciones alternativas en pasos pequeños y seguros.",
+    "common_traps_title": "Trampas de pensamiento comunes",
+    "catastrophising": "Catastrofización",
+    "catastrophising_desc": "Asumir que ocurrirá el peor resultado posible.",
+    "mind_reading": "Lectura de mente",
+    "mind_reading_desc": "Creer que sabes lo que otros están pensando sobre ti.",
+    "all_or_nothing": "Pensamiento de todo o nada",
+    "all_or_nothing_desc": "Ver situaciones solo en términos de blanco y negro.",
+    "personalisation": "Personalización",
+    "personalisation_desc": "Culparte por cosas fuera de tu control.",
+    "getting_started_title": "Comenzando",
+    "getting_started_desc": "Comienza simplemente notando tus pensamientos sin juicio. Cuando te encuentres en una trampa de pensamiento, pregúntate gentilmente: \"¿Hay otra manera de ver esta situación?\"",
+    "references_title": "Referencias",
+    "beck_reference": "Beck, J. S. (2011). Terapia cognitivo-conductual: Fundamentos y más allá (2ª ed.).",
+    "avpd_reference": "Lampe, L., & Malhi, G. S. (2018). Trastorno de personalidad por evitación: perspectivas actuales.",
+    "exposure_reference": "Wolitzky-Taylor, K. B., et al. (2008). Enfoques psicológicos en el tratamiento de fobias específicas."
+  },
+  "support": {
+    "title": "🤝 Obtener Apoyo",
+    "intro": "Si re-frame no está satisfaciendo tus necesidades, o si buscas apoyo adicional, aquí hay algunos recursos útiles:",
+    "crisis_title": "🚨 Apoyo en crisis",
+    "crisis_desc": "Si estás en peligro inmediato o tienes pensamientos de autolesión:",
+    "us_crisis": "EE.UU.: Línea Nacional de Prevención del Suicidio - 988",
+    "uk_crisis": "Reino Unido: Samaritanos - 116 123",
+    "emergency": "O contacta tus servicios de emergencia locales (911, 999, etc.)",
+    "therapy_title": "🎯 Terapia profesional",
+    "therapy_desc": "Para apoyo continuo con TPE o ansiedad social, considera trabajar con:",
+    "cbt_therapists": "Terapeutas de TCC que se especializan en trastornos de personalidad",
+    "dbt_therapists": "Profesionales de TDC (Terapia Dialéctica Conductual)",
+    "group_therapy": "Programas de terapia grupal para ansiedad social",
+    "finding_help_title": "Encontrar ayuda",
+    "psychology_today": "Psychology Today (EE.UU.) - directorio de terapeutas",
+    "bacp": "BACP (Reino Unido) - directorio de terapeutas",
+    "insurance": "Consulta con tu proveedor de seguros para terapeutas cubiertos",
+    "community_title": "🌐 Apoyo comunitario",
+    "online_communities": "Comunidades en línea para TPE y ansiedad social",
+    "support_groups": "Grupos de apoyo locales o virtuales",
+    "peer_support": "Redes de apoyo entre pares",
+    "feedback_title": "💬 Comentarios sobre re-frame",
+    "feedback_desc": "¿Tienes sugerencias o encontraste problemas? Me encantaría escucharte:",
+    "github_issues": "Reportar errores o solicitar características en GitHub",
+    "email_contact": "Envíame un email directamente (próximamente)",
+    "remember": "Recuerda: No estás solo en esto. Tomar el paso de buscar apoyo muestra coraje real."
+  },
+  "error": {
+    "generic": "Algo salió mal. Por favor, inténtalo de nuevo.",
+    "connection_failed": "Error al conectar. Por favor, verifica tu conexión a internet.",
+    "session_expired": "Tu sesión ha expirado. Por favor, actualiza la página.",
+    "try_again": "Intentar de Nuevo"
+  }
+} 

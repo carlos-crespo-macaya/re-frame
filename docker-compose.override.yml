@@ -6,9 +6,11 @@ version: '3.8'
 
 services:
   backend:
+    env_file:
+      - .env
     environment:
       # Add port 8080 to allowed origins for local testing
-      - CORS_ORIGINS=http://localhost:3000,http://localhost:8080,http://frontend:3000
+      - CORS_ORIGINS=http://localhost:3000,http://localhost:3002,http://localhost:8080,http://frontend:3000
       
   # Frontend environment is already correctly configured in docker-compose.yml
   # The NEXT_PUBLIC_API_URL should remain http://localhost:8000 for browser access

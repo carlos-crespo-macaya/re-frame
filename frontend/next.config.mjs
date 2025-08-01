@@ -1,6 +1,12 @@
+import createNextIntlPlugin from 'next-intl/plugin';
+
+const withNextIntl = createNextIntlPlugin();
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'standalone',
+  // Temporarily disabled static export for i18n development
+  // output: 'export',
+  trailingSlash: true,
   images: {
     domains: process.env.ALLOWED_IMAGE_DOMAINS?.split(',') || [],
   },
@@ -8,6 +14,9 @@ const nextConfig = {
   reactStrictMode: true,
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
+  },
+  experimental: {
+    optimizePackageImports: ['@headlessui/react'],
   },
   // Disable problematic features in development
   webpack: (config, { dev }) => {
@@ -21,4 +30,4 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+export default withNextIntl(nextConfig);

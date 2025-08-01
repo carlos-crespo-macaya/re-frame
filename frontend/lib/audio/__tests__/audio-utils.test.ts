@@ -14,7 +14,7 @@ import {
 
 // Setup browser-like environment for tests
 beforeEach(() => {
-  // @ts-ignore
+  // @ts-expect-error - mocking window object for tests
   global.window = {
     btoa: (str: string) => Buffer.from(str, 'binary').toString('base64'),
     atob: (str: string) => Buffer.from(str, 'base64').toString('binary')
