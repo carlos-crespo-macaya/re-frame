@@ -1,0 +1,41 @@
+{
+  "title": "ℹ️ About re-frame",
+  "mission": {
+    "label": "Mission",
+    "description": "give people who struggle with avoidant patterns a gentle way to challenge harsh thoughts—without shame, ads, or data mining."
+  },
+  "details": {
+    "whatIs": {
+      "label": "What it is:",
+      "description": "a therapeutic framework-informed cognitive restructuring tool that spots thinking traps (catastrophising, mind-reading, etc.) and offers kinder perspectives."
+    },
+    "whatIsnt": {
+      "label": "What it isn't:",
+      "description": "full psychotherapy, medical advice, or a crisis service."
+    },
+    "whoBuilds": {
+      "label": "Who builds it:",
+      "description": "just me—Carlos, a software engineer who's lived with AvPD for years and is investing my own time, skills, and will to create the tool I wish I'd had."
+    },
+    "whyOpen": {
+      "label": "Why open source:",
+      "description": "transparency builds trust; anyone can inspect or improve the code."
+    },
+    "roadmap": {
+      "label": "Roadmap:",
+      "description": "opt-in community peer support, progress journaling, therapist hand-off export."
+    }
+  },
+  "contact": {
+    "question": "Questions? Reach me at ",
+    "email": "hello@re-frame.social"
+  },
+  "navigation": {
+    "back": "← Return to re-frame"
+  },
+  "footer": {
+    "privacy": "Privacy",
+    "support": "Support",
+    "about": "About"
+  }
+}

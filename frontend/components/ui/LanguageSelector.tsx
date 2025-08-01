@@ -15,7 +15,7 @@ export function LanguageSelector({ value, onChange, className = '' }: LanguageSe
   return (
     <div className={`relative ${className}`}>
       <label htmlFor="language-select" className="text-sm text-[#999999] mb-2 block">
-        Select Language
+        {value.startsWith('es') ? 'Seleccionar idioma' : 'Select Language'}
       </label>
       <select
         id="language-select"

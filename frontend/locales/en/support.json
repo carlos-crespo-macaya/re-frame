@@ -1,0 +1,70 @@
+{
+  "title": "Support & Help",
+  "subtitle": "Get help with re-frame or find mental health resources",
+  "sections": {
+    "technicalSupport": {
+      "title": "Technical Support",
+      "description": "Having trouble with the app? We're here to help.",
+      "contact": "Contact us at:",
+      "email": "hello@re-frame.social",
+      "responseTime": "We typically respond within 24-48 hours."
+    },
+    "mentalHealthResources": {
+      "title": "Mental Health Resources",
+      "description": "If you're in crisis or need professional support:",
+      "resources": [
+        {
+          "title": "Crisis Text Line",
+          "description": "Text HOME to 741741",
+          "availability": "24/7 crisis support"
+        },
+        {
+          "title": "National Suicide Prevention Lifeline",
+          "description": "Call 988",
+          "availability": "24/7 support"
+        },
+        {
+          "title": "Psychology Today",
+          "description": "Find a therapist near you",
+          "link": "psychologytoday.com"
+        }
+      ]
+    },
+    "aboutAvpd": {
+      "title": "About Avoidant Personality Disorder",
+      "description": "Learn more about AvPD and treatment options:",
+      "resources": [
+        {
+          "title": "NIMH - Personality Disorders",
+          "link": "nimh.nih.gov"
+        },
+        {
+          "title": "International OCD Foundation",
+          "description": "AvPD resources and support groups"
+        }
+      ]
+    },
+    "privacyAndSafety": {
+      "title": "Privacy & Safety",
+      "description": "Your privacy and safety are our top priorities:",
+      "points": [
+        "We don't store your conversation data",
+        "Sessions are not recorded or saved",
+        "All communication is encrypted",
+        "No personal information is required"
+      ]
+    }
+  },
+  "reminder": {
+    "title": "Important Reminder",
+    "text": "re-frame is a self-help tool and not a replacement for professional mental health care. If you're experiencing thoughts of self-harm or suicide, please contact emergency services or a crisis helpline immediately."
+  },
+  "navigation": {
+    "back": "← Return to re-frame"
+  },
+  "footer": {
+    "privacy": "Privacy",
+    "support": "Support",
+    "about": "About"
+  }
+}
