@@ -82,7 +82,7 @@ jobs:
               core.setOutput('proceed', 'true');
               return;
             }
-            const sha = '${{ steps.vars.outputs.head_sha }}';
+            const sha = inputs.head_sha;
             const owner = context.repo.owner;
             const repo = context.repo.repo;
 
