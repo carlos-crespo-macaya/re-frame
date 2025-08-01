@@ -1,0 +1,52 @@
+{
+  "general": {
+    "somethingWentWrong": "Something went wrong",
+    "unexpectedError": "An unexpected error occurred",
+    "tryAgainLater": "Please try again later",
+    "contactSupport": "If the problem persists, please contact support"
+  },
+  "errorFallback": {
+    "title": "Something went wrong",
+    "description": "We apologize for the inconvenience. This error has been logged and we'll look into it.",
+    "tryAgain": "Try again",
+    "returnHome": "Return to home",
+    "errorDetailsLabel": "Error details (development only)"
+  },
+  "network": {
+    "connectionLost": "Connection lost",
+    "connectionRestored": "Connection restored",
+    "retryConnection": "Retry connection",
+    "offline": "You appear to be offline",
+    "slowConnection": "Connection is slow"
+  },
+  "session": {
+    "sessionExpired": "Your session has expired",
+    "sessionError": "Session error occurred",
+    "unableToStart": "Unable to start session",
+    "sessionInterrupted": "Session was interrupted",
+    "reconnecting": "Reconnecting to session..."
+  },
+  "audio": {
+    "microphoneError": "Microphone error",
+    "recordingFailed": "Recording failed",
+    "playbackFailed": "Playback failed",
+    "audioNotSupported": "Audio not supported in this browser",
+    "permissionDenied": "Microphone permission denied"
+  },
+  "validation": {
+    "required": "This field is required",
+    "tooShort": "Input is too short",
+    "tooLong": "Input is too long",
+    "invalidFormat": "Invalid format",
+    "pleaseEnterMessage": "Please enter a message"
+  },
+  "api": {
+    "serverError": "Server error",
+    "networkError": "Network error",
+    "timeout": "Request timeout",
+    "unauthorized": "Unauthorized access",
+    "notFound": "Resource not found",
+    "badRequest": "Bad request",
+    "serviceUnavailable": "Service temporarily unavailable"
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "title": "¿Qué es la TCC?",
+  "quickLink": "Resumen de la TCC en 2 minutos ↗",
+  "introduction": "La Terapia Cognitivo-Conductual (TCC) es un enfoque basado en evidencia que conecta pensamientos, sentimientos y acciones. Al identificar trampas de pensamiento comunes—como catastrofismo, lectura de mente, o declaraciones de \"todo o nada\"—puedes practicar perspectivas más amables y equilibradas.",
+  "whyHelpsAvpd": {
+    "title": "Por qué ayuda con el TPA",
+    "description": "Las personas que viven con Trastorno de Personalidad por Evitación a menudo luchan contra la autocrítica intensa y el miedo a la evaluación negativa. La TCC ofrece herramientas prácticas para:",
+    "tools": [
+      "Nombrar pensamientos inútiles en lugar de aceptarlos como hechos.",
+      "Probar esos pensamientos contra evidencia del mundo real.",
+      "Practicar interpretaciones alternativas en pasos pequeños y seguros."
+    ],
+    "conclusion": "Los ejercicios consistentes de TCC pueden erosionar gradualmente la creencia \"Siempre seré rechazado.\""
+  },
+  "howWeUse": {
+    "title": "Cómo re-frame utiliza la TCC",
+    "description": "Cuando describes una situación, re-frame resalta posibles trampas de pensamiento y sugiere perspectivas más gentiles. Tú mantienes el control—elige lo que se sienta verdadero y útil, descarta el resto."
+  },
+  "furtherReading": {
+    "title": "Lecturas recomendadas",
+    "resources": [
+      {
+        "title": "Conceptos básicos de TCC",
+        "source": "Anxiety UK",
+        "link": "Página de recursos ↗"
+      },
+      {
+        "title": "Hoja informativa \"Estilos de Pensamiento Inútiles\"",
+        "source": "CCI",
+        "link": "PDF (200 KB) ↗"
+      },
+      {
+        "title": "Personalidad Evitativa: Libro de Trabajo TCC",
+        "source": "Psychology Tools",
+        "link": "Inicia sesión y descarga ↗"
+      }
+    ]
+  },
+  "reminder": {
+    "prefix": "Recordatorio:",
+    "text": "re-frame es un acompañante de autoayuda, no un sustituto de la atención profesional. Si te sientes en riesgo con tus pensamientos, contacta con un profesional cualificado o una línea de ayuda."
+  },
+  "references": {
+    "title": "Referencias",
+    "tableHeaders": {
+      "number": "#",
+      "source": "Fuente",
+      "keyPoint": "Punto Clave Respaldado"
+    },
+    "entries": [
+      {
+        "number": "[1]",
+        "source": "Beck, A.T. Terapia Cognitiva y los Trastornos Emocionales. International Universities Press, 1976.",
+        "keyPoint": "Definición de TCC y vínculo pensamiento-emoción-comportamiento"
+      },
+      {
+        "number": "[2]",
+        "source": "Lampe, L., & Sunderland, M. (2013). Trastorno de Personalidad por Evitación: estado actual y direcciones futuras. Australian & New Zealand Journal of Psychiatry, 47(6), 515-22.",
+        "keyPoint": "Características del TPA: miedo a la evaluación, autocrítica"
+      },
+      {
+        "number": "[3]",
+        "source": "Clark, D.A. & Beck, A.T. Terapia Cognitiva de los Trastornos de Ansiedad. The Guilford Press, 2010.",
+        "keyPoint": "Técnicas de TCC: nombrar, probar, practicar alternativas"
+      }
+    ]
+  },
+  "note": {
+    "title": "Nota:",
+    "text": "El PDF \"Estilos de Pensamiento Inútiles\" de CCI y los libros de trabajo de Psychology Tools están disponibles gratuitamente, son folletos alineados con evidencia que los clínicos recomiendan frecuentemente."
+  },
+  "navigation": {
+    "return": "← Volver a re-frame"
+  }
+}

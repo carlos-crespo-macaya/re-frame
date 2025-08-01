@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useSSEClient } from '@/lib/streaming/use-sse-client'
 import ReactMarkdown from 'react-markdown'
 import { FrameworkBadge, LanguageSelector } from '@/components/ui'
+import { ThoughtInputForm } from '@/components/forms'
 import { Framework } from '@/types/api'
 
 interface Message {
@@ -16,16 +17,13 @@ interface Message {
 interface Translations {
   title: string
   subtitle: string
-  placeholder: string
-  send: string
   back: string
   thinking: string
 }
 
-export function ChatClient({ locale }: { locale: string }) {
+export function FormClient({ locale }: { locale: string }) {
   const router = useRouter()
   const [messages, setMessages] = useState<Message[]>([])
-  const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [assistantBuffer, setAssistantBuffer] = useState('')
   const [selectedLanguage, setSelectedLanguage] = useState(locale === 'es' ? 'es-ES' : 'en-US')
@@ -36,18 +34,14 @@ export function ChatClient({ locale }: { locale: string }) {
   // Translations
   const translations: Record<string, Translations> = {
     en: {
-      title: 'Text Chat',
-      subtitle: 'Chat with re-frame in real-time',
-      placeholder: 'Share your thoughts...',
-      send: 'Send',
+      title: 'Form Interface',
+      subtitle: 'Share your thoughts with structured input',
       back: '← Back to home',
       thinking: 'Thinking...',
     },
     es: {
-      title: 'Chat de Texto',
-      subtitle: 'Chatea con re-frame en tiempo real',
-      placeholder: 'Comparte tus pensamientos...',
-      send: 'Enviar',
+      title: 'Interfaz de Formulario',
+      subtitle: 'Comparte tus pensamientos con entrada estructurada',
       back: '← Volver al inicio',
       thinking: 'Pensando...',
     },
@@ -146,32 +140,31 @@ export function ChatClient({ locale }: { locale: string }) {
   const handleLanguageChange = (language: string) => {
     setSelectedLanguage(language)
     const newLocale = language.startsWith('es') ? 'es' : 'en'
-    const newPath = `/${newLocale}/chat`
+    const newPath = `/${newLocale}/form`
     router.push(newPath)
   }
 
 
-  const handleSendMessage = async () => {
-    if (!input.trim() || isLoading) return
+  const handleSubmit = async (thought: string) => {
+    if (!thought.trim() || isLoading) return
 
-    const userMessage = { role: 'user' as const, content: input }
+    const userMessage = { role: 'user' as const, content: thought }
     setMessages(prev => [...prev, userMessage])
-    setInput('')
     setIsLoading(true)
     
     try {
-      await sseClient.sendText(input)
+      await sseClient.sendText(thought)
     } catch (error) {
       console.error('Failed to send message:', error)
       setIsLoading(false)
     }
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      handleSendMessage()
-    }
+  const handleClear = () => {
+    setMessages([])
+    setAssistantBuffer('')
+    bufferRef.current = ''
+    processedIndexRef.current = 0
   }
 
   return (
@@ -206,82 +199,78 @@ export function ChatClient({ locale }: { locale: string }) {
       {/* Main content */}
       <main className="container-safe py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
-          <div className="flex flex-col h-[calc(100vh-300px)]">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Input form */}
+            <div className="bg-[#2a2a2a] rounded-2xl shadow-lg border border-[#3a3a3a] p-6">
+              <h2 className="text-xl font-heading font-medium text-[#EDEDED] mb-6">
+                Share Your Thoughts
+              </h2>
+              <ThoughtInputForm
+                onSubmit={handleSubmit}
+                onClear={handleClear}
+                isLoading={isLoading}
+                language={selectedLanguage}
+              />
+            </div>
 
-      {/* Messages area */}
-      <div className="flex-1 overflow-y-auto mb-4 space-y-4 bg-[#2a2a2a] rounded-lg p-4">
-        {messages.map((message, index) => (
-          <div
-            key={index}
-            className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-          >
-            <div
-              className={`max-w-[80%] p-4 rounded-lg ${
-                message.role === 'user'
-                  ? 'bg-brand-green-600 text-white'
-                  : 'bg-[#3a3a3a] text-[#EDEDED]'
-              }`}
-            >
-              {message.role === 'assistant' && message.frameworks && (
-                <div className="flex gap-2 mb-2">
-                  {message.frameworks.map((fw, i) => (
-                    <FrameworkBadge key={i} framework={fw as Framework} />
-                  ))}
-                </div>
-              )}
-              <div className="prose prose-sm prose-invert max-w-none">
-                <ReactMarkdown>{message.content}</ReactMarkdown>
+            {/* Messages area */}
+            <div className="bg-[#2a2a2a] rounded-2xl shadow-lg border border-[#3a3a3a] p-6">
+              <h2 className="text-xl font-heading font-medium text-[#EDEDED] mb-6">
+                Conversation
+              </h2>
+              <div className="h-[500px] overflow-y-auto space-y-4">
+                {messages.map((message, index) => (
+                  <div
+                    key={index}
+                    className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div
+                      className={`max-w-[85%] p-4 rounded-lg ${
+                        message.role === 'user'
+                          ? 'bg-brand-green-600 text-white'
+                          : 'bg-[#3a3a3a] text-[#EDEDED]'
+                      }`}
+                    >
+                      {message.role === 'assistant' && message.frameworks && (
+                        <div className="flex gap-2 mb-2">
+                          {message.frameworks.map((fw, i) => (
+                            <FrameworkBadge key={i} framework={fw as Framework} />
+                          ))}
+                        </div>
+                      )}
+                      <div className="prose prose-sm prose-invert max-w-none">
+                        <ReactMarkdown>{message.content}</ReactMarkdown>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                
+                {/* Show buffer while streaming */}
+                {assistantBuffer && (
+                  <div className="flex justify-start">
+                    <div className="max-w-[85%] p-4 rounded-lg bg-[#3a3a3a] text-[#EDEDED]">
+                      <div className="flex gap-2 mb-2">
+                        <FrameworkBadge framework="CBT" />
+                      </div>
+                      <div className="prose prose-sm prose-invert max-w-none">
+                        <ReactMarkdown>{assistantBuffer}</ReactMarkdown>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Loading indicator */}
+                {isLoading && !assistantBuffer && (
+                  <div className="flex justify-start">
+                    <div className="p-4 rounded-lg bg-[#3a3a3a] text-[#999999]">
+                      {t.thinking}
+                    </div>
+                  </div>
+                )}
+                
+                <div ref={messagesEndRef} />
               </div>
             </div>
-          </div>
-        ))}
-        
-        {/* Show buffer while streaming */}
-        {assistantBuffer && (
-          <div className="flex justify-start">
-            <div className="max-w-[80%] p-4 rounded-lg bg-[#3a3a3a] text-[#EDEDED]">
-              <div className="flex gap-2 mb-2">
-                <FrameworkBadge framework="CBT" />
-              </div>
-              <div className="prose prose-sm prose-invert max-w-none">
-                <ReactMarkdown>{assistantBuffer}</ReactMarkdown>
-              </div>
-            </div>
-          </div>
-        )}
-        
-        {/* Loading indicator */}
-        {isLoading && !assistantBuffer && (
-          <div className="flex justify-start">
-            <div className="p-4 rounded-lg bg-[#3a3a3a] text-[#999999]">
-              {t.thinking}
-            </div>
-          </div>
-        )}
-        
-        <div ref={messagesEndRef} />
-      </div>
-
-      {/* Input area */}
-      <div className="flex gap-2">
-        <textarea
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={t.placeholder}
-          className="flex-1 px-4 py-3 bg-[#2a2a2a] border border-[#3a3a3a] rounded-lg text-[#EDEDED] placeholder-[#999999] focus:outline-none focus:ring-2 focus:ring-brand-green-500 focus:border-transparent resize-none"
-          rows={3}
-          disabled={isLoading}
-        />
-        <button
-          type="button"
-          onClick={handleSendMessage}
-          disabled={isLoading || !input.trim()}
-          className="px-6 py-3 bg-brand-green-600 text-white rounded-lg font-medium hover:bg-brand-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {t.send}
-        </button>
-      </div>
           </div>
         </div>
       </main>
