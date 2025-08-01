@@ -2,19 +2,9 @@ name: Frontend CI
 
 on:
   push:
-    branches: [main, develop]
-    paths:
-      - 'frontend/**'
-      - '.github/workflows/frontend-ci.yml'
-      - 'package.json'
-      - 'pnpm-lock.yaml'
+    branches: [main, develop]  
   pull_request:
     branches: [main, develop]
-    paths:
-      - 'frontend/**'
-      - '.github/workflows/frontend-ci.yml'
-      - 'package.json'
-      - 'pnpm-lock.yaml'
 
 env:
   NODE_VERSION: '18.x'
