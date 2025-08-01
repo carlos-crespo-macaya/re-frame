@@ -87,9 +87,14 @@ jobs:
             const repo = context.repo.repo;
 
             async function latestConclusionForWorkflowByName(name) {
-              // List workflows to find ID by name
-              const wfs = await github.paginate(github.rest.actions.listRepoWorkflows, { owner, repo, per_page: 100 });
-              const wf = wfs.find(w => w.name === name);
+              // List workflows to find ID by name (first page only)
+              const firstPage = await github.rest.actions.listRepoWorkflows({ owner, repo });
+              let wf = firstPage.data.workflows.find(w => w.name === name);
+              if (!wf) {
+                // If not found, paginate through all workflows
+                const wfs = await github.paginate(github.rest.actions.listRepoWorkflows, { owner, repo, per_page: 100 });
+                wf = wfs.find(w => w.name === name);
+              }
               if (!wf) return 'not_found';
               // List runs for that workflow on main, find matching head_sha
               const runs = await github.paginate(github.rest.actions.listWorkflowRuns, {
