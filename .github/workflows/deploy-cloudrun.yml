@@ -1,8 +1,10 @@
 name: Deploy to Cloud Run (frontend + backend)
 
 on:
-  push:
-    branches: [main]
+  workflow_run:
+    workflows: ["Backend CI", "Frontend CI"]
+    types:
+      - completed
   workflow_dispatch:
     inputs:
       environment:
@@ -29,8 +31,24 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  gate:
+    name: Gate on CI success
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success' &&
+       github.ref == 'refs/heads/main')
+    outputs:
+      proceed: ${{ steps.set.outputs.proceed }}
+    steps:
+      - id: set
+        run: echo "proceed=true" >> "$GITHUB_OUTPUT"
+
   build-and-push:
     name: Build and Push Images
+    needs: gate
+    if: needs.gate.outputs.proceed == 'true'
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -82,6 +100,7 @@ jobs:
   deploy-backend:
     name: Deploy Backend
     needs: build-and-push
+    if: needs.gate.outputs.proceed == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Auth to Google Cloud (WIF)
@@ -119,6 +138,7 @@ jobs:
   deploy-frontend:
     name: Deploy Frontend
     needs: deploy-backend
+    if: needs.gate.outputs.proceed == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Auth to Google Cloud (WIF)
