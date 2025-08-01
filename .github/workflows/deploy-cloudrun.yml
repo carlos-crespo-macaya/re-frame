@@ -116,7 +116,7 @@ jobs:
                 match = runs.find(r => r.head_sha === sha);
                 if (match) break; // Stop pagination early if match is found
                 page++;
-              } while (runs.length > 0);
+              } while (runs.length > 0 && page <= maxPages);
               return match ? (match.conclusion || 'unknown') : 'none';
             }
 
