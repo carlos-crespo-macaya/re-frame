@@ -31,9 +31,11 @@ permissions:
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   REGION: ${{ secrets.GCP_REGION }}
-  BACKEND_SERVICE: re-frame-backend
-  FRONTEND_SERVICE: re-frame-frontend
-  REGISTRY: ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/re-frame
+  BILLING_ACCOUNT_ID: ${{ secrets.GCP_BILLING_ACCOUNT_ID }}
+  BACKEND_SERVICE: ${{ secrets.GCP_BACKEND_SERVICE_NAME || 're-frame-backend' }}
+  FRONTEND_SERVICE: ${{ secrets.GCP_FRONTEND_SERVICE_NAME || 're-frame-frontend' }}
+  REGISTRY: ${{ secrets.GCP_REGISTRY || format('{0}-docker.pkg.dev/{1}/re-frame', secrets.GCP_REGION, secrets.GCP_PROJECT_ID) }}
+  IMAGE_PREFIX: ${{ secrets.GCP_IMAGE_PREFIX || 're-frame' }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -166,7 +168,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/re-frame-${{ matrix.service }}
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}
           tags: |
             type=sha
             type=ref,event=branch
@@ -178,8 +180,8 @@ jobs:
           file: ${{ matrix.dockerfile }}
           push: true
           tags: |
-            ${{ env.REGISTRY }}/re-frame-${{ matrix.service }}:${{ needs.gate.outputs.head_sha }}
-            ${{ env.REGISTRY }}/re-frame-${{ matrix.service }}:${{ github.ref_name }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:${{ needs.gate.outputs.head_sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:${{ github.ref_name }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -204,7 +206,7 @@ jobs:
       - name: Deploy backend to Cloud Run
         run: |
           gcloud run deploy ${{ env.BACKEND_SERVICE }} \
-            --image ${{ env.REGISTRY }}/re-frame-backend:${{ needs.gate.outputs.image_tag }} \
+            --image ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-backend:${{ needs.gate.outputs.image_tag }} \
             --region ${{ env.REGION }} \
             --platform managed \
             --allow-unauthenticated \
@@ -213,8 +215,8 @@ jobs:
             --memory 1Gi \
             --min-instances 0 \
             --max-instances 10 \
-            --set-env-vars "ENVIRONMENT=${{ inputs.environment || 'production' }},LOG_LEVEL=info" \
-            --update-secrets "GEMINI_API_KEY=projects/${{ env.PROJECT_ID }}/secrets/GEMINI_API_KEY:latest"
+            --set-env-vars "ENVIRONMENT=${{ inputs.environment || 'production' }},LOG_LEVEL=info,GCP_PROJECT_ID=${{ env.PROJECT_ID }},GCP_REGION=${{ env.REGION }}" \
+            --update-secrets "GEMINI_API_KEY=projects/${{ env.PROJECT_ID }}/secrets/GEMINI_REDACTED=projects/${{ env.PROJECT_ID }}/secrets/GCP_REFRAME_IAP_CLIENT_SECRET:latest"
 
       - name: Capture backend URL
         id: be
@@ -248,7 +250,7 @@ jobs:
       - name: Deploy frontend to Cloud Run
         run: |
           gcloud run deploy ${{ env.FRONTEND_SERVICE }} \
-            --image ${{ env.REGISTRY }}/re-frame-frontend:${{ needs.gate.outputs.image_tag }} \
+            --image ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-frontend:${{ needs.gate.outputs.image_tag }} \
             --region ${{ env.REGION }} \
             --platform managed \
             --allow-unauthenticated \
@@ -257,7 +259,7 @@ jobs:
             --memory 512Mi \
             --min-instances 0 \
             --max-instances 10 \
-            --set-env-vars "NODE_ENV=production,NEXT_PUBLIC_API_URL=${{ steps.be.outputs.url }},API_URL=${{ steps.be.outputs.url }}"
+            --set-env-vars "NODE_ENV=production,NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }},API_URL=${{ secrets.NEXT_PUBLIC_API_URL }},GCP_PROJECT_ID=${{ env.PROJECT_ID }},GCP_REGION=${{ env.REGION }},GCP_REFRAME_IAP_CLIENT_ID=${{ secrets.GCP_REFRAME_IAP_CLIENT_ID }}"
 
       - name: Capture frontend URL
         id: fe
