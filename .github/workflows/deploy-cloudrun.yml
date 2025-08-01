@@ -71,7 +71,7 @@ jobs:
           # Removed unsupported 'inputs' parameter
           script: |
             const isDispatch = context.eventName === 'workflow_dispatch';
-            const force = inputs.force === 'true';
+            const force = github.event.inputs.force === 'true';
             if (isDispatch && force) {
               core.info('Bypassing CI checks due to force=true');
               core.setOutput('proceed', 'true');
