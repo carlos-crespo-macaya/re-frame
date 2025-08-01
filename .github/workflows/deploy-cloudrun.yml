@@ -71,7 +71,7 @@ jobs:
           # Accessing workflow inputs via context.payload.inputs in the script
           script: |
             const isDispatch = context.eventName === 'workflow_dispatch';
-            const force = context.payload.inputs.force === 'true';
+            const force = context.payload.inputs?.force === 'true';
             if (isDispatch && force) {
               core.info('Bypassing CI checks due to force=true');
               core.setOutput('proceed', 'true');
