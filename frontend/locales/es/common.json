@@ -1,0 +1,54 @@
+{
+  "buttons": {
+    "tryAgain": "Reintentar",
+    "startSession": "Iniciar Tu Sesión",
+    "learnMore": "Aprender más",
+    "submit": "Enviar",
+    "cancel": "Cancelar",
+    "close": "Cerrar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "back": "Atrás",
+    "next": "Siguiente",
+    "previous": "Anterior"
+  },
+  "navigation": {
+    "home": "Inicio",
+    "about": "Acerca de",
+    "privacy": "Privacidad",
+    "support": "Soporte",
+    "learnCbt": "Aprender TCC",
+    "chat": "Chat",
+    "returnToHome": "Volver al inicio",
+    "returnToReframe": "← Volver a re-frame"
+  },
+  "header": {
+    "title": "re-frame",
+    "subtitle": "Apoyo de reencuadre cognitivo"
+  },
+  "footer": {
+    "privacy": "Privacidad",
+    "support": "Soporte",
+    "about": "Acerca de",
+    "copyright": "© 2024 re-frame.social",
+    "title": "re-frame"
+  },
+  "loading": {
+    "default": "Cargando...",
+    "processing": "Procesando...",
+    "saving": "Guardando...",
+    "connecting": "Conectando..."
+  },
+  "language": {
+    "english": "Inglés",
+    "spanish": "Español",
+    "selectLanguage": "Seleccionar idioma"
+  },
+  "session": {
+    "private": "Sesión privada — no almacenamos datos personales.",
+    "starting": "Iniciando sesión...",
+    "ended": "Sesión terminada",
+    "reconnecting": "Reconectando..."
+  }
+}

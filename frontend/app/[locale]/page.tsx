@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { LanguageSelector } from '@/components/ui'
+import { LanguageSelector, InterfaceSelector } from '@/components/ui'
 
 // Translation dictionary
 const translations = {
@@ -114,15 +114,12 @@ export default function LocalePage({ params }: { params: { locale: string } }) {
     router.push(newPath)
   }
 
-  const handleStartSession = () => {
-    router.push(`/${params.locale}/chat`)
-  }
 
   return (
     <>
       {/* Header */}
-      <header className="relative bg-gradient-to-b from-[#1D1F1E] to-transparent">
-        <div className="container-safe py-8">
+      <header className="relative bg-gradient-to-b from-[#1D1F1E] to-transparent pt-4">
+        <div className="container-safe py-8 px-4 sm:px-6 lg:px-8">
           <div className="flex items-start justify-between">
             <div>
               <h1 className="text-2xl font-heading font-semibold text-brand-green-400">
@@ -144,7 +141,7 @@ export default function LocalePage({ params }: { params: { locale: string } }) {
 
       {/* Main content */}
       <main id="main-content" className="flex-1">
-        <div className="container-safe py-8 md:py-12">
+        <div className="container-safe py-8 md:py-12 px-4 sm:px-6 lg:px-8">
           {/* Welcome section with warm messaging */}
           <section className="max-w-3xl mx-auto text-center mb-12 animate-fade-in">
             <h2 className="text-3xl md:text-4xl font-heading font-medium text-[#EDEDED] mb-6">
@@ -158,31 +155,24 @@ export default function LocalePage({ params }: { params: { locale: string } }) {
             </p>
           </section>
 
-          {/* Start session section */}
-          <section className="max-w-2xl mx-auto">
-            <div className="relative">
-              <div className="relative bg-[#2a2a2a] rounded-2xl shadow-lg border border-[#3a3a3a] p-8 md:p-10" style={{ 
-                boxShadow: '0 4px 24px rgba(0, 0, 0, 0.3)',
-                animation: 'fadeIn 250ms cubic-bezier(0.25, 0.1, 0.25, 1)'
-              }}>
-                <div className="text-center">
-                  <h3 className="text-xl font-heading font-medium text-[#EDEDED] mb-4">
-                    {t.cta.title}
-                  </h3>
-                  <p className="text-[#999999] mb-8">
-                    {t.cta.description}
-                  </p>
-                  <button
-                    onClick={handleStartSession}
-                    className="px-8 py-3 bg-brand-green-600 text-white rounded-full font-medium hover:bg-brand-green-700 transition-colors"
-                  >
-                    {t.cta.button}
-                  </button>
-                  <p className="mt-6 text-sm text-[#999999]">
-                    {t.cta.privacy}
-                  </p>
-                </div>
+          {/* Interface selection section */}
+          <section className="max-w-5xl mx-auto">
+            <div className="relative bg-[#2a2a2a] rounded-2xl shadow-lg border border-[#3a3a3a] p-8 md:p-10 mb-8" style={{ 
+              boxShadow: '0 4px 24px rgba(0, 0, 0, 0.3)',
+              animation: 'fadeIn 250ms cubic-bezier(0.25, 0.1, 0.25, 1)'
+            }}>
+              <div className="text-center mb-8">
+                <h3 className="text-xl font-heading font-medium text-[#EDEDED] mb-4">
+                  {t.cta.title}
+                </h3>
+                <p className="text-[#999999] mb-4">
+                  {t.cta.description}
+                </p>
+                <p className="text-sm text-[#999999]">
+                  {t.cta.privacy}
+                </p>
               </div>
+              <InterfaceSelector locale={params.locale} />
             </div>
           </section>
 
@@ -258,7 +248,7 @@ export default function LocalePage({ params }: { params: { locale: string } }) {
 
       {/* Footer */}
       <footer className="mt-auto border-t border-[#3a3a3a]">
-        <div className="container-safe py-8">
+        <div className="container-safe py-8 px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-center gap-4">
             <h2 className="text-xl font-heading font-semibold text-brand-green-400">
               {t.header.title}
