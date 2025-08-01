@@ -68,7 +68,7 @@ jobs:
         id: check
         uses: actions/github-script@v7
         with:
-          # Using 'inputs' parameter to pass workflow inputs to the script
+          # Accessing workflow inputs via context.payload.inputs in the script
           script: |
             const isDispatch = context.eventName === 'workflow_dispatch';
             const force = context.payload.inputs.force === 'true';
