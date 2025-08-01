@@ -68,8 +68,7 @@ jobs:
         id: check
         uses: actions/github-script@v7
         with:
-          inputs:
-            force: ${{ inputs.force }}
+          # Removed unsupported 'inputs' parameter
           script: |
             const isDispatch = context.eventName === 'workflow_dispatch';
             const force = inputs.force === 'true';
