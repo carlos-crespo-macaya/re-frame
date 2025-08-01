@@ -1,0 +1,70 @@
+{
+  "title": "Soporte y Ayuda",
+  "subtitle": "Obtén ayuda con re-frame o encuentra recursos de salud mental",
+  "sections": {
+    "technicalSupport": {
+      "title": "Soporte Técnico",
+      "description": "¿Tienes problemas con la aplicación? Estamos aquí para ayudar.",
+      "contact": "Contáctanos en:",
+      "email": "hello@re-frame.social",
+      "responseTime": "Típicamente respondemos en 24-48 horas."
+    },
+    "mentalHealthResources": {
+      "title": "Recursos de Salud Mental",
+      "description": "Si estás en crisis o necesitas apoyo profesional:",
+      "resources": [
+        {
+          "title": "Línea de Crisis por Texto",
+          "description": "Envía HOLA al 741741",
+          "availability": "Apoyo en crisis 24/7"
+        },
+        {
+          "title": "Línea Nacional de Prevención del Suicidio",
+          "description": "Llama al 988",
+          "availability": "Apoyo 24/7"
+        },
+        {
+          "title": "Psychology Today",
+          "description": "Encuentra un terapeuta cerca de ti",
+          "link": "psychologytoday.com"
+        }
+      ]
+    },
+    "aboutAvpd": {
+      "title": "Acerca del Trastorno de Personalidad por Evitación",
+      "description": "Aprende más sobre el TPA y opciones de tratamiento:",
+      "resources": [
+        {
+          "title": "NIMH - Trastornos de Personalidad",
+          "link": "nimh.nih.gov"
+        },
+        {
+          "title": "Fundación Internacional de TOC",
+          "description": "Recursos de TPA y grupos de apoyo"
+        }
+      ]
+    },
+    "privacyAndSafety": {
+      "title": "Privacidad y Seguridad",
+      "description": "Tu privacidad y seguridad son nuestras principales prioridades:",
+      "points": [
+        "No almacenamos los datos de tu conversación",
+        "Las sesiones no se graban ni se guardan",
+        "Toda comunicación está encriptada",
+        "No se requiere información personal"
+      ]
+    }
+  },
+  "reminder": {
+    "title": "Recordatorio Importante",
+    "text": "re-frame es una herramienta de autoayuda y no un reemplazo de la atención profesional de salud mental. Si estás experimentando pensamientos de autolesión o suicidio, por favor contacta servicios de emergencia o una línea de crisis inmediatamente."
+  },
+  "navigation": {
+    "back": "← Volver a re-frame"
+  },
+  "footer": {
+    "privacy": "Privacidad",
+    "support": "Soporte",
+    "about": "Acerca de"
+  }
+}

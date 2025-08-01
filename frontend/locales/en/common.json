@@ -1,0 +1,54 @@
+{
+  "buttons": {
+    "tryAgain": "Try again",
+    "startSession": "Start Your Session",
+    "learnMore": "Learn more",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "close": "Close",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous"
+  },
+  "navigation": {
+    "home": "Home",
+    "about": "About",
+    "privacy": "Privacy",
+    "support": "Support",
+    "learnCbt": "Learn CBT",
+    "chat": "Chat",
+    "returnToHome": "Return to home",
+    "returnToReframe": "← Return to re-frame"
+  },
+  "header": {
+    "title": "re-frame",
+    "subtitle": "Cognitive reframing support"
+  },
+  "footer": {
+    "privacy": "Privacy",
+    "support": "Support",
+    "about": "About",
+    "copyright": "© 2024 re-frame.social",
+    "title": "re-frame"
+  },
+  "loading": {
+    "default": "Loading...",
+    "processing": "Processing...",
+    "saving": "Saving...",
+    "connecting": "Connecting..."
+  },
+  "language": {
+    "english": "English",
+    "spanish": "Spanish",
+    "selectLanguage": "Select language"
+  },
+  "session": {
+    "private": "Private session — we don't store personal data.",
+    "starting": "Starting session...",
+    "ended": "Session ended",
+    "reconnecting": "Reconnecting..."
+  }
+}
