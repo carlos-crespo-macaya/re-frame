@@ -25,10 +25,10 @@ export function NaturalConversation({ language = 'en-US' }: NaturalConversationP
   })
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[400px] p-8 bg-gray-50 rounded-lg">
+    <div className="flex flex-col items-center justify-center min-h-[400px] p-8 bg-[#2a2a2a] rounded-lg border border-[#3a3a3a]">
       <div className="mb-8 text-center">
-        <h2 className="text-2xl font-semibold mb-2">Voice Conversation</h2>
-        <p className="text-gray-600">{status}</p>
+        <h2 className="text-2xl font-semibold mb-2 text-[#EDEDED]">Voice Conversation</h2>
+        <p className="text-[#999999]">{status}</p>
         {error && (
           <p className="text-red-500 mt-2 text-sm">{error.message}</p>
         )}

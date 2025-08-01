@@ -1,0 +1,33 @@
+{
+  "hero": {
+    "title": "Explore a new perspective",
+    "description": "We'll use evidence-based therapeutic techniques to spot thinking patterns and suggest gentler perspectives.",
+    "learnMore": "Learn about",
+    "learnMoreLink": "therapeutic frameworks in 2 minutes ↗"
+  },
+  "cta": {
+    "title": "Ready to start?",
+    "description": "Begin a private session to explore your thoughts with evidence-based CBT techniques.",
+    "button": "Start Your Session",
+    "privacy": "Private session — we don't store personal data."
+  },
+  "steps": {
+    "title": "How re-frame works",
+    "step1": {
+      "title": "Tell us what happened",
+      "description": "Use your own words. Take the time you need."
+    },
+    "step2": {
+      "title": "Notice thinking patterns",
+      "description": "We'll apply therapeutic frameworks to highlight alternative perspectives."
+    },
+    "step3": {
+      "title": "Pick a perspective that feels true",
+      "description": "Select from alternative ways to view your situation."
+    }
+  },
+  "trust": {
+    "title": "Designed for people living with AvPD & social anxiety",
+    "description": "This tool uses evidence-based therapeutic techniques. Your privacy is protected - we don't store any personal information."
+  }
+}

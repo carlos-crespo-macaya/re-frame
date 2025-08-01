@@ -1,14 +1,28 @@
+import createNextIntlPlugin from 'next-intl/plugin';
+
+const withNextIntl = createNextIntlPlugin('./i18n.ts');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
+  output: 'standalone',
   images: {
-    unoptimized: true,
+    domains: process.env.ALLOWED_IMAGE_DOMAINS?.split(',') || [],
   },
-  trailingSlash: true,
-  // Disable x-powered-by header for security
   poweredByHeader: false,
-  // Strict mode for better React development
   reactStrictMode: true,
+  env: {
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
+  },
+  // Disable problematic features in development
+  webpack: (config, { dev }) => {
+    if (dev) {
+      config.watchOptions = {
+        poll: 1000,
+        aggregateTimeout: 300,
+      }
+    }
+    return config
+  },
 };
 
-export default nextConfig;
+export default withNextIntl(nextConfig);

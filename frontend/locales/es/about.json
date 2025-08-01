@@ -1,0 +1,41 @@
+{
+  "title": "ℹ️ Acerca de re-frame",
+  "mission": {
+    "label": "Misión",
+    "description": "ofrecer a quienes luchan con patrones evitativos una forma amable de cuestionar pensamientos duros—sin vergüenza, anuncios ni explotación de datos."
+  },
+  "details": {
+    "whatIs": {
+      "label": "Qué es:",
+      "description": "una herramienta de reestructuración cognitiva inspirada en marcos terapéuticos que detecta trampas de pensamiento (catastrofismo, lectura de mente, etc.) y propone perspectivas más amables."
+    },
+    "whatIsnt": {
+      "label": "Qué no es:",
+      "description": "psicoterapia completa, consejo médico ni servicio de crisis."
+    },
+    "whoBuilds": {
+      "label": "Quién lo construye:",
+      "description": "solo yo—Carlos, ingeniero de software que convive con TPA y dedica su tiempo y habilidades para crear la herramienta que me hubiera gustado tener."
+    },
+    "whyOpen": {
+      "label": "Por qué código abierto:",
+      "description": "la transparencia genera confianza; cualquiera puede revisar o mejorar el código."
+    },
+    "roadmap": {
+      "label": "Hoja de ruta:",
+      "description": "apoyo entre pares opcional, diario de progreso, exportación para derivación a terapeuta."
+    }
+  },
+  "contact": {
+    "question": "¿Dudas? Escríbeme a ",
+    "email": "hello@re-frame.social"
+  },
+  "navigation": {
+    "back": "← Volver a re-frame"
+  },
+  "footer": {
+    "privacy": "Privacidad",
+    "support": "Soporte",
+    "about": "Acerca de"
+  }
+}

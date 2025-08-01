@@ -77,3 +77,5 @@ playwright/.cache/
 # generated api client
 frontend/lib/api/generated/
 frontend/openapi.json
+
+.codex/

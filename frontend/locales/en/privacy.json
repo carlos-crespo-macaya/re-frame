@@ -1,0 +1,100 @@
+{
+  "title": "Privacy Policy",
+  "lastUpdated": "Last updated: January 2024",
+  "introduction": "Your privacy is important to us. This policy explains how we handle your information when you use re-frame.",
+  "sections": {
+    "dataCollection": {
+      "title": "Data Collection",
+      "description": "We are committed to protecting your privacy:",
+      "points": [
+        "We do not collect or store personal information",
+        "Conversations are not saved or recorded",
+        "No user accounts or registration required",
+        "Sessions are temporary and deleted after completion"
+      ]
+    },
+    "technicalData": {
+      "title": "Technical Data",
+      "description": "We may collect anonymous technical information to improve the service:",
+      "points": [
+        "Browser type and version",
+        "Device type and screen resolution",
+        "General location (country/region only)",
+        "Usage statistics (page views, session duration)"
+      ],
+      "note": "This data cannot be used to identify you personally."
+    },
+    "cookies": {
+      "title": "Cookies",
+      "description": "We use minimal cookies for essential functionality:",
+      "points": [
+        "Language preference",
+        "Theme preference (light/dark mode)",
+        "Session management (temporary)"
+      ],
+      "control": "You can disable cookies in your browser settings, though some features may not work properly."
+    },
+    "thirdPartyServices": {
+      "title": "Third-Party Services",
+      "description": "We use secure third-party services for core functionality:",
+      "services": [
+        {
+          "name": "Google Cloud",
+          "purpose": "AI processing and hosting",
+          "dataSharing": "Temporary conversation data for processing only"
+        },
+        {
+          "name": "Vercel",
+          "purpose": "Website hosting and delivery",
+          "dataSharing": "Standard web request logs"
+        }
+      ]
+    },
+    "dataRetention": {
+      "title": "Data Retention",
+      "description": "We minimize data retention:",
+      "points": [
+        "Conversation data is processed in real-time and not stored",
+        "Technical logs are kept for 30 days maximum",
+        "No long-term storage of personal information"
+      ]
+    },
+    "yourRights": {
+      "title": "Your Rights",
+      "description": "You have the right to:",
+      "points": [
+        "Use the service anonymously",
+        "Request information about data processing",
+        "Report concerns about privacy",
+        "Stop using the service at any time"
+      ]
+    },
+    "security": {
+      "title": "Security",
+      "description": "We implement security measures to protect your data:",
+      "points": [
+        "All connections use HTTPS encryption",
+        "Regular security updates and monitoring",
+        "Minimal data collection reduces risk",
+        "No sensitive data storage"
+      ]
+    },
+    "changes": {
+      "title": "Changes to This Policy",
+      "description": "We may update this privacy policy from time to time. We will notify users of any significant changes by posting the new policy on this page."
+    },
+    "contact": {
+      "title": "Contact Us",
+      "description": "If you have questions about this privacy policy, please contact us at:",
+      "email": "hello@re-frame.social"
+    }
+  },
+  "navigation": {
+    "back": "← Return to re-frame"
+  },
+  "footer": {
+    "privacy": "Privacy",
+    "support": "Support",
+    "about": "About"
+  }
+}

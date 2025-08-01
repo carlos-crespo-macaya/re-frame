@@ -1,0 +1,100 @@
+{
+  "title": "Política de Privacidad",
+  "lastUpdated": "Última actualización: Enero 2024",
+  "introduction": "Tu privacidad es importante para nosotros. Esta política explica cómo manejamos tu información cuando usas re-frame.",
+  "sections": {
+    "dataCollection": {
+      "title": "Recolección de Datos",
+      "description": "Estamos comprometidos a proteger tu privacidad:",
+      "points": [
+        "No recolectamos ni almacenamos información personal",
+        "Las conversaciones no se guardan ni graban",
+        "No se requieren cuentas de usuario ni registro",
+        "Las sesiones son temporales y se eliminan después de completarse"
+      ]
+    },
+    "technicalData": {
+      "title": "Datos Técnicos",
+      "description": "Podemos recolectar información técnica anónima para mejorar el servicio:",
+      "points": [
+        "Tipo y versión del navegador",
+        "Tipo de dispositivo y resolución de pantalla",
+        "Ubicación general (solo país/región)",
+        "Estadísticas de uso (visualizaciones de página, duración de sesión)"
+      ],
+      "note": "Estos datos no pueden usarse para identificarte personalmente."
+    },
+    "cookies": {
+      "title": "Cookies",
+      "description": "Usamos cookies mínimas para funcionalidad esencial:",
+      "points": [
+        "Preferencia de idioma",
+        "Preferencia de tema (modo claro/oscuro)",
+        "Gestión de sesión (temporal)"
+      ],
+      "control": "Puedes desactivar las cookies en la configuración de tu navegador, aunque algunas funciones pueden no funcionar correctamente."
+    },
+    "thirdPartyServices": {
+      "title": "Servicios de Terceros",
+      "description": "Usamos servicios seguros de terceros para funcionalidad principal:",
+      "services": [
+        {
+          "name": "Google Cloud",
+          "purpose": "Procesamiento de IA y hosting",
+          "dataSharing": "Datos de conversación temporales solo para procesamiento"
+        },
+        {
+          "name": "Vercel",
+          "purpose": "Hosting y entrega del sitio web",
+          "dataSharing": "Registros estándar de solicitudes web"
+        }
+      ]
+    },
+    "dataRetention": {
+      "title": "Retención de Datos",
+      "description": "Minimizamos la retención de datos:",
+      "points": [
+        "Los datos de conversación se procesan en tiempo real y no se almacenan",
+        "Los registros técnicos se mantienen por máximo 30 días",
+        "No hay almacenamiento a largo plazo de información personal"
+      ]
+    },
+    "yourRights": {
+      "title": "Tus Derechos",
+      "description": "Tienes derecho a:",
+      "points": [
+        "Usar el servicio de forma anónima",
+        "Solicitar información sobre el procesamiento de datos",
+        "Reportar preocupaciones sobre privacidad",
+        "Dejar de usar el servicio en cualquier momento"
+      ]
+    },
+    "security": {
+      "title": "Seguridad",
+      "description": "Implementamos medidas de seguridad para proteger tus datos:",
+      "points": [
+        "Todas las conexiones usan cifrado HTTPS",
+        "Actualizaciones y monitoreo de seguridad regulares",
+        "La recolección mínima de datos reduce el riesgo",
+        "No hay almacenamiento de datos sensibles"
+      ]
+    },
+    "changes": {
+      "title": "Cambios a Esta Política",
+      "description": "Podemos actualizar esta política de privacidad de vez en cuando. Notificaremos a los usuarios de cualquier cambio significativo publicando la nueva política en esta página."
+    },
+    "contact": {
+      "title": "Contáctanos",
+      "description": "Si tienes preguntas sobre esta política de privacidad, por favor contáctanos en:",
+      "email": "hello@re-frame.social"
+    }
+  },
+  "navigation": {
+    "back": "← Volver a re-frame"
+  },
+  "footer": {
+    "privacy": "Privacidad",
+    "support": "Soporte",
+    "about": "Acerca de"
+  }
+}
