@@ -1,0 +1,284 @@
+name: Deploy to Cloud Run (frontend + backend)
+
+on:
+  workflow_run:
+    workflows: ["Backend CI", "Frontend CI"]
+    types:
+      - completed
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to deploy"
+        type: choice
+        default: production
+        options:
+          - production
+          - staging
+      imageTag:
+        description: "Image tag to deploy (default: latest successful workflow build for this branch). You can also set a specific commit SHA."
+        required: false
+      force:
+        description: "Force deploy without checking CI status (use with caution)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  checks: read
+  statuses: read
+  id-token: write
+  actions: write
+  workflows: write
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  REGION: ${{ secrets.GCP_REGION }}
+  BILLING_ACCOUNT_ID: ${{ secrets.GCP_BILLING_ACCOUNT_ID }}
+  BACKEND_SERVICE: ${{ secrets.GCP_BACKEND_SERVICE_NAME || 're-frame-backend' }}
+  FRONTEND_SERVICE: ${{ secrets.GCP_FRONTEND_SERVICE_NAME || 're-frame-frontend' }}
+  REGISTRY: ${{ secrets.GCP_REGISTRY || format('{0}-docker.pkg.dev/{1}/re-frame', secrets.GCP_REGION, secrets.GCP_PROJECT_ID) }}
+  IMAGE_PREFIX: ${{ secrets.GCP_IMAGE_PREFIX || 're-frame' }}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gate:
+    name: Gate on CI success
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.conclusion == 'success')
+    outputs:
+      proceed: ${{ steps.check.outputs.proceed }}
+      head_sha: ${{ steps.vars.outputs.head_sha }}
+      image_tag: ${{ steps.vars.outputs.image_tag }}
+    steps:
+      - name: Set variables
+        id: vars
+        run: |
+          # Head SHA from workflow_run; for manual dispatch use github.sha by default
+          HEAD_SHA="${{ github.event.workflow_run.head_sha || github.sha }}"
+          echo "head_sha=$HEAD_SHA" >> "$GITHUB_OUTPUT"
+          # Image tag: allow override via input, else use SHA
+          IMG_TAG="${{ inputs.imageTag || '' }}"
+          if [ -z "$IMG_TAG" ]; then
+            IMG_TAG="$HEAD_SHA"
+          fi
+          echo "image_tag=$IMG_TAG" >> "$GITHUB_OUTPUT"
+      - name: Check Backend CI and Frontend CI status for same commit on main
+        id: check
+        uses: actions/github-script@v7
+        with:
+          # Accessing workflow inputs via context.payload.inputs and other context variables like context.eventName and context.repo in the script
+          script: |
+            const isDispatch = context.eventName === 'workflow_dispatch';
+            const force = context.payload.inputs?.force === 'true';
+            if (isDispatch && force) {
+              core.info('Bypassing CI checks due to force=true');
+              core.setOutput('proceed', 'true');
+              return;
+            }
+            if (isDispatch) {
+              // Allow manual dispatch without CI as requested
+              core.setOutput('proceed', 'true');
+              return;
+            }
+            const sha = '${{ steps.vars.outputs.head_sha }}';
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            async function latestConclusionForWorkflowByName(name) {
+              // List workflows to find ID by name (first page only)
+              const firstPage = await github.rest.actions.listRepoWorkflows({ owner, repo });
+              let wf = firstPage.data.workflows.find(w => w.name === name);
+              if (!wf) {
+                // If not found, paginate through workflows with an iterator
+                const perPage = 100; // Limit results per page
+                let page = 1;
+                do {
+                  const response = await github.rest.actions.listRepoWorkflows({ owner, repo, per_page: perPage, page });
+                  const workflows = response.data.workflows;
+                  wf = workflows.find(w => w.name === name);
+                  if (wf) break; // Stop pagination early if workflow is found
+                  page++;
+                } while (wf === undefined && page <= 10); // Add a reasonable limit to prevent excessive API calls
+              }
+              if (!wf) return 'not_found';
+              // List runs for that workflow on main, find matching head_sha
+              const perPage = 50; // Limit results per page
+              let runs = [];
+              let page = 1;
+              let match = null;
+              do {
+                const response = await github.rest.actions.listWorkflowRuns({
+                  owner, repo, workflow_id: wf.id, branch: 'main', per_page: perPage, page
+                });
+                runs = response.data.workflow_runs;
+                match = runs.find(r => r.head_sha === sha);
+                if (match) break; // Stop pagination early if match is found
+                page++;
+              } while (runs.length > 0 && page <= maxPages);
+              return match ? (match.conclusion || 'unknown') : 'none';
+            }
+
+            const backendConc = await latestConclusionForWorkflowByName('Backend CI');
+            const frontendConc = await latestConclusionForWorkflowByName('Frontend CI');
+
+            core.info(`Backend CI: ${backendConc}`);
+            core.info(`Frontend CI: ${frontendConc}`);
+
+            const ok = backendConc === 'success' && frontendConc === 'success';
+            core.setOutput('proceed', ok ? 'true' : 'false');
+            if (!ok) {
+              core.warning(`One or both CI workflows not successful for ${sha}. Skipping deploy.`);
+            }
+
+  build-and-push:
+    name: Build and Push Images
+    needs: gate
+    if: needs.gate.outputs.proceed == 'true' && github.event_name != 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - service: backend
+            context: ./backend
+            dockerfile: ./backend/Dockerfile
+          - service: frontend
+            context: ./frontend
+            dockerfile: ./frontend/Dockerfile.standalone
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Auth to Google Cloud (WIF)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_WIF_SERVICE_ACCOUNT }}
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
+
+      - name: Extract image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}
+          tags: |
+            type=sha
+            type=ref,event=branch
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:${{ needs.gate.outputs.head_sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:${{ github.ref_name }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy-backend:
+    name: Deploy Backend
+    needs: build-and-push
+    if: needs.gate.outputs.proceed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Auth to Google Cloud (WIF)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_WIF_SERVICE_ACCOUNT }}
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+
+      - name: Deploy backend to Cloud Run
+        run: |
+          gcloud run deploy ${{ env.BACKEND_SERVICE }} \
+            --image ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-backend:${{ needs.gate.outputs.image_tag }} \
+            --region ${{ env.REGION }} \
+            --platform managed \
+            --allow-unauthenticated \
+            --port 8000 \
+            --cpu 1 \
+            --memory 1Gi \
+            --min-instances 0 \
+            --max-instances 10 \
+            --set-env-vars "ENVIRONMENT=${{ inputs.environment || 'production' }},LOG_LEVEL=info,GCP_PROJECT_ID=${{ env.PROJECT_ID }},GCP_REGION=${{ env.REGION }}" \
+            --update-secrets "GEMINI_API_KEY=projects/${{ env.PROJECT_ID }}/secrets/GEMINI_REDACTED=projects/${{ env.PROJECT_ID }}/secrets/GCP_REFRAME_IAP_CLIENT_SECRET:latest"
+
+      - name: Capture backend URL
+        id: be
+        run: |
+          URL=$(gcloud run services describe ${{ env.BACKEND_SERVICE }} --region ${{ env.REGION }} --format='value(status.url)')
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+
+  deploy-frontend:
+    name: Deploy Frontend
+    needs: deploy-backend
+    if: needs.gate.outputs.proceed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Auth to Google Cloud (WIF)
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_WIF_SERVICE_ACCOUNT }}
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+
+      - name: Get backend URL
+        id: be
+        run: |
+          URL=$(gcloud run services describe ${{ env.BACKEND_SERVICE }} --region ${{ env.REGION }} --format='value(status.url)')
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy frontend to Cloud Run
+        run: |
+          gcloud run deploy ${{ env.FRONTEND_SERVICE }} \
+            --image ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-frontend:${{ needs.gate.outputs.image_tag }} \
+            --region ${{ env.REGION }} \
+            --platform managed \
+            --allow-unauthenticated \
+            --port 8080 \
+            --cpu 1 \
+            --memory 512Mi \
+            --min-instances 0 \
+            --max-instances 10 \
+            --set-env-vars "NODE_ENV=production,NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }},API_URL=${{ secrets.NEXT_PUBLIC_API_URL }},GCP_PROJECT_ID=${{ env.PROJECT_ID }},GCP_REGION=${{ env.REGION }},GCP_REFRAME_IAP_CLIENT_ID=${{ secrets.GCP_REFRAME_IAP_CLIENT_ID }}"
+
+      - name: Capture frontend URL
+        id: fe
+        run: |
+          URL=$(gcloud run services describe ${{ env.FRONTEND_SERVICE }} --region ${{ env.REGION }} --format='value(status.url)')
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+
+  summary:
+    name: Deployment Summary
+    needs: [deploy-backend, deploy-frontend]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Output
+        run: |
+          echo "## Cloud Run Deployment" >> $GITHUB_STEP_SUMMARY
+          echo "- Project: ${{ env.PROJECT_ID }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Region: ${{ env.REGION }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Backend service: ${{ env.BACKEND_SERVICE }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Frontend service: ${{ env.FRONTEND_SERVICE }}" >> $GITHUB_STEP_SUMMARY
