@@ -4,17 +4,13 @@
  */
 
 // Mock google-auth-library before importing
-const mockGetRequestHeaders = jest.fn();
+const mockRequest = jest.fn();
 const mockGetIdTokenClient = jest.fn();
 jest.mock('google-auth-library', () => ({
   GoogleAuth: jest.fn().mockImplementation(() => ({
     getIdREDACTED
   }))
 }));
-
-// Mock global fetch
-const mockFetch = jest.fn();
-global.fetch = mockFetch;
 
 // Mock environment variables
 const originalEnv = process.env;
@@ -24,25 +20,16 @@ describe('Proxy Route Core Logic', () => {
     jest.clearAllMocks();
     process.env = { ...originalEnv };
 
-    // Default mock for successful IAM token fetch
-    mockGetRequestHeaders.mockResolvedValue({
-      authorization: 'Bearer mock-id-token-123'
-    });
+    // Default mock for successful GoogleAuth client
     mockGetIdTokenClient.mockResolvedValue({
-      getRequestHeaders: mockGetRequestHeaders
+      request: mockRequest
     });
 
-    // Default mock for fetch response
-    const mockReadableStream = {
-      getReader: () => ({
-        read: () => Promise.resolve({ done: true, value: undefined })
-      })
-    };
-
-    mockFetch.mockResolvedValue({
+    // Default mock for client.request response
+    mockRequest.mockResolvedValue({
       status: 200,
-      headers: new Map([['Content-Type', 'application/json']]),
-      body: mockReadableStream
+      headers: { 'content-type': 'application/json' },
+      data: 'mock response data'
     });
   });
 
@@ -57,14 +44,14 @@ describe('Proxy Route Core Logic', () => {
       // Import the proxy function after setting environment
       const { GET } = await import('./route');
 
-      const mockRequest = {
+      const testRequest = {
         method: 'GET',
         headers: new Map(),
         nextUrl: { search: '' },
         arrayBuffer: () => Promise.resolve(new ArrayBuffer(0))
       };
 
-      const response = await GET(mockRequest as any, { params: { path: ['api', 'health'] } });
+      const response = await GET(testRequest as any, { params: { path: ['api', 'health'] } });
 
       expect(response.status).toBe(502);
     });
@@ -76,25 +63,22 @@ describe('Proxy Route Core Logic', () => {
       jest.resetModules();
       const { GET } = await import('./route');
 
-      const mockRequest = {
+      const testRequest = {
         method: 'GET',
         headers: new Map([['content-length', '100']]),
         nextUrl: { search: '?test=123' },
         arrayBuffer: () => Promise.resolve(new ArrayBuffer(0))
       };
 
-      const response = await GET(mockRequest as any, { params: { path: ['api', 'health'] } });
+      const response = await GET(testRequest as any, { params: { path: ['api', 'health'] } });
 
-      expect(mockFetch).toHaveBeenCalledWith(
-        'https://re-frame-backend.europe-west1.internal/api/health?test=123',
-        expect.objectContaining({
-          method: 'GET',
-          headers: expect.objectContaining({
-            authorization: 'Bearer mock-id-token-123',
-            host: 're-frame-backend.europe-west1.internal'
-          })
-        })
-      );
+      expect(mockRequest).toHaveBeenCalledWith({
+        url: 'https://re-frame-backend.europe-west1.internal/api/health?test=123',
+        method: 'GET',
+        headers: expect.any(Object),
+        data: undefined,
+        responseType: 'stream'
+      });
     });
   });
 
@@ -106,33 +90,33 @@ describe('Proxy Route Core Logic', () => {
     test('accepts requests up to 50MB', async () => {
       const { POST } = await import('./route');
 
-      const mockRequest = {
+      const testRequest = {
         method: 'POST',
         headers: new Map([['content-length', '52428800']]), // 50MB
         nextUrl: { search: '' },
         arrayBuffer: () => Promise.resolve(new ArrayBuffer(0))
       };
 
-      await POST(mockRequest as any, { params: { path: ['api', 'upload'] } });
+      await POST(testRequest as any, { params: { path: ['api', 'upload'] } });
 
-      expect(mockFetch).toHaveBeenCalled();
+      expect(mockRequest).toHaveBeenCalled();
     });
 
     test('returns 413 for requests over 50MB', async () => {
       jest.resetModules();
       const { POST } = await import('./route');
 
-      const mockRequest = {
+      const testRequest = {
         method: 'POST',
         headers: new Map([['content-length', '52428801']]), // 50MB + 1 byte
         nextUrl: { search: '' },
         arrayBuffer: () => Promise.resolve(new ArrayBuffer(0))
       };
 
-      const response = await POST(mockRequest as any, { params: { path: ['api', 'upload'] } });
+      const response = await POST(testRequest as any, { params: { path: ['api', 'upload'] } });
 
       expect(response.status).toBe(413);
-      expect(mockFetch).not.toHaveBeenCalled();
+      expect(mockRequest).not.toHaveBeenCalled();
     });
   });
 
@@ -147,25 +131,22 @@ describe('Proxy Route Core Logic', () => {
         const handlers = await import('./route');
         const handler = handlers[method as keyof typeof handlers];
 
-        const mockRequest = {
+        const testRequest = {
           method,
           headers: new Map([['content-length', '100']]),
           nextUrl: { search: '' },
           arrayBuffer: () => Promise.resolve(new ArrayBuffer(0))
         };
 
-        await handler(mockRequest as any, { params: { path: ['api', 'test'] } });
+        await handler(testRequest as any, { params: { path: ['api', 'test'] } });
 
-        expect(mockFetch).toHaveBeenCalledWith(
-          'https://re-frame-backend.europe-west1.internal/api/test',
-          expect.objectContaining({
-            method,
-            headers: expect.objectContaining({
-              authorization: 'Bearer mock-id-token-123',
-              host: 're-frame-backend.europe-west1.internal'
-            })
-          })
-        );
+        expect(mockRequest).toHaveBeenCalledWith({
+          url: 'https://re-frame-backend.europe-west1.internal/api/test',
+          method,
+          headers: expect.any(Object),
+          data: ['GET', 'HEAD'].includes(method) ? undefined : expect.any(ArrayBuffer),
+          responseType: 'stream'
+        });
       }
     );
   });
@@ -175,38 +156,46 @@ describe('Proxy Route Core Logic', () => {
       process.env.BACKEND_INTERNAL_HOST = 're-frame-backend.europe-west1.internal';
     });
 
-    test('always includes valid IAM ID token', async () => {
+    test('always includes valid IAM ID token via Google Auth client', async () => {
       jest.resetModules();
       const { GET } = await import('./route');
 
-      const mockRequest = {
+      const testRequest = {
         method: 'GET',
         headers: new Map(),
         nextUrl: { search: '' },
         arrayBuffer: () => Promise.resolve(new ArrayBuffer(0))
       };
 
-      await GET(mockRequest as any, { params: { path: ['api', 'health'] } });
+      await GET(testRequest as any, { params: { path: ['api', 'health'] } });
 
+      // Step 1: Verify correct audience was used for ID token client
       expect(mockGetIdREDACTED('https://re-frame-backend.europe-west1.internal');
 
-      const fetchCall = mockFetch.mock.calls[0];
-      const headers = fetchCall[1].headers;
-      expect(headers.authorization).toBe('Bearer mock-id-token-123');
+      // Step 2: Verify the authenticated request was made via client.request
+      // Note: The Google Auth library's client.request() automatically adds the Authorization header
+      expect(mockRequest).toHaveBeenCalledTimes(1);
+      expect(mockRequest).toHaveBeenCalledWith({
+        url: 'https://re-frame-backend.europe-west1.internal/api/health',
+        method: 'GET',
+        headers: {}, // Empty headers object since we remove host and content-length
+        data: undefined,
+        responseType: 'stream'
+      });
     });
 
     test('uses correct audience for ID token (backend host)', async () => {
       jest.resetModules();
       const { GET } = await import('./route');
 
-      const mockRequest = {
+      const testRequest = {
         method: 'GET',
         headers: new Map(),
         nextUrl: { search: '' },
         arrayBuffer: () => Promise.resolve(new ArrayBuffer(0))
       };
 
-      await GET(mockRequest as any, { params: { path: ['api', 'health'] } });
+      await GET(testRequest as any, { params: { path: ['api', 'health'] } });
 
       expect(mockGetIdREDACTED('https://re-frame-backend.europe-west1.internal');
     });
@@ -221,36 +210,35 @@ describe('Proxy Route Core Logic', () => {
       jest.resetModules();
       const { GET } = await import('./route');
 
-      const mockRequest = {
+      const testRequest = {
         method: 'GET',
         headers: new Map(),
         nextUrl: { search: '' },
         arrayBuffer: () => Promise.resolve(new ArrayBuffer(0))
       };
 
-      await GET(mockRequest as any, { params: { path: ['api', 'events', 'session123'] } });
+      await GET(testRequest as any, { params: { path: ['api', 'events', 'session123'] } });
 
-      const fetchCall = mockFetch.mock.calls[0];
-      const options = fetchCall[1];
-      expect(options.duplex).toBe('half');
+      expect(mockRequest).toHaveBeenCalledWith(expect.objectContaining({
+        responseType: 'stream'
+      }));
     });
 
     test('sets cache to no-store', async () => {
       jest.resetModules();
       const { GET } = await import('./route');
 
-      const mockRequest = {
+      const testRequest = {
         method: 'GET',
         headers: new Map(),
         nextUrl: { search: '' },
         arrayBuffer: () => Promise.resolve(new ArrayBuffer(0))
       };
 
-      await GET(mockRequest as any, { params: { path: ['api', 'health'] } });
+      const response = await GET(testRequest as any, { params: { path: ['api', 'health'] } });
 
-      const fetchCall = mockFetch.mock.calls[0];
-      const options = fetchCall[1];
-      expect(options.cache).toBe('no-store');
+      // Check that the response headers include cache-control: no-store
+      expect(response.headers.get('cache-control')).toBe('no-store');
     });
   });
 
@@ -263,56 +251,141 @@ describe('Proxy Route Core Logic', () => {
       jest.resetModules();
       const { GET } = await import('./route');
 
-      const mockRequest = {
+      const testRequest = {
         method: 'GET',
         headers: new Map(),
         nextUrl: { search: '' },
         arrayBuffer: () => Promise.resolve(new ArrayBuffer(0))
       };
 
-      await GET(mockRequest as any, { params: { path: ['api', 'voice', 'sessions', 'abc123', 'stream'] } });
+      await GET(testRequest as any, { params: { path: ['api', 'voice', 'sessions', 'abc123', 'stream'] } });
 
-      expect(mockFetch).toHaveBeenCalledWith(
-        'https://re-frame-backend.europe-west1.internal/api/voice/sessions/abc123/stream',
-        expect.any(Object)
-      );
+      expect(mockRequest).toHaveBeenCalledWith(expect.objectContaining({
+        url: 'https://re-frame-backend.europe-west1.internal/api/voice/sessions/abc123/stream'
+      }));
     });
 
     test('preserves query parameters', async () => {
       jest.resetModules();
       const { GET } = await import('./route');
 
-      const mockRequest = {
+      const testRequest = {
         method: 'GET',
         headers: new Map(),
         nextUrl: { search: '?version=1&lang=en' },
         arrayBuffer: () => Promise.resolve(new ArrayBuffer(0))
       };
 
-      await GET(mockRequest as any, { params: { path: ['api', 'health'] } });
+      await GET(testRequest as any, { params: { path: ['api', 'health'] } });
 
-      expect(mockFetch).toHaveBeenCalledWith(
-        'https://re-frame-backend.europe-west1.internal/api/health?version=1&lang=en',
-        expect.any(Object)
-      );
+      expect(mockRequest).toHaveBeenCalledWith(expect.objectContaining({
+        url: 'https://re-frame-backend.europe-west1.internal/api/health?version=1&lang=en'
+      }));
     });
 
-    test('sets host header to backend host', async () => {
+    test('removes host and content-length headers from request', async () => {
       jest.resetModules();
       const { GET } = await import('./route');
 
-      const mockRequest = {
+      const testRequest = {
+        method: 'GET',
+        headers: new Map([
+          ['host', 'original-host.com'],
+          ['content-length', '12345'],
+          ['x-custom-header', 'should-be-preserved'],
+          ['authorization', 'Bearer old-token'] // Should also be preserved (Google adds its own)
+        ]),
+        nextUrl: { search: '' },
+        arrayBuffer: () => Promise.resolve(new ArrayBuffer(0))
+      };
+
+      await GET(testRequest as any, { params: { path: ['api', 'health'] } });
+
+      expect(mockRequest).toHaveBeenCalledWith({
+        url: 'https://re-frame-backend.europe-west1.internal/api/health',
+        method: 'GET',
+        headers: {
+          'x-custom-header': 'should-be-preserved',
+          'authorization': 'Bearer old-token'
+          // host and content-length should be removed
+        },
+        data: undefined,
+        responseType: 'stream'
+      });
+
+      // Explicitly verify problematic headers were removed
+      const callHeaders = mockRequest.mock.calls[0][0].headers;
+      expect(callHeaders).not.toHaveProperty('host');
+      expect(callHeaders).not.toHaveProperty('content-length');
+
+      // Verify other headers were preserved
+      expect(callHeaders['x-custom-header']).toBe('should-be-preserved');
+    });
+
+    test('cleans response headers properly', async () => {
+      jest.resetModules();
+
+      // Mock response with problematic headers
+      mockRequest.mockResolvedValue({
+        status: 200,
+        headers: {
+          'content-type': 'application/json',
+          'host': 'backend-host.internal',
+          'content-encoding': 'gzip',
+          'transfer-encoding': 'chunked',
+          'x-custom-header': 'should-be-preserved',
+          'cache-control': 'max-age=3600' // Should be overridden
+        },
+        data: '{"test": "data"}'
+      });
+
+      const { GET } = await import('./route');
+
+      const testRequest = {
         method: 'GET',
         headers: new Map(),
         nextUrl: { search: '' },
         arrayBuffer: () => Promise.resolve(new ArrayBuffer(0))
       };
 
-      await GET(mockRequest as any, { params: { path: ['api', 'health'] } });
+      const response = await GET(testRequest as any, { params: { path: ['api', 'health'] } });
 
-      const fetchCall = mockFetch.mock.calls[0];
-      const headers = fetchCall[1].headers;
-      expect(headers.host).toBe('re-frame-backend.europe-west1.internal');
+      // Verify response headers are cleaned
+      expect(response.headers.get('content-type')).toBe('application/json');
+      expect(response.headers.get('cache-control')).toBe('no-store'); // Should be overridden
+      expect(response.headers.get('x-custom-header')).toBe('should-be-preserved');
+
+      // Verify problematic headers are removed (not present in response)
+      expect(response.headers.get('host')).toBeFalsy();
+      expect(response.headers.get('content-encoding')).toBeFalsy();
+      expect(response.headers.get('transfer-encoding')).toBeFalsy();
+    });
+
+    test('sets default content-type when missing', async () => {
+      jest.resetModules();
+
+      // Mock response without content-type
+      mockRequest.mockResolvedValue({
+        status: 200,
+        headers: {
+          'x-custom-header': 'test'
+        },
+        data: 'raw data'
+      });
+
+      const { GET } = await import('./route');
+
+      const testRequest = {
+        method: 'GET',
+        headers: new Map(),
+        nextUrl: { search: '' },
+        arrayBuffer: () => Promise.resolve(new ArrayBuffer(0))
+      };
+
+      const response = await GET(testRequest as any, { params: { path: ['api', 'data'] } });
+
+      // Verify default content-type is set
+      expect(response.headers.get('content-type')).toBe('application/octet-stream');
     });
   });
 });
