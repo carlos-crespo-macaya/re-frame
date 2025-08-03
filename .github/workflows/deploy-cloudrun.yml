@@ -35,7 +35,7 @@ env:
   BILLING_ACCOUNT_ID: ${{ secrets.GCP_BILLING_ACCOUNT_ID }}
   BACKEND_SERVICE: ${{ secrets.GCP_BACKEND_SERVICE_NAME || 're-frame-backend' }}
   FRONTEND_SERVICE: ${{ secrets.GCP_FRONTEND_SERVICE_NAME || 're-frame-frontend' }}
-  REGISTRY: ${{ secrets.GCP_REGISTRY || format('{0}-docker.pkg.dev/{1}/re-frame', secrets.GCP_REGION, secrets.GCP_PROJECT_ID) }}
+  REGISTRY: ${{ secrets.GCP_REGISTRY || format('europe-west1-docker.pkg.dev/{0}/re-frame', secrets.GCP_PROJECT_ID) }}
   IMAGE_PREFIX: ${{ secrets.GCP_IMAGE_PREFIX || 're-frame' }}
 
 concurrency:
@@ -164,7 +164,7 @@ jobs:
           service_account: ${{ secrets.GCP_WIF_SERVICE_ACCOUNT }}
 
       - name: Configure Docker for Artifact Registry
-        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
+        run: gcloud auth configure-docker europe-west1-docker.pkg.dev
 
       - name: Build and push
         uses: docker/build-push-action@v5
