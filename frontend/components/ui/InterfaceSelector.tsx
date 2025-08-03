@@ -2,6 +2,8 @@
 
 import { useRouter } from 'next/navigation'
 import { Button } from './Button'
+import { useEffect, useState } from 'react'
+import { fetchUiFeatureFlags, UIFeatureFlags } from '@/lib/api/featureFlags'
 
 interface InterfaceSelectorProps {
   locale: string
@@ -59,6 +61,18 @@ const translations = {
 export function InterfaceSelector({ locale, currentInterface, className = '' }: InterfaceSelectorProps) {
   const router = useRouter()
   const t = translations[locale as keyof typeof translations] || translations.en
+  const [flags, setFlags] = useState<UIFeatureFlags | null>(null)
+
+  useEffect(() => {
+    let mounted = true
+    fetchUiFeatureFlags()
+      .then((f) => { if (mounted) setFlags(f) })
+      .catch(() => {
+        // When flags fail to load, keep them null so we show the loading spinner
+        if (mounted) setFlags(null)
+      })
+    return () => { mounted = false }
+  }, [])
 
   const interfaces: InterfaceOption[] = [
     {
@@ -84,8 +98,36 @@ export function InterfaceSelector({ locale, currentInterface, className = '' }: 
     }
   ]
 
+  // Apply feature flag filtering: non-activated interfaces should not appear at all.
+  const filtered: InterfaceOption[] = (interfaces || []).filter((it: InterfaceOption) => {
+    if (!flags) return false // do not render any card until flags are loaded
+    if (it.key === 'chat') return flags.chat_mode_enabled
+    if (it.key === 'voice') return flags.voice_mode_enabled
+    if (it.REDACTED
+    return false
+  })
+
   const handleInterfaceSelect = (interfaceKey: string) => {
     router.push(`/${locale}/${interfaceKey}`)
+  }
+
+  // Loading gate to prevent flash of wrong UI
+  if (flags === null) {
+    return (
+      <div className={`w-full max-w-4xl mx-auto ${className}`}>
+        <div className="text-center mb-8">
+          <h2 className="text-2xl font-heading font-medium text-[#EDEDED] mb-3">
+            {t.title}
+          </h2>
+          <p className="text-[#999999]">
+            {t.subtitle}
+          </p>
+        </div>
+        <div className="flex items-center justify-center py-10">
+          <div className="h-8 w-8 rounded-full border-2 border-[#3a3a3a] border-t-white animate-spin" aria-label="Loading" />
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -99,8 +141,16 @@ export function InterfaceSelector({ locale, currentInterface, className = '' }: 
         </p>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-6">
-        {interfaces.map((interface_) => (
+      {/* Use a centered responsive grid. The container uses place-items-center to ensure
+          each card is centered within its grid cell, and auto-fit with minmax gives
+          natural centering of 1–2 cards without leftover gutter bias. */}
+      <div
+        className="grid gap-6 justify-center place-items-center"
+        style={{
+          gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+        }}
+      >
+        {filtered.map((interface_) => (
           <div
             key={interface_.key}
             className={`relative group cursor-pointer transition-all duration-300 ${

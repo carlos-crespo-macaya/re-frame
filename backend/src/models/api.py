@@ -156,3 +156,9 @@ class LanguageDetectionResponse(BaseModel):
             }
         }
     )
+
+
+class UIFeatureFlags(BaseModel):
+    chat_mode_enabled: bool
+    voice_mode_enabled: bool
+    notepad_mode_enabled: bool

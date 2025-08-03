@@ -19,6 +19,7 @@ dependencies = [
     "scipy>=1.14.0",
     "numpy>=1.26.0",
     "structlog>=24.4.0",
+    "configcat-client>=9.0.4",
 ]
 
 [project.optional-dependencies]
