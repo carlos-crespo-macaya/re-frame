@@ -207,7 +207,7 @@ jobs:
             --memory         1Gi \
             --min-instances  0 \
             --max-instances  10 \
-            --set-env-vars   "NODE_ENV=production,BACKEND_INTERNAL_HOST=${{ env.BACKEND_SERVICE }}.${{ env.REGION }}.internal,GCP_PROJECT_ID=${{ env.PROJECT_ID }},GCP_REGION=${{ env.REGION }}"
+            --set-env-vars   "NODE_ENV=production,BACKEND_INTERNAL_HOST=${{ env.BACKEND_SERVICE }}.${{ env.REGION }}.internal,BACKEND_PUBLIC_URL=https://${{ env.BACKEND_SERVICE }}-yeetrlkwzq-ew.a.run.app,GCP_PROJECT_ID=${{ env.PROJECT_ID }},GCP_REGION=${{ env.REGION }}"
 
       - name: Grant frontend SA invoke rights on backend
         run: |
