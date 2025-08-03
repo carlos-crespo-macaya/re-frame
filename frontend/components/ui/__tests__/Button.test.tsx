@@ -32,19 +32,19 @@ describe('Button', () => {
 
   it('renders different variants', () => {
     const { rerender } = render(<Button variant="primary">Primary</Button>);
-    expect(screen.getByRole('button')).toHaveClass('bg-primary-500');
-    
+    expect(screen.getByRole('button')).toHaveClass('bg-brand-green-600');
+
     rerender(<Button variant="secondary">Secondary</Button>);
-    expect(screen.getByRole('button')).toHaveClass('border-neutral-300');
-    
+    expect(screen.getByRole('button')).toHaveClass('bg-[#3a3a3a]');
+
     rerender(<Button variant="outline">Outline</Button>);
-    expect(screen.getByRole('button')).toHaveClass('border-2');
-    
+    expect(screen.getByRole('button')).toHaveClass('bg-transparent');
+
     rerender(<Button variant="ghost">Ghost</Button>);
-    expect(screen.getByRole('button')).toHaveClass('hover:bg-neutral-100');
-    
+    expect(screen.getByRole('button')).toHaveClass('bg-transparent');
+
     rerender(<Button variant="danger">Danger</Button>);
-    expect(screen.getByRole('button')).toHaveClass('bg-error-500');
+    expect(screen.getByRole('button')).toHaveClass('bg-red-600');
   });
 
   it('renders different sizes', () => {
@@ -133,6 +133,6 @@ describe('Button', () => {
     const button = screen.getByRole('button');
     // Check that base classes are applied
     expect(button.className).toContain('px-3'); // small size
-    expect(button.className).toContain('bg-primary-500'); // primary variant
+    expect(button.className).toContain('bg-brand-green-600'); // primary variant
   });
 });
