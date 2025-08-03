@@ -75,14 +75,15 @@ export default async function AboutPage({ params }: AboutPageProps) {
                 </p>
               </section>
 
-              {/* Who builds it */}
+              {/* Creator */}
               <section className="bg-[#2a2a2a] rounded-lg border border-[#3a3a3a] p-6">
                 <h3 className="text-lg font-heading font-medium text-[#EDEDED] mb-3">
-                  {t('details.whoBuilds.label')}
+                  {t('details.creator.title')}
                 </h3>
-                <p className="text-[#999999] leading-relaxed">
-                  {t('details.whoBuilds.description')}
-                </p>
+                <p 
+                  className="text-[#999999] leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: t('details.creator.content') }}
+                />
               </section>
 
               {/* Why open source */}
@@ -95,13 +96,13 @@ export default async function AboutPage({ params }: AboutPageProps) {
                 </p>
               </section>
 
-              {/* Roadmap */}
+              {/* Thank You */}
               <section className="bg-[#2a2a2a] rounded-lg border border-[#3a3a3a] p-6">
                 <h3 className="text-lg font-heading font-medium text-[#EDEDED] mb-3">
-                  {t('details.roadmap.label')}
+                  {t('details.thankYou.title')}
                 </h3>
                 <p className="text-[#999999] leading-relaxed">
-                  {t('details.roadmap.description')}
+                  {t('details.thankYou.content')}
                 </p>
               </section>
             </div>

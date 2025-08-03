@@ -2,7 +2,7 @@
   "title": "ℹ️ About re-frame",
   "mission": {
     "label": "Mission",
-    "description": "give people who struggle with avoidant patterns a gentle way to challenge harsh thoughts—without shame, ads, or data mining."
+    "description": "give people who struggle with avoidant patterns a gentle way to challenge harsh thoughts."
   },
   "details": {
     "whatIs": {
@@ -13,17 +13,17 @@
       "label": "What it isn't:",
       "description": "full psychotherapy, medical advice, or a crisis service."
     },
-    "whoBuilds": {
-      "label": "Who builds it:",
-      "description": "just me—Carlos, a software engineer who's lived with AvPD for years and is investing my own time, skills, and will to create the tool I wish I'd had."
+    "creator": {
+      "title": "About the Creator",
+      "content": "Built with care by <a href='https://carlos-crespo.com/' target='_blank' rel='noopener noreferrer' class='text-green-600 hover:text-green-700 underline'>Carlos Crespo</a>, hoping to contribute a small grain of sand to a topic that's personally important."
     },
     "whyOpen": {
       "label": "Why open source:",
       "description": "transparency builds trust; anyone can inspect or improve the code."
     },
-    "roadmap": {
-      "label": "Roadmap:",
-      "description": "opt-in community peer support, progress journaling, therapist hand-off export."
+    "thankYou": {
+      "title": "Thank You",
+      "content": "Thank you for trying re-frame. We hope it helps you in some way on your journey."
     }
   },
   "contact": {

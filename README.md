@@ -1,16 +1,18 @@
-# CBT Assistant POC - Monorepo
+# re-frame - CBT Assistant POC Monorepo
 
-A transparent, AI-assisted cognitive behavioral therapy (CBT) tool designed for people with Avoidant Personality Disorder (AvPD) and social anxiety. This monorepo combines the re-frame.social frontend and the reframe-agents backend into a unified codebase.
+A transparent, AI-assisted cognitive behavioral therapy (CBT) tool designed for people with Avoidant Personality Disorder (AvPD) and social anxiety. This monorepo combines a Next.js 14 frontend with a FastAPI backend powered by Google's Agent Development Kit (ADK).
 
 ## ✨ Features
 
-- **Text-based interaction**: Type your thoughts and receive gentle reframing suggestions
-- **Voice conversation**: Natural audio dialog with the AI assistant (Optional)
-- **Real-time streaming**: Responses stream as they're generated via Server-Sent Events
+- **Multi-modal Interaction**: Text-based chat and optional voice conversations
+- **Real-time Streaming**: Responses stream as they're generated via Server-Sent Events (SSE)
+- **Internationalization**: Support for multiple languages (English and Spanish)
+- **Feature Flags**: Dynamic feature toggling with ConfigCat integration
 - **Privacy-focused**: No audio storage, only transcriptions are kept
-- **Evidence-based**: Uses cognitive behavioral therapy techniques
-- **Multi-phase conversation**: Structured flow through greeting, discovery, reframing, and summary
-- **Safety first**: Crisis detection at every user input
+- **Evidence-based**: Uses proven cognitive behavioral therapy techniques
+- **Multi-phase Conversation**: Structured flow through greeting, discovery, reframing, and summary
+- **Safety First**: Crisis detection at every user input with fail-safe responses
+- **Accessibility**: ARIA labels, keyboard navigation, and screen reader support
 
 ## 🛠️ Tech Stack
 
@@ -24,13 +26,14 @@ A transparent, AI-assisted cognitive behavioral therapy (CBT) tool designed for 
 - **API Client**: Generated from OpenAPI schema
 
 ### Backend
-- **Framework**: FastAPI
-- **Language**: Python 3.12
+- **Framework**: FastAPI with lifespan management
+- **Language**: Python 3.12 (specifically required)
 - **AI**: Google ADK with Gemini 2.0 Flash
 - **Package Manager**: uv (NOT pip or poetry)
-- **Testing**: pytest with 80% coverage requirement
+- **Testing**: pytest with 80% coverage requirement + pytest-xdist
 - **Code Quality**: black, isort, ruff, mypy
-- **Voice** (optional): Google Cloud Speech & TTS
+- **Voice** (optional): Google Cloud Speech-to-Text & Text-to-Speech
+- **Feature Flags**: ConfigCat for dynamic configuration
 
 ## 🏗️ Monorepo Structure
 
@@ -146,26 +149,39 @@ make pre-commit  # Runs all checks
 
 ## 🧪 Testing
 
+### Testing Infrastructure
+- **Frontend**: Jest for unit tests, Playwright for E2E
+- **Backend**: pytest with 80% coverage requirement
+- **E2E Tests**: Dual infrastructure (JavaScript & Python)
+- **Load Testing**: k6 and locust for performance testing
+
+### Running Tests
+
 ```bash
-# Run all tests
-npm run test:all
-make test  # Alternative using Makefile
+# Quick test everything
+make test
 
 # Frontend tests
-cd frontend && pnpm test        # Unit tests
-cd frontend && pnpm test:e2e    # E2E tests with Playwright
+cd frontend && pnpm test             # Unit tests with Jest
+cd frontend && pnpm test:watch       # Watch mode
+cd frontend && pnpm test:ci          # CI mode with coverage
 
-# Backend tests
-cd backend && uv run poe test   # All tests with coverage
-cd backend && uv run pytest -n auto  # Parallel execution with pytest-xdist
+# Backend tests  
+cd backend && uv run poe test        # All tests with coverage
+cd backend && uv run pytest -n auto   # Parallel execution
+cd backend && uv run poe test-cov    # Generate HTML coverage report
 
-# E2E tests
-cd tests/e2e && ./run_tests.sh  # Python E2E tests
-npm run e2e:js                   # JavaScript Playwright tests
+# E2E tests - JavaScript (recommended)
+cd playwright-js && npm test          # All E2E tests
+cd playwright-js && npm test tests/text-*.spec.js   # Text tests only
+cd playwright-js && npm test tests/voice-*.spec.js  # Voice tests only
 
-# Voice modality tests (optional)
-cd backend && uv run pytest tests/test_voice_*.py
-cd playwright-js && npm test tests/voice-network-resilience.spec.js
+# E2E tests - Python
+cd tests/e2e && ./run_tests.sh       # Docker-based E2E tests
+
+# Load testing
+cd tests/load && k6 run text-load-test.js
+cd tests/load && locust -f voice_load_test.py
 ```
 
 ## 🐳 Docker Development
@@ -241,12 +257,13 @@ cd tests/load && k6 run voice-load-test.js
 
 ### Overview
 
-The application is deployed to Google Cloud Run with Identity-Aware Proxy (IAP) protection:
+The application is deployed to Google Cloud Run with automated CI/CD:
 
-- **Frontend**: Next.js application served from Cloud Run
-- **Backend**: FastAPI with Google ADK agents on Cloud Run
-- **Security**: IAP protects the demo from unauthorized access
-- **CI/CD**: GitHub Actions handles automated deployment on tags
+- **Frontend**: Next.js application served from Cloud Run (Europe-West1)
+- **Backend**: FastAPI with Google ADK agents on Cloud Run (Europe-West1)
+- **Load Balancer**: Global HTTPS load balancer with SSL certificates
+- **CI/CD**: GitHub Actions with Workload Identity Federation
+- **Feature Flags**: ConfigCat for runtime configuration
 
 ### Quick Deployment
 
@@ -311,9 +328,25 @@ gcloud run deploy re-frame-frontend \
   --region us-central1
 ```
 
-### IAP Configuration
+## 📋 Project Management
 
-See [docs/IAP_CONFIGURATION.md](docs/IAP_CONFIGURATION.md) for detailed IAP setup instructions.
+### Linear
+- **Project Board**: [Linear Project](https://linear.app/carlos-crespo/project/re-framesocial-cbt-assistant-6c36f6288cc8)
+- **Issue Tracking**: All features and bugs tracked in Linear
+- **Sprint Planning**: Two-week sprints with defined goals
+
+### GitHub
+- **Repository**: [macayaven/re-frame](https://github.com/macayaven/re-frame)
+- **Issues**: Synced with Linear for transparency
+- **Pull Requests**: Feature branches with CI/CD checks
+
+### Branch Strategy
+```bash
+main                    # Production-ready code
+├── feature/*          # New features (e.g., feature/feature-flags)
+├── fix/*              # Bug fixes
+└── recovery/*         # Recovery branches for complex work
+```
 
 ### Deployment Architecture
 
@@ -331,23 +364,27 @@ graph TD
 
 ## 🤝 Contributing
 
-1. Create a feature branch from `main`
-2. Make your changes following our coding standards
-3. Write/update tests as needed
-4. Submit a PR with a clear description
-5. Ensure all CI checks pass
+### Development Workflow
+1. Check Linear for available issues
+2. Create a feature branch from `main`
+3. Follow the coding standards in CLAUDE.md
+4. Write/update tests (maintain 80% coverage)
+5. Run quality checks: `make pre-commit`
+6. Submit PR with Linear issue reference
+7. Ensure all CI checks pass
 
-## 📋 Project Management
+### Commit Message Format
+```
+[BE-XXX] Backend changes
+[FE-XXX] Frontend changes
+[ALL-XXX] Monorepo/shared changes
+[INF-XXX] Infrastructure changes
+```
 
-- **Primary Tracking**: [Linear Project](https://linear.app/carlos-crespo/project/re-framesocial-cbt-assistant-6c36f6288cc8)
-- **GitHub Board**: [GitHub Projects](https://github.com/users/macayaven/projects/7)
-- **Issues**: [GitHub Issues](https://github.com/macayaven/re-frame/issues)
-- **Active Issues**:
-  - CAR-24: Remove duplicate backend/main.py entry point (Urgent)
-  - CAR-25: Migrate to FastAPI lifespan protocol (Urgent)
-  - CAR-26: Fix performance monitor task tracking (High)
-  - CAR-27: Implement real language detection (High)
-  - CAR-28: Add missing test coverage for UI components (Medium)
+### Code Quality Standards
+- **Frontend**: ESLint, TypeScript strict mode, Jest coverage
+- **Backend**: black, isort, ruff, mypy, pytest coverage
+- **Pre-commit**: All checks must pass before pushing
 
 ## 🔐 Security
 
@@ -356,10 +393,23 @@ graph TD
 - Regular security updates via Dependabot
 - CSP headers configured for production
 
+## 📚 Documentation
+
+- **[CLAUDE.md](./CLAUDE.md)** - AI assistant guidance for development
+- **[Backend README](./backend/README.md)** - Backend-specific documentation
+- **[Frontend README](./frontend/README.md)** - Frontend-specific documentation
+- **[API Documentation](http://localhost:8000/docs)** - FastAPI automatic docs (when running)
+
+## 🔗 Links
+
+- **Live Demo**: Coming soon
+- **Linear Project**: [Project Board](https://linear.app/carlos-crespo/project/re-framesocial-cbt-assistant-6c36f6288cc8)
+- **GitHub**: [macayaven/re-frame](https://github.com/macayaven/re-frame)
+
 ## 📄 License
 
 This project is proprietary. All rights reserved.
 
 ---
 
-**Status**: Monorepo migration complete. Both frontend and backend are fully integrated.
+**Status**: Production-ready with active development of new features.
