@@ -16,7 +16,7 @@ PROJECT_ID="${PROJECT_ID:-$(gcloud config get-value project 2>/dev/null)}"
 [[ -z "$PROJECT_ID" ]] && { echo "❌ PROJECT_ID not set"; exit 1; }
 
 SERVICE="cloudasset.googleapis.com"
-ASSET_FILE="${PROJECT_ID}_assets.json"
+ASSET_FILE="infra/gcp/data/${PROJECT_ID}_assets.json"
 IAM_FILE="${PROJECT_ID}_iam_policies.json"
 
 echo "Project ..........: $PROJECT_ID"
