@@ -5,16 +5,20 @@ set -euo pipefail
 echo "🔍 Checking GitHub Secrets Configuration"
 echo "========================================"
 
-# Required secrets
+# Required secrets for basic deployment
 REQUIRED_SECRETS=(
-    "WIF_PROVIDER"
-    "WIF_SERVICE_ACCOUNT"
+    "GCP_WIF_PROVIDER"
+    "GCP_WIF_SERVICE_ACCOUNT"
     "GCP_PROJECT_ID"
     "GCP_REGION"
     "GCP_BILLING_ACCOUNT_ID"
     "GEMINI_API_KEY"
-    "IAP_CLIENT_ID"
-    "IAP_CLIENT_SECRET"
+)
+
+# Optional secrets for IAP (Identity-Aware Proxy)
+OPTIONAL_IAP_SECRETS=(
+    "GCP_REFRAME_IAP_CLIENT_ID"
+    "GCP_REFRAME_IAP_CLIENT_SECRET"
     "AUTHORIZED_DOMAIN"
 )
 
@@ -57,7 +61,11 @@ echo "=============="
 
 MISSING_SECRETS=()
 FOUND_SECRETS=()
+MISSING_IAP_SECRETS=()
+FOUND_IAP_SECRETS=()
 
+echo "Required Secrets:"
+echo "=================="
 for SECRET in "${REQUIRED_SECRETS[@]}"; do
     if echo "$EXISTING_SECRETS" | grep -q "^${SECRET}$"; then
         echo "✅ $SECRET"
@@ -69,25 +77,40 @@ for SECRET in "${REQUIRED_SECRETS[@]}"; do
 done
 
 echo ""
+echo "Optional IAP Secrets:"
+echo "===================="
+for SECRET in "${OPTIONAL_IAP_SECRETS[@]}"; do
+    if echo "$EXISTING_SECRETS" | grep -q "^${SECRET}$"; then
+        echo "✅ $SECRET (optional)"
+        FOUND_IAP_SECRETS+=("$SECRET")
+    else
+        echo "⚠️  $SECRET (optional - for IAP protection)"
+        MISSING_IAP_SECRETS+=("$SECRET")
+    fi
+done
+
+echo ""
 echo "Summary:"
 echo "========"
-echo "✅ Found: ${#FOUND_SECRETS[@]} secrets"
-echo "❌ Missing: ${#MISSING_SECRETS[@]} secrets"
+echo "✅ Required secrets found: ${#FOUND_SECRETS[@]}/${#REQUIRED_SECRETS[@]}"
+echo "❌ Required secrets missing: ${#MISSING_SECRETS[@]}"
+echo "✅ Optional IAP secrets found: ${#FOUND_IAP_SECRETS[@]}/${#OPTIONAL_IAP_SECRETS[@]}"
+echo "⚠️  Optional IAP secrets missing: ${#MISSING_IAP_SECRETS[@]}"
 
 # Show expected values for missing secrets
 if [ ${#MISSING_SECRETS[@]} -gt 0 ]; then
     echo ""
     echo "Missing Secret Values:"
     echo "===================="
-    
+
     for SECRET in "${MISSING_SECRETS[@]}"; do
         case $SECRET in
-            "WIF_PROVIDER")
+            "GCP_WIF_PROVIDER")
                 echo "$SECRET:"
                 echo "  Value: projects/875750705254/locations/global/workloadIdentityPools/github-actions-pool/providers/github-actions-provider"
                 echo ""
                 ;;
-            "WIF_SERVICE_ACCOUNT")
+            "GCP_WIF_SERVICE_ACCOUNT")
                 echo "$SECRET:"
                 echo "  Value: github-actions-deploy@gen-lang-client-0105778560.iam.gserviceaccount.com"
                 echo ""
@@ -129,7 +152,7 @@ if [ ${#MISSING_SECRETS[@]} -gt 0 ]; then
                 ;;
         esac
     done
-    
+
     echo "To add missing secrets:"
     echo "====================="
     echo "1. Go to: https://github.com/$REPO/settings/secrets/actions"
@@ -142,6 +165,11 @@ else
     echo ""
     echo "🎉 All required secrets are configured!"
     echo ""
+    if [ ${#MISSING_IAP_SECRETS[@]} -gt 0 ]; then
+        echo "ℹ️  Note: IAP secrets are missing but optional for basic deployment"
+        echo "   Add them later if you want Identity-Aware Proxy protection"
+        echo ""
+    fi
     echo "You're ready to deploy! Run:"
     echo "  git tag v0.1.0-beta"
     echo "  git push origin v0.1.0-beta"
