@@ -141,32 +141,39 @@ export function InterfaceSelector({ locale, currentInterface, className = '' }: 
         {filtered.map((interface_) => (
           <div
             key={interface_.key}
-            className={`relative group cursor-pointer transition-all duration-300 ${
-              currentInterface === interface_.key 
-                ? 'ring-2 ring-brand-green-500' 
-                : 'hover:scale-105'
+            className={`relative group cursor-pointer transition-all duration-300 transform ${
+              currentInterface === interface_.key
+                ? 'ring-2 ring-[#9BF7EB]'
+                : 'hover:translate-y-[-2px]'
             }`}
             onClick={() => handleInterfaceSelect(interface_.key)}
           >
-            <div className={`absolute inset-0 bg-gradient-to-br ${interface_.gradient} rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
-            <div className="relative bg-[#2a2a2a] rounded-2xl shadow-lg border border-[#3a3a3a] p-6 h-full">
+            {/* Hover glow effect */}
+            <div className={`absolute inset-0 bg-gradient-to-br ${interface_.gradient} rounded-3xl blur-2xl opacity-0 group-hover:opacity-60 transition-opacity duration-300`} />
+
+            {/* Glass-blur card with refined styling */}
+            <div className="relative backdrop-blur-md bg-[#08141c]/55 rounded-3xl shadow-lg ring-1 ring-white/5 p-8 h-full group-hover:backdrop-blur-lg transition-all duration-300">
               <div className="text-center">
-                <div className="text-4xl mb-4">
+                <div className="text-4xl mb-5">
                   {interface_.icon}
                 </div>
-                <h3 className="text-lg font-heading font-medium text-[#EDEDED] mb-3">
+                <h3 className="text-xl font-heading font-semibold text-white/90 mb-3">
                   {interface_.title}
                 </h3>
-                <p className="text-sm text-[#999999] mb-6 leading-relaxed">
+                <p className="text-[15px] text-[#cdd5d7]/70 mb-6 leading-relaxed max-w-[48ch] mx-auto">
                   {interface_.description}
                 </p>
-                <Button
-                  variant={currentInterface === interface_.key ? 'primary' : 'secondary'}
-                  size="small"
-                  className="group-hover:bg-brand-green-600 group-hover:text-white transition-colors"
-                >
-                  {currentInterface === interface_.key ? t.buttonCurrent : t.buttonStart}
-                </Button>
+
+                {/* CTA button with nested darker treatment */}
+                <div className="bg-[#0b1014]/60 rounded-xl p-1 group-hover:ring-1 group-hover:ring-[#9BF7EB]/30 transition-all">
+                  <Button
+                    variant={currentInterface === interface_.key ? 'primary' : 'secondary'}
+                    size="small"
+                    className="w-full transition-all"
+                  >
+                    {currentInterface === interface_.key ? t.buttonCurrent : t.buttonStart}
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
