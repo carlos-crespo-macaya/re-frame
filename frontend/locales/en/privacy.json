@@ -8,9 +8,8 @@
       "description": "We are committed to protecting your privacy:",
       "points": [
         "We do not collect or store personal information",
-        "Conversations are not saved or recorded",
-        "No user accounts or registration required",
-        "Sessions are temporary and deleted after completion"
+        "Anonymized conversation data may be saved to help us learn how to improve and make this app more helpful. No personally identifiable information (PII) is ever stored.",
+        "No user accounts or registration required"
       ]
     },
     "technicalData": {
@@ -54,8 +53,8 @@
       "title": "Data Retention",
       "description": "We minimize data retention:",
       "points": [
-        "Conversation data is processed in real-time and not stored",
-        "Technical logs are kept for 30 days maximum",
+        "Anonymized conversation data may be saved to help us learn how to improve and make this app more helpful. No personally identifiable information (PII) is ever stored.",
+        "Technical logs are maintained to help improve the platform's technical aspects.",
         "No long-term storage of personal information"
       ]
     },
@@ -81,7 +80,7 @@
     },
     "changes": {
       "title": "Changes to This Policy",
-      "description": "We may update this privacy policy from time to time. We will notify users of any significant changes by posting the new policy on this page."
+      "description": "We may update this privacy policy from time to time. We will notify users of any significant changes by posting the new policy on this page. The principle of privacy protection will not be affected by any changes."
     },
     "contact": {
       "title": "Contact Us",
