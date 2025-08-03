@@ -6,6 +6,7 @@ export async function GET() {
     service: process.env.SERVICE_NAME || 're-frame-frontend',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
-    apiUrl: process.env.NEXT_PUBLIC_API_URL || 'not configured',
+    proxyEnabled: !!process.env.BACKEND_INTERNAL_HOST,
+    backendHost: process.env.BACKEND_INTERNAL_HOST || 'not configured',
   });
 }
