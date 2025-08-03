@@ -207,8 +207,7 @@ jobs:
             --memory 1Gi \
             --min-instances 0 \
             --max-instances 10 \
-            --set-env-vars "ENVIRONMENT=${{ inputs.environment || 'production' }},LOG_LEVEL=info,GCP_PROJECT_ID=${{ env.PROJECT_ID }},GCP_REGION=${{ env.REGION }},CONFIGCAT_SDK_KEY=${{ secrets.CONFIGCAT_API_KEY }}" \
-            --update-secrets "GEMINI_API_KEY=projects/${{ env.PROJECT_ID }}/secrets/GEMINI_API_KEY:latest,GCP_REFRAME_IAP_CLIENT_SECRET=projects/${{ env.PROJECT_ID }}/secrets/GCP_REFRAME_IAP_CLIENT_SECRET:latest"
+            --set-env-vars "ENVIRONMENT=${{ inputs.environment || 'production' }},LOG_LEVEL=info,GCP_PROJECT_ID=${{ env.PROJECT_ID }},GCP_REGION=${{ env.REGION }},CONFIGCAT_SDK_KEY=${{ secrets.CONFIGCAT_API_KEY }},GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}"
 
       - name: Capture backend URL
         id: be
@@ -251,7 +250,7 @@ jobs:
             --memory 512Mi \
             --min-instances 0 \
             --max-instances 10 \
-            --set-env-vars "NODE_ENV=production,NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }},API_URL=${{ secrets.NEXT_PUBLIC_API_URL }},GCP_PROJECT_ID=${{ env.PROJECT_ID }},GCP_REGION=${{ env.REGION }},GCP_REFRAME_IAP_CLIENT_ID=${{ secrets.GCP_REFRAME_IAP_CLIENT_ID }}"
+            --set-env-vars "NODE_ENV=production,NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }},API_URL=${{ secrets.NEXT_PUBLIC_API_URL }},GCP_PROJECT_ID=${{ env.PROJECT_ID }},GCP_REGION=${{ env.REGION }}"
 
       - name: Capture frontend URL
         id: fe
