@@ -3,11 +3,11 @@
   "subtitle": "Get help with re-frame or find mental health resources",
   "sections": {
     "technicalSupport": {
-      "title": "Technical Support",
+      "title": "Tech Support & Feedback",
       "description": "Having trouble with the app? We're here to help.",
       "contact": "Contact us at:",
       "email": "hello@re-frame.social",
-      "responseTime": "We typically respond within 24-48 hours."
+      "responseTime": "We typically respond as soon as possible."
     },
     "mentalHealthResources": {
       "title": "Need to talk right now?",

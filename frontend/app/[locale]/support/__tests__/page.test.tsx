@@ -104,3 +104,14 @@ describe('SupportPage - AvPD Resources', () => {
     expect(getByText('Cleveland Clinic')).toBeInTheDocument()
   })
 })
+
+describe('SupportPage - Tech Support Section', () => {
+  test('tech support section should show updated title and response time', async () => {
+    const SupportPageComponent = await SupportPage({ params: { locale: 'en' } })
+    const { getByText, queryByText } = render(SupportPageComponent)
+    
+    expect(getByText('Tech Support & Feedback')).toBeInTheDocument()
+    expect(getByText(/as soon as possible/)).toBeInTheDocument()
+    expect(queryByText(/24-48 hours/)).not.toBeInTheDocument()
+  })
+})
