@@ -52,8 +52,29 @@ COPY . .
 # Copy OpenAPI schema for standalone builds (only if not exists)
 RUN test -f ./openapi.json || cp ./openapi-temp.json ./openapi.json
 
-# Generate TypeScript client from OpenAPI schema (only if not exists)
-RUN test -f ./lib/api/generated/sdk.gen.ts || pnpm run generate:api || echo "Warning: API client generation failed"
+# Always generate TypeScript client from OpenAPI schema to ensure it's up-to-date
+RUN echo "Generating TypeScript API client from OpenAPI schema..."; \
+    pnpm run generate:api; \
+    \
+    # Verify generation succeeded \
+    if [ ! -f ./lib/api/generated/sdk.gen.ts ]; then \
+      echo "Error: API client generation failed - sdk.gen.ts not created"; \
+      exit 1; \
+    fi; \
+    if [ ! -f ./lib/api/generated/index.ts ]; then \
+      echo "Error: API client generation failed - index.ts not created"; \
+      exit 1; \
+    fi; \
+    \
+    # Verify required functions exist \
+    if ! grep -q "getUiFeatureFlags" ./lib/api/generated/sdk.gen.ts; then \
+      echo "Error: Generated API client missing required function 'getUiFeatureFlags'"; \
+      echo "This indicates the OpenAPI schema is incomplete or outdated"; \
+      echo "Expected endpoint: /feature-flags/ui"; \
+      exit 1; \
+    fi; \
+    \
+    echo "API client generated successfully with all required functions"
 
 # Build arguments for environment variables
 ARG NEXT_PUBLIC_API_URL
