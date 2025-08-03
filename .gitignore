@@ -79,3 +79,5 @@ frontend/lib/api/generated/
 frontend/openapi.json
 
 .codex/
+
+coverage.xml
