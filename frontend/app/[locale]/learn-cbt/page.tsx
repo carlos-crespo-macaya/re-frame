@@ -154,7 +154,7 @@ export default async function LearnCBTPage({ params }: LearnCBTPageProps) {
               re-frame
             </h2>
             <p className="text-xs text-[#999999]">
-              © 2024 re-frame.social
+              © 2025 re-frame.social
             </p>
           </div>
         </div>
