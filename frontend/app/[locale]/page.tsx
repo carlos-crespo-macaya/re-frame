@@ -16,7 +16,7 @@ const translations = {
       title: 'Explore a new perspective',
       description: "We'll use evidence-based therapeutic techniques to spot thinking patterns and suggest gentler perspectives.",
       learnMore: 'Learn about',
-      learnMoreLink: 'therapeutic frameworks in 2 minutes ↗',
+      learnMoreLink: 'The approach behind re-frame',
     },
     cta: {
       title: 'Ready to start?',
@@ -47,7 +47,7 @@ const translations = {
       privacy: 'Privacy',
       support: 'Support',
       about: 'About',
-      copyright: '© 2024 re-frame.social',
+      copyright: '© 2025 re-frame.social',
     },
   },
   es: {
@@ -59,7 +59,7 @@ const translations = {
       title: 'Explora una nueva perspectiva',
       description: 'Usaremos técnicas terapéuticas basadas en evidencia para identificar patrones de pensamiento y sugerir perspectivas más amables.',
       learnMore: 'Aprende sobre',
-      learnMoreLink: 'marcos terapéuticos en 2 minutos ↗',
+      learnMoreLink: 'El enfoque detrás de re-frame',
     },
     cta: {
       title: '¿Listo para comenzar?',
@@ -90,7 +90,7 @@ const translations = {
       privacy: 'Privacidad',
       support: 'Soporte',
       about: 'Acerca de',
-      copyright: '© 2024 re-frame.social',
+      copyright: '© 2025 re-frame.social',
     },
   },
 }
@@ -129,7 +129,7 @@ export default function LocalePage({ params }: { params: { locale: string } }) {
                 {t.header.subtitle}
               </p>
             </div>
-            <div className="w-48">
+            <div className="w-32">
               <LanguageSelector 
                 value={selectedLanguage}
                 onChange={handleLanguageChange}
