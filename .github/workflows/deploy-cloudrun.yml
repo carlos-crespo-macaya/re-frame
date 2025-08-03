@@ -174,7 +174,7 @@ jobs:
           file: ${{ matrix.dockerfile }}
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:${{ needs.gate.outputs.image_tag }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:${{ needs.gate.outputs.head_sha }}
             ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:${{ github.ref_name }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -199,7 +199,7 @@ jobs:
       - name: Deploy backend to Cloud Run
         run: |
           gcloud run deploy ${{ env.BACKEND_SERVICE }} \
-            --image ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-backend:${{ needs.gate.outputs.image_tag }} \
+            --image ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-backend:${{ needs.gate.outputs.head_sha }} \
             --region ${{ env.REGION }} \
             --platform managed \
             --allow-unauthenticated \
@@ -243,7 +243,7 @@ jobs:
       - name: Deploy frontend to Cloud Run
         run: |
           gcloud run deploy ${{ env.FRONTEND_SERVICE }} \
-            --image ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-frontend:${{ needs.gate.outputs.image_tag }} \
+            --image ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-frontend:${{ needs.gate.outputs.head_sha }} \
             --region ${{ env.REGION }} \
             --platform managed \
             --allow-unauthenticated \
