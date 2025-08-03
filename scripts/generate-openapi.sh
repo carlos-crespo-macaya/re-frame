@@ -15,7 +15,7 @@ echo "🔄 Generating OpenAPI schema from backend..."
 cd "$REPO_ROOT/backend"
 
 # Generate OpenAPI schema
-uv run python -c "from src.main import app; import json; print(json.dumps(app.openapi(), indent=2))" > "$REPO_ROOT/frontend/openapi.json"
+uv run python -c "from src.main import app; import json; print(json.dumps(app.openapi(), indent=2))" 2>/dev/null > "$REPO_ROOT/frontend/openapi.json"
 
 # Check if generation was successful
 if [ ! -f "$REPO_ROOT/frontend/openapi.json" ]; then
