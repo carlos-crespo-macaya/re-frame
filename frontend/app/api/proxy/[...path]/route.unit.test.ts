@@ -56,8 +56,32 @@ describe('Proxy Route Core Logic', () => {
       expect(response.status).toBe(502);
     });
 
+    test('returns 500 error when BACKEND_PUBLIC_URL is not set', async () => {
+      process.env.BACKEND_INTERNAL_HOST = 're-frame-backend.europe-west1.internal';
+      delete process.env.BACKEND_PUBLIC_URL;
+
+      // Re-import to get updated environment
+      jest.resetModules();
+      const { GET } = await import('./route');
+
+      const testRequest = {
+        method: 'GET',
+        headers: new Map(),
+        nextUrl: { search: '' },
+        arrayBuffer: () => Promise.resolve(new ArrayBuffer(0))
+      };
+
+      const response = await GET(testRequest as any, { params: { path: ['api', 'health'] } });
+      const json = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(json.error).toBe('Service configuration error');
+      expect(json.details).toBe('Backend URL not configured. Please check deployment configuration.');
+    });
+
     test('processes request when BACKEND_INTERNAL_HOST is set', async () => {
       process.env.BACKEND_INTERNAL_HOST = 're-frame-backend.europe-west1.internal';
+      process.env.BACKEND_PUBLIC_URL = 'https://re-frame-backend-test.a.run.app';
 
       // Re-import to get updated environment
       jest.resetModules();
@@ -85,6 +109,7 @@ describe('Proxy Route Core Logic', () => {
   describe('Request Size Limits', () => {
     beforeEach(() => {
       process.env.BACKEND_INTERNAL_HOST = 're-frame-backend.europe-west1.internal';
+      process.env.BACKEND_PUBLIC_URL = 'https://re-frame-backend-test.a.run.app';
     });
 
     test('accepts requests up to 50MB', async () => {
@@ -123,6 +148,7 @@ describe('Proxy Route Core Logic', () => {
   describe('HTTP Methods', () => {
     beforeEach(() => {
       process.env.BACKEND_INTERNAL_HOST = 're-frame-backend.europe-west1.internal';
+      process.env.BACKEND_PUBLIC_URL = 'https://re-frame-backend-test.a.run.app';
     });
 
     test.each(['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'])(
@@ -154,6 +180,7 @@ describe('Proxy Route Core Logic', () => {
   describe('Security Requirements', () => {
     beforeEach(() => {
       process.env.BACKEND_INTERNAL_HOST = 're-frame-backend.europe-west1.internal';
+      process.env.BACKEND_PUBLIC_URL = 'https://re-frame-backend-test.a.run.app';
     });
 
     test('always includes valid IAM ID token via Google Auth client', async () => {
@@ -169,8 +196,8 @@ describe('Proxy Route Core Logic', () => {
 
       await GET(testRequest as any, { params: { path: ['api', 'health'] } });
 
-      // Step 1: Verify correct audience was used for ID token client
-      expect(mockGetIdREDACTED('https://re-frame-backend.europe-west1.internal');
+      // Step 1: Verify correct audience was used for ID token client (should be public URL)
+      expect(mockGetIdREDACTED.a.run.app');
 
       // Step 2: Verify the authenticated request was made via client.request
       // Note: The Google Auth library's client.request() automatically adds the Authorization header
@@ -197,13 +224,15 @@ describe('Proxy Route Core Logic', () => {
 
       await GET(testRequest as any, { params: { path: ['api', 'health'] } });
 
-      expect(mockGetIdREDACTED('https://re-frame-backend.europe-west1.internal');
+      // The audience should be the public URL, not the internal host
+      expect(mockGetIdREDACTED.a.run.app');
     });
   });
 
   describe('SSE and WebSocket Support', () => {
     beforeEach(() => {
       process.env.BACKEND_INTERNAL_HOST = 're-frame-backend.europe-west1.internal';
+      process.env.BACKEND_PUBLIC_URL = 'https://re-frame-backend-test.a.run.app';
     });
 
     test('includes duplex: half flag in fetch options', async () => {
@@ -245,6 +274,7 @@ describe('Proxy Route Core Logic', () => {
   describe('Request Transformation', () => {
     beforeEach(() => {
       process.env.BACKEND_INTERNAL_HOST = 're-frame-backend.europe-west1.internal';
+      process.env.BACKEND_PUBLIC_URL = 'https://re-frame-backend-test.a.run.app';
     });
 
     test('constructs correct backend URL with path segments', async () => {
