@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from fastapi import HTTPException
 
-from src.models import LanguageDetectionRequest
+from src.models.api import LanguageDetectionRequest
 from src.utils.rate_limiter import RateLimiter
 
 
