@@ -141,6 +141,8 @@ jobs:
     needs: [gate, build-and-push]
     if: needs.gate.outputs.proceed == 'true'
     runs-on: ubuntu-latest
+    outputs:
+      backend_url: ${{ steps.backend-url.outputs.url }}
     steps:
       - uses: google-github-actions/auth@v2
         with:
@@ -175,6 +177,15 @@ jobs:
             --max-instances  10 \
             --set-env-vars   "ENVIRONMENT=${{ inputs.environment || 'production' }},LOG_LEVEL=info,GCP_PROJECT_ID=${{ env.PROJECT_ID }},GCP_REGION=${{ env.REGION }},CONFIGCAT_SDK_KEY=${{ secrets.CONFIGCAT_API_KEY }},GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}"
 
+      - name: Get backend URL dynamically
+        id: backend-url
+        run: |
+          BACKEND_URL=$(gcloud run services describe ${{ env.BACKEND_SERVICE }} \
+            --region=${{ env.REGION }} \
+            --format="value(status.url)")
+          echo "Backend URL: $BACKEND_URL"
+          echo "url=$BACKEND_URL" >> $GITHUB_OUTPUT
+
 # --------------------------------------------------------------------------- #
 # 4. Deploy frontend  (egress routed via VPC connector)
 # --------------------------------------------------------------------------- #
@@ -207,7 +218,7 @@ jobs:
             --memory         1Gi \
             --min-instances  0 \
             --max-instances  10 \
-            --set-env-vars   "NODE_ENV=production,BACKEND_INTERNAL_HOST=${{ env.BACKEND_SERVICE }}.${{ env.REGION }}.internal,BACKEND_PUBLIC_URL=https://${{ env.BACKEND_SERVICE }}-yeetrlkwzq-ew.a.run.app,GCP_PROJECT_ID=${{ env.PROJECT_ID }},GCP_REGION=${{ env.REGION }}"
+            --set-env-vars   "NODE_ENV=production,BACKEND_INTERNAL_HOST=${{ env.BACKEND_SERVICE }}.${{ env.REGION }}.internal,BACKEND_PUBLIC_URL=${{ needs.deploy-backend.outputs.backend_url }},GCP_PROJECT_ID=${{ env.PROJECT_ID }},GCP_REGION=${{ env.REGION }}"
 
       - name: Grant frontend SA invoke rights on backend
         run: |
