@@ -28,7 +28,6 @@ permissions:
   statuses: read
   id-token: write
   actions: write
-  workflows: write
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
