@@ -139,13 +139,16 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     }
 
     // Render as button
+    // Note on ARIA:
+    // - aria-busy expects a boolean token (true/false). Some linters/tools may misread expressions.
+    // - To be maximally explicit and avoid false positives, we only include the attribute when true.
     return (
       <button
         ref={ref}
         type={type}
         className={baseClasses}
         disabled={disabled || loading}
-        aria-busy={loading || undefined}
+        {...(loading ? { 'aria-busy': true } : {})}
         {...props}
       >
         {content}

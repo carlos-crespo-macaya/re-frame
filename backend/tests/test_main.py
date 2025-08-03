@@ -29,7 +29,7 @@ with (
 ):
     from src.main import app
 
-from src.models import HealthCheckResponse
+from src.models.api import HealthCheckResponse
 
 
 @pytest.fixture
