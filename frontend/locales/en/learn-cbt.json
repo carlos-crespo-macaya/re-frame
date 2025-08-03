@@ -1,6 +1,6 @@
 {
-  "title": "What is CBT?",
-  "quickLink": "CBT summary in 2 minutes ↗",
+  "title": "📖 What is CBT?",
+  "quickLink": "CBT summary in 2 minutes",
   "introduction": "Cognitive Behavioural Therapy (CBT) is an evidence-based approach that links thoughts, feelings, and actions. By spotting common thinking traps—such as catastrophising, mind-reading, or \"all-or-nothing\" statements—you can practise kinder, more balanced perspectives.",
   "whyHelpsAvpd": {
     "title": "Why it helps with AvPD",
@@ -15,26 +15,6 @@
   "howWeUse": {
     "title": "How re-frame uses CBT",
     "description": "When you describe a situation, re-frame highlights likely thinking traps and suggests gentler viewpoints. You remain in control—choose what feels true and helpful, discard the rest."
-  },
-  "furtherReading": {
-    "title": "Further reading",
-    "resources": [
-      {
-        "title": "CBT Basics",
-        "source": "Anxiety UK",
-        "link": "Resource page ↗"
-      },
-      {
-        "title": "\"Unhelpful Thinking Styles\" factsheet",
-        "source": "CCI",
-        "link": "PDF (200 KB) ↗"
-      },
-      {
-        "title": "Avoidant Personality: CBT Workbook",
-        "source": "Psychology Tools",
-        "link": "Sign in & download ↗"
-      }
-    ]
   },
   "reminder": {
     "prefix": "Reminder:",

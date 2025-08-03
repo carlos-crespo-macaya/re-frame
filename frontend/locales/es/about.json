@@ -2,7 +2,7 @@
   "title": "ℹ️ Acerca de re-frame",
   "mission": {
     "label": "Misión",
-    "description": "ofrecer a quienes luchan con patrones evitativos una forma amable de cuestionar pensamientos duros—sin vergüenza, anuncios ni explotación de datos."
+    "description": "ofrecer a quienes luchan con patrones evitativos una forma amable de cuestionar pensamientos duros."
   },
   "details": {
     "whatIs": {
@@ -13,17 +13,13 @@
       "label": "Qué no es:",
       "description": "psicoterapia completa, consejo médico ni servicio de crisis."
     },
-    "whoBuilds": {
-      "label": "Quién lo construye:",
-      "description": "solo yo—Carlos, ingeniero de software que convive con TPA y dedica su tiempo y habilidades para crear la herramienta que me hubiera gustado tener."
+    "creator": {
+      "title": "Sobre mí",
+      "content": "Soy <a href='https://carlos-crespo.com/' target='_blank' rel='noopener noreferrer' class='text-brand-green-400 hover:text-brand-green-300 underline'>Carlos</a>, esta página tiene como fin crear, recopilar y compartir recursos que pudieran ayudar a personas como yo en su camino."
     },
-    "whyOpen": {
-      "label": "Por qué código abierto:",
-      "description": "la transparencia genera confianza; cualquiera puede revisar o mejorar el código."
-    },
-    "roadmap": {
-      "label": "Hoja de ruta:",
-      "description": "apoyo entre pares opcional, diario de progreso, exportación para derivación a terapeuta."
+    "thankYou": {
+      "title": "Gracias",
+      "content": "Gracias por probar re-frame. Esperamos que te ayude de alguna manera en tu camino."
     }
   },
   "contact": {
