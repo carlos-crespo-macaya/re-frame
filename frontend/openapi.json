@@ -1,5 +1,5 @@
-[2m2025-08-03T05:25:08.622522Z[0m [[32m[1minfo     [0m] [1mapplication_started           [0m [[0m[1m[34msrc.main[0m][0m [36mapp_name[0m=[35m'CBT Reframing Assistant'[0m [36mfilename[0m=[35mmain.py[0m [36mfunc_name[0m=[35m<module>[0m [36mlineno[0m=[35m38[0m
-[2m2025-08-03T05:25:08.622718Z[0m [[32m[1minfo     [0m] [1mcors_configured               [0m [[0m[1m[34msrc.main[0m][0m [36menvironment[0m=[35mdevelopment[0m [36mfilename[0m=[35mmain.py[0m [36mfunc_name[0m=[35m<module>[0m [36mlineno[0m=[35m115[0m [36morigins[0m=[35m['http://localhost:3000', 'http://127.0.0.1:3000', 'http://frontend:3000'][0m
+[2m2025-08-03T05:34:11.223178Z[0m [[32m[1minfo     [0m] [1mapplication_started           [0m [[0m[1m[34msrc.main[0m][0m [36mapp_name[0m=[35m'CBT Reframing Assistant'[0m [36mfilename[0m=[35mmain.py[0m [36mfunc_name[0m=[35m<module>[0m [36mlineno[0m=[35m38[0m
+[2m2025-08-03T05:34:11.223401Z[0m [[32m[1minfo     [0m] [1mcors_configured               [0m [[0m[1m[34msrc.main[0m][0m [36menvironment[0m=[35mdevelopment[0m [36mfilename[0m=[35mmain.py[0m [36mfunc_name[0m=[35m<module>[0m [36mlineno[0m=[35m115[0m [36morigins[0m=[35m['http://localhost:3000', 'http://127.0.0.1:3000', 'http://frontend:3000'][0m
 {
   "openapi": "3.1.0",
   "info": {
