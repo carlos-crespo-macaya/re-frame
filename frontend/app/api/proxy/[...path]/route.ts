@@ -2,13 +2,24 @@ import { NextRequest, NextResponse } from 'next/server';
 import { GoogleAuth } from 'google-auth-library';
 
 const backendHost = process.env.BACKEND_INTERNAL_HOST;
-const backendPublicUrl = process.env.BACKEND_PUBLIC_URL || 'https://re-frame-backend-yeetrlkwzq-ew.a.run.app';
+const backendPublicUrl = process.env.BACKEND_PUBLIC_URL;
 
 async function proxy(req: NextRequest, { params }: { params: { path: string[] } }) {
   if (!backendHost) {
     return NextResponse.json(
       { error: 'Proxy disabled in dev' },
       { status: 502 }
+    );
+  }
+
+  if (!backendPublicUrl) {
+    console.error('BACKEND_PUBLIC_URL environment variable is not configured');
+    return NextResponse.json(
+      {
+        error: 'Service configuration error',
+        details: 'Backend URL not configured. Please check deployment configuration.'
+      },
+      { status: 500 }
     );
   }
 
@@ -24,13 +35,13 @@ async function proxy(req: NextRequest, { params }: { params: { path: string[] } 
 
   const targetUrl = `https://${backendHost}/${params.path.join('/')}${req.nextUrl.search}`;
 
+  // For Cloud Run service-to-service auth, the audience must be the public service URL
+  // even when using internal traffic routing
+  const audience = backendPublicUrl;
+
   try {
     // Initialize GoogleAuth for Cloud Run service-to-service authentication
     const auth = new GoogleAuth();
-
-    // For Cloud Run service-to-service auth, the audience must be the public service URL
-    // even when using internal traffic routing
-    const audience = backendPublicUrl;
     const client = await auth.getIdTokenClient(audience);
 
     // Prepare request headers (remove problematic headers)
