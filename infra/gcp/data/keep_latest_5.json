@@ -1,0 +1,14 @@
+[
+    {
+      "name": "delete-all-older-than-one-second",
+      "action": { "type": "Delete" },
+      "condition": { "olderThan": "1s" }
+    },
+    {
+      "name": "keep-most-recent-5",
+      "action": { "type": "Keep" },
+      "mostRecentVersions": {
+        "keepCount": 5
+      }
+    }
+  ]

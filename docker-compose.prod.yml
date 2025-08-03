@@ -30,7 +30,6 @@ services:
       context: ./frontend
       dockerfile: Dockerfile.standalone
       args:
-        - NEXT_PUBLIC_API_URL=http://backend:8000
         - NEXT_PUBLIC_ENVIRONMENT=production
     image: ghcr.io/macayaven/re-frame-frontend:latest
     ports:
@@ -38,10 +37,7 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=8080
-      # Use internal service name for server-side requests
-      - API_URL=http://backend:8000
-      # Use localhost for client-side requests in local testing
-      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - BACKEND_INTERNAL_HOST=http://backend:8000
     depends_on:
       backend:
         condition: service_healthy

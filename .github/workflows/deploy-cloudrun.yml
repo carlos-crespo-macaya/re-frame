@@ -130,7 +130,7 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:${{ needs.gate.outputs.head_sha }}
             ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:${{ github.ref_name }}
           build-args: |
-            NEXT_PUBLIC_API_URL=${{ matrix.service == 'frontend' && format('https://{0}.{1}.internal', env.BACKEND_SERVICE, env.REGION) || '' }}
+            ${{ matrix.service == 'frontend' && 'BUILD_TARGET=production' || '' }}
           cache-from: type=gha
           cache-to:   type=gha,mode=max
 
@@ -163,11 +163,13 @@ jobs:
             --image          ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-backend:${{ needs.gate.outputs.head_sha }} \
             --platform       managed \
             --region         ${{ env.REGION }} \
+            --execution-environment gen2 \
+            --timeout        300 \
             --vpc-connector  ${{ env.VPC_CONNECTOR }} \
             --ingress        internal \
             --no-allow-unauthenticated \
             --port           8000 \
-            --cpu            1 \
+            --cpu            2 \
             --memory         1Gi \
             --min-instances  0 \
             --max-instances  10 \
@@ -195,15 +197,17 @@ jobs:
             --image          ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-frontend:${{ needs.gate.outputs.head_sha }} \
             --platform       managed \
             --region         ${{ env.REGION }} \
+            --execution-environment gen2 \
+            --timeout        300 \
             --allow-unauthenticated \
             --vpc-connector  ${{ env.VPC_CONNECTOR }} \
             --vpc-egress     all \
             --port           8080 \
-            --cpu            1 \
-            --memory         512Mi \
+            --cpu            2 \
+            --memory         1Gi \
             --min-instances  0 \
             --max-instances  10 \
-            --set-env-vars   "NODE_ENV=production,NEXT_PUBLIC_API_URL=https://${{ env.BACKEND_SERVICE }}.${{ env.REGION }}.internal,API_URL=http://${{ env.BACKEND_SERVICE }}.${{ env.REGION }}.internal,GCP_PROJECT_ID=${{ env.PROJECT_ID }},GCP_REGION=${{ env.REGION }}"
+            --set-env-vars   "NODE_ENV=production,BACKEND_INTERNAL_HOST=${{ env.BACKEND_SERVICE }}.${{ env.REGION }}.internal,GCP_PROJECT_ID=${{ env.PROJECT_ID }},GCP_REGION=${{ env.REGION }}"
 
       - name: Grant frontend SA invoke rights on backend
         run: |
