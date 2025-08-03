@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { GoogleAuth } from 'google-auth-library';
 
 const backendHost = process.env.BACKEND_INTERNAL_HOST;
-const auth = new GoogleAuth();
 
 async function proxy(req: NextRequest, { params }: { params: { path: string[] } }) {
   if (!backendHost) {
@@ -22,35 +21,88 @@ async function proxy(req: NextRequest, { params }: { params: { path: string[] } 
     );
   }
 
-  const target = `https://${backendHost}/${params.path.join('/')}${req.nextUrl.search}`;
+  const targetUrl = `https://${backendHost}/${params.path.join('/')}${req.nextUrl.search}`;
 
-  // Get ID token for backend (audience = backend host origin)
-  const client = await auth.getIdTokenClient(`https://${backendHost}`);
-  const headers = await client.getRequestHeaders();
+  try {
+    // Initialize GoogleAuth for Cloud Run service-to-service authentication
+    const auth = new GoogleAuth();
 
-  // Build request init
-  const init: RequestInit & { duplex?: string } = {
-    method: req.method,
-    headers: {
-      ...Object.fromEntries(req.headers),
-      ...headers,
-      host: backendHost
-    },
-    // Important for SSE/WebSocket support
-    duplex: 'half',
-    body: ['GET', 'HEAD'].includes(req.method)
-      ? undefined
-      : await req.arrayBuffer(),
-    cache: 'no-store',
-  };
+    // For Cloud Run service-to-service auth, the audience must be the full service URL
+    const audience = `https://${backendHost}`;
+    const client = await auth.getIdTokenClient(audience);
 
-  const resp = await fetch(target, init);
+    // Prepare request headers (remove problematic headers)
+    const requestHeaders = Object.fromEntries(req.headers.entries());
+    delete requestHeaders.host; // Remove to avoid conflicts
+    delete requestHeaders['content-length']; // Will be recalculated
 
-  // Pipe the response stream straight back
-  return new NextResponse(resp.body, {
-    status: resp.status,
-    headers: resp.headers,
-  });
+    // Use the client's request method which automatically adds the Authorization header
+    const response = await client.request({
+      url: targetUrl,
+      method: req.method as any,
+      headers: requestHeaders,
+      data: ['GET', 'HEAD'].includes(req.method)
+        ? undefined
+        : await req.arrayBuffer(),
+      responseType: 'stream',
+    });
+
+    // Process response headers
+    const responseHeaders = response.headers as Record<string, string> | Headers;
+    const isHeadersObject = responseHeaders.constructor === Headers;
+
+    // Extract header entries properly
+    const headerEntries: [string, string][] = isHeadersObject
+      ? Array.from((responseHeaders as Headers).entries())
+      : Object.entries(responseHeaders as Record<string, string>);
+
+    // Build clean response headers
+    const cleanHeaders: Record<string, string> = {
+      'cache-control': 'no-store', // Always override cache control
+    };
+
+    // Add all headers except problematic ones
+    const excludedHeaders = ['host', 'content-encoding', 'transfer-encoding', 'cache-control'];
+    for (const [key, value] of headerEntries) {
+      if (!excludedHeaders.includes(key.toLowerCase())) {
+        cleanHeaders[key] = value;
+      }
+    }
+
+    // Ensure content-type is set
+    if (!cleanHeaders['content-type']) {
+      cleanHeaders['content-type'] = 'application/octet-stream';
+    }
+
+    // Return the response with proper headers
+    return new NextResponse(response.data as BodyInit, {
+      status: response.status,
+      headers: cleanHeaders,
+    });
+  } catch (error: any) {
+    console.error('Proxy error:', error);
+
+    // Handle specific auth errors
+    if (error.code === 'ECONNREFUSED') {
+      return NextResponse.json(
+        { error: 'Backend service unavailable' },
+        { status: 503 }
+      );
+    }
+
+    if (error.response?.status === 403) {
+      return NextResponse.json(
+        { error: 'Authentication failed - service account may lack permissions' },
+        { status: 403 }
+      );
+    }
+
+    // Generic error response
+    return NextResponse.json(
+      { error: error.message || 'Proxy request failed' },
+      { status: error.response?.status || 500 }
+    );
+  }
 }
 
 // Export for every HTTP method
