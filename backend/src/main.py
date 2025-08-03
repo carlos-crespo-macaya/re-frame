@@ -118,19 +118,25 @@ else:
 logger.info("cors_configured", environment=ENVIRONMENT, origins=allowed_origins)
 
 # Configure CORS middleware
-cors_config = {
-    "allow_origins": allowed_origins,
-    "allow_credentials": True,
-    "allow_methods": ["GET", "POST", "OPTIONS", "HEAD", "DELETE"],
-    "allow_headers": ["*"],
-    "expose_headers": ["X-Session-Id", "X-Phase-Status"],
-}
-
-# Add regex pattern for production Cloud Run URLs
 if ENVIRONMENT == "production":
-    cors_config["allow_origin_regex"] = cloud_run_origin_regex
-
-app.add_middleware(CORSMiddleware, **cors_config)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=allowed_origins,
+        allow_origin_regex=cloud_run_origin_regex,
+        allow_credentials=True,
+        allow_methods=["GET", "POST", "OPTIONS", "HEAD", "DELETE"],
+        allow_headers=["*"],
+        expose_headers=["X-Session-Id", "X-Phase-Status"],
+    )
+else:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=allowed_origins,
+        allow_credentials=True,
+        allow_methods=["GET", "POST", "OPTIONS", "HEAD", "DELETE"],
+        allow_headers=["*"],
+        expose_headers=["X-Session-Id", "X-Phase-Status"],
+    )
 
 # Include routers
 app.include_router(text_router)
