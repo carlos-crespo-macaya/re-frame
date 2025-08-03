@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { GoogleAuth } from 'google-auth-library';
 
 const backendHost = process.env.BACKEND_INTERNAL_HOST;
+const backendPublicUrl = process.env.BACKEND_PUBLIC_URL || 'https://re-frame-backend-yeetrlkwzq-ew.a.run.app';
 
 async function proxy(req: NextRequest, { params }: { params: { path: string[] } }) {
   if (!backendHost) {
@@ -27,8 +28,9 @@ async function proxy(req: NextRequest, { params }: { params: { path: string[] } 
     // Initialize GoogleAuth for Cloud Run service-to-service authentication
     const auth = new GoogleAuth();
 
-    // For Cloud Run service-to-service auth, the audience must be the full service URL
-    const audience = `https://${backendHost}`;
+    // For Cloud Run service-to-service auth, the audience must be the public service URL
+    // even when using internal traffic routing
+    const audience = backendPublicUrl;
     const client = await auth.getIdTokenClient(audience);
 
     // Prepare request headers (remove problematic headers)
@@ -80,7 +82,16 @@ async function proxy(req: NextRequest, { params }: { params: { path: string[] } 
       headers: cleanHeaders,
     });
   } catch (error: any) {
-    console.error('Proxy error:', error);
+    console.error('Proxy error:', {
+      message: error.message,
+      code: error.code,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      targetUrl,
+      audience,
+      backendHost,
+      method: req.method,
+    });
 
     // Handle specific auth errors
     if (error.code === 'ECONNREFUSED') {
@@ -94,6 +105,13 @@ async function proxy(req: NextRequest, { params }: { params: { path: string[] } 
       return NextResponse.json(
         { error: 'Authentication failed - service account may lack permissions' },
         { status: 403 }
+      );
+    }
+
+    if (error.response?.status === 401) {
+      return NextResponse.json(
+        { error: 'Authentication failed - invalid or missing token' },
+        { status: 401 }
       );
     }
 
