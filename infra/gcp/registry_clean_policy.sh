@@ -1,3 +1,5 @@
+#!/bin/bash
+
 export PROJECT_ID=$GCP_PROJECT_ID
 export REGION="europe-west1"
 export REPO="re-frame"
