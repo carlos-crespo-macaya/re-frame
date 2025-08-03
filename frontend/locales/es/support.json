@@ -10,23 +10,23 @@
       "responseTime": "Típicamente respondemos en 24-48 horas."
     },
     "mentalHealthResources": {
-      "title": "Recursos de Salud Mental",
-      "description": "Si estás en crisis o necesitas apoyo profesional:",
+      "title": "¿Necesitas hablar ahora mismo?",
+      "description": "Si estás en crisis o necesitas apoyo inmediato:",
       "resources": [
         {
-          "title": "Línea de Crisis por Texto",
-          "description": "Envía HOLA al 741741",
-          "availability": "Apoyo en crisis 24/7"
+          "name": "Find a Helpline",
+          "description": "Números de crisis y líneas de texto en tu país",
+          "url": "https://findahelpline.com"
         },
         {
-          "title": "Línea Nacional de Prevención del Suicidio",
-          "description": "Llama al 988",
-          "availability": "Apoyo 24/7"
+          "name": "Befrienders Worldwide",
+          "description": "Envía email o llama a voluntarios en más de 90 países",
+          "url": "https://befrienders.org"
         },
         {
-          "title": "Psychology Today",
-          "description": "Encuentra un terapeuta cerca de ti",
-          "link": "psychologytoday.com"
+          "name": "7 Cups",
+          "description": "Chat gratuito y anónimo 24/7 con oyentes capacitados",
+          "url": "https://7cups.com"
         }
       ]
     },

@@ -1,6 +1,6 @@
 # Frontend CLAUDE.md
 
-This file provides frontend-specific guidance when working in the `/frontend` directory.
+This file provides frontend-specific guidance when working in the `/frontend` directory of the re-frame monorepo.
 
 ## Frontend Commands Quick Reference
 
@@ -93,6 +93,38 @@ pnpm run lint && pnpm run typecheck && pnpm run test
 - Sanitize user inputs
 - Use environment variables for configuration
 - Follow OWASP guidelines for frontend security
+
+## Frontend Architecture
+
+### Core Technologies
+- **Framework**: Next.js 14 with App Router (NOT Pages Router)
+- **Language**: TypeScript with strict mode enabled
+- **Styling**: Tailwind CSS v3 with custom design tokens
+- **State Management**: React Context for global state
+- **Internationalization**: next-intl with dynamic locale routing
+
+### Directory Structure
+```
+frontend/
+├── app/[locale]/           # Internationalized routes
+├── components/             # Reusable UI components
+│   ├── audio/             # Audio recording & playback
+│   ├── forms/             # Form components (ChatInterface)
+│   └── ui/                # Base UI components
+├── lib/                   # Core functionality
+│   ├── api/               # Generated API client
+│   ├── audio/             # Audio processing utilities
+│   └── streaming/         # SSE client implementation
+├── locales/               # Translation files (en, es)
+└── public/worklets/       # Web Audio worklets
+```
+
+### Key Features
+- **Multi-language Support**: English and Spanish with URL-based routing
+- **Audio Recording**: 48kHz WAV format with Web Audio API
+- **Real-time Streaming**: SSE for responsive AI interactions
+- **Accessibility**: ARIA labels and keyboard navigation
+- **Responsive Design**: Mobile-first approach
 
 ## Common Issues & Solutions
 
