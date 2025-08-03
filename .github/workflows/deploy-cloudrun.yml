@@ -175,6 +175,8 @@ jobs:
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:${{ needs.gate.outputs.head_sha }}
             ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:${{ github.ref_name }}
+          build-args: |
+            NEXT_PUBLIC_API_URL=${{ matrix.service == 'frontend' && 'https://re-frame-backend-875750705254.europe-west1.run.app' || '' }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
