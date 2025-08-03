@@ -38,7 +38,7 @@ else
     --display-name="GitHub Actions Deploy" \
     --description="Service account for deploying from GitHub Actions to Cloud Run" \
     --project=$PROJECT_ID
-  
+
   # Wait for service account to be fully created
   echo "Waiting for service account to be ready..."
   sleep 5
