@@ -1,6 +1,6 @@
 import { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
-import Link from 'next/link'
+import { SupportClient } from './support-client'
 
 export const metadata: Metadata = {
   title: 'Support & Help - re-frame',
@@ -14,187 +14,46 @@ interface SupportPageProps {
 export default async function SupportPage({ params }: SupportPageProps) {
   const t = await getTranslations({locale: params.locale, namespace: 'support'})
 
-  return (
-    <div className="min-h-screen bg-dark-charcoal">
-      {/* Header */}
-      <header className="relative bg-gradient-to-b from-[#1D1F1E] to-transparent">
-        <div className="container-safe py-8 px-4 sm:px-6 lg:px-8">
-          <div>
-            <h1 className="text-2xl font-heading font-semibold text-brand-green-400 mb-2">
-              re-frame
-            </h1>
-            <Link 
-              href={`/${params.locale}`}
-              className="inline-flex items-center text-brand-green-400 hover:text-brand-green-300 transition-colors"
-            >
-              {t('navigation.back')}
-            </Link>
-          </div>
-        </div>
-      </header>
+  const translations = {
+    title: t('title'),
+    subtitle: t('subtitle'),
+    navigation: {
+      back: t('navigation.back')
+    },
+    sections: {
+      technicalSupport: {
+        title: t('sections.technicalSupport.title'),
+        description: t('sections.technicalSupport.description'),
+        contact: t('sections.technicalSupport.contact'),
+        email: t('sections.technicalSupport.email'),
+        responseTime: t('sections.technicalSupport.responseTime')
+      },
+      mentalHealthResources: {
+        title: t('sections.mentalHealthResources.title'),
+        description: t('sections.mentalHealthResources.description'),
+        resources: t.raw('sections.mentalHealthResources.resources') as any[]
+      },
+      aboutAvpd: {
+        title: t('sections.aboutAvpd.title'),
+        description: t('sections.aboutAvpd.description'),
+        resources: t.raw('sections.aboutAvpd.resources') as any[]
+      },
+      privacyAndSafety: {
+        title: t('sections.privacyAndSafety.title'),
+        description: t('sections.privacyAndSafety.description'),
+        points: t.raw('sections.privacyAndSafety.points') as string[]
+      }
+    },
+    reminder: {
+      title: t('reminder.title'),
+      text: t('reminder.text')
+    },
+    footer: {
+      privacy: t('footer.privacy'),
+      support: t('footer.support'),
+      about: t('footer.about')
+    }
+  }
 
-      {/* Main Content */}
-      <main className="container-safe py-8 md:py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="mb-8">
-            <h1 className="text-3xl md:text-4xl font-heading font-medium text-[#EDEDED] mb-4">
-              {t('title')}
-            </h1>
-            <p className="text-lg text-[#999999] leading-relaxed">
-              {t('subtitle')}
-            </p>
-          </div>
-
-          <div className="space-y-8">
-            {/* Technical Support */}
-            <section className="bg-[#2a2a2a] rounded-lg border border-[#3a3a3a] p-6">
-              <h2 className="text-xl font-heading font-medium text-[#EDEDED] mb-4">
-                {t('sections.technicalSupport.title')}
-              </h2>
-              <p className="text-[#999999] mb-4">
-                {t('sections.technicalSupport.description')}
-              </p>
-              <p className="text-[#999999] mb-2">
-                {t('sections.technicalSupport.contact')}
-              </p>
-              <p className="text-brand-green-400 text-lg mb-4">
-                {t('sections.technicalSupport.email')}
-              </p>
-              <p className="text-sm text-[#999999]">
-                {t('sections.technicalSupport.responseTime')}
-              </p>
-            </section>
-
-            {/* Mental Health Resources */}
-            <section className="bg-[#2a2a2a] rounded-lg border border-[#3a3a3a] p-6">
-              <h2 className="text-xl font-heading font-medium text-[#EDEDED] mb-4">
-                {t('sections.mentalHealthResources.title')}
-              </h2>
-              <p className="text-[#999999] mb-6">
-                {t('sections.mentalHealthResources.description')}
-              </p>
-              <div className="space-y-4">
-                {(t.raw('sections.mentalHealthResources.resources') as any[]).map((resource, index) => (
-                  <div key={index} className="border-l-2 border-brand-green-400 pl-4">
-                    <h3 className="font-medium text-[#EDEDED] mb-1">{resource.name}</h3>
-                    <p className="text-[#999999] mb-1">{resource.description}</p>
-                    {resource.url && (
-                      <a 
-                        href={resource.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-brand-green-400 hover:text-brand-green-300 transition-colors underline"
-                      >
-                        {resource.url}
-                      </a>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            {/* About AvPD */}
-            <section className="bg-[#2a2a2a] rounded-lg border border-[#3a3a3a] p-6">
-              <h2 className="text-xl font-heading font-medium text-[#EDEDED] mb-4">
-                {t('sections.aboutAvpd.title')}
-              </h2>
-              <p className="text-[#999999] mb-4">
-                {t('sections.aboutAvpd.description')}
-              </p>
-              <div className="space-y-3">
-                {(t.raw('sections.aboutAvpd.resources') as any[]).map((resource, index) => (
-                  <div key={index} className="border-l-2 border-brand-green-400 pl-4">
-                    <h3 className="font-medium text-[#EDEDED]">{resource.name}</h3>
-                    {resource.description && (
-                      <p className="text-sm text-[#999999] mb-1">{resource.description}</p>
-                    )}
-                    {resource.url && (
-                      <a 
-                        href={resource.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-brand-green-400 hover:text-brand-green-300 transition-colors underline"
-                      >
-                        {resource.url}
-                      </a>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            {/* Privacy & Safety */}
-            <section className="bg-[#2a2a2a] rounded-lg border border-[#3a3a3a] p-6">
-              <h2 className="text-xl font-heading font-medium text-[#EDEDED] mb-4">
-                {t('sections.privacyAndSafety.title')}
-              </h2>
-              <p className="text-[#999999] mb-4">
-                {t('sections.privacyAndSafety.description')}
-              </p>
-              <ul className="space-y-2">
-                {(t.raw('sections.privacyAndSafety.points') as string[]).map((point, index) => (
-                  <li key={index} className="text-[#999999] flex items-start">
-                    <span className="text-brand-green-400 mr-2">•</span>
-                    {point}
-                  </li>
-                ))}
-              </ul>
-            </section>
-
-            {/* Important Reminder */}
-            <section className="bg-red-900/20 border border-red-500/30 rounded-lg p-6">
-              <h2 className="text-xl font-heading font-medium text-red-400 mb-4">
-                {t('reminder.title')}
-              </h2>
-              <p className="text-[#EDEDED] leading-relaxed">
-                {t('reminder.text')}
-              </p>
-            </section>
-          </div>
-        </div>
-      </main>
-
-      {/* Footer */}
-      <footer className="mt-16 border-t border-[#3a3a3a]">
-        <div className="container-safe py-8 px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col items-center gap-4">
-            <h2 className="text-xl font-heading font-semibold text-brand-green-400">
-              re-frame
-            </h2>
-            <nav aria-label="Footer navigation">
-              <ul className="flex gap-6 text-sm">
-                <li>
-                  <Link 
-                    href={`/${params.locale}/privacy`}
-                    className="text-[#999999] hover:text-brand-green-400 transition-colors"
-                  >
-                    {t('footer.privacy')}
-                  </Link>
-                </li>
-                <li>
-                  <Link 
-                    href={`/${params.locale}/support`}
-                    className="text-brand-green-400 font-medium"
-                  >
-                    {t('footer.support')}
-                  </Link>
-                </li>
-                <li>
-                  <Link 
-                    href={`/${params.locale}/about`}
-                    className="text-[#999999] hover:text-brand-green-400 transition-colors"
-                  >
-                    {t('footer.about')}
-                  </Link>
-                </li>
-              </ul>
-            </nav>
-            <p className="text-xs text-[#999999]">
-              © 2025 re-frame.social
-            </p>
-          </div>
-        </div>
-      </footer>
-    </div>
-  )
+  return <SupportClient locale={params.locale} translations={translations} />
 }
