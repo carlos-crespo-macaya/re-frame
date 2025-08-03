@@ -135,4 +135,14 @@ describe('Button', () => {
     expect(button.className).toContain('px-3'); // small size
     expect(button.className).toContain('bg-brand-green-600'); // primary variant
   });
+
+  it('button should have compact sizing for mobile with responsive scaling', () => {
+    const { container } = render(<Button size="medium">Select</Button>);
+    const button = container.querySelector('button');
+    // Should have mobile-first compact sizing that scales up on larger screens
+    expect(button).toHaveClass('px-4', 'py-2'); // Mobile: compact
+    expect(button).toHaveClass('text-sm'); // Mobile: smaller text
+    expect(button).toHaveClass('md:px-6', 'md:py-3'); // Desktop: larger
+    expect(button).toHaveClass('md:text-base'); // Desktop: larger text
+  });
 });
