@@ -32,15 +32,22 @@
     },
     "aboutAvpd": {
       "title": "Acerca del Trastorno de Personalidad por Evitación",
-      "description": "Aprende más sobre el TPA y opciones de tratamiento:",
+      "description": "Literatura objetiva útil",
       "resources": [
         {
-          "title": "NIMH - Trastornos de Personalidad",
-          "link": "nimh.nih.gov"
+          "name": "Cleveland Clinic",
+          "description": "Resumen en lenguaje sencillo, criterios diagnósticos y opciones de tratamiento",
+          "url": "https://my.clevelandclinic.org/health/diseases/9761-avoidant-personality-disorder"
         },
         {
-          "title": "Fundación Internacional de TOC",
-          "description": "Recursos de TPA y grupos de apoyo"
+          "name": "StatPearls / NCBI Bookshelf",
+          "description": "Profundidad clínica con criterios DSM y evidencia terapéutica",
+          "url": "https://www.ncbi.nlm.nih.gov/books/NBK559325/"
+        },
+        {
+          "name": "Psych Central",
+          "description": "Guía accesible sobre síntomas, impacto y expectativas de terapia",
+          "url": "https://psychcentral.com/disorders/avoidant-personality-disorder"
         }
       ]
     },

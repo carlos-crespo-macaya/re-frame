@@ -16,8 +16,8 @@ jest.mock('next-intl/server', () => ({
         'sections.technicalSupport.responseTime': 'We typically respond as soon as possible.',
         'sections.mentalHealthResources.title': 'Need to talk right now?',
         'sections.mentalHealthResources.description': 'If you\'re in crisis or need immediate support:',
-        'sections.aboutAvpd.title': 'Helpful objective literature',
-        'sections.aboutAvpd.description': 'Learn more about AvPD and treatment options:',
+        'sections.aboutAvpd.title': 'About Avoidant Personality Disorder',
+        'sections.aboutAvpd.description': 'Helpful objective literature',
         'sections.privacyAndSafety.title': 'Privacy & Safety',
         'sections.privacyAndSafety.description': 'Your privacy and safety are our top priorities:',
         'reminder.title': 'Important Reminder',
@@ -50,12 +50,19 @@ jest.mock('next-intl/server', () => ({
         ],
         'sections.aboutAvpd.resources': [
           {
-            title: 'NIMH - Personality Disorders',
-            link: 'nimh.nih.gov'
+            name: 'Cleveland Clinic',
+            description: 'Plain-language overview, diagnostic criteria, and treatment options',
+            url: 'https://my.clevelandclinic.org/health/diseases/9761-avoidant-personality-disorder'
           },
           {
-            title: 'International OCD Foundation',
-            description: 'AvPD resources and support groups'
+            name: 'StatPearls / NCBI Bookshelf',
+            description: 'Clinical depth with DSM criteria and therapeutic evidence',
+            url: 'https://www.ncbi.nlm.nih.gov/books/NBK559325/'
+          },
+          {
+            name: 'Psych Central',
+            description: 'Accessible guide to symptoms, impact, and therapy expectations',
+            url: 'https://psychcentral.com/disorders/avoidant-personality-disorder'
           }
         ],
         'sections.privacyAndSafety.points': [
@@ -84,5 +91,16 @@ describe('SupportPage - Crisis Resources', () => {
     
     const links = getAllByRole('link')
     expect(links.find(l => l.getAttribute('href') === 'https://findahelpline.com')).toBeDefined()
+  })
+})
+
+describe('SupportPage - AvPD Resources', () => {
+  test('AvPD section should display helpful objective literature', async () => {
+    const SupportPageComponent = await SupportPage({ params: { locale: 'en' } })
+    const { getByText } = render(SupportPageComponent)
+    
+    expect(getByText('About Avoidant Personality Disorder')).toBeInTheDocument()
+    expect(getByText('Helpful objective literature')).toBeInTheDocument()
+    expect(getByText('Cleveland Clinic')).toBeInTheDocument()
   })
 })
