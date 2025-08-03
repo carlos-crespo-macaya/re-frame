@@ -103,8 +103,11 @@ if ENVIRONMENT == "production":
     allowed_origins = [
         "https://re-frame.social",
         "https://www.re-frame.social",
-        "https://cbt-assistant-web-*.run.app",  # Cloud Run URLs
     ]
+    # Use regex pattern for Cloud Run URLs
+    cloud_run_origin_regex = (
+        r"https://re-frame-(frontend|backend)-[a-z0-9]+-[a-z0-9-]+\.run\.app"
+    )
 else:
     allowed_origins = [
         "http://localhost:3000",  # Frontend dev server
@@ -114,14 +117,20 @@ else:
 
 logger.info("cors_configured", environment=ENVIRONMENT, origins=allowed_origins)
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=allowed_origins,
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "OPTIONS", "HEAD", "DELETE"],
-    allow_headers=["*"],
-    expose_headers=["X-Session-Id", "X-Phase-Status"],
-)
+# Configure CORS middleware
+cors_config = {
+    "allow_origins": allowed_origins,
+    "allow_credentials": True,
+    "allow_methods": ["GET", "POST", "OPTIONS", "HEAD", "DELETE"],
+    "allow_headers": ["*"],
+    "expose_headers": ["X-Session-Id", "X-Phase-Status"],
+}
+
+# Add regex pattern for production Cloud Run URLs
+if ENVIRONMENT == "production":
+    cors_config["allow_origin_regex"] = cloud_run_origin_regex
+
+app.add_middleware(CORSMiddleware, **cors_config)
 
 # Include routers
 app.include_router(text_router)
