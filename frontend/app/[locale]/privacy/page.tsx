@@ -88,50 +88,6 @@ export default async function PrivacyPage({ params }: PrivacyPageProps) {
               </p>
             </section>
 
-            {/* Cookies */}
-            <section className="bg-[#2a2a2a] rounded-lg border border-[#3a3a3a] p-6">
-              <h2 className="text-xl font-heading font-medium text-[#EDEDED] mb-4">
-                {t('sections.cookies.title')}
-              </h2>
-              <p className="text-[#999999] mb-4">
-                {t('sections.cookies.description')}
-              </p>
-              <ul className="space-y-2 mb-4">
-                {(t.raw('sections.cookies.points') as string[]).map((point, index) => (
-                  <li key={index} className="text-[#999999] flex items-start">
-                    <span className="text-brand-green-400 mr-2">•</span>
-                    {point}
-                  </li>
-                ))}
-              </ul>
-              <p className="text-sm text-[#999999]">
-                {t('sections.cookies.control')}
-              </p>
-            </section>
-
-            {/* Third Party Services */}
-            <section className="bg-[#2a2a2a] rounded-lg border border-[#3a3a3a] p-6">
-              <h2 className="text-xl font-heading font-medium text-[#EDEDED] mb-4">
-                {t('sections.thirdPartyServices.title')}
-              </h2>
-              <p className="text-[#999999] mb-4">
-                {t('sections.thirdPartyServices.description')}
-              </p>
-              <div className="space-y-4">
-                {(t.raw('sections.thirdPartyServices.services') as any[]).map((service, index) => (
-                  <div key={index} className="border-l-2 border-brand-green-400 pl-4">
-                    <h3 className="font-medium text-[#EDEDED]">{service.name}</h3>
-                    <p className="text-sm text-[#999999]">
-                      <strong>Purpose:</strong> {service.purpose}
-                    </p>
-                    <p className="text-sm text-[#999999]">
-                      <strong>Data sharing:</strong> {service.dataSharing}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </section>
-
             {/* Data Retention */}
             <section className="bg-[#2a2a2a] rounded-lg border border-[#3a3a3a] p-6">
               <h2 className="text-xl font-heading font-medium text-[#EDEDED] mb-4">
