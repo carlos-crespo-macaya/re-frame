@@ -84,15 +84,22 @@ RUN addgroup -g 1001 -S nodejs
 RUN adduser -S nextjs -u 1001
 
 # Copy built application
-COPY --from=builder /app/package.json ./
-COPY --from=builder /app/pnpm-lock.yaml ./
+# Note: When using standalone mode, we don't need package.json or pnpm-lock.yaml
+# The standalone build is self-contained with its own node_modules
 COPY --from=builder /app/next.config.mjs ./
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 
-# Install only production dependencies
-RUN pnpm install --prod --frozen-lockfile
+# Verify standalone build integrity
+RUN node -e "const fs=require('fs'); \
+  if (!fs.existsSync('./node_modules')) { \
+    console.error('ERROR: node_modules missing – standalone build incomplete'); \
+    process.exit(1); \
+  } \
+  console.log('✓ Standalone build verified: node_modules present');"
+
+# No need to install dependencies - standalone build is self-contained
 
 # Switch to non-root user
 USER nextjs
