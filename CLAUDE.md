@@ -2,6 +2,18 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Project Context
+
+This is the **re-frame** monorepo - A transparent, AI-assisted cognitive behavioral therapy (CBT) tool designed for people with Avoidant Personality Disorder (AvPD) and social anxiety. It combines a Next.js 14 frontend with a FastAPI backend powered by Google's Agent Development Kit (ADK).
+
+### Key Features
+- **Multi-modal support**: Text-based interaction and optional voice conversations
+- **Real-time streaming**: Server-Sent Events (SSE) for responsive interactions
+- **Internationalization**: Support for multiple languages (currently English and Spanish)
+- **Feature flags**: Dynamic feature toggling with ConfigCat integration
+- **Safety-first**: Crisis detection at every user input
+- **Privacy-focused**: No audio storage, only transcriptions are kept
+
 ## Core Programming Principles
 
 ### The Essence of Code Quality
@@ -340,9 +352,11 @@ When resuming work, provide:
 
 ## Current Status
 
-- **Epic 0**: Monorepo migration in progress
-- **Frontend**: Fully functional, moved to frontend/ directory
-- **Backend**: To be merged via git subtree (issue #136)
+- **Monorepo**: Successfully migrated and operational
+- **Frontend**: Fully functional with i18n support and enhanced UI components
+- **Backend**: Feature flags integration with ConfigCat
+- **Deployment**: Automated CI/CD to Google Cloud Run
+- **Testing**: Comprehensive E2E tests in JavaScript (playwright-js/) and Python (tests/e2e/)
 
 ## Key Files
 
