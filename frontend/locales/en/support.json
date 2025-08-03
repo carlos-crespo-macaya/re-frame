@@ -32,15 +32,22 @@
     },
     "aboutAvpd": {
       "title": "About Avoidant Personality Disorder",
-      "description": "Learn more about AvPD and treatment options:",
+      "description": "Helpful objective literature",
       "resources": [
         {
-          "title": "NIMH - Personality Disorders",
-          "link": "nimh.nih.gov"
+          "name": "Cleveland Clinic",
+          "description": "Plain-language overview, diagnostic criteria, and treatment options",
+          "url": "https://my.clevelandclinic.org/health/diseases/9761-avoidant-personality-disorder"
         },
         {
-          "title": "International OCD Foundation",
-          "description": "AvPD resources and support groups"
+          "name": "StatPearls / NCBI Bookshelf",
+          "description": "Clinical depth with DSM criteria and therapeutic evidence",
+          "url": "https://www.ncbi.nlm.nih.gov/books/NBK559325/"
+        },
+        {
+          "name": "Psych Central",
+          "description": "Accessible guide to symptoms, impact, and therapy expectations",
+          "url": "https://psychcentral.com/disorders/avoidant-personality-disorder"
         }
       ]
     },
