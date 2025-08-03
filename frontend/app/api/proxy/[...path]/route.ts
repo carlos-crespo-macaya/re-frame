@@ -31,35 +31,53 @@ async function proxy(req: NextRequest, { params }: { params: { path: string[] } 
     const audience = `https://${backendHost}`;
     const client = await auth.getIdTokenClient(audience);
 
+    // Prepare request headers (remove problematic headers)
+    const requestHeaders = Object.fromEntries(req.headers.entries());
+    delete requestHeaders.host; // Remove to avoid conflicts
+    delete requestHeaders['content-length']; // Will be recalculated
+
     // Use the client's request method which automatically adds the Authorization header
     const response = await client.request({
       url: targetUrl,
       method: req.method as any,
-      headers: {
-        ...Object.fromEntries(req.headers),
-        // Remove host header to avoid conflicts
-        host: undefined,
-        // Remove content-length as it will be recalculated
-        'content-length': undefined,
-      },
+      headers: requestHeaders,
       data: ['GET', 'HEAD'].includes(req.method)
         ? undefined
         : await req.arrayBuffer(),
       responseType: 'stream',
     });
 
+    // Process response headers
+    const responseHeaders = response.headers as Record<string, string> | Headers;
+    const isHeadersObject = responseHeaders.constructor === Headers;
+
+    // Extract header entries properly
+    const headerEntries: [string, string][] = isHeadersObject
+      ? Array.from((responseHeaders as Headers).entries())
+      : Object.entries(responseHeaders as Record<string, string>);
+
+    // Build clean response headers
+    const cleanHeaders: Record<string, string> = {
+      'cache-control': 'no-store', // Always override cache control
+    };
+
+    // Add all headers except problematic ones
+    const excludedHeaders = ['host', 'content-encoding', 'transfer-encoding', 'cache-control'];
+    for (const [key, value] of headerEntries) {
+      if (!excludedHeaders.includes(key.toLowerCase())) {
+        cleanHeaders[key] = value;
+      }
+    }
+
+    // Ensure content-type is set
+    if (!cleanHeaders['content-type']) {
+      cleanHeaders['content-type'] = 'application/octet-stream';
+    }
+
     // Return the response with proper headers
-    return new NextResponse(response.data, {
+    return new NextResponse(response.data as BodyInit, {
       status: response.status,
-      headers: {
-        'content-type': response.headers['content-type'] || 'application/octet-stream',
-        'cache-control': 'no-store',
-        ...Object.fromEntries(
-          Object.entries(response.headers).filter(([key]) =>
-            !['host', 'content-encoding', 'transfer-encoding'].includes(key.toLowerCase())
-          )
-        ),
-      },
+      headers: cleanHeaders,
     });
   } catch (error: any) {
     console.error('Proxy error:', error);
