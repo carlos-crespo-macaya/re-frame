@@ -31,7 +31,7 @@ env:
   REGION: ${{ secrets.GCP_REGION }}                       # <─ now from secret
   BACKEND_SERVICE: ${{ secrets.GCP_BACKEND_SERVICE_NAME || 're-frame-backend' }}
   FRONTEND_SERVICE: ${{ secrets.GCP_FRONTEND_SERVICE_NAME || 're-frame-frontend' }}
-  REGISTRY: ${{ secrets.GCP_REGISTRY || format('{0}-docker.pkg.dev/{1}/re-frame', env.REGION, secrets.GCP_PROJECT_ID) }}
+  REGISTRY: ${{ secrets.GCP_REGISTRY || format('{0}-docker.pkg.dev/{1}/re-frame', secrets.GCP_REGION, secrets.GCP_PROJECT_ID) }}
   IMAGE_PREFIX: ${{ secrets.GCP_IMAGE_PREFIX || 're-frame' }}
   VPC_CONNECTOR: run-to-run-connector
   VPC_RANGE: 10.8.0.0/28      # /28 gives 16 IPs – plenty for two services

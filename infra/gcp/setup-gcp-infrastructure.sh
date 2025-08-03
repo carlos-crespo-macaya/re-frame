@@ -11,7 +11,7 @@ set -euo pipefail
 #
 # Usage:
 #   ./setup-gcp-infrastructure.sh
-#   
+#
 #   # Or with environment variables:
 #   GCP_PROJECT_ID=my-project GCP_REGION=us-central1 ./setup-gcp-infrastructure.sh
 
