@@ -1,0 +1,1074 @@
+[2m2025-08-03T05:25:08.622522Z[0m [[32m[1minfo     [0m] [1mapplication_started           [0m [[0m[1m[34msrc.main[0m][0m [36mapp_name[0m=[35m'CBT Reframing Assistant'[0m [36mfilename[0m=[35mmain.py[0m [36mfunc_name[0m=[35m<module>[0m [36mlineno[0m=[35m38[0m
+[2m2025-08-03T05:25:08.622718Z[0m [[32m[1minfo     [0m] [1mcors_configured               [0m [[0m[1m[34msrc.main[0m][0m [36menvironment[0m=[35mdevelopment[0m [36mfilename[0m=[35mmain.py[0m [36mfunc_name[0m=[35m<module>[0m [36mlineno[0m=[35m115[0m [36morigins[0m=[35m['http://localhost:3000', 'http://127.0.0.1:3000', 'http://frontend:3000'][0m
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "CBT Reframing Assistant API",
+    "description": "Cognitive Behavioral Therapy assistant powered by Google's ADK",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/events/{session_id}": {
+      "head": {
+        "tags": [
+          "text"
+        ],
+        "summary": "SSE endpoint HEAD",
+        "description": "SSE endpoint for agent to client communication",
+        "operationId": "headEventStream",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          },
+          {
+            "name": "language",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "en-US",
+              "title": "Language"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "text"
+        ],
+        "summary": "SSE endpoint",
+        "description": "SSE endpoint for agent to client communication",
+        "operationId": "getEventStream",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          },
+          {
+            "name": "language",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "en-US",
+              "title": "Language"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/send/{session_id}": {
+      "post": {
+        "tags": [
+          "text"
+        ],
+        "summary": "Send message",
+        "description": "HTTP endpoint for text message communication only.",
+        "operationId": "sendMessage",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MessageRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/session/{session_id}": {
+      "get": {
+        "tags": [
+          "text"
+        ],
+        "summary": "Get session info",
+        "description": "Get session information for debugging.",
+        "operationId": "getSessionInfo",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionInfo"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/sessions": {
+      "get": {
+        "tags": [
+          "text"
+        ],
+        "summary": "List all sessions",
+        "description": "List all active sessions.",
+        "operationId": "listSessions",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/pdf/{session_id}": {
+      "get": {
+        "tags": [
+          "text"
+        ],
+        "summary": "Download PDF",
+        "description": "Download PDF summary for a session - minimal implementation for local testing",
+        "operationId": "downloadPdf",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/language/detect": {
+      "post": {
+        "tags": [
+          "text"
+        ],
+        "summary": "Detect language",
+        "description": "Detect the language of the provided text - DEPRECATED: Always returns English.",
+        "operationId": "detectLanguage",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LanguageDetectionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LanguageDetectionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/session/{session_id}/sse": {
+      "delete": {
+        "tags": [
+          "text"
+        ],
+        "summary": "Close SSE connection",
+        "description": "Close an SSE connection gracefully by setting shutdown flag.",
+        "operationId": "closeSSEConnection",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/voice/sessions": {
+      "post": {
+        "tags": [
+          "voice"
+        ],
+        "summary": "Create Voice Session",
+        "description": "Create a new voice session with ADK streaming.",
+        "operationId": "create_voice_session_api_voice_sessions_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateVoiceSessionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VoiceSessionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/voice/sessions/{session_id}/audio": {
+      "post": {
+        "tags": [
+          "voice"
+        ],
+        "summary": "Send Audio Chunk",
+        "description": "Send audio chunk to active voice session.",
+        "operationId": "send_audio_chunk_api_voice_sessions__session_id__audio_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AudioChunkRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/voice/sessions/{session_id}/stream": {
+      "get": {
+        "tags": [
+          "voice"
+        ],
+        "summary": "Voice Stream",
+        "description": "SSE endpoint for voice responses.",
+        "operationId": "voice_stream_api_voice_sessions__session_id__stream_get",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/voice/sessions/{session_id}/control": {
+      "post": {
+        "tags": [
+          "voice"
+        ],
+        "summary": "Voice Control",
+        "description": "Send control commands to voice session.",
+        "operationId": "voice_control_api_voice_sessions__session_id__control_post",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VoiceControlRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/voice/sessions/{session_id}": {
+      "delete": {
+        "tags": [
+          "voice"
+        ],
+        "summary": "End Voice Session",
+        "description": "End a voice session.",
+        "operationId": "end_voice_session_api_voice_sessions__session_id__delete",
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "summary": "Root endpoint",
+        "description": "Serves the index.html or API info",
+        "operationId": "getRoot",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health check",
+        "description": "Health check endpoint for Cloud Run",
+        "operationId": "getHealthCheck",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthCheckResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/feature-flags/ui": {
+      "get": {
+        "summary": "Get UI feature flags",
+        "description": "Return the UI feature flags for gating interfaces.",
+        "operationId": "getUiFeatureFlags",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UIFeatureFlags"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/metrics": {
+      "get": {
+        "summary": "Performance metrics",
+        "description": "Get performance metrics.",
+        "operationId": "getMetrics",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AudioChunkRequest": {
+        "properties": {
+          "data": {
+            "type": "string",
+            "title": "Data"
+          },
+          "timestamp": {
+            "type": "integer",
+            "title": "Timestamp"
+          },
+          "sample_rate": {
+            "type": "integer",
+            "title": "Sample Rate",
+            "default": 48000
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "timestamp"
+        ],
+        "title": "AudioChunkRequest",
+        "description": "Audio chunk to be processed."
+      },
+      "CreateVoiceSessionRequest": {
+        "properties": {
+          "language": {
+            "type": "string",
+            "title": "Language",
+            "default": "en-US"
+          }
+        },
+        "type": "object",
+        "title": "CreateVoiceSessionRequest",
+        "description": "Request to create a new voice session."
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HealthCheckResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "healthy",
+              "unhealthy"
+            ],
+            "title": "Status",
+            "description": "Service health status"
+          },
+          "service": {
+            "type": "string",
+            "title": "Service",
+            "description": "Service name",
+            "default": "CBT Reframing Assistant API"
+          },
+          "timestamp": {
+            "type": "string",
+            "title": "Timestamp",
+            "description": "Current UTC timestamp"
+          },
+          "version": {
+            "type": "string",
+            "title": "Version",
+            "description": "API version",
+            "default": "1.0.0"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "timestamp"
+        ],
+        "title": "HealthCheckResponse",
+        "description": "Health check response model."
+      },
+      "LanguageDetectionRequest": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "title": "Text",
+            "description": "Text to detect language from"
+          }
+        },
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "title": "LanguageDetectionRequest",
+        "description": "Request model for language detection.",
+        "example": {
+          "text": "Hello, how are you today?"
+        }
+      },
+      "LanguageDetectionResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Status of language detection"
+          },
+          "language": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language",
+            "description": "Detected language code (e.g., 'en', 'es')"
+          },
+          "confidence": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence",
+            "description": "Confidence score (0-1)"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message",
+            "description": "Additional information or error message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "LanguageDetectionResponse",
+        "description": "Response model for language detection.",
+        "example": {
+          "confidence": 0.98,
+          "language": "en",
+          "status": "success"
+        }
+      },
+      "MessageRequest": {
+        "properties": {
+          "mime_type": {
+            "type": "string",
+            "title": "Mime Type",
+            "description": "MIME type of the message data"
+          },
+          "data": {
+            "type": "string",
+            "title": "Data",
+            "description": "Base64 encoded message data"
+          }
+        },
+        "type": "object",
+        "required": [
+          "mime_type",
+          "data"
+        ],
+        "title": "MessageRequest",
+        "description": "Request model for sending messages to the agent.",
+        "example": {
+          "data": "SGVsbG8gd29ybGQ=",
+          "mime_type": "text/plain"
+        }
+      },
+      "MessageResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Status of the message processing"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error",
+            "description": "Error message if processing failed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "MessageResponse",
+        "description": "Response model for message endpoints.",
+        "example": {
+          "status": "sent"
+        }
+      },
+      "SessionInfo": {
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "title": "Session Id",
+            "description": "Unique session identifier"
+          },
+          "user_id": {
+            "type": "string",
+            "title": "User Id",
+            "description": "User identifier"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At",
+            "description": "ISO format creation timestamp"
+          },
+          "last_activity": {
+            "type": "string",
+            "title": "Last Activity",
+            "description": "ISO format last activity timestamp"
+          },
+          "age_seconds": {
+            "type": "number",
+            "title": "Age Seconds",
+            "description": "Age of session in seconds"
+          },
+          "inactive_seconds": {
+            "type": "number",
+            "title": "Inactive Seconds",
+            "description": "Time since last activity in seconds"
+          },
+          "has_request_queue": {
+            "type": "boolean",
+            "title": "Has Request Queue",
+            "description": "Whether session has active request queue"
+          },
+          "metadata": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metadata",
+            "description": "Optional session metadata"
+          }
+        },
+        "type": "object",
+        "required": [
+          "session_id",
+          "user_id",
+          "created_at",
+          "last_activity",
+          "age_seconds",
+          "inactive_seconds",
+          "has_request_queue"
+        ],
+        "title": "SessionInfo",
+        "description": "Information about a single session."
+      },
+      "SessionListResponse": {
+        "properties": {
+          "total_sessions": {
+            "type": "integer",
+            "title": "Total Sessions",
+            "description": "Total number of active sessions"
+          },
+          "sessions": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Sessions",
+            "description": "List of session summaries"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_sessions",
+          "sessions"
+        ],
+        "title": "SessionListResponse",
+        "description": "Response model for listing all sessions.",
+        "example": {
+          "sessions": [
+            {
+              "age_seconds": 120.5,
+              "inactive_seconds": 10.2,
+              "session_id": "abc123"
+            }
+          ],
+          "total_sessions": 2
+        }
+      },
+      "UIFeatureFlags": {
+        "properties": {
+          "chat_mode_enabled": {
+            "type": "boolean",
+            "title": "Chat Mode Enabled"
+          },
+          "voice_mode_enabled": {
+            "type": "boolean",
+            "title": "Voice Mode Enabled"
+          },
+          "notepad_mode_enabled": {
+            "type": "boolean",
+            "title": "Notepad Mode Enabled"
+          }
+        },
+        "type": "object",
+        "required": [
+          "chat_mode_enabled",
+          "voice_mode_enabled",
+          "notepad_mode_enabled"
+        ],
+        "title": "UIFeatureFlags"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "VoiceControlRequest": {
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "end_turn",
+              "cancel",
+              "end_session"
+            ],
+            "title": "Action"
+          }
+        },
+        "type": "object",
+        "required": [
+          "action"
+        ],
+        "title": "VoiceControlRequest",
+        "description": "Control commands for voice session."
+      },
+      "VoiceSessionResponse": {
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "title": "Session Id"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "created",
+              "active",
+              "ended"
+            ],
+            "title": "Status"
+          },
+          "language": {
+            "type": "string",
+            "title": "Language"
+          }
+        },
+        "type": "object",
+        "required": [
+          "session_id",
+          "status",
+          "language"
+        ],
+        "title": "VoiceSessionResponse",
+        "description": "Response after creating a voice session."
+      }
+    }
+  }
+}
