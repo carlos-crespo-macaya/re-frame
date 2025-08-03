@@ -176,7 +176,7 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:${{ needs.gate.outputs.head_sha }}
             ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:${{ github.ref_name }}
           build-args: |
-            NEXT_PUBLIC_API_URL=${{ matrix.service == 'frontend' && format('https://{0}-{1}.{2}.run.app', env.BACKEND_SERVICE, env.PROJECT_ID, env.REGION) || '' }}
+            NEXT_PUBLIC_API_URL=${{ matrix.service == 'frontend' && 'https://re-frame-backend-yeetrlkwzq-ew.a.run.app' || '' }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
