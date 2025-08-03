@@ -250,7 +250,7 @@ jobs:
             --memory 512Mi \
             --min-instances 0 \
             --max-instances 10 \
-            --set-env-vars "NODE_ENV=production,NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }},API_URL=${{ secrets.NEXT_PUBLIC_API_URL }},GCP_PROJECT_ID=${{ env.PROJECT_ID }},GCP_REGION=${{ env.REGION }}"
+            --set-env-vars "NODE_ENV=production,NEXT_PUBLIC_API_URL=${{ steps.be.outputs.url }},API_URL=${{ steps.be.outputs.url }},GCP_PROJECT_ID=${{ env.PROJECT_ID }},GCP_REGION=${{ env.REGION }}"
 
       - name: Capture frontend URL
         id: fe
