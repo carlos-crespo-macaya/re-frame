@@ -21,7 +21,7 @@ export function LanguageSelector({ value, onChange, className = '' }: LanguageSe
         id="language-select"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full px-2 py-1 text-sm bg-[#2a2a2a] border border-[#3a3a3a] rounded-lg text-[#EDEDED] focus:outline-none focus:ring-2 focus:ring-brand-green-500 focus:border-transparent"
+        className="w-32 px-2 py-1 text-sm bg-[#2a2a2a] border border-[#3a3a3a] rounded-lg text-[#EDEDED] focus:outline-none focus:ring-2 focus:ring-brand-green-500 focus:border-transparent"
       >
         {languages.map((lang) => (
           <option key={lang.code} value={lang.code}>

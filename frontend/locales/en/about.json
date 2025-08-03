@@ -14,12 +14,8 @@
       "description": "full psychotherapy, medical advice, or a crisis service."
     },
     "creator": {
-      "title": "About the Creator",
-      "content": "Built with care by <a href='https://carlos-crespo.com/' target='_blank' rel='noopener noreferrer' class='text-green-600 hover:text-green-700 underline'>Carlos Crespo</a>, hoping to contribute a small grain of sand to a topic that's personally important."
-    },
-    "whyOpen": {
-      "label": "Why open source:",
-      "description": "transparency builds trust; anyone can inspect or improve the code."
+      "title": "About me",
+      "content": "I'm <a href='https://carlos-crespo.com/' target='_blank' rel='noopener noreferrer' class='text-brand-green-400 hover:text-brand-green-300 underline'>Carlos</a>, this page aims to create, collect and share resources that could help people like me on their journey."
     },
     "thankYou": {
       "title": "Thank You",

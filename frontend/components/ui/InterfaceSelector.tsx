@@ -23,13 +23,15 @@ const translations = {
   en: {
     title: 'Choose Your Interface',
     subtitle: 'Select how you\'d like to interact with re-frame',
+    buttonStart: 'Start',
+    buttonCurrent: 'Current',
     interfaces: {
       chat: {
         title: 'Text Chat',
         description: 'Type and chat with re-frame in real-time'
       },
       voice: {
-        title: 'Voice Conversation',
+        title: 'Voice Chat',
         description: 'Speak naturally and get audio responses'
       },
       form: {
@@ -41,13 +43,15 @@ const translations = {
   es: {
     title: 'Elige Tu Interfaz',
     subtitle: 'Selecciona cómo te gustaría interactuar con re-frame',
+    buttonStart: 'Iniciar',
+    buttonCurrent: 'Actual',
     interfaces: {
       chat: {
         title: 'Chat de Texto',
         description: 'Escribe y chatea con re-frame en tiempo real'
       },
       voice: {
-        title: 'Conversación por Voz',
+        title: 'Chat de Voz',
         description: 'Habla naturalmente y recibe respuestas de audio'
       },
       form: {
@@ -86,7 +90,7 @@ export function InterfaceSelector({ locale, currentInterface, className = '' }: 
       key: 'voice',
       title: t.interfaces.voice.title,
       description: t.interfaces.voice.description,
-      icon: '🎤',
+      icon: '🗣️',
       gradient: 'from-purple-500/20 to-pink-500/20'
     },
     {
@@ -158,10 +162,10 @@ export function InterfaceSelector({ locale, currentInterface, className = '' }: 
                 </p>
                 <Button
                   variant={currentInterface === interface_.key ? 'primary' : 'secondary'}
-                  size="medium"
-                  className="w-full group-hover:bg-brand-green-600 group-hover:text-white transition-colors"
+                  size="small"
+                  className="group-hover:bg-brand-green-600 group-hover:text-white transition-colors"
                 >
-                  {currentInterface === interface_.key ? 'Current' : 'Select'}
+                  {currentInterface === interface_.key ? t.buttonCurrent : t.buttonStart}
                 </Button>
               </div>
             </div>

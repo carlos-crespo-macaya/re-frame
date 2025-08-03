@@ -80,22 +80,6 @@ export default async function LearnCBTPage({ params }: LearnCBTPageProps) {
               </p>
             </section>
 
-            {/* Further Reading */}
-            <section className="bg-[#2a2a2a] rounded-lg border border-[#3a3a3a] p-6">
-              <h2 className="text-xl font-heading font-medium text-[#EDEDED] mb-4">
-                {t('furtherReading.title')}
-              </h2>
-              <div className="space-y-4">
-                {(t.raw('furtherReading.resources') as any[]).map((resource, index) => (
-                  <div REDACTED pl-4">
-                    <h3 className="font-medium text-[#EDEDED]">{resource.title}</h3>
-                    <p className="text-sm text-[#999999]">{resource.source}</p>
-                    <p className="text-sm text-brand-green-400">{resource.link}</p>
-                  </div>
-                ))}
-              </div>
-            </section>
-
             {/* Reminder */}
             <section className="bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-6">
               <p className="text-[#EDEDED]">

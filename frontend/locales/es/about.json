@@ -14,12 +14,8 @@
       "description": "psicoterapia completa, consejo médico ni servicio de crisis."
     },
     "creator": {
-      "title": "Sobre el Creador",
-      "content": "Creado con cariño por <a href='https://carlos-crespo.com/' target='_blank' rel='noopener noreferrer' class='text-green-600 hover:text-green-700 underline'>Carlos Crespo</a>, esperando aportar un pequeño grano de arena en un tema que me es personalmente importante."
-    },
-    "whyOpen": {
-      "label": "Por qué código abierto:",
-      "description": "la transparencia genera confianza; cualquiera puede revisar o mejorar el código."
+      "title": "Sobre mí",
+      "content": "Soy <a href='https://carlos-crespo.com/' target='_blank' rel='noopener noreferrer' class='text-brand-green-400 hover:text-brand-green-300 underline'>Carlos</a>, esta página tiene como fin crear, recopilar y compartir recursos que pudieran ayudar a personas como yo en su camino."
     },
     "thankYou": {
       "title": "Gracias",
