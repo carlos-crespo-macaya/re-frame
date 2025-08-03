@@ -6,6 +6,13 @@
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 255, 255, 255;
   --background-end-rgb: 255, 255, 255;
+
+  /* Brand mint accent colors */
+  --clr-accent: #9BF7EB;
+  --clr-accent-hover: #7EEBD9;
+  --clr-accent-pressed: #65D9C6;
+  --clr-accent-ring: rgba(155, 247, 235, 0.35);
+  --clr-accent-text: #00373d;
 }
 
 @media (prefers-color-scheme: dark) {

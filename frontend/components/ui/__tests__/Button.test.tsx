@@ -12,30 +12,30 @@ describe('Button', () => {
   it('handles click events', async () => {
     const handleClick = jest.fn();
     render(<Button onClick={handleClick}>Click me</Button>);
-    
+
     const button = screen.getByRole('button', { name: 'Click me' });
     await userEvent.click(button);
-    
+
     expect(handleClick).toHaveBeenCalledTimes(1);
   });
 
   it('can be disabled', () => {
     const handleClick = jest.fn();
     render(<Button disabled onClick={handleClick}>Disabled</Button>);
-    
+
     const button = screen.getByRole('button', { name: 'Disabled' });
     expect(button).toBeDisabled();
-    
+
     fireEvent.click(button);
     expect(handleClick).not.toHaveBeenCalled();
   });
 
   it('renders different variants', () => {
     const { rerender } = render(<Button variant="primary">Primary</Button>);
-    expect(screen.getByRole('button')).toHaveClass('bg-brand-green-600');
+    expect(screen.getByRole('button')).toHaveClass('bg-[#9BF7EB]');
 
     rerender(<Button variant="secondary">Secondary</Button>);
-    expect(screen.getByRole('button')).toHaveClass('bg-[#3a3a3a]');
+    expect(screen.getByRole('button')).toHaveClass('bg-transparent');
 
     rerender(<Button variant="outline">Outline</Button>);
     expect(screen.getByRole('button')).toHaveClass('bg-transparent');
@@ -50,10 +50,10 @@ describe('Button', () => {
   it('renders different sizes', () => {
     const { rerender } = render(<Button size="small">Small</Button>);
     expect(screen.getByRole('button')).toHaveClass('px-3');
-    
+
     rerender(<Button size="medium">Medium</Button>);
     expect(screen.getByRole('button')).toHaveClass('px-4');
-    
+
     rerender(<Button size="large">Large</Button>);
     expect(screen.getByRole('button')).toHaveClass('px-6');
   });
@@ -66,7 +66,7 @@ describe('Button', () => {
   it('shows loading state', () => {
     render(<Button loading>Loading</Button>);
     const button = screen.getByRole('button');
-    
+
     expect(button).toHaveAttribute('aria-busy', 'true');
     expect(button).toBeDisabled();
     expect(screen.getByTestId('button-spinner')).toBeInTheDocument();
@@ -75,23 +75,23 @@ describe('Button', () => {
   it('renders as a link when href is provided', () => {
     render(<Button href="https://example.com">Link Button</Button>);
     const link = screen.getByRole('link', { name: 'Link Button' });
-    
+
     expect(link).toHaveAttribute('href', 'https://example.com');
   });
 
   it('supports keyboard navigation', async () => {
     const handleClick = jest.fn();
     render(<Button onClick={handleClick}>Keyboard Test</Button>);
-    
+
     const button = screen.getByRole('button');
     button.focus();
-    
+
     expect(button).toHaveFocus();
-    
+
     // Buttons handle Enter and Space naturally through click events
     fireEvent.click(button);
     expect(handleClick).toHaveBeenCalledTimes(1);
-    
+
     await userEvent.keyboard('{Enter}');
     expect(handleClick).toHaveBeenCalledTimes(2);
   });
@@ -104,7 +104,7 @@ describe('Button', () => {
   it('forwards ref correctly', () => {
     const ref = React.createRef<HTMLButtonElement>();
     render(<Button ref={ref}>Ref Test</Button>);
-    
+
     expect(ref.current).toBeInstanceOf(HTMLButtonElement);
     expect(ref.current?.textContent).toBe('Ref Test');
   });
@@ -115,7 +115,7 @@ describe('Button', () => {
         ⚙️
       </Button>
     );
-    
+
     const button = screen.getByRole('button', { name: 'Settings' });
     expect(button).toHaveClass('p-2');
   });
@@ -129,11 +129,11 @@ describe('Button', () => {
         Responsive
       </Button>
     );
-    
+
     const button = screen.getByRole('button');
     // Check that base classes are applied
     expect(button.className).toContain('px-3'); // small size
-    expect(button.className).toContain('bg-brand-green-600'); // primary variant
+    expect(button.className).toContain('bg-[#9BF7EB]'); // primary variant
   });
 
   it('button should have compact sizing for mobile with responsive scaling', () => {
