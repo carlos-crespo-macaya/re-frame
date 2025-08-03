@@ -13,13 +13,14 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from src.models import HealthCheckResponse
+from src.models.api import HealthCheckResponse, UIFeatureFlags
 from src.text.router import router as text_router
+from src.utils.feature_flags.service import create_feature_flag_service
 from src.utils.logging import get_logger, setup_logging
 from src.utils.performance_monitor import get_performance_monitor
 from src.utils.session_manager import session_manager
@@ -50,13 +51,25 @@ async def lifespan(app: FastAPI):
     await voice_session_manager.start()
     logger.info("voice_session_manager_started")
 
+    # Initialize feature flags service
+    logger.info("initializing_feature_flags_service")
+    app.state.feature_flags_service = create_feature_flag_service()
+    logger.info("feature_flags_service_initialized")
+
     # Start performance monitoring task
     performance_monitor = get_performance_monitor()
     monitor_task = asyncio.create_task(performance_monitor.log_periodic_summary())
     app.state.monitor_task = monitor_task
     logger.info("performance_monitoring_started")
 
-    yield
+    try:
+        yield
+    finally:
+        # Shutdown feature flags service
+        if hasattr(app.state, "feature_flags_service"):
+            logger.info("shutting_down_feature_flags_service")
+            app.state.feature_flags_service.close()
+            logger.info("feature_flags_service_shutdown")
 
     # Shutdown
     logger.info("stopping_performance_monitor")
@@ -143,6 +156,19 @@ async def health_check() -> HealthCheckResponse:
         version="1.0.0",
         timestamp=datetime.now(UTC).isoformat(),
     )
+
+
+@app.get(
+    "/feature-flags/ui",
+    response_model=UIFeatureFlags,
+    summary="Get UI feature flags",
+    operation_id="getUiFeatureFlags",
+)
+async def get_ui_feature_flags(request: Request) -> UIFeatureFlags:
+    """Return the UI feature flags for gating interfaces."""
+    service = request.app.state.feature_flags_service
+    flags = service.get_ui_flags()
+    return UIFeatureFlags(**flags.to_dict())
 
 
 @app.get(

@@ -2,7 +2,7 @@
 
 import pytest
 
-from src.models import SessionInfo as SessionModel
+from src.models.api import SessionInfo as SessionModel
 from src.utils.session_manager import SessionManager
 from tests.fixtures.language_fixtures import SUPPORTED_LANGUAGES
 
@@ -134,4 +134,4 @@ class TestSessionLanguageManagement:
             },
         )
 
-        assert session_info.metadata["language"] == "ja-JP"
+        assert session_info.metadata["language"] == "ja-JP"  # type: ignore

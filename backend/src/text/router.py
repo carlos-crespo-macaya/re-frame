@@ -13,7 +13,7 @@ from google.adk.runners import InMemoryRunner
 from google.genai.types import Content, Part, SpeechConfig
 
 from src.agents.cbt_assistant import create_cbt_assistant
-from src.models import (
+from src.models.api import (
     LanguageDetectionRequest,
     LanguageDetectionResponse,
     MessageRequest,
