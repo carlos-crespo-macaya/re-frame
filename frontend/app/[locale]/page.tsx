@@ -47,7 +47,7 @@ const translations = {
       privacy: 'Privacy',
       support: 'Support',
       about: 'About',
-      copyright: '© 2024 re-frame.social',
+      copyright: '© 2025 re-frame.social',
     },
   },
   es: {
@@ -90,7 +90,7 @@ const translations = {
       privacy: 'Privacidad',
       support: 'Soporte',
       about: 'Acerca de',
-      copyright: '© 2024 re-frame.social',
+      copyright: '© 2025 re-frame.social',
     },
   },
 }

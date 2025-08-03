@@ -7,7 +7,7 @@ jest.mock('next-intl/server', () => ({
     const mockT = (key: string) => {
       const translations: Record<string, any> = {
         'title': 'Privacy Policy',
-        'lastUpdated': 'Last updated: January 2024',
+        'lastUpdated': 'Last updated: August 2025',
         'introduction': 'Your privacy is important to us. This policy explains how we handle your information when you use re-frame.',
         'navigation.back': '← Return to re-frame',
         'sections.dataCollection.title': 'Data Collection',
@@ -110,5 +110,25 @@ describe('PrivacyPage - Content Updates (C2)', () => {
     
     // Should NOT mention sessions are temporary and deleted after completion
     expect(queryByText(/Sessions are temporary and deleted after completion/)).not.toBeInTheDocument()
+  })
+})
+
+describe('PrivacyPage - Date Updates (C3)', () => {
+  test('dates should be updated to 2025', async () => {
+    const PrivacyPageComponent = await PrivacyPage({ params: { locale: 'en' } })
+    const { getByText, queryByText, getAllByText } = render(PrivacyPageComponent)
+    
+    // Should have "August 2025" instead of "January 2024"
+    expect(getByText(/August 2025/)).toBeInTheDocument()
+    
+    // Should have 2025 in multiple places (appears in multiple elements)
+    const elements2025 = getAllByText(/2025/)
+    expect(elements2025.length).toBeGreaterThan(0)
+    
+    // Should NOT have "January 2024"
+    expect(queryByText(/January 2024/)).not.toBeInTheDocument()
+    
+    // Should NOT have 2024 (except possibly in URLs or version numbers)
+    expect(queryByText(/2024[^0-9]/)).not.toBeInTheDocument()
   })
 })

@@ -156,7 +156,7 @@ export default async function AboutPage({ params }: AboutPageProps) {
               </ul>
             </nav>
             <p className="text-xs text-[#999999]">
-              © 2024 re-frame.social
+              © 2025 re-frame.social
             </p>
           </div>
         </div>
