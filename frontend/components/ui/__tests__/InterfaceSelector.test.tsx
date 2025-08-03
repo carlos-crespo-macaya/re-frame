@@ -47,7 +47,7 @@ describe('InterfaceSelector', () => {
     // Wait for feature flags to load and interfaces to appear
     await waitFor(() => {
       expect(screen.getByText('Text Chat')).toBeInTheDocument()
-      expect(screen.getByText('Voice Conversation')).toBeInTheDocument()
+      expect(screen.getByText('Voice Chat')).toBeInTheDocument()
       expect(screen.getByText('Structured Form')).toBeInTheDocument()
     })
   })
@@ -60,7 +60,7 @@ describe('InterfaceSelector', () => {
     // Wait for feature flags to load and interfaces to appear
     await waitFor(() => {
       expect(screen.getByText('Chat de Texto')).toBeInTheDocument()
-      expect(screen.getByText('Conversación por Voz')).toBeInTheDocument()
+      expect(screen.getByText('Chat de Voz')).toBeInTheDocument()
       expect(screen.getByText('Formulario Estructurado')).toBeInTheDocument()
     })
   })
@@ -87,10 +87,10 @@ describe('InterfaceSelector', () => {
 
     // Wait for feature flags to load and interfaces to appear
     await waitFor(() => {
-      expect(screen.getByText('Voice Conversation')).toBeInTheDocument()
+      expect(screen.getByText('Voice Chat')).toBeInTheDocument()
     })
 
-    const voiceInterface = screen.getByText('Voice Conversation').closest('div')
+    const voiceInterface = screen.getByText('Voice Chat').closest('div')
     fireEvent.click(voiceInterface!)
 
     expect(mockPush).toHaveBeenCalledWith('/en/voice')
@@ -115,25 +115,25 @@ describe('InterfaceSelector', () => {
 
     // Wait for feature flags to load and interfaces to appear
     await waitFor(() => {
-      expect(screen.getByText('Voice Conversation')).toBeInTheDocument()
+      expect(screen.getByText('Voice Chat')).toBeInTheDocument()
     })
 
     // Find the voice interface card and check if it has "Current" button
-    const voiceCard = screen.getByText('Voice Conversation').closest('div')?.closest('div')?.closest('div')
+    const voiceCard = screen.getByText('Voice Chat').closest('div')?.closest('div')?.closest('div')
     expect(voiceCard?.querySelector('button')).toHaveTextContent('Current')
   })
 
-  it('shows "Select" button for inactive interfaces', async () => {
+  it('shows "Start" button for inactive interfaces', async () => {
     render(<InterfaceSelector locale="en" currentInterface="chat" />)
 
     // Wait for feature flags to load and interfaces to appear
     await waitFor(() => {
-      expect(screen.getByText('Voice Conversation')).toBeInTheDocument()
+      expect(screen.getByText('Voice Chat')).toBeInTheDocument()
     })
 
-    // Find the voice interface card and check if it has "Select" button
-    const voiceCard = screen.getByText('Voice Conversation').closest('div')?.closest('div')?.closest('div')
-    expect(voiceCard?.querySelector('button')).toHaveTextContent('Select')
+    // Find the voice interface card and check if it has "Start" button
+    const voiceCard = screen.getByText('Voice Chat').closest('div')?.closest('div')?.closest('div')
+    expect(voiceCard?.querySelector('button')).toHaveTextContent('Start')
   })
 
   it('applies custom className when provided', async () => {

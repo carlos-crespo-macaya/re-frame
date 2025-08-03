@@ -82,18 +82,8 @@ export default async function AboutPage({ params }: AboutPageProps) {
                 </h3>
                 <p 
                   className="text-[#999999] leading-relaxed"
-                  dangerouslySetInnerHTML={{ __html: t('details.creator.content') }}
+                  dangerouslySetInnerHTML={{ __html: t.raw('details.creator.content') as string }}
                 />
-              </section>
-
-              {/* Why open source */}
-              <section className="bg-[#2a2a2a] rounded-lg border border-[#3a3a3a] p-6">
-                <h3 className="text-lg font-heading font-medium text-[#EDEDED] mb-3">
-                  {t('details.whyOpen.label')}
-                </h3>
-                <p className="text-[#999999] leading-relaxed">
-                  {t('details.whyOpen.description')}
-                </p>
               </section>
 
               {/* Thank You */}
