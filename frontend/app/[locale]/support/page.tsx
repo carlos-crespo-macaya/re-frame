@@ -76,11 +76,17 @@ export default async function SupportPage({ params }: SupportPageProps) {
               <div className="space-y-4">
                 {(t.raw('sections.mentalHealthResources.resources') as any[]).map((resource, index) => (
                   <div REDACTED pl-4">
-                    <h3 className="font-medium text-[#EDEDED] mb-1">{resource.title}</h3>
+                    <h3 className="font-medium text-[#EDEDED] mb-1">{resource.name}</h3>
                     <p className="text-[#999999] mb-1">{resource.description}</p>
-                    <p className="text-sm text-brand-green-400">{resource.availability}</p>
-                    {resource.link && (
-                      <p className="text-sm text-brand-green-400 mt-1">{resource.link}</p>
+                    {resource.url && (
+                      <a 
+                        href={resource.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-brand-green-400 hover:text-brand-green-300 transition-colors underline"
+                      >
+                        {resource.url}
+                      </a>
                     )}
                   </div>
                 ))}
