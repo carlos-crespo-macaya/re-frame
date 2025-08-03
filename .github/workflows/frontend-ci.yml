@@ -59,12 +59,29 @@ jobs:
           uv sync --all-extras
           # Export OpenAPI schema
           uv run python -c "from src.main import app; import json; print(json.dumps(app.openapi(), indent=2))" > ../frontend/openapi.json
+          # Verify the schema was generated
+          if [ ! -f "../frontend/openapi.json" ]; then
+            echo "Error: openapi.json was not generated"
+            exit 1
+          fi
+          echo "OpenAPI schema generated successfully ($(wc -l < ../frontend/openapi.json) lines)"
 
       - name: Generate TypeScript API client
         working-directory: frontend
         run: |
+          # Verify OpenAPI schema exists
+          if [ ! -f "openapi.json" ]; then
+            echo "Error: openapi.json not found"
+            exit 1
+          fi
           # Generate the API client from the schema
           pnpm run generate:api
+          # Verify the generated files exist
+          if [ ! -f "lib/api/generated/index.ts" ]; then
+            echo "Error: API client was not generated"
+            exit 1
+          fi
+          echo "TypeScript API client generated successfully"
 
       - name: Run ESLint
         working-directory: frontend
@@ -79,6 +96,25 @@ jobs:
         run: pnpm test:ci
         env:
           CI: true
+
+      - name: Verify generated files before build
+        working-directory: frontend
+        run: |
+          # Verify all required files exist before building
+          echo "Checking required files..."
+          if [ ! -f "openapi.json" ]; then
+            echo "Error: openapi.json missing"
+            exit 1
+          fi
+          if [ ! -f "lib/api/generated/index.ts" ]; then
+            echo "Error: Generated API client missing"
+            exit 1
+          fi
+          if [ ! -f "lib/api/generated/sdk.gen.ts" ]; then
+            echo "Error: Generated SDK missing"
+            exit 1
+          fi
+          echo "All required files present, proceeding with build..."
 
       - name: Build application
         working-directory: frontend
