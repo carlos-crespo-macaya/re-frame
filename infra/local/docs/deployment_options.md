@@ -156,7 +156,7 @@ gh workflow run deploy-cloudrun.yml \
   -f force=false
 
 # Via GitHub UI
-# Go to Actions ’ Deploy to Cloud Run ’ Run workflow
+# Go to Actions ï¿½ Deploy to Cloud Run ï¿½ Run workflow
 ```
 
 ### Deployment Process
@@ -363,10 +363,10 @@ REGION=${GCP_REGION:-"europe-west1"}
 GEMINI_API_KEY=${GEMINI_API_KEY:?"Set GEMINI_API_KEY"}
 CONFIGCAT_SDK_KEY=${CONFIGCAT_SDK_KEY:?"Set CONFIGCAT_SDK_KEY"}
 
-echo "=€ Starting deployment to Cloud Run..."
+echo "=ï¿½ Starting deployment to Cloud Run..."
 
 # Build and push images
-echo "=æ Building images..."
+echo "=ï¿½ Building images..."
 docker build -t $REGION-docker.pkg.dev/$PROJECT_ID/re-frame/backend:latest ./backend
 docker build -f ./frontend/Dockerfile.standalone \
   -t $REGION-docker.pkg.dev/$PROJECT_ID/re-frame/frontend:latest ./frontend
@@ -470,13 +470,13 @@ echo "Frontend URL: $(gcloud run services describe re-frame-frontend --region=$R
 
 **Local**:
 ```
-Browser ’ Frontend (3000) ’ Backend (8000)
+Browser ï¿½ Frontend (3000) ï¿½ Backend (8000)
          Direct HTTP calls, no auth
 ```
 
 **Cloud Run**:
 ```
-Browser ’ Frontend (Public) ’ Proxy ’ Backend (Internal)
+Browser ï¿½ Frontend (Public) ï¿½ Proxy ï¿½ Backend (Internal)
          HTTPS only        IAM Token    VPC-only access
 ```
 
@@ -619,7 +619,7 @@ Find templates in `/templates/`:
 
 ### Related Documentation
 
-- [Internal Access Proxy Spec](../../internal_acces.md)
+- [Internal Access Proxy Spec](../../internal_access.md)
 - [Architecture Overview](../../../docs/architecture/README.md)
 - [CI/CD Pipeline](../.github/workflows/README.md)
 - [Security Guidelines](../../../docs/security/README.md)
