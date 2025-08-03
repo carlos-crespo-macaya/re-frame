@@ -31,7 +31,7 @@ permissions:
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-  REGION: ${{ secrets.GCP_REGION }}
+  REGION: europe-west1
   BILLING_ACCOUNT_ID: ${{ secrets.GCP_BILLING_ACCOUNT_ID }}
   BACKEND_SERVICE: ${{ secrets.GCP_BACKEND_SERVICE_NAME || 're-frame-backend' }}
   FRONTEND_SERVICE: ${{ secrets.GCP_FRONTEND_SERVICE_NAME || 're-frame-frontend' }}

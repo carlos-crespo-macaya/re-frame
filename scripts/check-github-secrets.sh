@@ -10,13 +10,13 @@ REQUIRED_SECRETS=(
     "GCP_WIF_PROVIDER"
     "GCP_WIF_SERVICE_ACCOUNT"
     "GCP_PROJECT_ID"
-    "GCP_REGION"
     "GCP_BILLING_ACCOUNT_ID"
     "GEMINI_API_KEY"
 )
 
-# Optional secrets for IAP (Identity-Aware Proxy)
-OPTIONAL_IAP_SECRETS=(
+# Optional secrets for IAP (Identity-Aware Proxy) and other features
+OPTIONAL_SECRETS=(
+    "GCP_REGION"
     "GCP_REFRAME_IAP_CLIENT_ID"
     "GCP_REFRAME_IAP_CLIENT_SECRET"
     "AUTHORIZED_DOMAIN"
@@ -61,8 +61,8 @@ echo "=============="
 
 MISSING_SECRETS=()
 FOUND_SECRETS=()
-MISSING_IAP_SECRETS=()
-FOUND_IAP_SECRETS=()
+MISSING_OPTIONAL_SECRETS=()
+FOUND_OPTIONAL_SECRETS=()
 
 echo "Required Secrets:"
 echo "=================="
@@ -77,15 +77,22 @@ for SECRET in "${REQUIRED_SECRETS[@]}"; do
 done
 
 echo ""
-echo "Optional IAP Secrets:"
-echo "===================="
-for SECRET in "${OPTIONAL_IAP_SECRETS[@]}"; do
+echo "Optional Secrets:"
+echo "================="
+for SECRET in "${OPTIONAL_SECRETS[@]}"; do
     if echo "$EXISTING_SECRETS" | grep -q "^${SECRET}$"; then
         echo "✅ $SECRET (optional)"
-        FOUND_IAP_SECRETS+=("$SECRET")
+        FOUND_OPTIONAL_SECRETS+=("$SECRET")
     else
-        echo "⚠️  $SECRET (optional - for IAP protection)"
-        MISSING_IAP_SECRETS+=("$SECRET")
+        case $SECRET in
+            "GCP_REGION")
+                echo "⚠️  $SECRET (optional - hardcoded to europe-west1)"
+                ;;
+            *)
+                echo "⚠️  $SECRET (optional - for IAP protection)"
+                ;;
+        esac
+        MISSING_OPTIONAL_SECRETS+=("$SECRET")
     fi
 done
 
@@ -94,8 +101,8 @@ echo "Summary:"
 echo "========"
 echo "✅ Required secrets found: ${#FOUND_SECRETS[@]}/${#REQUIRED_SECRETS[@]}"
 echo "❌ Required secrets missing: ${#MISSING_SECRETS[@]}"
-echo "✅ Optional IAP secrets found: ${#FOUND_IAP_SECRETS[@]}/${#OPTIONAL_IAP_SECRETS[@]}"
-echo "⚠️  Optional IAP secrets missing: ${#MISSING_IAP_SECRETS[@]}"
+echo "✅ Optional secrets found: ${#FOUND_OPTIONAL_SECRETS[@]}/${#OPTIONAL_SECRETS[@]}"
+echo "⚠️  Optional secrets missing: ${#MISSING_OPTIONAL_SECRETS[@]}"
 
 # Show expected values for missing secrets
 if [ ${#MISSING_SECRETS[@]} -gt 0 ]; then
@@ -165,9 +172,10 @@ else
     echo ""
     echo "🎉 All required secrets are configured!"
     echo ""
-    if [ ${#MISSING_IAP_SECRETS[@]} -gt 0 ]; then
-        echo "ℹ️  Note: IAP secrets are missing but optional for basic deployment"
-        echo "   Add them later if you want Identity-Aware Proxy protection"
+    if [ ${#MISSING_OPTIONAL_SECRETS[@]} -gt 0 ]; then
+        echo "ℹ️  Note: Optional secrets are missing but not required for basic deployment"
+        echo "   - GCP_REGION is hardcoded to europe-west1"
+        echo "   - IAP secrets can be added later for Identity-Aware Proxy protection"
         echo ""
     fi
     echo "You're ready to deploy! Run:"
