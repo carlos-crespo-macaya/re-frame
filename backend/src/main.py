@@ -99,15 +99,17 @@ app = FastAPI(
 
 # Configure CORS based on environment
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
+
+# Use regex pattern for Cloud Run URLs
+cloud_run_origin_regex = (
+    r"https://re-frame-(frontend|backend)-[a-z0-9]+-[a-z0-9-]+\.run\.app"
+)
+
 if ENVIRONMENT == "production":
     allowed_origins = [
         "https://re-frame.social",
         "https://www.re-frame.social",
     ]
-    # Use regex pattern for Cloud Run URLs
-    cloud_run_origin_regex = (
-        r"https://re-frame-(frontend|backend)-[a-z0-9]+-[a-z0-9-]+\.run\.app"
-    )
 else:
     allowed_origins = [
         "http://localhost:3000",  # Frontend dev server
