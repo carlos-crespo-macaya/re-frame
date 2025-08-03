@@ -130,7 +130,7 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:${{ needs.gate.outputs.head_sha }}
             ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:${{ github.ref_name }}
           build-args: |
-            NEXT_PUBLIC_API_URL=${{ matrix.service == 'frontend' && format('http://{0}.{1}.internal', env.BACKEND_SERVICE, env.REGION) || '' }}
+            NEXT_PUBLIC_API_URL=${{ matrix.service == 'frontend' && format('https://{0}.{1}.internal', env.BACKEND_SERVICE, env.REGION) || '' }}
           cache-from: type=gha
           cache-to:   type=gha,mode=max
 
