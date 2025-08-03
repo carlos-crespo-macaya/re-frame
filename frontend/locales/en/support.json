@@ -10,23 +10,23 @@
       "responseTime": "We typically respond within 24-48 hours."
     },
     "mentalHealthResources": {
-      "title": "Mental Health Resources",
-      "description": "If you're in crisis or need professional support:",
+      "title": "Need to talk right now?",
+      "description": "If you're in crisis or need immediate support:",
       "resources": [
         {
-          "title": "Crisis Text Line",
-          "description": "Text HOME to 741741",
-          "availability": "24/7 crisis support"
+          "name": "Find a Helpline",
+          "description": "Crisis numbers and text lines in your country",
+          "url": "https://findahelpline.com"
         },
         {
-          "title": "National Suicide Prevention Lifeline",
-          "description": "Call 988",
-          "availability": "24/7 support"
+          "name": "Befrienders Worldwide",
+          "description": "Email or call volunteers in 90+ countries",
+          "url": "https://befrienders.org"
         },
         {
-          "title": "Psychology Today",
-          "description": "Find a therapist near you",
-          "link": "psychologytoday.com"
+          "name": "7 Cups",
+          "description": "Free, anonymous 24/7 chat with trained listeners",
+          "url": "https://7cups.com"
         }
       ]
     },
