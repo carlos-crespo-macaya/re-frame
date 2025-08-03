@@ -42,7 +42,7 @@ describe('InterfaceSelector', () => {
   it('renders all interface options for English locale', async () => {
     render(<InterfaceSelector locale="en" />)
 
-    expect(screen.getByText('Choose Your Interface')).toBeInTheDocument()
+    expect(screen.queryByText('Choose Your Interface')).not.toBeInTheDocument()
 
     // Wait for feature flags to load and interfaces to appear
     await waitFor(() => {
@@ -55,7 +55,7 @@ describe('InterfaceSelector', () => {
   it('renders all interface options for Spanish locale', async () => {
     render(<InterfaceSelector locale="es" />)
 
-    expect(screen.getByText('Elige Tu Interfaz')).toBeInTheDocument()
+    expect(screen.queryByText('Elige Tu Interfaz')).not.toBeInTheDocument()
 
     // Wait for feature flags to load and interfaces to appear
     await waitFor(() => {

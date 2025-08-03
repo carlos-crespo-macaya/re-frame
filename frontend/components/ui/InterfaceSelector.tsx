@@ -115,14 +115,6 @@ export function InterfaceSelector({ locale, currentInterface, className = '' }: 
   if (flags === null) {
     return (
       <div className={`w-full max-w-4xl mx-auto ${className}`}>
-        <div className="text-center mb-8">
-          <h2 className="text-2xl font-heading font-medium text-[#EDEDED] mb-3">
-            {t.title}
-          </h2>
-          <p className="text-[#999999]">
-            {t.subtitle}
-          </p>
-        </div>
         <div className="flex items-center justify-center py-10">
           <div className="h-8 w-8 rounded-full border-2 border-[#3a3a3a] border-t-white animate-spin" aria-label="Loading" />
         </div>
@@ -132,14 +124,6 @@ export function InterfaceSelector({ locale, currentInterface, className = '' }: 
 
   return (
     <div className={`w-full max-w-4xl mx-auto ${className}`}>
-      <div className="text-center mb-8">
-        <h2 className="text-2xl font-heading font-medium text-[#EDEDED] mb-3">
-          {t.title}
-        </h2>
-        <p className="text-[#999999]">
-          {t.subtitle}
-        </p>
-      </div>
 
       {/* Use a centered responsive grid. The container uses place-items-center to ensure
           each card is centered within its grid cell, and auto-fit with minmax gives
