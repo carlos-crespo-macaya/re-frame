@@ -54,7 +54,7 @@ export function FormClient({ locale }: { locale: string }) {
 
   // Initialize SSE client
   const sseClient = useSSEClient({
-    baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
+    baseUrl: '/api/proxy',
     autoConnect: false,
   })
 
