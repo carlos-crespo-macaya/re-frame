@@ -106,7 +106,7 @@ class TestRootEndpoint:
         data = response.json()
         assert data["message"] == "CBT Assistant API"
         assert data["docs"] == "/docs"
-        assert data["health"] == "/health"
+        assert data["health"] == "/api/health"
 
     @patch("pathlib.Path.exists")
     @patch("src.main.FileResponse")
