@@ -75,7 +75,7 @@ RUN echo "Generating TypeScript API client from OpenAPI schema..."; \
     if ! grep -q "getUiFeatureFlags" ./lib/api/generated/sdk.gen.ts; then \
       echo "Error: Generated API client missing required function 'getUiFeatureFlags'"; \
       echo "This indicates the OpenAPI schema is incomplete or outdated"; \
-      echo "Expected endpoint: /feature-flags/ui"; \
+      echo "Expected endpoint: /api/feature-flags/ui"; \
       exit 1; \
     fi; \
     \
