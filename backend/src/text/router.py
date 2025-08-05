@@ -33,7 +33,7 @@ from src.utils.session_manager import session_manager
 
 logger = get_logger(__name__)
 
-router = APIRouter(tags=["text"])
+router = APIRouter(prefix="/api", tags=["text"])
 
 # Rate limiter for language detection endpoint (100 requests per minute)
 language_limiter = RateLimiter(max_requests=100, window_seconds=60)
@@ -109,10 +109,10 @@ async def agent_to_client_sse(live_events):
 
 
 @router.get(
-    "/api/events/{session_id}", summary="SSE endpoint", operation_id="getEventStream"
+    "/events/{session_id}", summary="SSE endpoint", operation_id="getEventStream"
 )
 @router.head(
-    "/api/events/{session_id}",
+    "/events/{session_id}",
     summary="SSE endpoint HEAD",
     operation_id="headEventStream",
 )
@@ -399,7 +399,7 @@ async def sse_endpoint(
 
 
 @router.post(
-    "/api/send/{session_id}",
+    "/send/{session_id}",
     response_model=MessageResponse,
     summary="Send message",
     operation_id="sendMessage",
@@ -430,7 +430,7 @@ async def send_message_endpoint(
         if message.mime_type != "text/plain":
             raise HTTPException(
                 status_code=415,
-                detail="Only text/plain messages are supported. Use /api/voice endpoints for audio.",
+                detail="Only text/plain messages are supported. Use /voice endpoints for audio.",
             )
 
         # Skip empty messages
@@ -504,7 +504,7 @@ async def send_message_endpoint(
 
 
 @router.get(
-    "/api/session/{session_id}",
+    "/session/{session_id}",
     response_model=SessionInfo,
     summary="Get session info",
     operation_id="getSessionInfo",
@@ -533,7 +533,7 @@ async def get_session_info(session_id: str) -> SessionInfo:
 
 
 @router.get(
-    "/api/sessions",
+    "/sessions",
     response_model=SessionListResponse,
     summary="List all sessions",
     operation_id="listSessions",
@@ -554,7 +554,7 @@ async def list_sessions() -> SessionListResponse:
     )
 
 
-@router.get("/api/pdf/{session_id}", summary="Download PDF", operation_id="downloadPdf")
+@router.get("/pdf/{session_id}", summary="Download PDF", operation_id="downloadPdf")
 async def download_pdf(session_id: str):
     """Download PDF summary for a session - minimal implementation for local testing"""
     from datetime import datetime
@@ -592,7 +592,7 @@ Thank you for using the CBT Reframing Assistant!
 
 
 @router.post(
-    "/api/language/detect",
+    "/language/detect",
     response_model=LanguageDetectionResponse,
     summary="Detect language",
     operation_id="detectLanguage",
@@ -627,7 +627,7 @@ async def detect_language_endpoint(
 
 
 @router.delete(
-    "/api/session/{session_id}/sse",
+    "/session/{session_id}/sse",
     summary="Close SSE connection",
     operation_id="closeSSEConnection",
 )
