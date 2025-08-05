@@ -10,6 +10,7 @@ services:
       - "8000:8000"
     environment:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - CONFIGCAT_SDK_KEY=${CONFIGCAT_API_KEY}
       - ENVIRONMENT=production
       - LOG_LEVEL=info
       - PORT=8000
@@ -37,7 +38,9 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=8080
+      - SERVICE_NAME=re-frame-frontend
       - BACKEND_INTERNAL_HOST=http://backend:8000
+      - BACKEND_PUBLIC_URL=http://backend:8000
     depends_on:
       backend:
         condition: service_healthy
