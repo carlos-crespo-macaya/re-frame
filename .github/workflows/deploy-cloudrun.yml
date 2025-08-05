@@ -121,6 +121,17 @@ jobs:
 
       - run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
 
+      # Download OpenAPI schema from Backend CI workflow
+      - name: Download OpenAPI schema
+        if: matrix.service == 'frontend'
+        uses: dawidd6/action-download-artifact@v3
+        with:
+          workflow: backend-ci.yml
+          workflow_conclusion: success
+          name: openapi-schema
+          path: frontend/
+          commit: ${{ needs.gate.outputs.head_sha }}
+
       - uses: docker/build-push-action@v5
         with:
           context: ${{ matrix.context }}
@@ -230,7 +241,7 @@ jobs:
             --role   roles/run.invoker
 
 # --------------------------------------------------------------------------- #
-# 5. Summary
+# 6. Summary
 # --------------------------------------------------------------------------- #
   summary:
     needs: [deploy-backend, deploy-frontend]
