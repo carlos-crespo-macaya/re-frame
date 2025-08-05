@@ -9,21 +9,21 @@ import asyncio
 import os
 import warnings
 from contextlib import asynccontextmanager
-from datetime import UTC, datetime
 from pathlib import Path
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from src.models.api import HealthCheckResponse, UIFeatureFlags
 from src.text.router import router as text_router
 from src.utils.feature_flags.service import create_feature_flag_service
 from src.utils.logging import get_logger, setup_logging
+from src.utils.metrics_router import router as metrics_router
 from src.utils.performance_monitor import get_performance_monitor
 from src.utils.session_manager import session_manager
+from src.utils.status_router import router as status_router
 from src.voice.router import router as voice_router
 from src.voice.session_manager import voice_session_manager
 
@@ -143,6 +143,8 @@ else:
 # Include routers
 app.include_router(text_router)
 app.include_router(voice_router)
+app.include_router(metrics_router)
+app.include_router(status_router)
 
 STATIC_DIR = Path("static")
 # Only mount static files if the directory exists
@@ -156,47 +158,7 @@ async def root():
     index_path = Path(STATIC_DIR) / "index.html"
     if index_path.exists():
         return FileResponse(index_path)
-    return {"message": "CBT Assistant API", "docs": "/docs", "health": "/health"}
-
-
-@app.get(
-    "/health",
-    response_model=HealthCheckResponse,
-    summary="Health check",
-    operation_id="getHealthCheck",
-)
-async def health_check() -> HealthCheckResponse:
-    """Health check endpoint for Cloud Run"""
-    return HealthCheckResponse(
-        status="healthy",
-        service="CBT Reframing Assistant API",
-        version="1.0.0",
-        timestamp=datetime.now(UTC).isoformat(),
-    )
-
-
-@app.get(
-    "/feature-flags/ui",
-    response_model=UIFeatureFlags,
-    summary="Get UI feature flags",
-    operation_id="getUiFeatureFlags",
-)
-async def get_ui_feature_flags(request: Request) -> UIFeatureFlags:
-    """Return the UI feature flags for gating interfaces."""
-    service = request.app.state.feature_flags_service
-    flags = service.get_ui_flags()
-    return UIFeatureFlags(**flags.to_dict())
-
-
-@app.get(
-    "/api/metrics",
-    summary="Performance metrics",
-    operation_id="getMetrics",
-)
-async def get_metrics():
-    """Get performance metrics."""
-    performance_monitor = get_performance_monitor()
-    return performance_monitor.get_metrics()
+    return {"message": "CBT Assistant API", "docs": "/docs", "health": "/api/health"}
 
 
 # Main entry point

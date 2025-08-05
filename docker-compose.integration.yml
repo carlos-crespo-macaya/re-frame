@@ -10,7 +10,9 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=test
+      - SERVICE_NAME=re-frame-frontend-test
       - BACKEND_INTERNAL_HOST=http://backend-test:8000
+      - BACKEND_PUBLIC_URL=http://backend-test:8000
       # Voice modality configuration
       - NEXT_PUBLIC_VOICE_MODE_ENABLED=true
     volumes:
@@ -37,6 +39,7 @@ services:
       - VOICE_MODE_ENABLED=true
       - AUDIO_MAX_SIZE_MB=10
       - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - CONFIGCAT_SDK_KEY=${CONFIGCAT_API_KEY}
     volumes:
       - ./backend:/app
     healthcheck:

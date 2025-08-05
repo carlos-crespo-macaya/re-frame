@@ -81,3 +81,5 @@ frontend/lib/api/generated/
 .codex/
 
 coverage.xml
+
+infra/
