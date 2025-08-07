@@ -21,6 +21,10 @@ uv run poe format
 uv run poe lint
 uv run poe typecheck
 uv run poe test
+uv run poe export-openapi     # Export OpenAPI schema (NEW)
+
+# Start development server
+uv run python -m uvicorn src.main:app --reload  # Note: src.main:app, not app.main:app
 ```
 
 ### Voice Modality (Optional)
@@ -135,11 +139,18 @@ uv run poe format  # Auto-fixes formatting issues
 - **Session Management**: In-memory session state with cleanup tasks
 - **Feature Flags**: ConfigCat integration for dynamic feature toggling
 - **Performance Monitoring**: Built-in metrics and periodic reporting
+- **Lifespan Protocol**: Uses FastAPI lifespan for startup/shutdown (NEW)
+- **OpenAPI Generation**: Automatic schema export for frontend type safety (NEW)
 
-### API Routers
+### API Routers (UPDATED)
 - **Text Router** (`src/text/router.py`): SSE endpoints for text conversations
 - **Voice Router** (`src/voice/router.py`): Optional voice modality endpoints
-- **Health & Feature Flags**: System status and UI configuration endpoints
+- **Health Endpoint** (`/health`): Application health check
+- **Metrics Endpoint** (`/metrics`): Performance metrics and monitoring (NEW)
+- **Status Endpoint** (`/status`): Service status information (NEW)
+- **Feature Flags** (`/api/feature-flags`): Dynamic UI configuration
+- **API Documentation** (`/docs`): Auto-generated OpenAPI documentation
+- **OpenAPI Schema** (`/openapi.json`): Machine-readable API specification
 
 ### Agent Phases
 1. **GREETING**: Initial welcome and session setup
@@ -152,6 +163,24 @@ uv run poe format  # Auto-fixes formatting issues
 - **Internationalization**: Multi-language support with language detection
 - **Enhanced Logging**: Structured logging with performance metrics
 
+## Environment Variables (NEW)
+
+### Required Variables
+- `GEMINI_API_KEY`: Google AI services API key (not `GOOGLE_AI_API_KEY`)
+- `CONFIGCAT_SDK_KEY`: Feature flags SDK key
+
+### Optional Variables
+- `SERVICE_NAME`: Service identifier for logging (default: "re-frame-backend")
+- `GCP_PROJECT_ID`: Google Cloud project ID (for voice features)
+- `GCP_REGION`: Google Cloud region (for voice features)
+- `BACKEND_INTERNAL_HOST`: Internal service host for Cloud Run
+- `BACKEND_PUBLIC_URL`: Public backend URL for authentication
+
+### Cloud Run Deployment
+- **Internal Ingress**: Backend is not publicly accessible
+- **VPC Connector**: Service-to-service communication via `run-to-run-connector`
+- **OpenAPI Schema**: Generated in CI and used by frontend build
+
 ## Code Quality Standards
 
 All tools are configured in `pyproject.toml` with balanced rules:
@@ -162,6 +191,23 @@ All tools are configured in `pyproject.toml` with balanced rules:
 - **Pytest**: Testing with 80% coverage requirement
 
 Always run `uv run poe check` before committing changes.
+
+## OpenAPI Schema Generation (NEW)
+
+The backend automatically generates OpenAPI schema for frontend type safety:
+
+```bash
+# Generate OpenAPI schema manually
+uv run poe export-openapi
+
+# Or use Python directly
+uv run python -c "from src.main import app; import json; print(json.dumps(app.openapi(), indent=2))" > openapi.json
+```
+
+### CI/CD Integration
+- Schema is generated automatically in backend CI workflow
+- Uploaded as artifact for frontend build to consume
+- Ensures frontend/backend contract consistency
 
 ## Implementation Notes
 
