@@ -3,7 +3,9 @@
 import { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { LanguageSelector, InterfaceSelector } from '@/components/ui'
+import { AppLayout } from '@/components/layout/AppLayout'
+import { GlassCard } from '@/components/layout/GlassCard'
+import { InterfaceSelector } from '@/components/ui'
 
 // Translation dictionary
 const translations = {
@@ -16,7 +18,7 @@ const translations = {
       title: 'Explore a new perspective',
       description: "We'll use evidence-based therapeutic techniques to spot thinking patterns and suggest gentler perspectives.",
       learnMore: 'Learn about',
-      learnMoreLink: 'therapeutic frameworks in 2 minutes ↗',
+      learnMoreLink: 'The approach behind re-frame',
     },
     cta: {
       title: 'Ready to start?',
@@ -47,7 +49,7 @@ const translations = {
       privacy: 'Privacy',
       support: 'Support',
       about: 'About',
-      copyright: '© 2024 re-frame.social',
+      copyright: '© 2025 re-frame.social',
     },
   },
   es: {
@@ -59,7 +61,7 @@ const translations = {
       title: 'Explora una nueva perspectiva',
       description: 'Usaremos técnicas terapéuticas basadas en evidencia para identificar patrones de pensamiento y sugerir perspectivas más amables.',
       learnMore: 'Aprende sobre',
-      learnMoreLink: 'marcos terapéuticos en 2 minutos ↗',
+      learnMoreLink: 'El enfoque detrás de re-frame',
     },
     cta: {
       title: '¿Listo para comenzar?',
@@ -90,7 +92,7 @@ const translations = {
       privacy: 'Privacidad',
       support: 'Soporte',
       about: 'Acerca de',
-      copyright: '© 2024 re-frame.social',
+      copyright: '© 2025 re-frame.social',
     },
   },
 }
@@ -99,11 +101,10 @@ export default function LocalePage({ params }: { params: { locale: string } }) {
   const router = useRouter()
   const pathname = usePathname()
   const [selectedLanguage, setSelectedLanguage] = useState(params.locale === 'es' ? 'es-ES' : 'en-US')
-  
+
   const t = translations[params.locale as keyof typeof translations] || translations.en
 
   useEffect(() => {
-    // Update language when locale changes
     setSelectedLanguage(params.locale === 'es' ? 'es-ES' : 'en-US')
   }, [params.locale])
 
@@ -114,179 +115,148 @@ export default function LocalePage({ params }: { params: { locale: string } }) {
     router.push(newPath)
   }
 
-
   return (
-    <>
-      {/* Header */}
-      <header className="relative bg-gradient-to-b from-[#1D1F1E] to-transparent pt-4">
-        <div className="container-safe py-8 px-4 sm:px-6 lg:px-8">
-          <div className="flex items-start justify-between">
-            <div>
-              <h1 className="text-2xl font-heading font-semibold text-brand-green-400">
-                {t.header.title}
-              </h1>
-              <p className="text-sm text-[#999999] mt-1">
-                {t.header.subtitle}
-              </p>
-            </div>
-            <div className="w-48">
-              <LanguageSelector 
-                value={selectedLanguage}
-                onChange={handleLanguageChange}
-              />
-            </div>
+    <AppLayout
+      locale={params.locale}
+      showBackButton={false}
+      currentLanguage={params.locale === 'es' ? 'ES' : 'EN'}
+      onLanguageChange={(newLocale) => {
+        const newPath = pathname.replace(`/${params.locale}`, `/${newLocale}`)
+        router.push(newPath)
+      }}
+    >
+      <div className="max-w-[1312px] mx-auto w-full">
+        {/* Welcome section */}
+        <section className="text-center mb-12 animate-fade-in">
+          <h2 className="text-3xl md:text-4xl font-heading font-bold text-white mb-6">
+            {t.hero.title}
+          </h2>
+          <p className="text-lg text-white/70 mb-4 leading-relaxed max-w-3xl mx-auto">
+            {t.hero.description}
+          </p>
+          <p className="text-white/45 max-w-2xl mx-auto">
+            <span className="text-sm">{t.hero.learnMore} <Link href={`/${params.locale}/learn-cbt`} className="text-[#aefcf5] underline hover:text-white transition-colors">{t.hero.learnMoreLink}</Link></span>
+          </p>
+        </section>
+
+        {/* Interface selection - Enhanced with proper hierarchy */}
+        <GlassCard className="max-w-5xl mx-auto mb-12" padding="xl">
+          <div className="text-center mb-8">
+            <h3 className="text-xl font-heading font-semibold text-white/90 mb-4">
+              {t.cta.title}
+            </h3>
+            <p className="text-[15px] text-[#cdd5d7]/70 mb-2 leading-relaxed max-w-[48ch] mx-auto">
+              {t.cta.description}
+            </p>
+            <p className="text-[13px] text-white/40 mt-2">
+              {t.cta.privacy}
+            </p>
           </div>
-        </div>
-      </header>
+          <InterfaceSelector locale={params.locale} />
+        </GlassCard>
 
-      {/* Main content */}
-      <main id="main-content" className="flex-1">
-        <div className="container-safe py-8 md:py-12 px-4 sm:px-6 lg:px-8">
-          {/* Welcome section with warm messaging */}
-          <section className="max-w-3xl mx-auto text-center mb-12 animate-fade-in">
-            <h2 className="text-3xl md:text-4xl font-heading font-medium text-[#EDEDED] mb-6">
-              {t.hero.title}
-            </h2>
-            <p className="text-lg text-[#999999] mb-4 leading-relaxed">
-              {t.hero.description}
-            </p>
-            <p className="text-[#999999] max-w-2xl mx-auto">
-              <span className="text-sm">{t.hero.learnMore} <a href={`/${params.locale}/learn-cbt`} className="text-brand-green-400 underline hover:text-brand-green-300">{t.hero.learnMoreLink}</a></span>
-            </p>
-          </section>
-
-          {/* Interface selection section */}
-          <section className="max-w-5xl mx-auto">
-            <div className="relative bg-[#2a2a2a] rounded-2xl shadow-lg border border-[#3a3a3a] p-8 md:p-10 mb-8" style={{ 
-              boxShadow: '0 4px 24px rgba(0, 0, 0, 0.3)',
-              animation: 'fadeIn 250ms cubic-bezier(0.25, 0.1, 0.25, 1)'
-            }}>
-              <div className="text-center mb-8">
-                <h3 className="text-xl font-heading font-medium text-[#EDEDED] mb-4">
-                  {t.cta.title}
-                </h3>
-                <p className="text-[#999999] mb-4">
-                  {t.cta.description}
-                </p>
-                <p className="text-sm text-[#999999]">
-                  {t.cta.privacy}
-                </p>
-              </div>
-              <InterfaceSelector locale={params.locale} />
-            </div>
-          </section>
-
-          {/* How it works section with gentle illustrations */}
-          <section className="max-w-3xl mx-auto mt-16 space-y-12">
-            <div className="text-center">
-              <h3 className="text-2xl font-heading font-medium text-[#EDEDED] mb-12">
-                {t.steps.title}
-              </h3>
-              <div className="grid md:grid-cols-3 gap-8 mt-6">
-                {/* Step 1 */}
-                <div className="group">
-                  <div className="mb-6">
-                    <div className="w-16 h-16 mx-auto bg-brand-green-600 rounded-full flex items-center justify-center">
-                      <span className="text-white font-semibold">1</span>
-                    </div>
-                  </div>
-                  <h4 className="font-heading font-medium text-base text-[#EDEDED] mb-3">
-                    {t.steps.step1.title}
-                  </h4>
-                  <p className="text-base text-[#999999] leading-relaxed">
-                    {t.steps.step1.description}
-                  </p>
-                </div>
-
-                {/* Step 2 */}
-                <div className="group">
-                  <div className="mb-6">
-                    <div className="w-16 h-16 mx-auto bg-brand-green-600 rounded-full flex items-center justify-center">
-                      <span className="text-white font-semibold">2</span>
-                    </div>
-                  </div>
-                  <h4 className="font-heading font-medium text-base text-[#EDEDED] mb-3">
-                    {t.steps.step2.title}
-                  </h4>
-                  <p className="text-base text-[#999999] leading-relaxed">
-                    {t.steps.step2.description}
-                  </p>
-                </div>
-
-                {/* Step 3 */}
-                <div className="group">
-                  <div className="mb-6">
-                    <div className="w-16 h-16 mx-auto bg-brand-green-600 rounded-full flex items-center justify-center">
-                      <span className="text-white font-semibold">3</span>
-                    </div>
-                  </div>
-                  <h4 className="font-heading font-medium text-base text-[#EDEDED] mb-3">
-                    {t.steps.step3.title}
-                  </h4>
-                  <p className="text-base text-[#999999] leading-relaxed">
-                    {t.steps.step3.description}
-                  </p>
+        {/* How it works */}
+        <section className="max-w-4xl mx-auto mt-16">
+          <h3 className="text-2xl font-heading font-bold text-white text-center mb-12">
+            {t.steps.title}
+          </h3>
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* Step 1 */}
+            <GlassCard padding="md" className="text-center">
+              <div className="mb-4">
+                <div className="w-12 h-12 mx-auto bg-[#aefcf5] rounded-full flex items-center justify-center">
+                  <span className="text-[#03141d] font-bold">1</span>
                 </div>
               </div>
-            </div>
+              <h4 className="font-heading font-semibold text-white mb-3">
+                {t.steps.step1.title}
+              </h4>
+              <p className="text-sm text-white/70 leading-relaxed">
+                {t.steps.step1.description}
+              </p>
+            </GlassCard>
 
-            {/* Trust message */}
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-warm-sand/10 via-soft-sky/10 to-breathing-mint/10 rounded-2xl blur-2xl" />
-              <div className="relative border-t border-b border-[#3a3a3a] py-8">
-                <p className="text-center text-[#999999] max-w-2xl mx-auto leading-relaxed">
-                  <span className="block text-lg font-heading font-medium text-brand-green-400 mb-3">
-                    {t.trust.title}
-                  </span>
-                  {t.trust.description}
-                </p>
+            {/* Step 2 */}
+            <GlassCard padding="md" className="text-center">
+              <div className="mb-4">
+                <div className="w-12 h-12 mx-auto bg-[#aefcf5] rounded-full flex items-center justify-center">
+                  <span className="text-[#03141d] font-bold">2</span>
+                </div>
               </div>
-            </div>
-          </section>
-        </div>
-      </main>
+              <h4 className="font-heading font-semibold text-white mb-3">
+                {t.steps.step2.title}
+              </h4>
+              <p className="text-sm text-white/70 leading-relaxed">
+                {t.steps.step2.description}
+              </p>
+            </GlassCard>
 
-      {/* Footer */}
-      <footer className="mt-auto border-t border-[#3a3a3a]">
-        <div className="container-safe py-8 px-4 sm:px-6 lg:px-8">
+            {/* Step 3 */}
+            <GlassCard padding="md" className="text-center">
+              <div className="mb-4">
+                <div className="w-12 h-12 mx-auto bg-[#aefcf5] rounded-full flex items-center justify-center">
+                  <span className="text-[#03141d] font-bold">3</span>
+                </div>
+              </div>
+              <h4 className="font-heading font-semibold text-white mb-3">
+                {t.steps.step3.title}
+              </h4>
+              <p className="text-sm text-white/70 leading-relaxed">
+                {t.steps.step3.description}
+              </p>
+            </GlassCard>
+          </div>
+
+          {/* Trust message */}
+          <div className="mt-16 text-center">
+            <GlassCard className="max-w-3xl mx-auto">
+              <p className="text-lg font-heading font-semibold text-[#aefcf5] mb-3">
+                {t.trust.title}
+              </p>
+              <p className="text-white/70 leading-relaxed">
+                {t.trust.description}
+              </p>
+            </GlassCard>
+          </div>
+        </section>
+
+        {/* Footer */}
+        <footer className="mt-24 pt-8 border-t border-white/10">
           <div className="flex flex-col items-center gap-4">
-            <h2 className="text-xl font-heading font-semibold text-brand-green-400">
-              {t.header.title}
-            </h2>
             <nav aria-label="Footer navigation">
               <ul className="flex gap-6 text-sm">
                 <li>
-                  <Link 
+                  <Link
                     href={`/${params.locale}/privacy`}
-                    className="text-[#999999] hover:text-brand-green-400 transition-colors"
+                    className="text-white/45 hover:text-[#aefcf5] transition-colors"
                   >
                     {t.footer.privacy}
                   </Link>
                 </li>
                 <li>
-                  <Link 
+                  <Link
                     href={`/${params.locale}/support`}
-                    className="text-[#999999] hover:text-brand-green-400 transition-colors"
+                    className="text-white/45 hover:text-[#aefcf5] transition-colors"
                   >
                     {t.footer.support}
                   </Link>
                 </li>
                 <li>
-                  <Link 
+                  <Link
                     href={`/${params.locale}/about`}
-                    className="text-[#999999] hover:text-brand-green-400 transition-colors"
+                    className="text-white/45 hover:text-[#aefcf5] transition-colors"
                   >
                     {t.footer.about}
                   </Link>
                 </li>
               </ul>
             </nav>
-            <p className="text-xs text-[#999999]">
+            <p className="text-xs text-white/45">
               {t.footer.copyright}
             </p>
           </div>
-        </div>
-      </footer>
-    </>
+        </footer>
+      </div>
+    </AppLayout>
   );
 }

@@ -1,46 +1,53 @@
 {
-  "title": "Soporte y Ayuda",
+  "title": "🛟 Soporte y Ayuda",
   "subtitle": "Obtén ayuda con re-frame o encuentra recursos de salud mental",
   "sections": {
     "technicalSupport": {
-      "title": "Soporte Técnico",
+      "title": "Soporte Técnico y Comentarios",
       "description": "¿Tienes problemas con la aplicación? Estamos aquí para ayudar.",
       "contact": "Contáctanos en:",
       "email": "hello@re-frame.social",
-      "responseTime": "Típicamente respondemos en 24-48 horas."
+      "responseTime": "Respondemos tan pronto como sea posible."
     },
     "mentalHealthResources": {
-      "title": "Recursos de Salud Mental",
-      "description": "Si estás en crisis o necesitas apoyo profesional:",
+      "title": "¿Necesitas hablar ahora mismo?",
+      "description": "Si estás en crisis o necesitas apoyo inmediato:",
       "resources": [
         {
-          "title": "Línea de Crisis por Texto",
-          "description": "Envía HOLA al 741741",
-          "availability": "Apoyo en crisis 24/7"
+          "name": "Find a Helpline",
+          "description": "Números de crisis y líneas de texto en tu país",
+          "url": "https://findahelpline.com"
         },
         {
-          "title": "Línea Nacional de Prevención del Suicidio",
-          "description": "Llama al 988",
-          "availability": "Apoyo 24/7"
+          "name": "Befrienders Worldwide",
+          "description": "Envía email o llama a voluntarios en más de 90 países",
+          "url": "https://befrienders.org"
         },
         {
-          "title": "Psychology Today",
-          "description": "Encuentra un terapeuta cerca de ti",
-          "link": "psychologytoday.com"
+          "name": "7 Cups",
+          "description": "Chat gratuito y anónimo 24/7 con oyentes capacitados",
+          "url": "https://7cups.com"
         }
       ]
     },
     "aboutAvpd": {
       "title": "Acerca del Trastorno de Personalidad por Evitación",
-      "description": "Aprende más sobre el TPA y opciones de tratamiento:",
+      "description": "Literatura objetiva útil",
       "resources": [
         {
-          "title": "NIMH - Trastornos de Personalidad",
-          "link": "nimh.nih.gov"
+          "name": "Cleveland Clinic",
+          "description": "Resumen en lenguaje sencillo, criterios diagnósticos y opciones de tratamiento",
+          "url": "https://my.clevelandclinic.org/health/diseases/9761-avoidant-personality-disorder"
         },
         {
-          "title": "Fundación Internacional de TOC",
-          "description": "Recursos de TPA y grupos de apoyo"
+          "name": "StatPearls / NCBI Bookshelf",
+          "description": "Profundidad clínica con criterios DSM y evidencia terapéutica",
+          "url": "https://www.ncbi.nlm.nih.gov/books/NBK559325/"
+        },
+        {
+          "name": "Psych Central",
+          "description": "Guía accesible sobre síntomas, impacto y expectativas de terapia",
+          "url": "https://psychcentral.com/disorders/avoidant-personality-disorder"
         }
       ]
     },

@@ -6,7 +6,6 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "black>=25.1.0",
-    "crawl4ai>=0.6.3",
     "fastapi>=0.116.1",
     "google-adk>=0.1.0",
     "isort>=6.0.1",
@@ -112,7 +111,7 @@ addopts = [
     "--cov-report=term-missing:skip-covered",
     "--cov-report=html",
     "--cov-report=xml",
-    "--cov-fail-under=70",  # Required 80% coverage
+    "--cov-fail-under=75",  # Required 75% coverage
 ]
 asyncio_mode = "auto"
 markers = [
@@ -129,7 +128,7 @@ env = [
 # Coverage configuration
 [tool.coverage.run]
 source = ["src"]
-omit = ["*/tests/*", "*/__pycache__/*", "src/utils/crawl.py"]
+omit = ["*/tests/*", "*/__pycache__/*"]
 
 [tool.coverage.report]
 exclude_lines = [

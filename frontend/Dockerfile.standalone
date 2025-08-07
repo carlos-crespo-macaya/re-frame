@@ -49,11 +49,37 @@ RUN pnpm install --frozen-lockfile
 # Copy source code
 COPY . .
 
-# Copy OpenAPI schema for standalone builds (only if not exists)
-RUN test -f ./openapi.json || cp ./openapi-temp.json ./openapi.json
+# Ensure OpenAPI schema exists (should be provided at build time)
+RUN if [ ! -f ./openapi.json ]; then \
+      echo "Error: openapi.json not found. It must be generated before building."; \
+      exit 1; \
+    else \
+      echo "Using provided OpenAPI schema ($(wc -l < openapi.json) lines)"; \
+    fi
 
-# Generate TypeScript client from OpenAPI schema (only if not exists)
-RUN test -f ./lib/api/generated/sdk.gen.ts || pnpm run generate:api || echo "Warning: API client generation failed"
+# Always generate TypeScript client from OpenAPI schema to ensure it's up-to-date
+RUN echo "Generating TypeScript API client from OpenAPI schema..."; \
+    pnpm run generate:api; \
+    \
+    # Verify generation succeeded \
+    if [ ! -f ./lib/api/generated/sdk.gen.ts ]; then \
+      echo "Error: API client generation failed - sdk.gen.ts not created"; \
+      exit 1; \
+    fi; \
+    if [ ! -f ./lib/api/generated/index.ts ]; then \
+      echo "Error: API client generation failed - index.ts not created"; \
+      exit 1; \
+    fi; \
+    \
+    # Verify required functions exist \
+    if ! grep -q "getUiFeatureFlags" ./lib/api/generated/sdk.gen.ts; then \
+      echo "Error: Generated API client missing required function 'getUiFeatureFlags'"; \
+      echo "This indicates the OpenAPI schema is incomplete or outdated"; \
+      echo "Expected endpoint: /api/feature-flags/ui"; \
+      exit 1; \
+    fi; \
+    \
+    echo "API client generated successfully with all required functions"
 
 # Build arguments for environment variables
 ARG NEXT_PUBLIC_API_URL
@@ -84,15 +110,22 @@ RUN addgroup -g 1001 -S nodejs
 RUN adduser -S nextjs -u 1001
 
 # Copy built application
-COPY --from=builder /app/package.json ./
-COPY --from=builder /app/pnpm-lock.yaml ./
+# Note: When using standalone mode, we don't need package.json or pnpm-lock.yaml
+# The standalone build is self-contained with its own node_modules
 COPY --from=builder /app/next.config.mjs ./
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 
-# Install only production dependencies
-RUN pnpm install --prod --frozen-lockfile
+# Verify standalone build integrity
+RUN node -e "const fs=require('fs'); \
+  if (!fs.existsSync('./node_modules')) { \
+    console.error('ERROR: node_modules missing – standalone build incomplete'); \
+    process.exit(1); \
+  } \
+  console.log('✓ Standalone build verified: node_modules present');"
+
+# No need to install dependencies - standalone build is self-contained
 
 # Switch to non-root user
 USER nextjs

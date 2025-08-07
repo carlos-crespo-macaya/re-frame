@@ -1,6 +1,6 @@
-# CLAUDE.md
+# Backend CLAUDE.md
 
-This file provides specific guidance to Claude Code (claude.ai/code) when working with the reframe-agents repository.
+This file provides backend-specific guidance to Claude Code (claude.ai/code) when working in the `/backend` directory of the re-frame monorepo.
 
 ## Development Environment
 
@@ -127,12 +127,30 @@ uv run poe format  # Auto-fixes formatting issues
 - **Don't start new work until previous PR is merged**
 - **Always verify CI passes before considering work complete**
 
-## Documentation Reference
+## Backend Architecture
 
-The `/Users/carlos/workspace/reframe-agents/docs` directory contains all relevant official documentation to be used as reference in case of doubt. This includes:
-- Google ADK documentation in `docs/adk-docs/`
-- Design documents in `docs/design/`
-- Any additional reference materials
+### Core Components
+- **FastAPI Application**: Main app at `src/main.py` with lifespan management
+- **Agent System**: Google ADK Sequential Agents for conversation flow
+- **Session Management**: In-memory session state with cleanup tasks
+- **Feature Flags**: ConfigCat integration for dynamic feature toggling
+- **Performance Monitoring**: Built-in metrics and periodic reporting
+
+### API Routers
+- **Text Router** (`src/text/router.py`): SSE endpoints for text conversations
+- **Voice Router** (`src/voice/router.py`): Optional voice modality endpoints
+- **Health & Feature Flags**: System status and UI configuration endpoints
+
+### Agent Phases
+1. **GREETING**: Initial welcome and session setup
+2. **DISCOVERY**: Understanding user's situation
+3. **REFRAMING**: Applying CBT techniques
+4. **SUMMARY**: Session recap and resources
+
+### New Features
+- **Feature Flags Service** (`src/utils/feature_flags/`): Dynamic feature management
+- **Internationalization**: Multi-language support with language detection
+- **Enhanced Logging**: Structured logging with performance metrics
 
 ## Code Quality Standards
 
