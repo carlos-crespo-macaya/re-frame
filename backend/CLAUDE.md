@@ -13,15 +13,19 @@ uv sync --all-extras
 # Install with voice modality support (optional)
 uv sync --extra voice
 
-# Run quality checks
+# Run quality checks (ALWAYS run before committing)
 uv run poe check
 
 # Run specific tools
-uv run poe format
-uv run poe lint
-uv run poe typecheck
-uv run poe test
-uv run poe export-openapi     # Export OpenAPI schema (NEW)
+uv run poe format        # Auto-fix formatting with black and isort
+uv run poe format-check  # Check formatting without modifying
+uv run poe lint          # Run ruff linting
+uv run poe lint-fix      # Auto-fix linting issues
+uv run poe typecheck     # Run mypy type checking
+uv run poe test          # Run tests with coverage
+uv run poe test-cov      # Generate HTML coverage report
+uv run poe fix           # Fix all auto-fixable issues (format + lint-fix)
+uv run poe export-openapi # Export OpenAPI schema for frontend
 
 # Start development server
 uv run python -m uvicorn src.main:app --reload  # Note: src.main:app, not app.main:app
@@ -133,14 +137,54 @@ uv run poe format  # Auto-fixes formatting issues
 
 ## Backend Architecture
 
+### Project Structure
+```
+backend/
+├── src/
+│   ├── main.py                 # FastAPI app with lifespan management
+│   ├── agents/                  # ADK agents for conversation phases
+│   │   ├── cbt_assistant.py    # Main sequential agent orchestrator
+│   │   ├── greeting_agent.py   # Greeting phase implementation
+│   │   ├── discovery_agent.py  # Discovery phase implementation
+│   │   ├── reframing_agent.py  # Reframing phase implementation
+│   │   └── summary_agent.py    # Summary phase implementation
+│   ├── knowledge/               # CBT domain knowledge
+│   │   └── cbt_context.py      # BASE_CBT_CONTEXT and distortions
+│   ├── models/                  # Pydantic models
+│   │   ├── api.py              # API request/response models
+│   │   └── session.py          # Session state models
+│   ├── text/                    # Text modality
+│   │   └── router.py           # SSE endpoints for text conversations
+│   ├── voice/                   # Voice modality (optional)
+│   │   ├── router.py           # Voice endpoints
+│   │   └── session_manager.py  # Voice session management
+│   └── utils/                   # Shared utilities
+│       ├── audio_converter.py  # Audio format conversion
+│       ├── feature_flags/      # ConfigCat integration
+│       ├── language_utils.py   # Language detection and normalization
+│       ├── logging.py          # Structured logging setup
+│       ├── metrics_router.py   # Performance metrics endpoint
+│       ├── performance_monitor.py # Performance tracking
+│       ├── pdf_generator.py    # PDF summary generation
+│       ├── rate_limiter.py     # Request rate limiting
+│       ├── session_manager.py  # Session state management
+│       └── status_router.py    # Service status endpoint
+├── tests/                       # Test suite
+│   ├── conftest.py            # Pytest configuration
+│   ├── integration/            # Integration tests
+│   ├── mocks/                  # Test mocks
+│   └── test_*.py              # Unit tests
+└── pyproject.toml              # Project configuration and dependencies
+```
+
 ### Core Components
 - **FastAPI Application**: Main app at `src/main.py` with lifespan management
 - **Agent System**: Google ADK Sequential Agents for conversation flow
 - **Session Management**: In-memory session state with cleanup tasks
 - **Feature Flags**: ConfigCat integration for dynamic feature toggling
 - **Performance Monitoring**: Built-in metrics and periodic reporting
-- **Lifespan Protocol**: Uses FastAPI lifespan for startup/shutdown (NEW)
-- **OpenAPI Generation**: Automatic schema export for frontend type safety (NEW)
+- **Lifespan Protocol**: Uses FastAPI lifespan for startup/shutdown
+- **OpenAPI Generation**: Automatic schema export for frontend type safety
 
 ### API Routers (UPDATED)
 - **Text Router** (`src/text/router.py`): SSE endpoints for text conversations
@@ -185,10 +229,17 @@ uv run poe format  # Auto-fixes formatting issues
 
 All tools are configured in `pyproject.toml` with balanced rules:
 - **Black**: Standard Python formatting (88 char line length)
-- **isort**: Import sorting compatible with Black
-- **Ruff**: Fast linting with essential rules enabled
-- **Mypy**: Type checking with gradual typing approach
-- **Pytest**: Testing with 80% coverage requirement
+- **isort**: Import sorting compatible with Black, profile="black"
+- **Ruff**: Fast linting with essential rules enabled (E, W, F, I, N, UP, B, SIM, C4, PTH, RUF)
+- **Mypy**: Type checking with gradual typing approach (Python 3.12)
+- **Pytest**: Testing with 75% coverage requirement, async support via pytest-asyncio
+
+### Pre-configured Pytest Markers
+- `load`: Load tests (skip with `-m "not load"`)
+- `integration`: Integration tests
+- `sse`: Tests using Server-Sent Events
+- `reactive`: Tests for reactive greeting behavior
+- `voice`: Tests requiring voice dependencies
 
 Always run `uv run poe check` before committing changes.
 
@@ -231,8 +282,32 @@ When implementing features:
 - Test conversation transitions between phases
 - Include edge case testing (empty inputs, crisis scenarios)
 - Mock external dependencies (PDF generation, etc.)
-- Aim for 80% code coverage minimum
+- Coverage requirement: 75% minimum (configured in pyproject.toml)
 - Use pytest-xdist for parallel test execution: `uv run pytest -n auto`
+
+### Running Tests
+```bash
+# Run all tests with coverage
+uv run poe test
+
+# Run specific test file
+uv run pytest tests/test_greeting_agent.py -v
+
+# Run tests with specific pattern
+uv run pytest -k "test_greeting" -v
+
+# Run tests in parallel (faster)
+uv run pytest -n auto
+
+# Generate HTML coverage report
+uv run poe test-cov
+# View report at htmlcov/index.html
+
+# Run tests with specific markers
+uv run pytest -m "not load"  # Skip load tests
+uv run pytest -m "voice"      # Only voice tests
+uv run pytest -m "integration" # Only integration tests
+```
 
 ### Safety Implementation
 - Crisis detection must be checked at every user input
