@@ -17,11 +17,15 @@ pnpm run generate:api # Generate API client from OpenAPI spec
 
 ## E2E Testing
 ```bash
-pnpm run test:e2e                # Run Playwright tests
-pnpm run test:e2e:ui             # Run with UI mode
-pnpm run test:e2e:debug          # Run in debug mode
-pnpm run test:e2e:headed         # Run with browser visible
-pnpm run test:e2e:report         # Show test report
+# DEPRECATED - Use playwright-js directory instead
+pnpm run test:e2e                # Run Playwright tests (LEGACY)
+pnpm run test:e2e:ui             # Run with UI mode (LEGACY)
+pnpm run test:e2e:debug          # Run in debug mode (LEGACY)
+pnpm run test:e2e:headed         # Run with browser visible (LEGACY)
+pnpm run test:e2e:report         # Show test report (LEGACY)
+
+# PRIMARY E2E testing is now in /playwright-js directory
+# See root CLAUDE.md for E2E testing commands
 ```
 
 ## Pre-Push Checklist
@@ -63,11 +67,21 @@ pnpm run lint && pnpm run typecheck && pnpm run test
 - Run `pnpm run generate:api` after backend API changes
 - API client exports from `/lib/api/`
 - Always handle errors with user-friendly messages
+- OpenAPI schema is generated during backend CI and downloaded during frontend build
 - When adding new endpoints:
   1. Update backend first
   2. Run `pnpm run generate:api` to regenerate types
   3. Add wrapper methods to `generated-client.ts`
   4. Use the wrapper methods in `client.ts` or directly in components
+
+### API Proxy Route (NEW)
+- **Location**: `/app/api/proxy/[...path]/route.ts`
+- **Purpose**: Handles service-to-service authentication for Cloud Run backend access
+- **Environment Variables**:
+  - `BACKEND_INTERNAL_HOST`: Internal backend host for Cloud Run service-to-service communication
+  - `BACKEND_PUBLIC_URL`: Public backend URL for authentication audience
+- **Authentication**: Uses Google Auth library for Cloud Run service tokens
+- **Usage**: Automatically handles auth when deployed to Cloud Run
 
 ### Testing Approach
 - Unit tests with Jest and React Testing Library
@@ -106,17 +120,22 @@ pnpm run lint && pnpm run typecheck && pnpm run test
 ### Directory Structure
 ```
 frontend/
-├── app/[locale]/           # Internationalized routes
-├── components/             # Reusable UI components
-│   ├── audio/             # Audio recording & playback
-│   ├── forms/             # Form components (ChatInterface)
-│   └── ui/                # Base UI components
+├── app/                   # Next.js App Router
+│   ├── [locale]/         # Internationalized routes
+│   └── api/              # API routes
+│       └── proxy/        # Service-to-service auth proxy (NEW)
+├── components/            # Reusable UI components
+│   ├── audio/            # Audio recording & playback
+│   ├── forms/            # Form components (ChatInterface)
+│   └── ui/               # Base UI components
 ├── lib/                   # Core functionality
-│   ├── api/               # Generated API client
-│   ├── audio/             # Audio processing utilities
-│   └── streaming/         # SSE client implementation
+│   ├── api/              # Generated API client
+│   ├── audio/            # Audio processing utilities
+│   └── streaming/        # SSE client implementation
 ├── locales/               # Translation files (en, es)
-└── public/worklets/       # Web Audio worklets
+├── public/worklets/       # Web Audio worklets
+├── Dockerfile.standalone  # Production Docker build (NEW)
+└── openapi.json          # Generated from backend CI (NEW)
 ```
 
 ### Key Features
@@ -125,6 +144,19 @@ frontend/
 - **Real-time Streaming**: SSE for responsive AI interactions
 - **Accessibility**: ARIA labels and keyboard navigation
 - **Responsive Design**: Mobile-first approach
+
+## Environment Variables (UPDATED)
+
+### Build-time Variables (NEXT_PUBLIC_*)
+- `NEXT_PUBLIC_API_URL`: Public API URL for client-side calls
+- Must be set during build, not runtime
+
+### Runtime Variables
+- `BACKEND_INTERNAL_HOST`: Internal backend host for service-to-service calls
+- `BACKEND_PUBLIC_URL`: Public backend URL for authentication audience
+- `NODE_ENV`: Environment (development/production)
+- `SERVICE_NAME`: Service identifier for logging/monitoring
+- `PORT`: Server port (default 3000 for dev, 8080 for production)
 
 ## Common Issues & Solutions
 

@@ -70,8 +70,18 @@ re-frame/
 │   └── CLAUDE.md     # Frontend-specific instructions
 ├── backend/           # FastAPI backend with ADK agents
 │   └── CLAUDE.md     # Backend-specific instructions
-├── docs/              # Shared documentation
-├── scripts/           # Utility scripts
+├── playwright-js/     # JavaScript E2E tests (primary testing infrastructure)
+├── tests/             # Python tests and load testing
+│   ├── e2e/          # Python E2E tests (legacy)
+│   └── load/         # Load testing for voice functionality
+├── infra/            # Infrastructure automation
+│   ├── gcp/          # GCP-specific setup scripts
+│   ├── github/       # GitHub-specific scripts
+│   └── local/        # Local development docs
+├── docs/             # Shared documentation
+├── scripts/          # Utility scripts
+├── .claude/          # Claude agent configurations
+│   └── agents/       # Agent-specific instructions
 └── docker-compose.yml # Local development setup
 ```
 
@@ -195,14 +205,25 @@ docker-compose down -v
 ./docker-build-with-schema.sh   # Build Docker images with OpenAPI schema
 ./check-github-secrets.sh       # Verify GitHub secrets are configured
 ./create_labels.sh              # Create GitHub issue labels
-./setup-gcp.sh                  # Set up GCP project (requires gcloud CLI)
-./setup-gcp-infrastructure.sh   # Set up full GCP infrastructure
-./setup-workload-identity.sh    # Configure workload identity for GitHub Actions
+```
+
+### GCP Infrastructure Scripts (NEW)
+```bash
+# From infra/gcp/ directory
+./setup-gcp-infrastructure.sh      # Complete GCP project setup
+./bootstrap_vpc_and_roles.sh       # VPC and IAM roles setup
+./setup-workload-identity.sh       # GitHub Actions authentication setup
+./harden-backend.sh                # Security hardening for backend service
+./fix-frontend-auth.sh             # Frontend service authentication fix
+./update-backend-env-vars.sh       # Update backend environment variables
+./update-frontend-env-vars.sh      # Update frontend environment variables (NEW)
+./registry_clean_policy.sh         # Container registry cleanup policies
 ```
 
 ### E2E Testing
 ```bash
-# From root directory (JavaScript E2E tests in playwright-js/)
+# JavaScript E2E Tests (PRIMARY - use these)
+# From root directory
 npm run e2e                      # Run all JavaScript Playwright tests
 npm run e2e:ui                   # Run with UI mode
 npm run e2e:headed               # Run with browser visible
@@ -222,22 +243,22 @@ cd playwright-js && npm test tests/voice-*.spec.js              # All voice test
 cd playwright-js && npm test tests/text-*.spec.js               # All text tests
 cd playwright-js && npm test tests/voice-network-resilience.spec.js  # Specific test
 
-# From frontend directory (deprecated - use playwright-js instead)
+# Python E2E tests (LEGACY - still available)
+cd tests/e2e && ./run_tests.sh   # Run Python E2E tests with pytest-xdist
+
+# Run E2E tests with Docker (recommended for CI)
+./scripts/run-e2e-tests.sh       # Run all E2E tests
+./scripts/run-e2e-tests.sh --text  # Text tests only
+./scripts/run-e2e-tests.sh --voice # Voice tests only
+./scripts/run-e2e-tests.sh --ui    # With UI mode
+
+# From frontend directory (DEPRECATED - use playwright-js instead)
 cd frontend
 pnpm run test:e2e                # Run Playwright tests
 pnpm run test:e2e:ui             # Run with UI mode
 pnpm run test:e2e:debug          # Run in debug mode
 pnpm run test:e2e:headed         # Run with browser visible
 pnpm run test:e2e:report         # Show test report
-
-# Python E2E tests (separate infrastructure)
-cd tests/e2e && ./run_tests.sh   # Run Python E2E tests with pytest-xdist
-
-# Run E2E tests with Docker (recommended)
-./scripts/run-e2e-tests.sh       # Run all E2E tests
-./scripts/run-e2e-tests.sh --text  # Text tests only
-./scripts/run-e2e-tests.sh --voice # Voice tests only
-./scripts/run-e2e-tests.sh --ui    # With UI mode
 ```
 
 ## Project Management
@@ -261,7 +282,7 @@ cd tests/e2e && ./run_tests.sh   # Run Python E2E tests with pytest-xdist
 ### Commit Message Format
 Commits MUST start with a task ID prefix:
 - `[BE-XXX]` for backend tasks
-- `[FE-XXX]` for frontend tasks  
+- `[FE-XXX]` for frontend tasks
 - `[ALL-XXX]` for shared/monorepo tasks
 - `[INF-XXX]` for infrastructure tasks
 
@@ -303,9 +324,12 @@ Example: `[BE-141] Update CORS configuration for local API routes`
 - **Code Quality**: black, isort, ruff, mypy
 
 ### Deployment
-- **Frontend**: Google Cloud Run (containerized)
-- **Backend**: Google Cloud Run (containerized)
+- **Frontend**: Google Cloud Run (containerized, VPC egress for backend access)
+- **Backend**: Google Cloud Run (containerized, internal ingress only)
 - **CI/CD**: GitHub Actions with automated deployment
+- **Service Auth**: Service-to-service authentication via Google Auth library
+- **VPC Connector**: `run-to-run-connector` for internal communication
+- **OpenAPI Integration**: Schema generated in backend CI, used in frontend build
 
 ## Key Architectural Patterns
 
@@ -324,9 +348,28 @@ Example: `[BE-141] Update CORS configuration for local API routes`
 - **Knowledge Base**: CBT context and techniques in `/backend/src/knowledge/`
 
 ## Environment Variables
-- Use `GEMINI_API_KEY` (not `GOOGLE_AI_API_KEY`) for Google AI services
+
+### Backend Environment Variables
+- `GEMINI_API_KEY`: Google AI services API key (not `GOOGLE_AI_API_KEY`)
+- `CONFIGCAT_SDK_KEY`: Feature flags SDK key
+- `SERVICE_NAME`: Service identifier for logging/monitoring
+- `BACKEND_INTERNAL_HOST`: Internal service host for Cloud Run
+- `BACKEND_PUBLIC_URL`: Public backend URL for authentication
+- `GCP_PROJECT_ID`: Google Cloud project ID
+- `GCP_REGION`: Google Cloud region
+
+### Frontend Environment Variables
+- `NEXT_PUBLIC_API_URL`: Public API URL for client-side calls
+- `BACKEND_INTERNAL_HOST`: Internal backend host for service-to-service calls
+- `BACKEND_PUBLIC_URL`: Public backend URL for authentication audience
+- `NODE_ENV`: Environment (development/production)
+- `SERVICE_NAME`: Service identifier for logging/monitoring
+- `PORT`: Server port (default 3000 for dev, 8080 for production)
+
+### Docker Development
 - Docker uses `http://backend:8000` for service-to-service communication
 - Local development uses `http://localhost:8000`
+- Cloud Run uses internal hostnames like `re-frame-backend-yeetrlkwzq-ew.a.run.app`
 
 ## After Context Clear
 
@@ -353,10 +396,12 @@ When resuming work, provide:
 ## Current Status
 
 - **Monorepo**: Successfully migrated and operational
-- **Frontend**: Fully functional with i18n support and enhanced UI components
-- **Backend**: Feature flags integration with ConfigCat
-- **Deployment**: Automated CI/CD to Google Cloud Run
-- **Testing**: Comprehensive E2E tests in JavaScript (playwright-js/) and Python (tests/e2e/)
+- **Frontend**: Fully functional with i18n support, enhanced UI components, and service-to-service auth
+- **Backend**: Feature flags integration with ConfigCat, internal-only ingress for security
+- **Infrastructure**: Complete GCP setup with VPC, IAM roles, and workload identity
+- **Deployment**: Automated CI/CD to Google Cloud Run with OpenAPI schema integration
+- **Testing**: Dual E2E test infrastructure - JavaScript (playwright-js/) as primary, Python (tests/e2e/) as legacy
+- **Security**: Backend hardened with internal ingress, frontend uses VPC egress for backend access
 
 ## Key Files
 
@@ -411,6 +456,20 @@ make docker-logs
 3. **Maintain test coverage**: Backend requires 80% minimum
 4. **Handle errors gracefully**: Especially for SSE connections and external API calls
 5. **Keep security in mind**: Never log sensitive data, use environment variables for secrets
+
+### OpenAPI Schema Integration (NEW)
+- **Backend**: Automatically generates OpenAPI schema in CI workflow
+- **Frontend**: Downloads schema artifact from backend CI for type-safe API client generation
+- **CRITICAL**: Always use the auto-generated API client to prevent contract mismatches
+- **Location**: `/frontend/lib/api/generated-client.ts`
+- **Generation Command**: `pnpm run generate:api` in frontend
+
+### Service-to-Service Authentication (NEW)
+- **Cloud Run**: Internal backend with VPC connector for secure communication
+- **Authentication**: Google Auth library handles service tokens automatically
+- **Security**: Backend uses internal ingress (not publicly accessible)
+- **Frontend Proxy**: `/app/api/proxy/[...path]/route.ts` handles backend authentication
+- **VPC Configuration**: Uses `run-to-run-connector` with range `10.8.0.0/28`
 
 ### Code Quality Checklist
 - [ ] **Names reveal intent**: Would a new developer understand what this does?

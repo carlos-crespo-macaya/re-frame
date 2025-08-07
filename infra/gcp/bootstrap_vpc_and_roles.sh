@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# bootstrap_vpc_and_roles.sh  —  one-time “Option B” helper
+# bootstrap_vpc_and_roles.sh  —  one-time "Option B" helper
 # -------------------------------------------------------------------
 # • Verifies roles on the GitHub WIF SA
 # • Enables Cloud Run + VPC Access APIs
@@ -10,14 +10,17 @@
 
 set -euo pipefail
 
-: "${GCP_PROJECT_ID:?Need env var GCP_PROJECT_ID}"
+# Load configuration
+SCRIPT_DIR="$(dirname "$0")"
+source "${SCRIPT_DIR}/config.sh"
+
 : "${GCP_WIF_SERVICE_ACCOUNT:?Need env var GCP_WIF_SERVICE_ACCOUNT}"
 
-# === customise connector details here ===
-CONNECTOR="run-to-run-connector"
-REGION="europe-west1"
+# Use values from config.sh (VPC_CONNECTOR, GCP_REGION, VPC_RANGE already set)
+CONNECTOR="$VPC_CONNECTOR"
+REGION="$GCP_REGION"
 NETWORK="default"
-RANGE="10.8.0.0/28"     # /28 → 16 IPs (good for dozens of Cloud Run services)
+RANGE="$VPC_RANGE"     # /28 → 16 IPs (good for dozens of Cloud Run services)
 
 echo "Project      : $GCP_PROJECT_ID"
 echo "WIF SA       : $GCP_WIF_SERVICE_ACCOUNT"
