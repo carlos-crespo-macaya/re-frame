@@ -1,6 +1,6 @@
 {
-  "title": "Política de Privacidad",
-  "lastUpdated": "Última actualización: Enero 2024",
+  "title": "🔒 Política de Privacidad",
+  "lastUpdated": "Última actualización: Agosto 2025",
   "introduction": "Tu privacidad es importante para nosotros. Esta política explica cómo manejamos tu información cuando usas re-frame.",
   "sections": {
     "dataCollection": {
@@ -8,9 +8,8 @@
       "description": "Estamos comprometidos a proteger tu privacidad:",
       "points": [
         "No recolectamos ni almacenamos información personal",
-        "Las conversaciones no se guardan ni graban",
-        "No se requieren cuentas de usuario ni registro",
-        "Las sesiones son temporales y se eliminan después de completarse"
+        "Los datos de conversación anonimizados pueden guardarse para ayudarnos a aprender cómo mejorar y hacer esta app más útil. Nunca se almacena información personalmente identificable (PII).",
+        "No se requieren cuentas de usuario ni registro"
       ]
     },
     "technicalData": {
@@ -54,8 +53,8 @@
       "title": "Retención de Datos",
       "description": "Minimizamos la retención de datos:",
       "points": [
-        "Los datos de conversación se procesan en tiempo real y no se almacenan",
-        "Los registros técnicos se mantienen por máximo 30 días",
+        "Los datos de conversación anonimizados pueden guardarse para ayudarnos a aprender cómo mejorar y hacer esta app más útil. Nunca se almacena información personalmente identificable (PII).",
+        "Los registros técnicos se mantienen para ayudar a mejorar los aspectos técnicos de la plataforma.",
         "No hay almacenamiento a largo plazo de información personal"
       ]
     },
@@ -81,7 +80,7 @@
     },
     "changes": {
       "title": "Cambios a Esta Política",
-      "description": "Podemos actualizar esta política de privacidad de vez en cuando. Notificaremos a los usuarios de cualquier cambio significativo publicando la nueva política en esta página."
+      "description": "Podemos actualizar esta política de privacidad de vez en cuando. Notificaremos a los usuarios de cualquier cambio significativo publicando la nueva política en esta página. El principio de protección de la privacidad no se verá afectado por ningún cambio."
     },
     "contact": {
       "title": "Contáctanos",

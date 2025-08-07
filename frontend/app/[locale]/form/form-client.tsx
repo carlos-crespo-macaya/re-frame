@@ -1,9 +1,11 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { useSSEClient } from '@/lib/streaming/use-sse-client'
 import ReactMarkdown from 'react-markdown'
+import { AppLayout } from '@/components/layout/AppLayout'
+import { GlassCard } from '@/components/layout/GlassCard'
 import { FrameworkBadge, LanguageSelector } from '@/components/ui'
 import { ThoughtInputForm } from '@/components/forms'
 import { Framework } from '@/types/api'
@@ -23,6 +25,7 @@ interface Translations {
 
 export function FormClient({ locale }: { locale: string }) {
   const router = useRouter()
+  const pathname = usePathname()
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [assistantBuffer, setAssistantBuffer] = useState('')
@@ -30,7 +33,7 @@ export function FormClient({ locale }: { locale: string }) {
   const processedIndexRef = useRef(0)
   const bufferRef = useRef('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  
+
   // Translations
   const translations: Record<string, Translations> = {
     en: {
@@ -46,12 +49,12 @@ export function FormClient({ locale }: { locale: string }) {
       thinking: 'Pensando...',
     },
   }
-  
+
   const t: Translations = translations[locale] || translations.en
-  
+
   // Initialize SSE client
   const sseClient = useSSEClient({
-    baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
+    baseUrl: '/api/proxy',
     autoConnect: false,
   })
 
@@ -68,14 +71,14 @@ export function FormClient({ locale }: { locale: string }) {
         console.error('Failed to connect to SSE:', error)
       }
     }
-    
+
     connectToSSE()
-    
+
     return () => {
       sseClient.disconnect()
     }
   }, [selectedLanguage]) // eslint-disable-line react-hooks/exhaustive-deps
-  
+
   // Handle incoming SSE messages
   useEffect(() => {
     const msgs = sseClient.messages || []
@@ -109,8 +112,8 @@ export function FormClient({ locale }: { locale: string }) {
     if (didTurnComplete) {
       const finalContent = localBuffer
       if (finalContent) {
-        setMessages(prev => [...prev, { 
-          role: 'assistant', 
+        setMessages(prev => [...prev, {
+          role: 'assistant',
           content: finalContent,
           frameworks: ['CBT'] // Default framework
         }])
@@ -133,16 +136,6 @@ export function FormClient({ locale }: { locale: string }) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, assistantBuffer])
 
-  const handleBack = () => {
-    router.push(`/${locale}`)
-  }
-
-  const handleLanguageChange = (language: string) => {
-    setSelectedLanguage(language)
-    const newLocale = language.startsWith('es') ? 'es' : 'en'
-    const newPath = `/${newLocale}/form`
-    router.push(newPath)
-  }
 
 
   const handleSubmit = async (thought: string) => {
@@ -151,7 +144,7 @@ export function FormClient({ locale }: { locale: string }) {
     const userMessage = { role: 'user' as const, content: thought }
     setMessages(prev => [...prev, userMessage])
     setIsLoading(true)
-    
+
     try {
       await sseClient.sendText(thought)
     } catch (error) {
@@ -168,112 +161,115 @@ export function FormClient({ locale }: { locale: string }) {
   }
 
   return (
-    <div className="min-h-screen bg-dark-charcoal text-[#EDEDED]">
-      {/* Header */}
-      <header className="relative bg-gradient-to-b from-[#1D1F1E] to-transparent">
-        <div className="container-safe py-8 px-4 sm:px-6 lg:px-8">
-          <div className="flex items-start justify-between">
-            <div>
-              <h1 className="text-2xl font-heading font-semibold text-brand-green-400 mb-2">
-                re-frame
-              </h1>
-              <button
-                type="button"
-                onClick={handleBack}
-                className="text-brand-green-400 hover:text-brand-green-300 transition-colors"
-              >
-                {t.back}
-              </button>
-            </div>
-            <div className="w-48">
-              <LanguageSelector 
-                value={selectedLanguage}
-                onChange={handleLanguageChange}
-              />
-            </div>
-          </div>
+    <AppLayout
+      locale={locale}
+      showBackButton={true}
+      currentLanguage={locale === 'es' ? 'ES' : 'EN'}
+      onLanguageChange={(newLocale) => {
+        const newPath = pathname.replace(`/${locale}`, `/${newLocale}`)
+        router.push(newPath)
+      }}
+    >
+      <div className="max-w-[1312px] mx-auto w-full">
+        {/* Page title */}
+        <div className="text-center mb-8">
+          <h2 className="text-3xl md:text-4xl font-heading font-bold text-white mb-4">
+            {t.title}
+          </h2>
+          <p className="text-lg text-white/70">
+            {t.subtitle}
+          </p>
         </div>
-      </header>
 
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Input form */}
+          <GlassCard>
+            <h3 className="text-xl font-heading font-semibold text-white mb-6">
+              Share Your Thoughts
+            </h3>
+            <ThoughtInputForm
+              onSubmit={handleSubmit}
+              onClear={handleClear}
+              isLoading={isLoading}
+              language={selectedLanguage}
+            />
+          </GlassCard>
 
-      {/* Main content */}
-      <main className="container-safe py-8 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Input form */}
-            <div className="bg-[#2a2a2a] rounded-2xl shadow-lg border border-[#3a3a3a] p-6">
-              <h2 className="text-xl font-heading font-medium text-[#EDEDED] mb-6">
-                Share Your Thoughts
-              </h2>
-              <ThoughtInputForm
-                onSubmit={handleSubmit}
-                onClear={handleClear}
-                isLoading={isLoading}
-                language={selectedLanguage}
-              />
-            </div>
-
-            {/* Messages area */}
-            <div className="bg-[#2a2a2a] rounded-2xl shadow-lg border border-[#3a3a3a] p-6">
-              <h2 className="text-xl font-heading font-medium text-[#EDEDED] mb-6">
+          {/* Messages area */}
+          <GlassCard className="flex flex-col" padding="none">
+            <div className="p-8 pb-4">
+              <h3 className="text-xl font-heading font-semibold text-white">
                 Conversation
-              </h2>
-              <div className="h-[500px] overflow-y-auto space-y-4">
+              </h3>
+            </div>
+            <div className="flex-1 px-8 pb-8 overflow-y-auto max-h-[600px]">
+              <div className="space-y-4">
                 {messages.map((message, index) => (
                   <div
                     key={index}
                     className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     <div
-                      className={`max-w-[85%] p-4 rounded-lg ${
+                      className={`max-w-[85%] px-5 py-3 rounded-2xl ${
                         message.role === 'user'
-                          ? 'bg-brand-green-600 text-white'
-                          : 'bg-[#3a3a3a] text-[#EDEDED]'
+                          ? 'bg-[#074d57] text-white'
+                          : 'bg-white/5 text-white'
                       }`}
                     >
                       {message.role === 'assistant' && message.frameworks && (
-                        <div className="flex gap-2 mb-2">
+                        <div className="flex flex-wrap gap-2 mb-3">
                           {message.frameworks.map((fw, i) => (
-                            <FrameworkBadge key={i} framework={fw as Framework} />
+                            <span key={i} className="text-xs px-3 py-1 bg-white/10 rounded-lg text-[#aefcf5]">
+                              {fw}
+                            </span>
                           ))}
                         </div>
                       )}
-                      <div className="prose prose-sm prose-invert max-w-none">
+                      <div className="text-[14px] leading-[22px]">
                         <ReactMarkdown>{message.content}</ReactMarkdown>
                       </div>
                     </div>
                   </div>
                 ))}
-                
+
                 {/* Show buffer while streaming */}
                 {assistantBuffer && (
                   <div className="flex justify-start">
-                    <div className="max-w-[85%] p-4 rounded-lg bg-[#3a3a3a] text-[#EDEDED]">
-                      <div className="flex gap-2 mb-2">
-                        <FrameworkBadge framework="CBT" />
+                    <div className="max-w-[85%] bg-white/5 text-white rounded-2xl px-5 py-3">
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        <span className="text-xs px-3 py-1 bg-white/10 rounded-lg text-[#aefcf5]">
+                          CBT
+                        </span>
                       </div>
-                      <div className="prose prose-sm prose-invert max-w-none">
+                      <div className="text-[14px] leading-[22px]">
                         <ReactMarkdown>{assistantBuffer}</ReactMarkdown>
                       </div>
                     </div>
                   </div>
                 )}
-                
+
                 {/* Loading indicator */}
                 {isLoading && !assistantBuffer && (
                   <div className="flex justify-start">
-                    <div className="p-4 rounded-lg bg-[#3a3a3a] text-[#999999]">
-                      {t.thinking}
+                    <div className="bg-white/5 text-white rounded-2xl px-5 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="flex gap-1">
+                          <div className="w-2 h-2 bg-[#aefcf5] rounded-full animate-pulse" />
+                          <div className="w-2 h-2 bg-[#aefcf5] rounded-full animate-pulse" style={{ animationDelay: '150ms' }} />
+                          <div className="w-2 h-2 bg-[#aefcf5] rounded-full animate-pulse" style={{ animationDelay: '300ms' }} />
+                        </div>
+                        <span className="text-[14px] leading-[22px]" style={{ color: 'rgba(255, 255, 255, 0.45)' }}>{t.thinking}</span>
+                      </div>
                     </div>
                   </div>
                 )}
-                
+
                 <div ref={messagesEndRef} />
               </div>
             </div>
-          </div>
+          </GlassCard>
         </div>
-      </main>
-    </div>
+      </div>
+    </AppLayout>
   )
 }

@@ -4,16 +4,17 @@
  */
 
 export const API_CONFIG = {
-  baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
+  // Use relative paths to go through our proxy route
+  baseUrl: '/api/proxy',
   endpoints: {
-    send: (sessionId: string) => `/api/send/${sessionId}`,
-    events: (sessionId: string) => `/api/events/${sessionId}`,
-    pdf: (sessionId: string) => `/pdf/${sessionId}`,
-    health: '/api/health',
+    send: (sessionId: string) => `/api/proxy/api/send/${sessionId}`,
+    events: (sessionId: string) => `/api/proxy/api/events/${sessionId}`,
+    pdf: (sessionId: string) => `/api/proxy/pdf/${sessionId}`,
+    health: '/api/proxy/api/health',
     // Voice endpoints
-    createVoiceSession: '/api/voice/sessions',
-    voiceStream: (sessionId: string) => `/api/voice/sessions/${sessionId}/stream`,
-    sendVoiceAudio: (sessionId: string) => `/api/voice/sessions/${sessionId}/audio`
+    createVoiceSession: '/api/proxy/api/voice/sessions',
+    voiceStream: (sessionId: string) => `/api/proxy/api/voice/sessions/${sessionId}/stream`,
+    sendVoiceAudio: (sessionId: string) => `/api/proxy/api/voice/sessions/${sessionId}/audio`
   },
   defaultHeaders: {
     'Content-Type': 'application/json'

@@ -78,7 +78,7 @@ class TestHealthEndpoint:
 
     def test_health_check(self, client):
         """Test that health check returns expected response."""
-        response = client.get("/health")
+        response = client.get("/api/health")
         assert response.status_code == 200
 
         data = response.json()
@@ -106,7 +106,7 @@ class TestRootEndpoint:
         data = response.json()
         assert data["message"] == "CBT Assistant API"
         assert data["docs"] == "/docs"
-        assert data["health"] == "/health"
+        assert data["health"] == "/api/health"
 
     @patch("pathlib.Path.exists")
     @patch("src.main.FileResponse")
@@ -130,7 +130,7 @@ class TestRootEndpoint:
 class TestMetricsEndpoint:
     """Test the metrics endpoint."""
 
-    @patch("src.main.get_performance_monitor")
+    @patch("src.utils.metrics_router.get_performance_monitor")
     def test_get_metrics(self, mock_get_monitor, client):
         """Test that metrics endpoint returns performance data."""
         # Mock performance monitor to return realistic metrics
@@ -218,7 +218,9 @@ class TestCORSConfiguration:
     def test_cors_headers(self, client):
         """Test that CORS headers are set correctly for allowed origin."""
         # Test GET request with Origin header to check CORS
-        response = client.get("/health", headers={"Origin": "http://localhost:3000"})
+        response = client.get(
+            "/api/health", headers={"Origin": "http://localhost:3000"}
+        )
         assert response.status_code == 200
         # Check that CORS headers are present
         assert "access-control-allow-origin" in response.headers
@@ -238,7 +240,7 @@ class TestOpenAPIGeneration:
         schema = response.json()
         assert schema["info"]["title"] == "CBT Reframing Assistant API"
         assert schema["info"]["version"] == "1.0.0"
-        assert "/health" in schema["paths"]
+        assert "/api/health" in schema["paths"]
         assert "/api/metrics" in schema["paths"]
 
         # Check that text and voice endpoints are included via routers

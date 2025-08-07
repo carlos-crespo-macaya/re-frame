@@ -23,13 +23,15 @@ const translations = {
   en: {
     title: 'Choose Your Interface',
     subtitle: 'Select how you\'d like to interact with re-frame',
+    buttonStart: 'Start',
+    buttonCurrent: 'Current',
     interfaces: {
       chat: {
         title: 'Text Chat',
         description: 'Type and chat with re-frame in real-time'
       },
       voice: {
-        title: 'Voice Conversation',
+        title: 'Voice Chat',
         description: 'Speak naturally and get audio responses'
       },
       form: {
@@ -41,13 +43,15 @@ const translations = {
   es: {
     title: 'Elige Tu Interfaz',
     subtitle: 'Selecciona cómo te gustaría interactuar con re-frame',
+    buttonStart: 'Iniciar',
+    buttonCurrent: 'Actual',
     interfaces: {
       chat: {
         title: 'Chat de Texto',
         description: 'Escribe y chatea con re-frame en tiempo real'
       },
       voice: {
-        title: 'Conversación por Voz',
+        title: 'Chat de Voz',
         description: 'Habla naturalmente y recibe respuestas de audio'
       },
       form: {
@@ -86,7 +90,7 @@ export function InterfaceSelector({ locale, currentInterface, className = '' }: 
       key: 'voice',
       title: t.interfaces.voice.title,
       description: t.interfaces.voice.description,
-      icon: '🎤',
+      icon: '🗣️',
       gradient: 'from-purple-500/20 to-pink-500/20'
     },
     {
@@ -115,14 +119,6 @@ export function InterfaceSelector({ locale, currentInterface, className = '' }: 
   if (flags === null) {
     return (
       <div className={`w-full max-w-4xl mx-auto ${className}`}>
-        <div className="text-center mb-8">
-          <h2 className="text-2xl font-heading font-medium text-[#EDEDED] mb-3">
-            {t.title}
-          </h2>
-          <p className="text-[#999999]">
-            {t.subtitle}
-          </p>
-        </div>
         <div className="flex items-center justify-center py-10">
           <div className="h-8 w-8 rounded-full border-2 border-[#3a3a3a] border-t-white animate-spin" aria-label="Loading" />
         </div>
@@ -132,14 +128,6 @@ export function InterfaceSelector({ locale, currentInterface, className = '' }: 
 
   return (
     <div className={`w-full max-w-4xl mx-auto ${className}`}>
-      <div className="text-center mb-8">
-        <h2 className="text-2xl font-heading font-medium text-[#EDEDED] mb-3">
-          {t.title}
-        </h2>
-        <p className="text-[#999999]">
-          {t.subtitle}
-        </p>
-      </div>
 
       {/* Use a centered responsive grid. The container uses place-items-center to ensure
           each card is centered within its grid cell, and auto-fit with minmax gives
@@ -153,32 +141,39 @@ export function InterfaceSelector({ locale, currentInterface, className = '' }: 
         {filtered.map((interface_) => (
           <div
             key={interface_.key}
-            className={`relative group cursor-pointer transition-all duration-300 ${
-              currentInterface === interface_.key 
-                ? 'ring-2 ring-brand-green-500' 
-                : 'hover:scale-105'
+            className={`relative group cursor-pointer transition-all duration-300 transform ${
+              currentInterface === interface_.key
+                ? 'ring-2 ring-[#9BF7EB]'
+                : 'hover:translate-y-[-2px]'
             }`}
             onClick={() => handleInterfaceSelect(interface_.key)}
           >
-            <div className={`absolute inset-0 bg-gradient-to-br ${interface_.gradient} rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
-            <div className="relative bg-[#2a2a2a] rounded-2xl shadow-lg border border-[#3a3a3a] p-6 h-full">
+            {/* Hover glow effect */}
+            <div className={`absolute inset-0 bg-gradient-to-br ${interface_.gradient} rounded-3xl blur-2xl opacity-0 group-hover:opacity-60 transition-opacity duration-300`} />
+
+            {/* Glass-blur card with refined styling */}
+            <div className="relative backdrop-blur-md bg-[#08141c]/55 rounded-3xl shadow-lg ring-1 ring-white/5 p-8 h-full group-hover:backdrop-blur-lg transition-all duration-300">
               <div className="text-center">
-                <div className="text-4xl mb-4">
+                <div className="text-4xl mb-5">
                   {interface_.icon}
                 </div>
-                <h3 className="text-lg font-heading font-medium text-[#EDEDED] mb-3">
+                <h3 className="text-xl font-heading font-semibold text-white/90 mb-3">
                   {interface_.title}
                 </h3>
-                <p className="text-sm text-[#999999] mb-6 leading-relaxed">
+                <p className="text-[15px] text-[#cdd5d7]/70 mb-6 leading-relaxed max-w-[48ch] mx-auto">
                   {interface_.description}
                 </p>
-                <Button
-                  variant={currentInterface === interface_.key ? 'primary' : 'secondary'}
-                  size="medium"
-                  className="w-full group-hover:bg-brand-green-600 group-hover:text-white transition-colors"
-                >
-                  {currentInterface === interface_.key ? 'Current' : 'Select'}
-                </Button>
+
+                {/* CTA button with nested darker treatment */}
+                <div className="bg-[#0b1014]/60 rounded-xl p-1 group-hover:ring-1 group-hover:ring-[#9BF7EB]/30 transition-all">
+                  <Button
+                    variant={currentInterface === interface_.key ? 'primary' : 'secondary'}
+                    size="small"
+                    className="w-full transition-all"
+                  >
+                    {currentInterface === interface_.key ? t.buttonCurrent : t.buttonStart}
+                  </Button>
+                </div>
               </div>
             </div>
           </div>

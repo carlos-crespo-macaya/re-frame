@@ -2,8 +2,7 @@ name: Backend CI
 
 on:
   push:
-    branches: [main, develop]
-
+    branches: [main]
   pull_request:
     branches: [main, develop]
 
@@ -14,7 +13,7 @@ concurrency:
 jobs:
   test:
     name: Backend Tests
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: ["3.12"]
@@ -68,3 +67,20 @@ jobs:
         file: ./backend/coverage.xml
         fail_ci_if_error: false
         flags: backend
+
+    - name: Generate OpenAPI schema
+      if: github.ref == 'refs/heads/main' && matrix.python-version == '3.12'
+      working-directory: backend
+      run: |
+        echo "🔄 Generating OpenAPI schema..."
+        uv run python -c "from src.main import app; import json; print(json.dumps(app.openapi(), indent=2))" > openapi.json
+        LINES=$(wc -l < openapi.json)
+        echo "✅ Generated OpenAPI schema ($LINES lines)"
+
+    - name: Upload OpenAPI schema
+      if: github.ref == 'refs/heads/main' && matrix.python-version == '3.12'
+      uses: actions/upload-artifact@v4
+      with:
+        name: openapi-schema
+        path: backend/openapi.json
+        retention-days: 7

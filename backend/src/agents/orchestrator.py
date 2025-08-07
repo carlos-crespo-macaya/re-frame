@@ -13,12 +13,6 @@ from src.knowledge.cbt_context import (
     CRISIS_RESPONSE_TEMPLATE,
 )
 
-# Will use SequentialAgent in future phases
-# from google.adk.agents import SequentialAgent
-# from src.agents.discovery_agent import create_discovery_agent
-# from src.agents.greeting_agent import create_greeting_agent
-# from src.agents.reframing_agent import create_reframing_agent
-
 
 def check_for_crisis(user_input: str) -> dict:
     """
@@ -56,33 +50,6 @@ def create_cbt_orchestrator(model: str = "gemini-2.0-flash") -> LlmAgent:
     Returns:
         A SequentialAgent that routes to phase-specific agents
     """
-    # Create phase-specific agents (to be integrated later)
-    # greeting_agent = create_greeting_agent(model)
-    # discovery_agent = create_discovery_agent(model)
-    # reframing_agent = create_reframing_agent(model)
-
-    # Summary agent placeholder - will be implemented in Phase 7
-    # summary_instruction = (
-    #     BASE_CBT_CONTEXT
-    #     + "\n\n## Summary Phase\n"
-    #     + "You are in the summary phase. This phase will be fully implemented soon.\n"
-    #     + "For now, provide a brief recap of:\n"
-    #     + "1. The situation and thought explored\n"
-    #     + "2. The cognitive distortions identified\n"
-    #     + "3. The balanced thought created\n"
-    #     + "4. The micro-action planned\n"
-    #     + "5. Encouragement for continued practice"
-    # )
-
-    # from google.adk.agents import LlmAgent
-
-    # summary_agent = LlmAgent(
-    #     model=model,
-    #     name="SummaryAgent",
-    #     instruction=summary_instruction,
-    #     tools=[],
-    # )
-
     # Orchestrator instruction
     orchestrator_instruction = (
         BASE_CBT_CONTEXT

@@ -32,7 +32,8 @@ import type {
 } from './generated/types.gen'
 
 // Configure the generated client with our API settings
-OpenAPI.BASE = API_CONFIG.baseUrl
+// Use relative path to go through our proxy route
+OpenAPI.BASE = '/api/proxy'
 OpenAPI.HEADERS = API_CONFIG.defaultHeaders
 
 /**

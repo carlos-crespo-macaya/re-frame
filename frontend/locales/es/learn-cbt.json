@@ -1,6 +1,6 @@
 {
-  "title": "¿Qué es la TCC?",
-  "quickLink": "Resumen de la TCC en 2 minutos ↗",
+  "title": "📖 ¿Qué es la TCC?",
+  "quickLink": "Resumen de la TCC en 2 minutos",
   "introduction": "La TerREDACTED (TCC) es un enfoque basado en evidencia que conecta pensamientos, sentimientos y acciones. Al identificar trampas de pensamiento comunes—como catastrofismo, lectura de mente, o declaraciones de \"todo o nada\"—puedes practicar perspectivas más amables y equilibradas.",
   "whyHelpsAvpd": {
     "title": "Por qué ayuda con el TPA",
@@ -15,26 +15,6 @@
   "howWeUse": {
     "title": "Cómo re-frame utiliza la TCC",
     "description": "Cuando describes una situación, re-frame resalta posibles trampas de pensamiento y sugiere perspectivas más gentiles. Tú mantienes el control—elige lo que se sienta verdadero y útil, descarta el resto."
-  },
-  "furtherReading": {
-    "title": "Lecturas recomendadas",
-    "resources": [
-      {
-        "title": "Conceptos básicos de TCC",
-        "source": "Anxiety UK",
-        "link": "Página de recursos ↗"
-      },
-      {
-        "title": "Hoja informativa \"Estilos de Pensamiento Inútiles\"",
-        "source": "CCI",
-        "link": "PDF (200 KB) ↗"
-      },
-      {
-        "title": "Personalidad Evitativa: Libro de Trabajo TCC",
-        "source": "Psychology Tools",
-        "link": "Inicia sesión y descarga ↗"
-      }
-    ]
   },
   "reminder": {
     "prefix": "Recordatorio:",
