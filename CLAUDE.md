@@ -88,9 +88,20 @@ re-frame/
 ## Directory-Specific Instructions
 
 Claude will automatically use the most specific CLAUDE.md based on your working directory:
-- **Working in `/frontend`**: Uses `frontend/CLAUDE.md` for frontend-specific guidance
-- **Working in `/backend`**: Uses `backend/CLAUDE.md` for backend-specific guidance
-- **Working in root or other directories**: Uses this file for general project guidance
+
+| Directory | CLAUDE.md File | Purpose |
+|-----------|---------------|---------|
+| `/backend` | [backend/CLAUDE.md](backend/CLAUDE.md) | Backend development with FastAPI, ADK agents, and Python tooling |
+| `/frontend` | [frontend/CLAUDE.md](frontend/CLAUDE.md) | Frontend development with Next.js, React, and TypeScript |
+| `/infra` | [infra/CLAUDE.md](infra/CLAUDE.md) | Infrastructure scripts for GCP deployment and GitHub setup |
+| `/` (root) | This file | General project guidance and monorepo commands |
+
+Each CLAUDE.md file contains:
+- Directory-specific commands and workflows
+- Relevant architecture documentation
+- Testing approaches for that component
+- Environment variables and configuration
+- Troubleshooting guides
 
 ## Commands Reference
 

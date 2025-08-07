@@ -1,18 +1,29 @@
 # Frontend CLAUDE.md
 
-This file provides frontend-specific guidance when working in the `/frontend` directory of the re-frame monorepo.
+This file provides frontend-specific guidance to Claude Code (claude.ai/code) when working in the `/frontend` directory of the re-frame monorepo.
 
 ## Frontend Commands Quick Reference
 
 ```bash
+# Development
 pnpm run dev         # Start development server on http://localhost:3000
 pnpm run build       # Build for production
+pnpm run start       # Start production server
+
+# Testing
 pnpm run test        # Run all tests (Jest)
 pnpm run test:watch  # Run tests in watch mode
-pnpm run test:ci     # Run tests with coverage for CI
+pnpm run test:ci     # Run tests with coverage for CI (limited workers)
+
+# Code Quality (ALWAYS run before committing)
 pnpm run lint        # Run ESLint
 pnpm run typecheck   # TypeScript type checking
-pnpm run generate:api # Generate API client from OpenAPI spec
+
+# API Client Generation
+pnpm run generate:api # Generate typed API client from OpenAPI spec
+
+# Pre-push all checks
+pnpm run lint && pnpm run typecheck && pnpm run test
 ```
 
 ## E2E Testing
@@ -90,6 +101,42 @@ pnpm run lint && pnpm run typecheck && pnpm run test
 - Focus on user interactions, not implementation details
 - Use existing test utilities from `/test-utils/`
 
+### Running Tests
+```bash
+# Run all tests
+pnpm run test
+
+# Run specific test file
+pnpm run test MessageList.test.tsx
+
+# Run tests in watch mode for TDD
+pnpm run test:watch
+
+# Run with coverage
+pnpm run test:ci
+
+# Debug a specific test
+pnpm run test -- --no-coverage MessageList.test.tsx
+```
+
+### Test Patterns
+```typescript
+// Example test structure
+import { render, screen, fireEvent } from '@testing-library/react';
+import '@testing-library/jest-dom';
+
+describe('Component', () => {
+  it('should handle user interaction', async () => {
+    render(<Component />);
+
+    const button = screen.getByRole('button');
+    fireEvent.click(button);
+
+    await screen.findByText('Expected result');
+  });
+});
+```
+
 ### State Management
 - React Context for global state
 - Custom hooks for shared logic
@@ -120,22 +167,42 @@ pnpm run lint && pnpm run typecheck && pnpm run test
 ### Directory Structure
 ```
 frontend/
-├── app/                   # Next.js App Router
-│   ├── [locale]/         # Internationalized routes
-│   └── api/              # API routes
-│       └── proxy/        # Service-to-service auth proxy (NEW)
-├── components/            # Reusable UI components
-│   ├── audio/            # Audio recording & playback
-│   ├── forms/            # Form components (ChatInterface)
-│   └── ui/               # Base UI components
-├── lib/                   # Core functionality
-│   ├── api/              # Generated API client
-│   ├── audio/            # Audio processing utilities
-│   └── streaming/        # SSE client implementation
-├── locales/               # Translation files (en, es)
-├── public/worklets/       # Web Audio worklets
-├── Dockerfile.standalone  # Production Docker build (NEW)
-└── openapi.json          # Generated from backend CI (NEW)
+├── app/                      # Next.js App Router
+│   ├── [locale]/            # Internationalized routes
+│   │   ├── page.tsx        # Main chat interface
+│   │   └── layout.tsx      # Layout with locale provider
+│   ├── api/                 # API routes
+│   │   └── proxy/          # Service-to-service auth proxy
+│   └── layout.tsx          # Root layout
+├── components/              # Reusable UI components
+│   ├── audio/              # Audio recording & playback
+│   │   ├── AudioRecorder.tsx
+│   │   └── AudioPlayer.tsx
+│   ├── forms/              # Form components
+│   │   └── ChatInterface.tsx
+│   └── ui/                 # Base UI components
+│       ├── Button.tsx
+│       ├── Card.tsx
+│       └── MessageList.tsx
+├── lib/                     # Core functionality
+│   ├── api/                # API integration
+│   │   ├── generated/      # Auto-generated from OpenAPI
+│   │   └── client.ts       # API client wrapper
+│   ├── audio/              # Audio processing utilities
+│   ├── hooks/              # Custom React hooks
+│   └── streaming/          # SSE client implementation
+├── locales/                 # Translation files
+│   ├── en.json            # English translations
+│   └── es.json            # Spanish translations
+├── public/
+│   └── worklets/           # Web Audio worklets
+├── test-utils/             # Testing utilities
+├── Dockerfile.standalone   # Production Docker build
+├── jest.config.js          # Jest configuration
+├── next.config.js          # Next.js configuration
+├── tailwind.config.ts      # Tailwind CSS configuration
+├── tsconfig.json           # TypeScript configuration
+└── openapi.json           # Generated from backend CI
 ```
 
 ### Key Features
