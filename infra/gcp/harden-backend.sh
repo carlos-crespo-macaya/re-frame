@@ -6,11 +6,11 @@
 
 set -euo pipefail
 
-# Configuration
-PROJECT_ID="${GCP_PROJECT_ID:-}"
-REGION="${GCP_REGION:-us-central1}"
-BACKEND_SERVICE="${GCP_BACKEND_SERVICE_NAME:-re-frame-backend}"
-FRONTEND_SERVICE="${GCP_FRONTEND_SERVICE_NAME:-re-frame-frontend}"
+# Load configuration
+SCRIPT_DIR="$(dirname "$0")"
+source "${SCRIPT_DIR}/config.sh"
+
+# Additional configuration (can be overridden)
 FRONTEND_SA="${FRONTEND_SA:-875750705254-compute@developer.gserviceaccount.com}"
 
 # Colors for output
@@ -39,14 +39,10 @@ log_error() {
 
 # Validation function
 validate_config() {
-    if [[ -z "$PROJECT_ID" ]]; then
-        log_error "GCP_PROJECT_ID environment variable is required"
-        exit 1
-    fi
-
+    # PROJECT_ID is already validated by config.sh
     log_info "Configuration:"
-    echo "  Project ID: $PROJECT_ID"
-    echo "  Region: $REGION"
+    echo "  Project ID: $GCP_PROJECT_ID"
+    echo "  Region: $GCP_REGION"
     echo "  Backend Service: $BACKEND_SERVICE"
     echo "  Frontend Service: $FRONTEND_SERVICE"
     echo "  Frontend SA: $FRONTEND_SA"
@@ -63,15 +59,15 @@ check_gcloud_auth() {
     fi
 
     if ! gcloud config get-value project &>/dev/null; then
-        log_warning "No default project set. Setting project to $PROJECT_ID"
-        gcloud config set project "$PROJECT_ID"
+        log_warning "No default project set. Setting project to $GCP_PROJECT_ID"
+        gcloud config set project "$GCP_PROJECT_ID"
     fi
 
     local current_project
     current_project=$(gcloud config get-value project 2>/dev/null)
-    if [[ "$current_project" != "$PROJECT_ID" ]]; then
-        log_warning "Current project ($current_project) differs from target ($PROJECT_ID). Setting project."
-        gcloud config set project "$PROJECT_ID"
+    if [[ "$current_project" != "$GCP_PROJECT_ID" ]]; then
+        log_warning "Current project ($current_project) differs from target ($GCP_PROJECT_ID). Setting project."
+        gcloud config set project "$GCP_PROJECT_ID"
     fi
 
     log_success "gcloud authentication validated"
@@ -81,8 +77,8 @@ check_gcloud_auth() {
 check_backend_service() {
     log_info "Checking if backend service exists..."
 
-    if ! gcloud run services describe "$BACKEND_SERVICE" --region="$REGION" &>/dev/null; then
-        log_error "Backend service '$BACKEND_SERVICE' not found in region '$REGION'"
+    if ! gcloud run services describe "$BACKEND_SERVICE" --region="$GCP_REGION" &>/dev/null; then
+        log_error "Backend service '$BACKEND_SERVICE' not found in region '$GCP_REGION'"
         log_error "Please deploy the backend service first"
         exit 1
     fi
@@ -94,14 +90,14 @@ check_backend_service() {
 get_frontend_service_account() {
     log_info "Getting frontend service account..."
 
-    if ! gcloud run services describe "$FRONTEND_SERVICE" --region="$REGION" &>/dev/null; then
+    if ! gcloud run services describe "$FRONTEND_SERVICE" --region="$GCP_REGION" &>/dev/null; then
         log_warning "Frontend service '$FRONTEND_SERVICE' not found. Using default service account: $FRONTEND_SA"
         return
     fi
 
     local sa
     sa=$(gcloud run services describe "$FRONTEND_SERVICE" \
-        --region="$REGION" \
+        --region="$GCP_REGION" \
         --format='value(spec.template.spec.serviceAccountName)' 2>/dev/null || echo "")
 
     if [[ -n "$sa" ]]; then
@@ -119,7 +115,7 @@ harden_backend_ingress() {
     # Check current ingress setting
     local current_ingress
     current_ingress=$(gcloud run services describe "$BACKEND_SERVICE" \
-        --region="$REGION" \
+        --region="$GCP_REGION" \
         --format='value(metadata.annotations."run.googleapis.com/ingress")' 2>/dev/null || echo "")
 
     if [[ "$current_ingress" == "internal" ]]; then
@@ -129,7 +125,7 @@ harden_backend_ingress() {
 
     log_info "Setting backend ingress to internal..."
     gcloud run services update "$BACKEND_SERVICE" \
-        --region="$REGION" \
+        --region="$GCP_REGION" \
         --ingress=internal \
         --no-allow-unauthenticated \
         --quiet
@@ -145,7 +141,7 @@ grant_frontend_access() {
     # Check if the IAM policy binding already exists
     local iam_policy
     iam_policy=$(gcloud run services get-iam-policy "$BACKEND_SERVICE" \
-        --region="$REGION" \
+        --region="$GCP_REGION" \
         --format=json 2>/dev/null || echo "{}")
 
     # Try to use jq if available, otherwise fall back to Python
@@ -192,7 +188,7 @@ except:
 
     log_info "Adding IAM policy binding for roles/run.invoker..."
     gcloud run services add-iam-policy-binding "$BACKEND_SERVICE" \
-        --region="$REGION" \
+        --region="$GCP_REGION" \
         --member="serviceAccount:$FRONTEND_SA" \
         --role="roles/run.invoker" \
         --quiet
@@ -207,7 +203,7 @@ verify_configuration() {
     # Check ingress setting
     local ingress
     ingress=$(gcloud run services describe "$BACKEND_SERVICE" \
-        --region="$REGION" \
+        --region="$GCP_REGION" \
         --format='value(metadata.annotations."run.googleapis.com/ingress")' 2>/dev/null || echo "")
 
     if [[ "$ingress" != "internal" ]]; then
@@ -218,14 +214,14 @@ verify_configuration() {
     # Check authentication requirement
     local auth_policy
     auth_policy=$(gcloud run services describe "$BACKEND_SERVICE" \
-        --region="$REGION" \
+        --region="$GCP_REGION" \
         --format='value(spec.template.metadata.annotations."run.googleapis.com/ingress-status")' 2>/dev/null || echo "")
 
     # Check IAM policy
     log_info "Checking IAM permissions for: $FRONTEND_SA"
     local iam_policy
     iam_policy=$(gcloud run services get-iam-policy "$BACKEND_SERVICE" \
-        --region="$REGION" \
+        --region="$GCP_REGION" \
         --format=json 2>/dev/null || echo "{}")
 
     # Debug: show the policy if verbose
@@ -287,7 +283,7 @@ except Exception as e:
         log_error ""
         log_error "To fix this, run:"
         echo "    gcloud run services add-iam-policy-binding $BACKEND_SERVICE \\"
-        echo "        --region=$REGION \\"
+        echo "        --region=$GCP_REGION \\"
         echo "        --member='serviceAccount:$FRONTEND_SA' \\"
         echo "        --role='roles/run.invoker'"
         return 1

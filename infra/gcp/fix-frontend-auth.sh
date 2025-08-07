@@ -1,28 +1,22 @@
 #!/bin/bash
 set -euo pipefail
 
+# Load configuration
+SCRIPT_DIR="$(dirname "$0")"
+source "${SCRIPT_DIR}/config.sh"
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-PROJECT_ID="gen-lang-client-0105778560"
-REGION="europe-west1"
-FRONTEND_SERVICE="re-frame-frontend"
-BACKEND_SERVICE="re-frame-backend"
-
 echo -e "${YELLOW}Fixing Frontend Authentication Issues${NC}"
 echo "========================================="
 
-# Set project
-gcloud config set project ${PROJECT_ID}
-
-# Get the backend public URL
+# Get the backend public URL dynamically
 echo -e "\n${GREEN}1. Getting backend public URL...${NC}"
-BACKEND_PUBLIC_URL=$(gcloud run services describe ${BACKEND_SERVICE} \
-  --region=${REGION} \
-  --format="value(status.url)")
+BACKEND_PUBLIC_URL=$(get_backend_url)
 
 echo "   Backend public URL: ${BACKEND_PUBLIC_URL}"
 
@@ -91,9 +85,7 @@ gcloud run services update-traffic ${FRONTEND_SERVICE} \
   --to-latest
 
 echo -e "\n${GREEN}8. Testing the configuration...${NC}"
-FRONTEND_URL=$(gcloud run services describe ${FRONTEND_SERVICE} \
-  --region=${REGION} \
-  --format="value(status.url)")
+FRONTEND_URL=$(get_frontend_url)
 
 echo "   Frontend URL: ${FRONTEND_URL}"
 echo -e "\n${GREEN}Testing health endpoint...${NC}"
