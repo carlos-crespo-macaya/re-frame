@@ -124,7 +124,7 @@ jobs:
       # Download OpenAPI schema from Backend CI workflow
       - name: Download OpenAPI schema
         if: matrix.service == 'frontend'
-        uses: dawidd6/action-download-artifact@v3
+        uses: dawidd6/action-download-artifact@v11
         with:
           workflow: backend-ci.yml
           workflow_conclusion: success
