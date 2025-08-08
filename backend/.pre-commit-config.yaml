@@ -42,3 +42,11 @@ repos:
         language: system
         files: ^(backend/src/.*\.py|backend/pyproject\.toml)$
         pass_filenames: false
+
+  - repo: local
+    hooks:
+      - id: gitleaks-protect
+        name: gitleaks protect (staged)
+        entry: bash -c 'gitleaks protect --staged --redact --verbose'
+        language: system
+        pass_filenames: false
