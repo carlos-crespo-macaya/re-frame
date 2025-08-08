@@ -235,8 +235,30 @@ describe('Proxy Route Core Logic', () => {
       process.env.BACKEND_PUBLIC_URL = 'https://re-frame-backend-test.a.run.app';
     });
 
-    test('includes duplex: half flag in fetch options', async () => {
+    test('uses fetch for SSE with proper headers and duplex: half', async () => {
       jest.resetModules();
+
+      // Mock GoogleAuth.getClient used for SSE auth headers
+      const getClientMock = jest.fn().mockResolvedValue({
+        getRequestHeaders: jest.fn().mockResolvedValue({ Authorization: 'Bearer test-token' })
+      });
+      (jest.requireMock('google-auth-library') as any).GoogleAuth.mockImplementation(() => ({
+        getIdREDACTED,
+        getClient: getClientMock
+      }));
+
+      // Ensure global fetch exists in this test environment (Node may not provide it)
+      if (!(globalThis as any).fetch) {
+        (globalThis as any).fetch = jest.fn();
+      }
+
+      // Spy on global fetch
+      const fetchSpy = jest.spyOn(globalThis as any, 'fetch').mockResolvedValue({
+        ok: true,
+        status: 200,
+        body: 'mock-stream-body'
+      } as any);
+
       const { GET } = await import('./route');
 
       const testRequest = {
@@ -248,9 +270,13 @@ describe('Proxy Route Core Logic', () => {
 
       await GET(testRequest as any, { params: { path: ['api', 'events', 'session123'] } });
 
-      expect(mockRequest).toHaveBeenCalledWith(expect.objectContaining({
-        responseType: 'stream'
-      }));
+      expect(fetchSpy).toHaveBeenCalledTimes(1);
+      const [, options] = fetchSpy.mock.calls[0];
+      expect((options as any).headers['Accept']).toBe('text/event-stream');
+      expect((options as any).headers['Cache-Control']).toBe('no-cache');
+      expect((options as any).duplex).toBe('half');
+
+      fetchSpy.mockRestore();
     });
 
     test('sets cache to no-store', async () => {

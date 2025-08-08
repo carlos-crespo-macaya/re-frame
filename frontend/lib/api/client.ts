@@ -35,18 +35,18 @@ export class ApiClient {
         timeout,
         headers: fetchConfig.headers
       })
-      
+
       const response = await fetch(url, {
         ...fetchConfig,
         signal: controller.signal
       })
       clearTimeout(timeoutId)
-      
+
       apiLogger.apiResponse(fetchConfig.method || 'GET', url, response.status, {
         ok: response.ok,
         statusText: response.statusText
       })
-      
+
       return response
     } catch (error) {
       clearTimeout(timeoutId)
@@ -130,8 +130,13 @@ export class ApiClient {
       params?.is_audio,
       params?.language
     )
-    const url = new URL(`${API_CONFIG.baseUrl}${path}`)
-    return new EventSource(url.toString())
+    // Build a URL that works both in browser and during SSR-safe import
+    const relativeUrl = `${API_CONFIG.baseUrl}${path}`
+    const finalUrl =
+      typeof window !== 'undefined'
+        ? new URL(relativeUrl, window.location.origin).toString()
+        : relativeUrl
+    return new EventSource(finalUrl)
   }
 
   /**
@@ -139,7 +144,7 @@ export class ApiClient {
    */
   static async downloadPdf(sessionId: string): Promise<PdfDownloadResponse> {
     const url = `${API_CONFIG.baseUrl}${API_CONFIG.endpoints.pdf(sessionId)}`
-    
+
     try {
       const response = await this.fetchWithTimeout(url, {
         timeout: API_CONFIG.timeouts.upload
@@ -150,11 +155,11 @@ export class ApiClient {
       }
 
       const blob = await response.blob()
-      
+
       // Extract filename from Content-Disposition header if available
       const contentDisposition = response.headers.get('content-disposition')
       let filename = `session-${sessionId}.pdf`
-      
+
       if (contentDisposition) {
         // Handle different Content-Disposition formats:
         // filename="example.pdf"
@@ -221,7 +226,7 @@ export class ApiClient {
         timestamp: Date.now(),
         sample_rate: sampleRate
       })
-      
+
       // If turn complete, send control command
       if (turnComplete) {
         await generatedApi.voice.sendControl(sessionId, {
@@ -239,20 +244,20 @@ export class ApiClient {
    */
   static createVoiceEventSource(sessionId: string): EventSource {
     const url = `${API_CONFIG.baseUrl}${generatedApi.voice.getStreamEndpoint(sessionId)}`
-    
+
     apiLogger.info('SSE connection start', { url })
-    
+
     const eventSource = new EventSource(url)
-    
+
     // Add basic event listeners for debugging
     eventSource.addEventListener('open', () => {
       apiLogger.info('SSE connection opened', { url })
     })
-    
+
     eventSource.addEventListener('error', (error) => {
       apiLogger.error('SSE connection error', { url }, new Error(`SSE connection failed: ${error.type}`))
     })
-    
+
     return eventSource
   }
 }

@@ -49,6 +49,46 @@ async function proxy(req: NextRequest, { params }: { params: { path: string[] } 
     delete requestHeaders.host; // Remove to avoid conflicts
     delete requestHeaders['content-length']; // Will be recalculated
 
+    // Check if this is an SSE request
+    const isSSE = params.path.includes('events') ||
+                  requestHeaders.accept?.includes('text/event-stream');
+
+    // For SSE, we need to handle streaming differently
+    if (isSSE) {
+      // Make a fetch request with auth header instead of using the client
+      const authClient = await auth.getClient();
+      const authHeaders = await authClient.getRequestHeaders(targetUrl);
+
+      const response = await fetch(targetUrl, {
+        method: req.method,
+        headers: {
+          ...requestHeaders,
+          ...authHeaders,
+          'Accept': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+        },
+        // Required by Node.js fetch for streaming requests in some environments
+        // and validated by unit tests to ensure correct handling of SSE
+        // @ts-expect-error - duplex is not yet in the standard lib types
+        duplex: 'half',
+      });
+
+      if (!response.ok) {
+        throw new Error(`Backend returned ${response.status}: ${response.statusText}`);
+      }
+
+      // Return the SSE stream directly
+      return new NextResponse(response.body, {
+        status: response.status,
+        headers: {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive',
+          'X-Accel-Buffering': 'no', // Disable buffering for SSE
+        },
+      });
+    }
+
     // Use the client's request method which automatically adds the Authorization header
     const response = await client.request({
       url: targetUrl,
