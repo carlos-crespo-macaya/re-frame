@@ -67,6 +67,10 @@ async function proxy(req: NextRequest, { params }: { params: { path: string[] } 
           'Accept': 'text/event-stream',
           'Cache-Control': 'no-cache',
         },
+        // Required by Node.js fetch for streaming requests in some environments
+        // and validated by unit tests to ensure correct handling of SSE
+        // @ts-expect-error - duplex is not yet in the standard lib types
+        duplex: 'half',
       });
 
       if (!response.ok) {
