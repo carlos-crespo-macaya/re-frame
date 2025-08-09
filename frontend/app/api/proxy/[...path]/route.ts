@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleAuth } from 'google-auth-library';
 
-const backendHost = process.env.BACKEND_INTERNAL_HOST;
-const backendPublicUrl = process.env.BACKEND_PUBLIC_URL;
-
 async function proxy(req: NextRequest, { params }: { params: { path: string[] } }) {
+  // Resolve env dynamically per request for stability across deployments
+  const envBackendHost = process.env.BACKEND_INTERNAL_HOST;
+  const envBackendPublic = process.env.BACKEND_PUBLIC_URL;
+  const envNextPublic = process.env.NEXT_PUBLIC_BACKEND_URL;
+
+  // In production, fall back to public domain if unset; in dev, preserve strict checks
+  const isProd = process.env.NODE_ENV === 'production';
+  const backendHost = envBackendHost || (isProd ? 'api.re-frame.social' : '');
+  const backendPublicUrl = envBackendPublic || envNextPublic || (isProd ? 'https://api.re-frame.social' : '');
+
   if (!backendHost) {
     return NextResponse.json(
       { error: 'Proxy disabled in dev' },
