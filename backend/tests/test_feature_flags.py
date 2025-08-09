@@ -28,7 +28,7 @@ class TestFeatureFlags:
         data = {
             FeatureFlagKey.CHAT_MODE_ENABLED: False,
             FeatureFlagKey.VOICE_MODE_ENABLED: True,
-            FeatureFlagKey.NOTEPAD_MODE_ENABLED: True,
+            FeatureFlagREDACTED: True,
         }
         flags = FeatureFlags.from_dict(data)
 
@@ -62,10 +62,10 @@ class TestFeatureFlagConfig:
 
     def test_from_environment(self, monkeypatch):
         """Test loading from environment variables."""
-        monkeypatch.setenv("FEATURE_FLAGS_SDK_KEY", "test-key")
-        monkeypatch.setenv("FEATURE_FLAGS_TIMEOUT", "2.0")
+        monREDACTED", "test-key")
+        monREDACTED", "2.0")
         monkeypatch.setenv("FEATURE_FLAGS_CACHE", "false")
-        monkeypatch.setenv("FEATURE_FLAGS_LOG_ACCESS", "true")
+        monREDACTED", "true")
 
         config = FeatureFlagConfig.from_environment()
         assert config.sdk_key == "test-key"

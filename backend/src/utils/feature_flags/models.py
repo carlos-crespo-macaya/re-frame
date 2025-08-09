@@ -34,7 +34,7 @@ class FeatureFlags:
         return cls(
             chat_mode_enabled=data.get(FeatureFlagKey.CHAT_MODE_ENABLED, True),
             voice_mode_enabled=data.get(FeatureFlagKey.VOICE_MODE_ENABLED, False),
-            notepad_mode_enabled=data.get(FeatureFlagKey.NOTEPAD_MODE_ENABLED, False),
+            notepad_mode_enabled=data.get(FeatureFlagREDACTED, False),
         )
 
     def to_dict(self) -> dict[str, bool]:

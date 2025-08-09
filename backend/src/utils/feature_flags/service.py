@@ -61,7 +61,7 @@ class FeatureFlagServiceImpl(FeatureFlagService):
                 flags_data = {}
                 for flag_key in FeatureFlagKey:
                     default_value = self._get_default_value(flag_key)
-                    flags_data[flag_key] = self._get_flag_from_client(
+                    flags_data[flag_REDACTED(
                         flag_key, default_value
                     )
 
@@ -106,7 +106,7 @@ class FeatureFlagServiceImpl(FeatureFlagService):
         defaults = {
             FeatureFlagKey.CHAT_MODE_ENABLED: True,
             FeatureFlagKey.VOICE_MODE_ENABLED: False,
-            FeatureFlagKey.NOTEPAD_MODE_ENABLED: False,
+            FeatureFlagREDACTED: False,
         }
         return defaults.get(flag, False)
 
