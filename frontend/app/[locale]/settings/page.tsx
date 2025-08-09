@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { GlassCard } from '@/components/layout/GlassCard'
-import { executeRecaptcha } from '@/lib/recaptcha'
+import { useRecaptcha } from '@/lib/recaptcha/useRecaptcha'
 import { postFeedbackApiFeedbackPost } from '@/lib/api/generated/sdk.gen'
 import { FeedbackIn } from '@/lib/api/generated/types.gen'
 
@@ -11,6 +11,8 @@ export default function SettingsPage({ params }: { params: { locale: string } })
   const [submitting, setSubmitting] = useState(false)
   const [msg, setMsg] = useState<string | null>(null)
   const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!
+  const provider = process.env.NEXT_PUBLIC_RECAPTCHA_PROVIDER === 'enterprise' ? 'enterprise' : 'classic'
+  const { ready, execute } = useRecaptcha(siteKey, provider)
 
   useEffect(() => {
     const v = localStorage.getItem('telemetry_opt_in')
@@ -25,7 +27,11 @@ export default function SettingsPage({ params }: { params: { locale: string } })
   async function sendFeedback(helpful: boolean) {
     try {
       setSubmitting(true); setMsg(null)
-      const token = await executeRecaptcha('submit_feedback', siteKey)
+      if (!ready) {
+        setMsg(params.locale === 'es' ? 'Cargando reCAPTCHA…' : 'Loading reCAPTCHA…')
+        return
+      }
+      const token = await execute(`settings_${helpful ? 'yes' : 'no'}`)
       const body: FeedbackIn = {
         helpful,
         reasons: [],
@@ -33,12 +39,12 @@ export default function SettingsPage({ params }: { params: { locale: string } })
         lang: params.locale,
         platform: 'web',
         recaptcha_token: token,
-        recaptcha_action: 'submit_feedback',
+        recaptcha_action: `settings_${helpful ? 'yes' : 'no'}`,
       }
       await postFeedbackApiFeedbackPost({ requestBody: body, xObservabilityOptIn: optIn ? '1' : undefined })
-      setMsg('Thanks for the feedback!')
+      setMsg(params.locale === 'es' ? '¡Gracias por tu opinión!' : 'Thanks for the feedback!')
     } catch (e) {
-      setMsg('Could not submit feedback. Please try later.')
+      setMsg(params.locale === 'es' ? 'No se pudo enviar la opinión. Inténtalo más tarde.' : 'Could not submit feedback. Please try later.')
     } finally { setSubmitting(false) }
   }
 
@@ -92,8 +98,8 @@ export default function SettingsPage({ params }: { params: { locale: string } })
         <GlassCard className="p-4">
           <h2 className="text-lg font-medium text-white mb-2">{t('quickFeedback')}</h2>
           <div className="flex gap-3">
-            <button className="px-3 py-2 rounded bg-white/10 text-white" disabled={submitting} onClick={() => sendFeedback(true)}>{t('yes')}</button>
-            <button className="px-3 py-2 rounded bg-white/10 text-white" disabled={submitting} onClick={() => sendFeedback(false)}>{t('no')}</button>
+            <button className="px-3 py-2 rounded bg-white/10 text-white disabled:opacity-50" disabled={submitting || !ready} onClick={() => sendFeedback(true)}>{t('yes')}</button>
+            <button className="px-3 py-2 rounded bg-white/10 text-white disabled:opacity-50" disabled={submitting || !ready} onClick={() => sendFeedback(false)}>{t('no')}</button>
           </div>
           {msg && <p className="mt-3 text-sm text-white/80">{msg}</p>}
         </GlassCard>

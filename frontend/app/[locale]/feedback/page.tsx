@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { GlassCard } from '@/components/layout/GlassCard'
-import { executeRecaptcha } from '@/lib/recaptcha'
+import { useRecaptcha } from '@/lib/recaptcha/useRecaptcha'
 import { postFeedbackApiFeedbackPost } from '@/lib/api/generated/sdk.gen'
 import { FeedbackIn } from '@/lib/api/generated/types.gen'
 
@@ -14,6 +14,8 @@ export default function FeedbackPage({ params }: { params: { locale: string } })
   const [msg, setMsg] = useState<string | null>(null)
   const [comment, setComment] = useState('')
   const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!
+  const provider = process.env.NEXT_PUBLIC_RECAPTCHA_PROVIDER === 'enterprise' ? 'enterprise' : 'classic'
+  const { ready, execute } = useRecaptcha(siteKey, provider)
 
   useEffect(() => {}, [])
 
@@ -22,7 +24,11 @@ export default function FeedbackPage({ params }: { params: { locale: string } })
       setSubmitting(true); setMsg(null)
       let token = ''
       try {
-        token = await executeRecaptcha('submit_feedback', siteKey)
+        if (!ready) {
+          setMsg(params.locale === 'es' ? 'Cargando reCAPTCHA…' : 'Loading reCAPTCHA…')
+          return
+        }
+        token = await execute(`feedback_${helpful ? 'up' : 'down'}`)
       } catch (err) {
         console.error('reCAPTCHA failed:', err)
         setMsg(params.locale === 'es' ? 'No se pudo validar reCAPTCHA.' : 'Could not validate reCAPTCHA.')
@@ -36,7 +42,7 @@ export default function FeedbackPage({ params }: { params: { locale: string } })
         platform: 'web',
         comment: comment || undefined,
         recaptcha_token: token,
-        recaptcha_action: 'submit_feedback',
+          recaptcha_action: `feedback_${helpful ? 'up' : 'down'}`,
       }
       await postFeedbackApiFeedbackPost({ requestBody: body })
       setMsg(params.locale === 'es' ? '¡Gracias por tu opinión!' : 'Thanks for the feedback!')
@@ -88,10 +94,10 @@ export default function FeedbackPage({ params }: { params: { locale: string } })
           <label className="block text-sm text-white/80 mb-2" htmlFor="comment">{t('optionalComment')}</label>
           <textarea id="comment" value={comment} onChange={(e)=>setComment(e.target.value)} className="w-full mb-3 rounded bg-white/5 text-white p-2 border border-white/10 focus:ring-2 focus:ring-[#aefcf5]/50" rows={3} placeholder={params.locale==='es'?'Comparte algo breve (opcional)':'Share something brief (optional)'} />
           <div className="flex gap-3">
-            <button aria-label={t('thumbsUp')} title={t('thumbsUp')} className="px-3 py-2 rounded bg-[#aefcf5]/10 hover:bg-[#aefcf5]/20 text-[#aefcf5] border border-[#aefcf5]/30" disabled={submitting} onClick={() => sendFeedback(true)}>
+            <button aria-label={t('thumbsUp')} title={t('thumbsUp')} className="px-3 py-2 rounded bg-[#aefcf5]/10 hover:bg-[#aefcf5]/20 text-[#aefcf5] border border-[#aefcf5]/30 disabled:opacity-50" disabled={submitting || !ready} onClick={() => sendFeedback(true)}>
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M2 10h4v12H2zM22 11c0-.55-.45-1-1-1h-6.31l1.1-5.27.03-.32c0-.41-.17-.79-.44-1.06L14 2 7.59 8.41C7.22 8.78 7 9.3 7 9.83V20c0 .55.45 1 1 1h9c.4 0 .75-.24.91-.59l3-7c.06-.13.09-.27.09-.41v-2z"/></svg>
             </button>
-            <button aria-label={t('thumbsDown')} title={t('thumbsDown')} className="px-3 py-2 rounded bg-[#aefcf5]/10 hover:bg-[#aefcf5]/20 text-[#aefcf5] border border-[#aefcf5]/30" disabled={submitting} onClick={() => sendFeedback(false)}>
+            <button aria-label={t('thumbsDown')} title={t('thumbsDown')} className="px-3 py-2 rounded bg-[#aefcf5]/10 hover:bg-[#aefcf5]/20 text-[#aefcf5] border border-[#aefcf5]/30 disabled:opacity-50" disabled={submitting || !ready} onClick={() => sendFeedback(false)}>
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M2 2h4v12H2zM22 9c0 .55-.45 1-1 1h-6.31l1.1 5.27.03.32c0 .41-.17.79-.44 1.06L14 20l-6.41-6.41C7.22 13.22 7 12.7 7 12.17V2c0-.55.45-1 1-1h9c.4 0 .75.24.91.59l3 7c.06.13.09.27.09.41v2z"/></svg>
             </button>
           </div>

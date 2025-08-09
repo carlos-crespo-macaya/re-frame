@@ -48,3 +48,9 @@ body {
     box-shadow: 0 0 0 1px rgba(155, 247, 235, 0.25), 0 10px 40px rgba(0, 0, 0, 0.4);
   }
 }
+
+/* Optional: move reCAPTCHA v3 badge to bottom-left while keeping it visible */
+.grecaptcha-badge {
+  left: 12px !important;
+  right: auto !important;
+}

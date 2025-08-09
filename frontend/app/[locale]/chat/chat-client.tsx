@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSSEClient } from '@/lib/streaming/use-sse-client'
 import ReactMarkdown from 'react-markdown'
+import { useEffect as useReactEffect } from 'react'
+import { useRecaptcha } from '@/lib/recaptcha/useRecaptcha'
 // Chat screen does not display a language selector; language follows route locale
 
 interface Message {
@@ -60,6 +62,11 @@ export function ChatClient({ locale }: { locale: string }) {
     autoConnect: false,
   })
 
+  // Prepare reCAPTCHA for chat session
+  const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY
+  const provider = process.env.NEXT_PUBLIC_RECAPTCHA_PROVIDER === 'enterprise' ? 'enterprise' : 'classic'
+  const { ready, execute } = useRecaptcha(siteKey, provider)
+
   useEffect(() => {
     setSelectedLanguage(locale === 'es' ? 'es-ES' : 'en-US')
   }, [locale])
@@ -80,6 +87,19 @@ export function ChatClient({ locale }: { locale: string }) {
       sseClient.disconnect()
     }
   }, [selectedLanguage]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Prefetch a token when chat session starts
+  useReactEffect(() => {
+    (async () => {
+      try {
+        if (ready) {
+          await execute('chat_start')
+        }
+      } catch {
+        // best effort
+      }
+    })()
+  }, [ready])
 
   // Handle incoming SSE messages
   useEffect(() => {
@@ -161,6 +181,12 @@ export function ChatClient({ locale }: { locale: string }) {
     }
 
     try {
+      // Optionally include a recaptcha token on first message
+      try {
+        if (ready) {
+          await execute('chat_message')
+        }
+      } catch {}
       await sseClient.sendText(input)
     } catch (error) {
       console.error('Failed to send message:', error)

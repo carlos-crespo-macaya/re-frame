@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { NaturalConversation } from '@/components/audio/NaturalConversation'
 import { LanguageSelector } from '@/components/ui'
 import { useState, useEffect } from 'react'
+import { useRecaptcha } from '@/lib/recaptcha/useRecaptcha'
 
 interface Translations {
   title: string
@@ -14,6 +15,9 @@ interface Translations {
 export function VoiceClient({ locale }: { locale: string }) {
   const router = useRouter()
   const [selectedLanguage, setSelectedLanguage] = useState(locale === 'es' ? 'es-ES' : 'en-US')
+  const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY
+  const provider = process.env.NEXT_PUBLIC_RECAPTCHA_PROVIDER === 'enterprise' ? 'enterprise' : 'classic'
+  const { ready, execute } = useRecaptcha(siteKey, provider)
 
   // Translations
   const translations: Record<string, Translations> = {
@@ -34,6 +38,19 @@ export function VoiceClient({ locale }: { locale: string }) {
   useEffect(() => {
     setSelectedLanguage(locale === 'es' ? 'es-ES' : 'en-US')
   }, [locale])
+
+  // Prefetch a token on voice page mount to avoid first-click race
+  useEffect(() => {
+    (async () => {
+      try {
+        if (ready) {
+          await execute('voice_start')
+        }
+      } catch {
+        // best effort
+      }
+    })()
+  }, [ready])
 
   const handleBack = () => {
     router.push(`/${locale}`)
