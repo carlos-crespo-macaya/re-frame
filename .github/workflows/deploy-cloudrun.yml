@@ -142,6 +142,8 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:${{ github.ref_name }}
           build-args: |
             ${{ matrix.service == 'frontend' && 'BUILD_TARGET=production' || '' }}
+            ${{ matrix.service == 'frontend' && format('NEXT_PUBLIC_RECAPTCHA_SITE_KEY={0}', secrets.NEXT_PUBLIC_RECAPTCHA_SITE_KEY) || '' }}
+            ${{ matrix.service == 'frontend' && format('NEXT_PUBLIC_RECAPTCHA_PROVIDER={0}', secrets.NEXT_PUBLIC_RECAPTCHA_PROVIDER) || '' }}
           cache-from: type=gha
           cache-to:   type=gha,mode=max
 
