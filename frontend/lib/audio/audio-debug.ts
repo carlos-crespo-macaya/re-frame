@@ -29,7 +29,7 @@ export interface DeviceInfo {
  */
 export class AudioDebugger {
   private analyser: AnalyserNode | null = null
-  private dataArray: Uint8Array | null = null
+  private dataArray: Uint8Array<ArrayBuffer> | null = null
   
   /**
    * Get current audio context information
@@ -120,7 +120,9 @@ export class AudioDebugger {
   createLevelMonitor(context: AudioContext, source: AudioNode): void {
     this.analyser = context.createAnalyser()
     this.analyser.fftSize = 256
-    this.dataArray = new Uint8Array(this.analyser.frequencyBinCount)
+    this.dataArray = new Uint8Array(
+      new ArrayBuffer(this.analyser.frequencyBinCount)
+    ) as Uint8Array<ArrayBuffer>
     source.connect(this.analyser)
   }
   
@@ -132,7 +134,7 @@ export class AudioDebugger {
       return null
     }
     
-    this.analyser.getByteFrequencyData(this.dataArray)
+    this.analyser.getByteFrequencyData(this.dataArray as Uint8Array<ArrayBuffer>)
     
     let sum = 0
     let peak = 0

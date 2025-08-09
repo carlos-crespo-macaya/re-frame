@@ -85,3 +85,8 @@ frontend/lib/api/generated/
 coverage.xml
 
 reframe_diag_*/
+
+# Generated API client
+frontend/lib/api/generated/
+# Local generated OpenAPI spec
+frontend/openapi.json

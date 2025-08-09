@@ -203,7 +203,7 @@ export function useNaturalConversation(options: UseNaturalConversationOptions = 
   // Setup voice SSE connection
   const setupSSEConnection = useCallback((sessionId: string) => {
     // For voice mode, use the voice-specific EventSource
-    const eventSource = REDACTED(sessionId)
+    const eventSource = ApiClient.createVoiceEventSource(sessionId)
 
     eventSource.onopen = () => {
       if (process.env.NODE_ENV === 'development') {

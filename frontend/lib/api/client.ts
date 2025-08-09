@@ -125,7 +125,7 @@ export class ApiClient {
     sessionId: string,
     params?: EventSourceParams
   ): EventSource {
-    const path = generatedREDACTED(
+    const path = generatedApi.events.getEventStreamEndpoint(
       sessionId,
       params?.is_audio,
       params?.language
