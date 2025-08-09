@@ -26,6 +26,7 @@ from src.utils.session_manager import session_manager
 from src.utils.status_router import router as status_router
 from src.voice.router import router as voice_router
 from src.voice.session_manager import voice_session_manager
+from src.routes.feedback import router as feedback_router
 
 warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
 
@@ -145,6 +146,7 @@ app.include_router(text_router)
 app.include_router(voice_router)
 app.include_router(metrics_router)
 app.include_router(status_router)
+app.include_router(feedback_router)
 
 STATIC_DIR = Path("static")
 # Only mount static files if the directory exists
