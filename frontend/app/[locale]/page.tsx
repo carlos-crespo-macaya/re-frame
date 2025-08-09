@@ -21,7 +21,7 @@ const translations = {
     },
     cta: {
       title: 'Ready to begin?',
-      description: 'Start a private session to explore your thoughts using compassionate, evidence-based CBT tools.',
+      description: 'Start a private session to explore your thoughts using evidence-based CBT tools.',
       button: 'Start Your Session',
       privacy: "Private session — we don't store personal data.",
     },
@@ -65,7 +65,7 @@ const translations = {
     },
     cta: {
       title: '¿Listo para empezar?',
-      description: 'Inicia una sesión privada para explorar tus pensamientos con herramientas compasivas de TCC basadas en evidencia.',
+      description: 'Inicia una sesión privada para explorar tus pensamientos con herramientas de TCC basadas en evidencia.',
       button: 'Iniciar Tu Sesión',
       privacy: 'Sesión privada — no almacenamos datos personales.',
     },
