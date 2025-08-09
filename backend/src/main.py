@@ -17,6 +17,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
+from src.routes.feedback import router as feedback_router
 from src.text.router import router as text_router
 from src.utils.feature_flags.service import create_feature_flag_service
 from src.utils.logging import get_logger, setup_logging
@@ -26,7 +27,6 @@ from src.utils.session_manager import session_manager
 from src.utils.status_router import router as status_router
 from src.voice.router import router as voice_router
 from src.voice.session_manager import voice_session_manager
-from src.routes.feedback import router as feedback_router
 
 warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
 

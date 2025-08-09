@@ -1,9 +1,7 @@
 import os
-from typing import Optional
 
 import httpx
 from google.cloud import recaptchaenterprise_v1 as recaptcha
-
 
 PROVIDER = os.environ.get("RECAPTCHA_PROVIDER", "enterprise").lower()
 PROJECT = os.environ.get("GOOGLE_CLOUD_PROJECT", "")
@@ -48,5 +46,3 @@ def verify_recaptcha(token: str, action: str = "submit_feedback") -> float:
     if "action" in data and data.get("action") != action:
         return 0.0
     return float(data.get("score", 0.9))
-
-

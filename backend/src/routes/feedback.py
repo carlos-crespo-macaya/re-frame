@@ -1,23 +1,22 @@
 import os
-from typing import Optional
 
-from fastapi import APIRouter, HTTPException, Header
-from pydantic import BaseModel, Field
+from fastapi import APIRouter, Header, HTTPException
 from google.cloud import firestore
+from pydantic import BaseModel, Field
 
 from src.utils.logging import get_logger
-from .recaptcha_util import verify_recaptcha
 
+from .recaptcha_util import verify_recaptcha
 
 router = APIRouter(prefix="/api")
 logger = get_logger(__name__)
 
 ALLOWED_REASONS = {"too_fast", "too_slow", "confusing", "not_relevant"}
 
-_db_client: Optional[firestore.Client] = None
+_db_client: firestore.Client | None = None
 
 
-def get_db_client() -> Optional[firestore.Client]:
+def get_db_client() -> firestore.Client | None:
     global _db_client
     if _db_client is not None:
         return _db_client
