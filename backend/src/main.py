@@ -17,6 +17,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
+from src.routes.feedback import router as feedback_router
 from src.text.router import router as text_router
 from src.utils.feature_flags.service import create_feature_flag_service
 from src.utils.logging import get_logger, setup_logging
@@ -145,6 +146,7 @@ app.include_router(text_router)
 app.include_router(voice_router)
 app.include_router(metrics_router)
 app.include_router(status_router)
+app.include_router(feedback_router)
 
 STATIC_DIR = Path("static")
 # Only mount static files if the directory exists
