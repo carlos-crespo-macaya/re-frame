@@ -7,7 +7,36 @@ import { GlassCard } from '@/components/layout/GlassCard'
 
 interface SupportClientProps {
   locale: string
-  translations: any
+  translations: {
+    title: string
+    subtitle: string
+    sections: {
+      technicalSupport: {
+        title: string
+        description: string
+        contact: string
+        email: string
+        responseTime: string
+      }
+      mentalHealthResources: {
+        title: string
+        description: string
+        resources: Array<{ name: string; description?: string; url?: string }>
+      }
+      aboutAvpd: {
+        title: string
+        description: string
+        resources: Array<{ name: string; description?: string; url?: string }>
+      }
+      privacyAndSafety: {
+        title: string
+        description: string
+        points: string[]
+      }
+    }
+    reminder: { title: string; text: string }
+    footer: { privacy: string; support: string; about: string }
+  }
 }
 
 export function SupportClient({ locale, translations: t }: SupportClientProps) {

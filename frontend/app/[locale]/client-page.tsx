@@ -20,7 +20,7 @@ export function ClientPage({ params }: { params: { locale: string } }) {
           CBT Reframing Assistant
         </h1>
         <p className="text-lg text-[#B0B0B0] mb-8">
-          Welcome to your cognitive behavioral therapy assistant powered by Google's ADK
+          Welcome to your cognitive behavioral therapy assistant powered by Google&apos;s ADK
         </p>
         <div className="space-x-4">
           <button 

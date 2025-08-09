@@ -9,7 +9,9 @@ export async function executeRecaptcha(action: string, siteKey: string): Promise
   const provider: 'enterprise' | 'classic' = rawProvider === 'classic' ? 'classic' : 'enterprise'
 
   await new Promise<void>((resolve) => {
-    const w = window as any
+    const w = window as unknown as {
+      grecaptcha?: any
+    }
     if (provider === 'classic') {
       if (w.grecaptcha) return resolve()
       const s = document.createElement('script')
@@ -30,7 +32,9 @@ export async function executeRecaptcha(action: string, siteKey: string): Promise
     document.head.appendChild(s)
   })
 
-  const w = window as any
+  const w = window as unknown as {
+    grecaptcha?: any
+  }
   if (provider === 'classic') {
     if (!w.grecaptcha?.ready || !w.grecaptcha?.execute) {
       throw new Error('reCAPTCHA v3 (classic) not available on window')

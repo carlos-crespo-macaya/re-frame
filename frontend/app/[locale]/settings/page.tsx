@@ -89,7 +89,7 @@ export default function SettingsPage({ params }: { params: { locale: string } })
           <h2 className="text-lg font-medium text-white mb-2">{t('helpUs')}</h2>
           <p className="text-sm text-white/70 mb-3">{t('helpUsDesc')}</p>
           <label className="inline-flex items-center gap-3 text-white">
-            <input type="checkbox" checked={optIn} onChange={(e) => saveOptIn(e.target.checked)} />
+            <input type="checkbox" checked={optIn} onChange={(event) => saveOptIn(event.target.checked)} />
             <span>{t('toggle')}</span>
           </label>
         </GlassCard>

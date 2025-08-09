@@ -1,6 +1,5 @@
 import { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
-import Link from 'next/link'
 import { AboutClient } from './about-client'
 
 export const metadata: Metadata = {

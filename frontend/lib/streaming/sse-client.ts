@@ -5,10 +5,8 @@
 import {
   ServerMessage,
   ErrorMessage,
-  // StatusMessage,
   ClientMessage,
   ConnectionState,
-  SSEMessage,
   isServerMessage,
   isErrorMessage,
   isStatusMessage
@@ -235,7 +233,7 @@ export class SSEClient {
       }
       
     } catch (error) {
-      console.error('Failed to parse SSE message:', error);
+      console.error('Failed to parse SSE message:', error as Error);
       this.options.onError(error as Error);
     }
   }
@@ -272,7 +270,7 @@ export class SSEClient {
     
     this.reconnectTimer = setTimeout(() => {
       if (this.session) {
-        this.connect(this.session.id, this.currentLanguage).catch(console.error);
+        this.connect(this.session.id, this.currentLanguage).catch((err) => console.error(err));
       }
     }, this.options.reconnectInterval);
   }
