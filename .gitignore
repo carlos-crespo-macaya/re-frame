@@ -90,3 +90,6 @@ reframe_diag_*/
 frontend/lib/api/generated/
 # Local generated OpenAPI spec
 frontend/openapi.json
+
+# Python lockfiles
+backend/uv.lock
