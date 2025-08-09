@@ -14,7 +14,7 @@
   },
   "howWeUse": {
     "title": "Cómo re-frame utiliza la TCC",
-    "description": "Cuando describes una situación, re-frame resalta posibles trampas de pensamiento y sugiere perspectivas más gentiles. Tú mantienes el control—elige lo que se sienta verdadero y útil, descarta el resto."
+    "description": "Cuando describes una situación, re-frame señala posibles trampas de pensamiento y ofrece perspectivas más amables. Tú tienes el control — toma lo que te resulte útil y deja lo que no."
   },
   "reminder": {
     "prefix": "Recordatorio:",

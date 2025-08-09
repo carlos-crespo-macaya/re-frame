@@ -7,19 +7,19 @@
   "details": {
     "whatIs": {
       "label": "What it is:",
-      "description": "An evidence-informed cognitive restructuring companion that helps spot common thinking traps (catastrophizing, mind-reading, etc.) and offers kinder perspectives."
+      "description": "A tool inspired by cognitive restructuring that helps you spot thinking traps — like catastrophizing or mind-reading — and explore kinder perspectives."
     },
     "whatIsnt": {
       "label": "What it isn't:",
-      "description": "not psychotherapy, medical advice, or a crisis service."
+      "description": "Not psychotherapy, medical advice, or a crisis service."
     },
     "creator": {
-      "title": "About me",
-      "content": "I'm <a href='https://carlos-crespo.com/' target='_blank' rel='noopener noreferrer' class='text-brand-green-400 hover:text-brand-green-300 underline'>Carlos</a> — this project collects and shares resources that might help people like me along the way."
+      "title": "Motivation",
+      "content": "The motivation behind re-frame is simple: to make it easier for anyone to challenge unhelpful thoughts with kindness and curiosity."
     },
     "thankYou": {
       "title": "Thank You",
-      "content": "Thank you for trying re-frame. I hope it helps, even a little."
+      "content": "Thank you for trying re-frame."
     }
   },
   "contact": {

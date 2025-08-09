@@ -7,19 +7,19 @@
   "details": {
     "whatIs": {
       "label": "Qué es:",
-      "description": "Una herramienta de reestructuración cognitiva, informada por marcos terapéuticos, que detecta trampas de pensamiento (catastrofismo, lectura de mente, etc.) y propone perspectivas más amables."
+      "description": "Una herramienta inspirada en la reestructuración cognitiva que te ayuda a detectar trampas de pensamiento —como el catastrofismo o la lectura de mente— y a explorar perspectivas más amables."
     },
     "whatIsnt": {
       "label": "Qué no es:",
-      "description": "psicoterapia completa, consejo médico ni servicio de crisis."
+      "description": "psicoterapia, consejo médico, ni servicio de crisis."
     },
     "creator": {
-      "title": "Sobre mí",
-      "content": "Soy <a href='https://carlos-crespo.com/' target='_blank' rel='noopener noreferrer' class='text-brand-green-400 hover:text-brand-green-300 underline'>Carlos</a> — este proyecto reúne y comparte recursos que podrían ayudar a personas como yo en su camino."
+      "title": "Motivación",
+      "content": "La motivación detrás de re-frame es sencilla: facilitar que cualquier persona pueda cuestionar pensamientos poco útiles con amabilidad y curiosidad."
     },
     "thankYou": {
       "title": "Gracias",
-      "content": "Gracias por probar re-frame. Ojalá te ayude, aunque sea un poco."
+      "content": "Gracias por probar re-frame."
     }
   },
   "contact": {

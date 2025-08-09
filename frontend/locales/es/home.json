@@ -1,7 +1,7 @@
 {
   "hero": {
     "title": "Encuentra una perspectiva más amable",
-    "description": "Con TCC basada en evidencia, te ayudamos a notar patrones de pensamiento y a probar perspectivas más amables y equilibradas.",
+    "description": "Con ideas de la TCC, te ayudamos a notar patrones de pensamiento y a probar perspectivas más amables y equilibradas.",
     "learnMore": "Aprende sobre",
     "learnMoreLink": "El enfoque detrás de re-frame"
   },
@@ -28,6 +28,6 @@
   },
   "trust": {
     "title": "Creado con cuidado para TEP y ansiedad social",
-    "description": "Basado en técnicas validadas. Tu privacidad importa: no almacenamos información personal."
+    "description": "Basado en ideas de técnicas de TCC validadas. Tu privacidad importa: no almacenamos información personal."
   }
 }

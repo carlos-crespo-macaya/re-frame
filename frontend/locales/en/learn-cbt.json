@@ -13,8 +13,8 @@
     "conclusion": "Consistent CBT exercises can gradually chip away at the belief \"I will always be rejected.\""
   },
   "howWeUse": {
-    "title": "How re-frame uses CBT",
-    "description": "When you describe a situation, re-frame highlights likely thinking traps and suggests gentler viewpoints. You remain in control—choose what feels true and helpful, discard the rest."
+    "title": "How we use CBT",
+    "description": "When you describe a situation, re-frame points out possible thinking traps and offers gentler viewpoints. You’re in control — take what feels useful and leave what doesn’t."
   },
   "reminder": {
     "prefix": "Reminder:",

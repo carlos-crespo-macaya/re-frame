@@ -1,7 +1,7 @@
 {
   "hero": {
     "title": "Find a kinder perspective",
-    "description": "With evidence-based CBT, we’ll help you notice thinking patterns and try gentler, more balanced perspectives.",
+    "description": "Using ideas from CBT, we help you notice thinking patterns and experiment with gentler, more balanced perspectives.",
     "learnMore": "Learn about",
     "learnMoreLink": "The approach behind re-frame"
   },
@@ -28,6 +28,6 @@
   },
   "trust": {
     "title": "Made with care for AvPD and social anxiety",
-    "description": "Built on evidence-based techniques. Your privacy matters—we don’t store personal information."
+    "description": "Built on ideas from well-established CBT techniques. Your privacy matters — we don’t store personal information."
   }
 }
