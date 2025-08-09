@@ -49,6 +49,7 @@ const translations = {
       privacy: 'Privacy',
       support: 'Support',
       about: 'About',
+      feedback: 'Feedback',
       copyright: '© 2025 re-frame.social',
     },
   },
@@ -92,6 +93,7 @@ const translations = {
       privacy: 'Privacidad',
       support: 'Soporte',
       about: 'Acerca de',
+      feedback: 'Opinión',
       copyright: '© 2025 re-frame.social',
     },
   },
@@ -247,6 +249,14 @@ export default function LocalePage({ params }: { params: { locale: string } }) {
                     className="text-white/45 hover:text-[#aefcf5] transition-colors"
                   >
                     {t.footer.about}
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href={`/${params.locale}/feedback`}
+                    className="text-white/45 hover:text-[#aefcf5] transition-colors"
+                  >
+                    {t.footer.feedback}
                   </Link>
                 </li>
               </ul>
