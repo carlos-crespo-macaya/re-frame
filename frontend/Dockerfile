@@ -58,10 +58,14 @@ RUN pnpm run generate:api || echo "Warning: API client generation failed"
 # Build arguments for environment variables
 ARG NEXT_PUBLIC_API_URL
 ARG NEXT_PUBLIC_ENVIRONMENT=production
+ARG NEXT_PUBLIC_RECAPTCHA_PROVIDER=classic
+ARG NEXT_PUBLIC_RECAPTCHA_SITE_KEY
 
 # Set build-time environment variables
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_ENVIRONMENT=$NEXT_PUBLIC_ENVIRONMENT
+ENV NEXT_PUBLIC_RECAPTCHA_PROVIDER=$NEXT_PUBLIC_RECAPTCHA_PROVIDER
+ENV NEXT_PUBLIC_RECAPTCHA_SITE_KEY=$NEXT_PUBLIC_RECAPTCHA_SITE_KEY
 
 # Use Cloud Run specific config if deploying to Cloud Run
 RUN if [ -f "next.config.cloudrun.mjs" ]; then \
