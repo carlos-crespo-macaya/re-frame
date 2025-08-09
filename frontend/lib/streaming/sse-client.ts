@@ -272,7 +272,9 @@ export class SSEClient {
     this.reconnectTimer = setTimeout(() => {
       // Ensure any stale EventSource is cleared before reconnect
       if (this.eventSource && this.eventSource.readyState !== EventSource.OPEN) {
-        try { this.eventSource.close(); } catch {}
+        try { this.eventSource.close(); } catch {
+          // ignore close errors
+        }
         this.eventSource = null;
       }
       if (this.session) {
