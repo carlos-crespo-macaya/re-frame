@@ -1,3 +1,6 @@
+import os
+from typing import Optional
+
 from fastapi import APIRouter, HTTPException, Header
 from pydantic import BaseModel, Field
 from google.cloud import firestore
@@ -7,10 +10,24 @@ from .recaptcha_util import verify_recaptcha
 
 
 router = APIRouter(prefix="/api")
-db = firestore.Client()
 logger = get_logger(__name__)
 
 ALLOWED_REASONS = {"too_fast", "too_slow", "confusing", "not_relevant"}
+
+_db_client: Optional[firestore.Client] = None
+
+
+def get_db_client() -> Optional[firestore.Client]:
+    global _db_client
+    if _db_client is not None:
+        return _db_client
+    try:
+        project = os.getenv("GOOGLE_CLOUD_PROJECT") or None
+        _db_client = firestore.Client(project=project)
+    except Exception as exc:
+        logger.warning("firestore_client_unavailable", error=str(exc))
+        _db_client = None
+    return _db_client
 
 
 class FeedbackIn(BaseModel):
@@ -40,8 +57,10 @@ async def post_feedback(
         "opt_in_observability": x_observability_opt_in == "1",
     }
 
-    db.collection("feedback_v1").add(doc)
-    logger.info("feedback_received", **doc)
+    client = get_db_client()
+    if client is not None:
+        client.collection("feedback_v1").add(doc)
+        logger.info("feedback_received", **doc)
+    else:
+        logger.info("feedback_received_noop", **doc)
     return {"ok": True}
-
-

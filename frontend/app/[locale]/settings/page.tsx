@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { GlassCard } from '@/components/layout/GlassCard'
 import { executeRecaptcha } from '@/lib/recaptcha'
-import { getTranslations } from 'next-intl/server'
 
 export default function SettingsPage({ params }: { params: { locale: string } }) {
   const [optIn, setOptIn] = useState(false)
