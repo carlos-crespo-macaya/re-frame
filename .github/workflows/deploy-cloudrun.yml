@@ -215,6 +215,17 @@ jobs:
 
       - name: Deploy frontend
         run: |
+          # Compute stable proxy envs with overrides
+          BACKEND_URL="${{ needs.deploy-backend.outputs.backend_url }}"
+          PUBLIC_OVERRIDE="${{ secrets.FRONTEND_BACKEND_PUBLIC_URL }}"
+          INTERNAL_OVERRIDE="${{ secrets.FRONTEND_BACKEND_INTERNAL_HOST }}"
+          AUDIENCE_URL=${PUBLIC_OVERRIDE:-$BACKEND_URL}
+          INTERNAL_HOST=${INTERNAL_OVERRIDE:-"${{ env.BACKEND_SERVICE }}.${{ env.REGION }}.internal"}
+
+          # Pass NEXT_PUBLIC_* if provided (build-time for Next.js; kept here for SSR/runtime parity)
+          NP_SITE_KEY="${{ secrets.NEXT_PUBLIC_RECAPTCHA_SITE_KEY }}"
+          NP_PROVIDER="${{ secrets.NEXT_PUBLIC_RECAPTCHA_PROVIDER }}"
+
           gcloud run deploy ${{ env.FRONTEND_SERVICE }} \
             --image          ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-frontend:${{ needs.gate.outputs.head_sha }} \
             --platform       managed \
@@ -229,7 +240,7 @@ jobs:
             --memory         1Gi \
             --min-instances  0 \
             --max-instances  10 \
-            --set-env-vars   "NODE_ENV=production,BACKEND_INTERNAL_HOST=${{ env.BACKEND_SERVICE }}.${{ env.REGION }}.internal,BACKEND_PUBLIC_URL=${{ needs.deploy-backend.outputs.backend_url }},GCP_PROJECT_ID=${{ env.PROJECT_ID }},GCP_REGION=${{ env.REGION }}"
+            --set-env-vars   "NODE_ENV=production,GCP_PROJECT_ID=${{ env.PROJECT_ID }},GCP_REGION=${{ env.REGION }},BACKEND_INTERNAL_HOST=${INTERNAL_HOST},BACKEND_PUBLIC_URL=${AUDIENCE_URL}${NP_SITE_KEY:+,NEXT_PUBLIC_RECAPTCHA_SITE_KEY=$NP_SITE_KEY}${NP_PROVIDER:+,NEXT_PUBLIC_RECAPTCHA_PROVIDER=$NP_PROVIDER}"
 
       - name: Grant frontend SA invoke rights on backend
         run: |
