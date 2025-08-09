@@ -34,8 +34,12 @@ export function encodePCM16(buffer: Int16Array): string {
   for (let i = 0; i < bytes.byteLength; i++) {
     binary += String.fromCharCode(bytes[i]);
   }
-  
-  return btoa(binary);
+
+  // Browser vs Node base64 encode
+  if (typeof btoa === 'function') {
+    return btoa(binary);
+  }
+  return Buffer.from(binary, 'binary').toString('base64');
 }
 
 /**

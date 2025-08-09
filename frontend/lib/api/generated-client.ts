@@ -64,6 +64,8 @@ export const generatedApi = {
       sendMessage({ sessionId, requestBody }),
   },
 
+  
+
   /**
    * Language detection
    */
