@@ -50,7 +50,7 @@ describe('Generated API Client', () => {
 
   it('should generate proper SSE endpoint URLs', () => {
     const sessionId = 'test-session-123'
-    const endpoint = generatedREDACTED(sessionId, true, 'es-ES')
+    const endpoint = generatedApi.events.getEventStreamEndpoint(sessionId, true, 'es-ES')
     
     expect(endpoint).toBe('/api/events/test-session-123?is_audio=true&language=es-ES')
   })

@@ -1,9 +1,9 @@
 {
   "title": "📖 ¿Qué es la TCC?",
   "quickLink": "Resumen de la TCC en 2 minutos",
-  "introduction": "La TerREDACTED (TCC) es un enfoque basado en evidencia que conecta pensamientos, sentimientos y acciones. Al identificar trampas de pensamiento comunes—como catastrofismo, lectura de mente, o declaraciones de \"todo o nada\"—puedes practicar perspectivas más amables y equilibradas.",
+  "introduction": "La Terapia Cognitivo-Conductual (TCC) es un enfoque basado en la evidencia que conecta pensamientos, sentimientos y acciones. Al identificar trampas de pensamiento comunes, como el catastrofismo, la lectura de la mente o las declaraciones de \"todo o nada\", puedes practicar perspectivas más amables y equilibradas.",
   "whyHelpsAvpd": {
-    "title": "Por qué ayuda con el TPA",
+    "title": "Por qué ayuda con el TEP",
     "description": "Las personas que viven con Trastorno de Personalidad por Evitación a menudo luchan contra la autocrítica intensa y el miedo a la evaluación negativa. La TCC ofrece herramientas prácticas para:",
     "tools": [
       "Nombrar pensamientos inútiles en lugar de aceptarlos como hechos.",
@@ -18,7 +18,7 @@
   },
   "reminder": {
     "prefix": "Recordatorio:",
-    "text": "re-frame es un acompañante de autoayuda, no un sustituto de la atención profesional. Si te sientes en riesgo con tus pensamientos, contacta con un profesional cualificado o una línea de ayuda."
+    "text": "re-frame es una herramienta de apoyo, no un sustituto de la atención profesional. Si te sientes en riesgo con tus pensamientos, contacta con un profesional cualificado o una línea de ayuda."
   },
   "references": {
     "title": "Referencias",
@@ -36,7 +36,7 @@
       {
         "number": "[2]",
         "source": "Lampe, L., & Sunderland, M. (2013). Trastorno de Personalidad por Evitación: estado actual y direcciones futuras. Australian & New Zealand Journal of Psychiatry, 47(6), 515-22.",
-        "keyPoint": "Características del TPA: miedo a la evaluación, autocrítica"
+        "keyPoint": "Características del TEP: miedo a la evaluación, autocrítica"
       },
       {
         "number": "[3]",
