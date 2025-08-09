@@ -8,6 +8,7 @@ export default function FeedbackPage({ params }: { params: { locale: string } })
   const [optIn, setOptIn] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [msg, setMsg] = useState<string | null>(null)
+  const [comment, setComment] = useState('')
   const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!
 
   useEffect(() => {
@@ -36,6 +37,7 @@ export default function FeedbackPage({ params }: { params: { locale: string } })
           session_id: crypto.getRandomValues(new Uint32Array(1))[0].toString(16),
           lang: params.locale,
           platform: 'web',
+          comment: comment || undefined,
           recaptcha_token: token,
           recaptcha_action: 'submit_feedback',
         })
@@ -55,6 +57,7 @@ export default function FeedbackPage({ params }: { params: { locale: string } })
         helpUsDesc: 'We measure anonymous technical signals (timing, error rates). No message content is stored.',
         toggle: 'Enable anonymous telemetry',
         quickFeedback: 'Quick feedback',
+        optionalComment: 'Optional comment',
         yes: 'Yes',
         no: 'Not really',
       },
@@ -64,6 +67,7 @@ export default function FeedbackPage({ params }: { params: { locale: string } })
         helpUsDesc: 'Medimos señales técnicas anónimas (tiempos, errores). No se guarda contenido de mensajes.',
         toggle: 'Activar telemetría anónima',
         quickFeedback: 'Opinión rápida',
+        optionalComment: 'Comentario opcional',
         yes: 'Sí',
         no: 'No mucho',
       }
@@ -92,6 +96,8 @@ export default function FeedbackPage({ params }: { params: { locale: string } })
 
         <GlassCard className="p-4">
           <h2 className="text-lg font-medium text-white mb-2">{t('quickFeedback')}</h2>
+          <label className="block text-sm text-white/80 mb-2" htmlFor="comment">{t('optionalComment')}</label>
+          <textarea id="comment" value={comment} onChange={(e)=>setComment(e.target.value)} className="w-full mb-3 rounded bg-white/5 text-white p-2 border border-white/10" rows={3} placeholder={params.locale==='es'?'Comparte algo breve (opcional)':'Share something brief (optional)'} />
           <div className="flex gap-3">
             <button className="px-3 py-2 rounded bg-white/10 text-white" disabled={submitting} onClick={() => sendFeedback(true)}>{t('yes')}</button>
             <button className="px-3 py-2 rounded bg-white/10 text-white" disabled={submitting} onClick={() => sendFeedback(false)}>{t('no')}</button>
