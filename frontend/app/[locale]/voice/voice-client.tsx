@@ -50,7 +50,7 @@ export function VoiceClient({ locale }: { locale: string }) {
         // best effort
       }
     })()
-  }, [ready])
+  }, [ready, execute])
 
   const handleBack = () => {
     router.push(`/${locale}`)

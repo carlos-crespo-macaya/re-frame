@@ -95,11 +95,13 @@ export function ChatClient({ locale }: { locale: string }) {
         if (ready) {
           await execute('chat_start')
         }
-      } catch {
-        // best effort
+      } catch (err) {
+        if (process.env.NODE_ENV !== 'production') {
+          console.debug('reCAPTCHA chat_start prefetch failed', err)
+        }
       }
     })()
-  }, [ready])
+  }, [ready, execute])
 
   // Handle incoming SSE messages
   useEffect(() => {
@@ -186,7 +188,12 @@ export function ChatClient({ locale }: { locale: string }) {
         if (ready) {
           await execute('chat_message')
         }
-      } catch {}
+      } catch (err) {
+        if (process.env.NODE_ENV !== 'production') {
+          // best-effort prefetch; ignore failures
+          console.debug('reCAPTCHA prefetch failed', err)
+        }
+      }
       await sseClient.sendText(input)
     } catch (error) {
       console.error('Failed to send message:', error)

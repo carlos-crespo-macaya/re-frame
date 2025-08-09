@@ -3,7 +3,15 @@
 import { useEffect, useRef, useState } from 'react';
 
 export type RecaptchaProvider = 'classic' | 'enterprise';
-type W = Window & { grecaptcha?: any };
+
+interface RecaptchaApiBase {
+  ready: (cb: () => void) => void
+  execute?: (siteKey: string, options: { action: string }) => Promise<string>
+}
+
+interface GrecaptchaWindow extends Window {
+  grecaptcha?: RecaptchaApiBase & { enterprise?: RecaptchaApiBase }
+}
 
 function loadOnce(src: string, id: string) {
   return new Promise<void>((resolve, reject) => {
@@ -39,7 +47,7 @@ export function useRecaptcha(siteKey?: string, provider: RecaptchaProvider = 'cl
 
       loader.current = loadOnce(src, provider === 'enterprise' ? 'rc-enterprise' : 'rc-classic')
         .then(() => {
-          const g = (window as W).grecaptcha;
+          const g = (window as GrecaptchaWindow).grecaptcha;
           const api = provider === 'enterprise' ? g?.enterprise : g;
           if (!api) throw new Error('grecaptcha API missing on window');
           api.ready(() => setReady(true));
@@ -52,7 +60,7 @@ export function useRecaptcha(siteKey?: string, provider: RecaptchaProvider = 'cl
     if (!siteKey) throw new Error('Missing reCAPTCHA site key');
     if (!loader.current) throw new Error('reCAPTCHA not initialized');
     await loader.current;
-    const g = (window as W).grecaptcha;
+    const g = (window as GrecaptchaWindow).grecaptcha;
     const api = provider === 'enterprise' ? g?.enterprise : g;
     if (!api?.execute) throw new Error('reCAPTCHA not ready');
     return api.execute(siteKey, { action });
@@ -62,7 +70,7 @@ export function useRecaptcha(siteKey?: string, provider: RecaptchaProvider = 'cl
 }
 
 export async function prefetchToken(siteKey: string, provider: RecaptchaProvider, action = 'prefetch') {
-  const g = (window as W).grecaptcha;
+  const g = (window as GrecaptchaWindow).grecaptcha;
   const api = provider === 'enterprise' ? g?.enterprise : g;
   if (!api?.execute) return;
   try { await api.execute(siteKey, { action }); } catch {/* best effort */}
