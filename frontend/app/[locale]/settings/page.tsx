@@ -10,9 +10,10 @@ export default function SettingsPage({ params }: { params: { locale: string } })
   const [optIn, setOptIn] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [msg, setMsg] = useState<string | null>(null)
-  const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!
+  const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY
   const provider = process.env.NEXT_PUBLIC_RECAPTCHA_PROVIDER === 'enterprise' ? 'enterprise' : 'classic'
-  const { ready, execute } = useRecaptcha(siteKey, provider)
+  const { ready, execute, error } = useRecaptcha(siteKey, provider)
+  useEffect(() => { if (error) console.warn('reCAPTCHA init failed:', error) }, [error])
 
   useEffect(() => {
     const v = localStorage.getItem('telemetry_opt_in')

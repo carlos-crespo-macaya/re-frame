@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSSEClient } from '@/lib/streaming/use-sse-client'
 import ReactMarkdown from 'react-markdown'
-import { useEffect as useReactEffect } from 'react'
+// useEffect already imported above
 import { useRecaptcha } from '@/lib/recaptcha/useRecaptcha'
 // Chat screen does not display a language selector; language follows route locale
 
@@ -65,7 +65,8 @@ export function ChatClient({ locale }: { locale: string }) {
   // Prepare reCAPTCHA for chat session
   const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY
   const provider = process.env.NEXT_PUBLIC_RECAPTCHA_PROVIDER === 'enterprise' ? 'enterprise' : 'classic'
-  const { ready, execute } = useRecaptcha(siteKey, provider)
+  const { ready, execute, error } = useRecaptcha(siteKey, provider)
+  useEffect(() => { if (error) console.warn('reCAPTCHA init failed:', error) }, [error])
 
   useEffect(() => {
     setSelectedLanguage(locale === 'es' ? 'es-ES' : 'en-US')
@@ -89,7 +90,7 @@ export function ChatClient({ locale }: { locale: string }) {
   }, [selectedLanguage]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Prefetch a token when chat session starts
-  useReactEffect(() => {
+  useEffect(() => {
     (async () => {
       try {
         if (ready) {
@@ -342,7 +343,7 @@ export function ChatClient({ locale }: { locale: string }) {
             <button
               type="button"
               onClick={handleSendMessage}
-              disabled={isLoading || !input.trim()}
+              disabled={isLoading || !input.trim() || !ready}
               aria-label={t.send}
               className={`w-[56px] h-[56px] flex items-center justify-center rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
                 !isLoading && input.trim() ? 'hover:bg-[#7EEBD9] active:bg-[#65D9C6]' : ''
