@@ -36,6 +36,7 @@ class FeedbackIn(BaseModel):
     session_id: str | None = None
     lang: str | None = None
     platform: str | None = None
+    comment: str | None = None
     recaptcha_token: str
     recaptcha_action: str = "submit_feedback"
 
@@ -54,6 +55,11 @@ async def post_feedback(
     if score < 0.5:
         raise HTTPException(status_code=400, detail="recaptcha_low_score")
 
+    # Normalize optional free text (truncate to prevent abuse)
+    normalized_comment = (body.comment or "").strip()
+    if len(normalized_comment) > 1000:
+        normalized_comment = normalized_comment[:1000]
+
     doc = {
         "helpful": body.helpful,
         "reasons": [r for r in body.reasons if r in ALLOWED_REASONS],
@@ -61,6 +67,7 @@ async def post_feedback(
         "lang": body.lang or "unknown",
         "platform": body.platform or "unknown",
         "opt_in_observability": x_observability_opt_in == "1",
+        "comment": normalized_comment or None,
     }
 
     client = get_db_client()
