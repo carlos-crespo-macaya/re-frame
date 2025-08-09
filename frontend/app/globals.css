@@ -33,4 +33,18 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+
+  /* Chat screen gradient background */
+  .bg-chat-gradient {
+    background: radial-gradient(ellipse at center, #0a2a3a 0%, #062633 25%, #03141d 50%, #020c12 100%);
+  }
+
+  /* Glass card background + border shadow used in chat containers */
+  .bg-card-glass {
+    background: rgba(8, 20, 28, 0.55);
+  }
+
+  .shadow-glass {
+    box-shadow: 0 0 0 1px rgba(155, 247, 235, 0.25), 0 10px 40px rgba(0, 0, 0, 0.4);
+  }
 }

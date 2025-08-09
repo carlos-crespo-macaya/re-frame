@@ -184,11 +184,7 @@ export function ChatClient({ locale }: { locale: string }) {
 
   return (
     <div
-      className="flex flex-col h-screen text-white relative overflow-hidden min-h-0"
-      style={{
-        background: 'radial-gradient(ellipse at center, #0a2a3a 0%, #062633 25%, #03141d 50%, #020c12 100%)',
-        height: '100dvh',
-      }}
+      className="flex flex-col h-screen min-h-0 text-white relative overflow-hidden bg-chat-gradient h-[100dvh]"
     >
       {/* Header */}
       <header className="flex-shrink-0 relative z-10">
@@ -218,17 +214,13 @@ export function ChatClient({ locale }: { locale: string }) {
       </header>
 
       {/* Main chat area with safe-area padding on mobile */}
-      <main className="flex-1 min-h-0 flex flex-col overflow-hidden px-4 sm:px-16 pb-[env(safe-area-inset-bottom)] sm:pb-8" style={{ paddingTop: '16px' }}>
+      <main className="flex-1 min-h-0 flex flex-col overflow-hidden px-4 sm:px-16 pb-[env(safe-area-inset-bottom)] sm:pb-8 pt-4">
         <div className="flex-1 min-h-0 flex flex-col max-w-[1312px] w-full mx-auto">
           {/* Messages container - Enhanced glassmorphic card with visible borders */}
           <div
-            className="flex-1 min-h-0 overflow-y-auto rounded-[16px] sm:rounded-[24px] backdrop-blur-md relative ring-1 ring-white/20 shadow-lg"
-            style={{
-              background: 'rgba(8, 20, 28, 0.55)',
-              boxShadow: '0 0 0 1px rgba(155, 247, 235, 0.25), 0 10px 40px rgba(0, 0, 0, 0.4)',
-            }}
+            className="flex-1 min-h-0 overflow-y-auto rounded-[16px] sm:rounded-[24px] backdrop-blur-md relative ring-1 ring-white/20 shadow-glass bg-card-glass"
           >
-            <div className="px-4 sm:px-8" style={{ paddingTop: '32px', paddingBottom: '24px' }}>
+            <div className="px-4 sm:px-8 pt-8 pb-6">
               {messages.length === 0 && !isLoading && (
                 <div className="flex flex-col items-center justify-center text-center">
                   <p className="text-[18px] font-bold mb-2 text-white">{t.subtitle}</p>
@@ -303,13 +295,7 @@ export function ChatClient({ locale }: { locale: string }) {
           </div>
 
           {/* Input dock - sticky on mobile, static on larger screens */}
-          <div className="mt-2 sm:mt-4 sticky bottom-0 sm:static z-10 flex items-center h-[56px] rounded-full backdrop-blur-md relative overflow-hidden ring-1 ring-white/20"
-            style={{
-              background: 'rgba(8, 20, 28, 0.55)',
-              boxShadow: '0 0 0 1px rgba(155, 247, 235, 0.25), 0 4px 20px rgba(0, 0, 0, 0.3)',
-              paddingBottom: 'env(safe-area-inset-bottom)',
-            }}
-          >
+          <div className="mt-2 sm:mt-4 sticky bottom-0 sm:static z-10 flex items-center h-[56px] rounded-full backdrop-blur-md relative overflow-hidden ring-1 ring-white/20 bg-card-glass shadow-glass pb-[env(safe-area-inset-bottom)]">
             <textarea
               value={input}
               onChange={handleInputChange}
