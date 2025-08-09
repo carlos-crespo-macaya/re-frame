@@ -42,7 +42,7 @@ export default function FeedbackPage({ params }: { params: { locale: string } })
       })
       if (!res.ok) throw new Error(await res.text())
       setMsg(params.locale === 'es' ? '¡Gracias por tu opinión!' : 'Thanks for the feedback!')
-    } catch (e) {
+    } catch {
       setMsg(params.locale === 'es' ? 'No se pudo enviar la opinión. Inténtalo más tarde.' : 'Could not submit feedback. Please try later.')
     } finally { setSubmitting(false) }
   }
