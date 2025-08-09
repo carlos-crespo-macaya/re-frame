@@ -12,6 +12,18 @@ async function proxy(req: NextRequest, { params }: { params: { path: string[] } 
   const backendHost = envBackendHost || (isProd ? 'api.re-frame.social' : '');
   const backendPublicUrl = envBackendPublic || envNextPublic || (isProd ? 'https://api.re-frame.social' : '');
 
+  // Derive protocol from BACKEND_PUBLIC_URL (defaults to https)
+  // This allows local dev with http://localhost:8000 without TLS
+  let protocol: 'http' | 'https' = 'https';
+  try {
+    if (backendPublicUrl) {
+      const u = new URL(backendPublicUrl);
+      protocol = (u.protocol === 'http:') ? 'http' : 'https';
+    }
+  } catch (_) {
+    // keep default https
+  }
+
   if (!backendHost) {
     return NextResponse.json(
       { error: 'Proxy disabled in dev' },
@@ -40,14 +52,43 @@ async function proxy(req: NextRequest, { params }: { params: { path: string[] } 
     );
   }
 
-  // Use internal host for request routing; use public URL for audience below
-  const targetUrl = `https://${backendHost}/${params.path.join('/')}${req.nextUrl.search}`;
+  // Use internal host for request routing with derived protocol
+  const targetUrl = `${protocol}://${backendHost}/${params.path.join('/')}${req.nextUrl.search}`;
 
   // For Cloud Run service-to-service auth, the audience must be the public service URL
   // even when using internal traffic routing
   const audience = backendPublicUrl;
 
   try {
+    // If local (plain http) or localhost/127.*, skip Cloud Run IAM and proxy directly
+    const isLocalPlainHttp = protocol === 'http' || /^(localhost|127\.)/i.test(backendHost);
+    if (isLocalPlainHttp) {
+      const requestHeaders = Object.fromEntries(req.headers.entries());
+      delete requestHeaders.host;
+      delete requestHeaders['content-length'];
+
+      const isSSE = params.path.includes('events') ||
+        requestHeaders.accept?.includes('text/event-stream');
+
+      const response = await fetch(targetUrl, {
+        method: req.method,
+        headers: {
+          ...requestHeaders,
+          ...(isSSE ? { 'Accept': 'text/event-stream', 'Cache-Control': 'no-cache' } : {}),
+        },
+        // Cast to any to allow Node.js fetch duplex when streaming
+        ...(isSSE ? ({ duplex: 'half' } as any) : {}),
+        body: ['GET', 'HEAD'].includes(req.method) ? undefined : await req.arrayBuffer(),
+      } as any);
+
+      if (!response.ok && response.body) {
+        // forward non-OK with body
+        return new NextResponse(response.body as any, { status: response.status, headers: response.headers as any });
+      }
+
+      return new NextResponse(response.body as any, { status: response.status, headers: response.headers as any });
+    }
+
     // Initialize GoogleAuth for Cloud Run service-to-service authentication
     const auth = new GoogleAuth();
     const client = await auth.getIdTokenClient(audience);
