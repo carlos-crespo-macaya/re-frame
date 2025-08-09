@@ -29,16 +29,16 @@ describe('LocalePage', () => {
     render(<LocalePage params={{ locale: 'en' }} />);
 
     expect(screen.getAllByText('re-frame')[0]).toBeInTheDocument();
-    expect(screen.getByText('Explore a new perspective')).toBeInTheDocument();
-    expect(screen.getAllByText(/evidence-based therapeutic techniques/i)[0]).toBeInTheDocument();
+    expect(screen.getByText('Find a kinder perspective')).toBeInTheDocument();
+    expect(screen.getAllByText(/evidence-based/i)[0]).toBeInTheDocument();
   });
 
   it('renders the home page for Spanish locale', () => {
     render(<LocalePage params={{ locale: 'es' }} />);
 
     expect(screen.getAllByText('re-frame')[0]).toBeInTheDocument();
-    expect(screen.getByText('Explora una nueva perspectiva')).toBeInTheDocument();
-    expect(screen.getAllByText(/técnicas terapéuticas basadas en evidencia/i)[0]).toBeInTheDocument();
+    expect(screen.getByText('Encuentra una perspectiva más amable')).toBeInTheDocument();
+    expect(screen.getAllByText(/basada en evidencia/i)[0]).toBeInTheDocument();
   });
 
   it('interface cards should not display selector header text', () => {

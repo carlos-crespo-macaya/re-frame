@@ -2,24 +2,24 @@
   "title": "ℹ️ About re-frame",
   "mission": {
     "label": "Mission",
-    "description": "give people who struggle with avoidant patterns a gentle way to challenge harsh thoughts."
+    "description": "Offer people living with avoidant patterns a kinder way to challenge harsh thoughts."
   },
   "details": {
     "whatIs": {
       "label": "What it is:",
-      "description": "a therapeutic framework-informed cognitive restructuring tool that spots thinking traps (catastrophising, mind-reading, etc.) and offers kinder perspectives."
+      "description": "An evidence-informed cognitive restructuring companion that helps spot common thinking traps (catastrophizing, mind-reading, etc.) and offers kinder perspectives."
     },
     "whatIsnt": {
       "label": "What it isn't:",
-      "description": "full psychotherapy, medical advice, or a crisis service."
+      "description": "not psychotherapy, medical advice, or a crisis service."
     },
     "creator": {
       "title": "About me",
-      "content": "I'm <a href='https://carlos-crespo.com/' target='_blank' rel='noopener noreferrer' class='text-brand-green-400 hover:text-brand-green-300 underline'>Carlos</a>, this page aims to create, collect and share resources that could help people like me on their journey."
+      "content": "I'm <a href='https://carlos-crespo.com/' target='_blank' rel='noopener noreferrer' class='text-brand-green-400 hover:text-brand-green-300 underline'>Carlos</a> — this project collects and shares resources that might help people like me along the way."
     },
     "thankYou": {
       "title": "Thank You",
-      "content": "Thank you for trying re-frame. We hope it helps you in some way on your journey."
+      "content": "Thank you for trying re-frame. I hope it helps, even a little."
     }
   },
   "contact": {
