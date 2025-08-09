@@ -82,7 +82,6 @@ async function proxy(req: NextRequest, { params }: { params: { path: string[] } 
       if (isSSE) {
         (init.headers as Record<string, string>)['Accept'] = 'text/event-stream';
         (init.headers as Record<string, string>)['Cache-Control'] = 'no-cache';
-        // @ts-expect-error - duplex is not yet in the standard lib types
         init.duplex = 'half';
       }
 
