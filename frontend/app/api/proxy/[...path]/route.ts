@@ -33,7 +33,9 @@ async function proxy(req: NextRequest, { params }: { params: { path: string[] } 
     );
   }
 
-  const targetUrl = `https://${backendHost}/${params.path.join('/')}${req.nextUrl.search}`;
+  // Prefer public URL for token audience alignment. Internal host can cause audience/host mismatches.
+  const targetBase = backendPublicUrl?.replace(/\/$/, '') || `https://${backendHost}`;
+  const targetUrl = `${targetBase}/${params.path.join('/')}${req.nextUrl.search}`;
 
   // For Cloud Run service-to-service auth, the audience must be the public service URL
   // even when using internal traffic routing
