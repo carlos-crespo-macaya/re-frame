@@ -93,3 +93,7 @@ frontend/openapi.json
 
 # Python lockfiles
 backend/uv.lock
+
+# Ignore uv lock on recovery branch
+backend/uv.lock
+frontend/openapi-ts-error-*.log
