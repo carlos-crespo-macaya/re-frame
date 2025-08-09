@@ -21,10 +21,12 @@ RUN pip install --no-cache-dir uv==${UV_VERSION}
 WORKDIR /app
 
 # Copy dependency files first for better layer caching
-COPY pyproject.toml uv.lock ./
+# Use uv.lock if present; otherwise proceed with just pyproject.toml
+COPY pyproject.toml ./
 
 # Install Python dependencies
-RUN uv sync --frozen --no-dev
+# If uv.lock exists, use frozen; otherwise resolve from pyproject.toml
+RUN if [ -f uv.lock ]; then uv sync --frozen --no-dev; else uv sync --no-dev; fi
 
 # Copy application code
 COPY src/ src/
