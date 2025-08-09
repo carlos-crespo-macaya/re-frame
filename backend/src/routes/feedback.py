@@ -1,6 +1,7 @@
 import os
 
 from fastapi import APIRouter, Header, HTTPException
+from fastapi.concurrency import run_in_threadpool
 from google.cloud import firestore  # type: ignore[attr-defined]
 from pydantic import BaseModel, Field
 
@@ -43,7 +44,13 @@ class FeedbackIn(BaseModel):
 async def post_feedback(
     body: FeedbackIn, x_observability_opt_in: str | None = Header(default=None)
 ):
-    score = verify_recaptcha(token=body.recaptcha_token, action=body.recaptcha_action)
+    try:
+        score = await run_in_threadpool(
+            verify_recaptcha, body.recaptcha_token, body.recaptcha_action
+        )
+    except Exception as err:
+        # Treat provider/network/auth outages as temporary service issues
+        raise HTTPException(status_code=503, detail="recaptcha_unavailable") from err
     if score < 0.5:
         raise HTTPException(status_code=400, detail="recaptcha_low_score")
 

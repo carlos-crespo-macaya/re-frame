@@ -1,5 +1,12 @@
 export async function executeRecaptcha(action: string, siteKey: string): Promise<string> {
-  const provider = (process.env.NEXT_PUBLIC_RECAPTCHA_PROVIDER || 'enterprise').toLowerCase()
+  if (typeof window === 'undefined') {
+    throw new Error('executeRecaptcha must be called in the browser')
+  }
+  if (!siteKey) {
+    throw new Error('Missing NEXT_PUBLIC_RECAPTCHA_SITE_KEY')
+  }
+  const rawProvider = (process.env.NEXT_PUBLIC_RECAPTCHA_PROVIDER || 'enterprise').toLowerCase()
+  const provider: 'enterprise' | 'classic' = rawProvider === 'classic' ? 'classic' : 'enterprise'
 
   await new Promise<void>((resolve) => {
     const w = window as any
@@ -25,9 +32,17 @@ export async function executeRecaptcha(action: string, siteKey: string): Promise
 
   const w = window as any
   if (provider === 'classic') {
-    return await w.grecaptcha.execute(siteKey, { action })
+    if (!w.grecaptcha?.ready || !w.grecaptcha?.execute) {
+      throw new Error('reCAPTCHA v3 (classic) not available on window')
+    }
+    await new Promise<void>((resolve) => w.grecaptcha.ready(resolve))
+    return w.grecaptcha.execute(siteKey, { action })
   }
-  return await w.grecaptcha.enterprise.execute(siteKey, { action })
+  if (!w.grecaptcha?.enterprise?.ready || !w.grecaptcha?.enterprise?.execute) {
+    throw new Error('reCAPTCHA Enterprise not available on window')
+  }
+  await new Promise<void>((resolve) => w.grecaptcha.enterprise.ready(resolve))
+  return w.grecaptcha.enterprise.execute(siteKey, { action })
 }
 
 
