@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import RecaptchaPreloader from '@/components/RecaptchaPreloader';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -28,6 +29,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.className} min-h-screen bg-dark-charcoal`}>
+        <RecaptchaPreloader />
         {children}
       </body>
     </html>

@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSSEClient } from '@/lib/streaming/use-sse-client'
 import ReactMarkdown from 'react-markdown'
+// useEffect already imported above
+import { useRecaptcha } from '@/lib/recaptcha/useRecaptcha'
 // Chat screen does not display a language selector; language follows route locale
 
 interface Message {
@@ -60,6 +62,12 @@ export function ChatClient({ locale }: { locale: string }) {
     autoConnect: false,
   })
 
+  // Prepare reCAPTCHA for chat session
+  const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY
+  const provider = process.env.NEXT_PUBLIC_RECAPTCHA_PROVIDER === 'enterprise' ? 'enterprise' : 'classic'
+  const { ready, execute, error } = useRecaptcha(siteKey, provider)
+  useEffect(() => { if (error) console.warn('reCAPTCHA init failed:', error) }, [error])
+
   useEffect(() => {
     setSelectedLanguage(locale === 'es' ? 'es-ES' : 'en-US')
   }, [locale])
@@ -80,6 +88,21 @@ export function ChatClient({ locale }: { locale: string }) {
       sseClient.disconnect()
     }
   }, [selectedLanguage]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Prefetch a token when chat session starts
+  useEffect(() => {
+    (async () => {
+      try {
+        if (ready) {
+          await execute('chat_start')
+        }
+      } catch (err) {
+        if (process.env.NODE_ENV !== 'production') {
+          console.debug('reCAPTCHA chat_start prefetch failed', err)
+        }
+      }
+    })()
+  }, [ready, execute])
 
   // Handle incoming SSE messages
   useEffect(() => {
@@ -161,6 +184,17 @@ export function ChatClient({ locale }: { locale: string }) {
     }
 
     try {
+      // Optionally include a recaptcha token on first message
+      try {
+        if (ready) {
+          await execute('chat_message')
+        }
+      } catch (err) {
+        if (process.env.NODE_ENV !== 'production') {
+          // best-effort prefetch; ignore failures
+          console.debug('reCAPTCHA prefetch failed', err)
+        }
+      }
       await sseClient.sendText(input)
     } catch (error) {
       console.error('Failed to send message:', error)
@@ -309,7 +343,7 @@ export function ChatClient({ locale }: { locale: string }) {
             <button
               type="button"
               onClick={handleSendMessage}
-              disabled={isLoading || !input.trim()}
+              disabled={isLoading || !input.trim() || !ready}
               aria-label={t.send}
               className={`w-[56px] h-[56px] flex items-center justify-center rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
                 !isLoading && input.trim() ? 'hover:bg-[#7EEBD9] active:bg-[#65D9C6]' : ''
