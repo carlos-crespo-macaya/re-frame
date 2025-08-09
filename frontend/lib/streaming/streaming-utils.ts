@@ -8,7 +8,7 @@ import { ClientMessage, ServerMessage } from './message-protocol';
  * Convert text to base64-encoded PCM audio data
  * This is a placeholder - real implementation would use text-to-speech
  */
-export function textToPCM(text: string, _sampleRate: number = 16000): string {
+export function textToPCM(_text: string, _sampleRate: number = 16000): string {
   // Placeholder implementation
   console.warn('textToPCM is not yet implemented');
   return '';
@@ -34,8 +34,12 @@ export function encodePCM16(buffer: Int16Array): string {
   for (let i = 0; i < bytes.byteLength; i++) {
     binary += String.fromCharCode(bytes[i]);
   }
-  
-  return btoa(binary);
+
+  // Browser vs Node base64 encode
+  if (typeof btoa === 'function') {
+    return btoa(binary);
+  }
+  return Buffer.from(binary, 'binary').toString('base64');
 }
 
 /**
@@ -55,7 +59,7 @@ export function encodePCM32(buffer: Float32Array): string {
  * Decode base64 to Int16 PCM audio buffer
  */
 export function decodePCM16(base64: string): Int16Array {
-  const binary = atob(base64);
+  const binary = typeof atob === 'function' ? atob(base64) : Buffer.from(base64, 'base64').toString('binary');
   const bytes = new Uint8Array(binary.length);
   
   for (let i = 0; i < binary.length; i++) {

@@ -5,10 +5,8 @@
 import {
   ServerMessage,
   ErrorMessage,
-  // StatusMessage,
   ClientMessage,
   ConnectionState,
-  SSEMessage,
   isServerMessage,
   isErrorMessage,
   isStatusMessage
@@ -235,7 +233,7 @@ export class SSEClient {
       }
       
     } catch (error) {
-      console.error('Failed to parse SSE message:', error);
+      console.error('Failed to parse SSE message:', error as Error);
       this.options.onError(error as Error);
     }
   }
@@ -246,6 +244,7 @@ export class SSEClient {
   private handleError(error: Error | Event): void {
     console.error('SSE connection error:', error);
     
+    this.stopHeartbeat();
     if (this.eventSource?.readyState === EventSource.CLOSED) {
       this.updateStatus('disconnected');
       this.attemptReconnect();
@@ -271,8 +270,19 @@ export class SSEClient {
     this.options.onReconnect(this.reconnectAttempts);
     
     this.reconnectTimer = setTimeout(() => {
+      // Ensure any stale EventSource is cleared before reconnect
+      if (this.eventSource && this.eventSource.readyState !== EventSource.OPEN) {
+        try { this.eventSource.close(); } catch {
+          // ignore close errors
+        }
+        this.eventSource = null;
+      }
       if (this.session) {
-        this.connect(this.session.id, this.currentLanguage).catch(console.error);
+        this.connect(this.session.id, this.currentLanguage)
+          .catch((err) => {
+            console.error('Reconnect failed:', err);
+            this.options.onError(err as Error);
+          });
       }
     }, this.options.reconnectInterval);
   }

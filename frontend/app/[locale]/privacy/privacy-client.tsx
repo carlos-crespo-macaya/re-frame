@@ -5,9 +5,25 @@ import Link from 'next/link'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { GlassCard } from '@/components/layout/GlassCard'
 
+interface PrivacyTranslations {
+  title: string
+  lastUpdated: string
+  introduction: string
+  sections: {
+    dataCollection: { title: string; description: string; points: string[] }
+    technicalData: { title: string; description: string; points: string[]; note: string }
+    dataRetention: { title: string; description: string; points: string[] }
+    yourRights: { title: string; description: string; points: string[] }
+    security: { title: string; description: string; points: string[] }
+    changes: { title: string; description: string }
+    contact: { title: string; description: string; email: string }
+  }
+  footer: { privacy: string; support: string; about: string }
+}
+
 interface PrivacyClientProps {
   locale: string
-  translations: any
+  translations: PrivacyTranslations
 }
 
 export function PrivacyClient({ locale, translations: t }: PrivacyClientProps) {

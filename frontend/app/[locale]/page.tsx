@@ -1,6 +1,5 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { AppLayout } from '@/components/layout/AppLayout'
@@ -102,20 +101,8 @@ const translations = {
 export default function LocalePage({ params }: { params: { locale: string } }) {
   const router = useRouter()
   const pathname = usePathname()
-  const [selectedLanguage, setSelectedLanguage] = useState(params.locale === 'es' ? 'es-ES' : 'en-US')
 
   const t = translations[params.locale as keyof typeof translations] || translations.en
-
-  useEffect(() => {
-    setSelectedLanguage(params.locale === 'es' ? 'es-ES' : 'en-US')
-  }, [params.locale])
-
-  const handleLanguageChange = (language: string) => {
-    setSelectedLanguage(language)
-    const newLocale = language.startsWith('es') ? 'es' : 'en'
-    const newPath = pathname.replace(`/${params.locale}`, `/${newLocale}`)
-    router.push(newPath)
-  }
 
   return (
     <AppLayout

@@ -1,2 +1,14 @@
+# Ignore all test files and directories
+**/__tests__/**
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+
+# Next.js build output
+.next/
+
+# Coverage
+coverage/
 # Ignore generated API client files
 lib/api/generated/

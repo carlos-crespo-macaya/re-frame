@@ -100,22 +100,24 @@ export function isServerMessage(data: unknown): data is ServerMessage {
     return false;
   }
   
-  const msg = data as any;
+  const msg = data as Record<string, unknown>;
   
   // Handle SSEMessage format from backend
-  if (msg.type === 'content' && msg.content_type && msg.data !== undefined) {
+  const msgAs: { type?: string; content_type?: string; data?: unknown; turn_complete?: unknown } = msg as any;
+  if (msgAs.type === 'content' && msgAs.content_type && msgAs.data !== undefined) {
     // Transform to ServerMessage format
-    (data as any).mime_type = msg.content_type;
+    (data as any).mime_type = (msg as any).content_type as string;
     return true;
   }
   
   // Handle turn_complete messages
-  if ('turn_complete' in data && typeof msg.turn_complete === 'boolean') {
+  if (typeof msgAs.turn_complete === 'boolean') {
     return true;
   }
   
   // Handle legacy format (if any)
-  if ('mime_type' in data && 'data' in data) {
+  const record = data as Record<string, unknown>;
+  if ('mime_type' in record && 'data' in record) {
     return true;
   }
   

@@ -4,6 +4,8 @@ import { useRouter, usePathname } from 'next/navigation'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { GlassCard } from '@/components/layout/GlassCard'
 import { executeRecaptcha } from '@/lib/recaptcha'
+import { postFeedbackApiFeedbackPost } from '@/lib/api/generated/sdk.gen'
+import { FeedbackIn } from '@/lib/api/generated/types.gen'
 
 export default function FeedbackPage({ params }: { params: { locale: string } }) {
   const router = useRouter()
@@ -26,21 +28,17 @@ export default function FeedbackPage({ params }: { params: { locale: string } })
         setMsg(params.locale === 'es' ? 'No se pudo validar reCAPTCHA.' : 'Could not validate reCAPTCHA.')
         return
       }
-      const res = await fetch('/api/feedback', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          helpful,
-          reasons: [],
-          session_id: crypto.getRandomValues(new Uint32Array(1))[0].toString(16),
-          lang: params.locale,
-          platform: 'web',
-          comment: comment || undefined,
-          recaptcha_token: token,
-          recaptcha_action: 'submit_feedback',
-        })
-      })
-      if (!res.ok) throw new Error(await res.text())
+      const body: FeedbackIn = {
+        helpful,
+        reasons: [],
+        session_id: crypto.getRandomValues(new Uint32Array(1))[0].toString(16),
+        lang: params.locale,
+        platform: 'web',
+        comment: comment || undefined,
+        recaptcha_token: token,
+        recaptcha_action: 'submit_feedback',
+      }
+      await postFeedbackApiFeedbackPost({ requestBody: body })
       setMsg(params.locale === 'es' ? '¡Gracias por tu opinión!' : 'Thanks for the feedback!')
     } catch {
       setMsg(params.locale === 'es' ? 'No se pudo enviar la opinión. Inténtalo más tarde.' : 'Could not submit feedback. Please try later.')

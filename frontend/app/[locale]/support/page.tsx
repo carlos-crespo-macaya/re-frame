@@ -31,12 +31,12 @@ export default async function SupportPage({ params }: SupportPageProps) {
       mentalHealthResources: {
         title: t('sections.mentalHealthResources.title'),
         description: t('sections.mentalHealthResources.description'),
-        resources: t.raw('sections.mentalHealthResources.resources') as any[]
+        resources: t.raw('sections.mentalHealthResources.resources') as Array<{ name: string; description?: string; url?: string }>
       },
       aboutAvpd: {
         title: t('sections.aboutAvpd.title'),
         description: t('sections.aboutAvpd.description'),
-        resources: t.raw('sections.aboutAvpd.resources') as any[]
+        resources: t.raw('sections.aboutAvpd.resources') as Array<{ name: string; description?: string; url?: string }>
       },
       privacyAndSafety: {
         title: t('sections.privacyAndSafety.title'),

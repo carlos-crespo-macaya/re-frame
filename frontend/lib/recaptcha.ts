@@ -8,15 +8,29 @@ export async function executeRecaptcha(action: string, siteKey: string): Promise
   const rawProvider = (process.env.NEXT_PUBLIC_RECAPTCHA_PROVIDER || 'enterprise').toLowerCase()
   const provider: 'enterprise' | 'classic' = rawProvider === 'classic' ? 'classic' : 'enterprise'
 
-  await new Promise<void>((resolve) => {
-    const w = window as any
+  await new Promise<void>((resolve, reject) => {
+    const w = window as unknown as {
+      grecaptcha?: any
+    }
     if (provider === 'classic') {
       if (w.grecaptcha) return resolve()
       const s = document.createElement('script')
       s.src = 'https://www.google.com/recaptcha/api.js?render=' + siteKey
       s.async = true
       s.defer = true
-      s.onload = () => resolve()
+      const timeout = window.setTimeout(() => {
+        s.remove()
+        reject(new Error('reCAPTCHA v3 (classic) load timeout'))
+      }, 15000)
+      s.onerror = () => {
+        window.clearTimeout(timeout)
+        s.remove()
+        reject(new Error('Failed to load reCAPTCHA v3 (classic)'))
+      }
+      s.onload = () => {
+        window.clearTimeout(timeout)
+        resolve()
+      }
       document.head.appendChild(s)
       return
     }
@@ -26,11 +40,25 @@ export async function executeRecaptcha(action: string, siteKey: string): Promise
     s.src = 'https://www.google.com/recaptcha/enterprise.js?render=' + siteKey
     s.async = true
     s.defer = true
-    s.onload = () => resolve()
+    const timeout = window.setTimeout(() => {
+      s.remove()
+      reject(new Error('reCAPTCHA Enterprise load timeout'))
+    }, 15000)
+    s.onerror = () => {
+      window.clearTimeout(timeout)
+      s.remove()
+      reject(new Error('Failed to load reCAPTCHA Enterprise'))
+    }
+    s.onload = () => {
+      window.clearTimeout(timeout)
+      resolve()
+    }
     document.head.appendChild(s)
   })
 
-  const w = window as any
+  const w = window as unknown as {
+    grecaptcha?: any
+  }
   if (provider === 'classic') {
     if (!w.grecaptcha?.ready || !w.grecaptcha?.execute) {
       throw new Error('reCAPTCHA v3 (classic) not available on window')

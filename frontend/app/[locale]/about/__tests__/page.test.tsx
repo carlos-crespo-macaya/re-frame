@@ -4,7 +4,7 @@ import AboutPage from '../page'
 // Mock next-intl/server
 jest.mock('next-intl/server', () => ({
   getTranslations: jest.fn(async () => {
-    const translations: Record<string, any> = {
+    const translations: Record<string, string> = {
       'title': 'ℹ️ About re-frame',
       'navigation.back': '← Return to re-frame',
       'mission.label': 'Mission',
@@ -26,14 +26,10 @@ jest.mock('next-intl/server', () => ({
       'footer.about': 'About'
     }
     
-    const mockT = (key: string) => {
-      return translations[key] || key
-    }
+    const mockT = ((key: string) => translations[key] || key) as any
     
     // Add raw method for HTML content
-    mockT.raw = (key: string) => {
-      return translations[key] || key
-    }
+    mockT.raw = (key: string) => translations[key] || key
     
     return mockT
   })

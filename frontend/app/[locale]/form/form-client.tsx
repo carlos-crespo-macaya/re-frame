@@ -6,9 +6,9 @@ import { useSSEClient } from '@/lib/streaming/use-sse-client'
 import ReactMarkdown from 'react-markdown'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { GlassCard } from '@/components/layout/GlassCard'
-import { FrameworkBadge, LanguageSelector } from '@/components/ui'
+// UI extras removed to reduce bundle and avoid unused warnings
 import { ThoughtInputForm } from '@/components/forms'
-import { Framework } from '@/types/api'
+// Types are local to this file; avoid importing unused API enums
 
 interface Message {
   role: 'user' | 'assistant'
@@ -86,15 +86,16 @@ export function FormClient({ locale }: { locale: string }) {
     let didTurnComplete = false
 
     for (let i = processedIndexRef.current; i < msgs.length; i++) {
-      const msg = msgs[i] as any
+      const msg = msgs[i] as { [key: string]: unknown }
 
       if (msg) {
-        if (msg.message_type === 'response' && typeof msg.data === 'string') {
-          localBuffer += msg.data
-        } else if (msg.type === 'content' && typeof msg.data === 'string') {
-          localBuffer += msg.data
-        } else if (msg.mime_type === 'text/plain' && typeof msg.data === 'string') {
-          localBuffer += msg.data
+        const data = msg['data']
+        if (msg['message_type'] === 'response' && typeof data === 'string') {
+          localBuffer += data
+        } else if (msg['type'] === 'content' && typeof data === 'string') {
+          localBuffer += data
+        } else if (msg['mime_type'] === 'text/plain' && typeof data === 'string') {
+          localBuffer += data
         }
       }
 

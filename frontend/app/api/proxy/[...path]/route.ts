@@ -20,7 +20,7 @@ async function proxy(req: NextRequest, { params }: { params: { path: string[] } 
       const u = new URL(backendPublicUrl);
       protocol = (u.protocol === 'http:') ? 'http' : 'https';
     }
-  } catch (_) {
+  } catch (_err: unknown) {
     // keep default https
   }
 
@@ -72,23 +72,27 @@ async function proxy(req: NextRequest, { params }: { params: { path: string[] } 
       const isSSE = params.path.includes('events') ||
         requestHeaders.accept?.includes('text/event-stream');
 
-      const response = await fetch(targetUrl, {
+      const init: RequestInit & { duplex?: 'half' } = {
         method: req.method,
         headers: {
           ...requestHeaders,
-          ...(isSSE ? { 'Accept': 'text/event-stream', 'Cache-Control': 'no-cache' } : {}),
         },
-        // Cast to any to allow Node.js fetch duplex when streaming
-        ...(isSSE ? ({ duplex: 'half' } as any) : {}),
         body: ['GET', 'HEAD'].includes(req.method) ? undefined : await req.arrayBuffer(),
-      } as any);
+      };
+      if (isSSE) {
+        (init.headers as Record<string, string>)['Accept'] = 'text/event-stream';
+        (init.headers as Record<string, string>)['Cache-Control'] = 'no-cache';
+        init.duplex = 'half';
+      }
+
+      const response = await fetch(targetUrl, init);
 
       if (!response.ok && response.body) {
         // forward non-OK with body
-        return new NextResponse(response.body as any, { status: response.status, headers: response.headers as any });
+        return new NextResponse(response.body, { status: response.status, headers: response.headers });
       }
 
-      return new NextResponse(response.body as any, { status: response.status, headers: response.headers as any });
+      return new NextResponse(response.body, { status: response.status, headers: response.headers });
     }
 
     // Initialize GoogleAuth for Cloud Run service-to-service authentication
@@ -143,7 +147,7 @@ async function proxy(req: NextRequest, { params }: { params: { path: string[] } 
     // Use the client's request method which automatically adds the Authorization header
     const response = await client.request({
       url: targetUrl,
-      method: req.method as any,
+      method: req.method,
       headers: requestHeaders,
       data: ['GET', 'HEAD'].includes(req.method)
         ? undefined
@@ -179,16 +183,17 @@ async function proxy(req: NextRequest, { params }: { params: { path: string[] } 
     }
 
     // Return the response with proper headers
-    return new NextResponse(response.data as BodyInit, {
+    return new NextResponse(response.data as unknown as BodyInit, {
       status: response.status,
       headers: cleanHeaders,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as { message?: string; code?: string; response?: { status?: number; statusText?: string } };
     console.error('Proxy error:', {
-      message: error.message,
-      code: error.code,
-      status: error.response?.status,
-      statusText: error.response?.statusText,
+      message: err?.message,
+      code: err?.code,
+      status: err?.response?.status,
+      statusText: err?.response?.statusText,
       targetUrl,
       audience,
       backendHost,
@@ -196,21 +201,21 @@ async function proxy(req: NextRequest, { params }: { params: { path: string[] } 
     });
 
     // Handle specific auth errors
-    if (error.code === 'ECONNREFUSED') {
+    if (err?.code === 'ECONNREFUSED') {
       return NextResponse.json(
         { error: 'Backend service unavailable' },
         { status: 503 }
       );
     }
 
-    if (error.response?.status === 403) {
+    if (err?.response?.status === 403) {
       return NextResponse.json(
         { error: 'Authentication failed - service account may lack permissions' },
         { status: 403 }
       );
     }
 
-    if (error.response?.status === 401) {
+    if (err?.response?.status === 401) {
       return NextResponse.json(
         { error: 'Authentication failed - invalid or missing token' },
         { status: 401 }
@@ -219,8 +224,8 @@ async function proxy(req: NextRequest, { params }: { params: { path: string[] } 
 
     // Generic error response
     return NextResponse.json(
-      { error: error.message || 'Proxy request failed' },
-      { status: error.response?.status || 500 }
+      { error: err?.message || 'Proxy request failed' },
+      { status: err?.response?.status || 500 }
     );
   }
 }

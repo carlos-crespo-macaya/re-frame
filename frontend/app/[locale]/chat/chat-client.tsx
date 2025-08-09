@@ -88,15 +88,16 @@ export function ChatClient({ locale }: { locale: string }) {
     let didTurnComplete = false
 
     for (let i = processedIndexRef.current; i < msgs.length; i++) {
-      const msg = msgs[i] as any
+      const msg = msgs[i] as { [key: string]: unknown }
 
       if (msg) {
-        if (msg.message_type === 'response' && typeof msg.data === 'string') {
-          localBuffer += msg.data
-        } else if (msg.type === 'content' && typeof msg.data === 'string') {
-          localBuffer += msg.data
-        } else if (msg.mime_type === 'text/plain' && typeof msg.data === 'string') {
-          localBuffer += msg.data
+        const data = msg['data']
+        if (msg['message_type'] === 'response' && typeof data === 'string') {
+          localBuffer += data
+        } else if (msg['type'] === 'content' && typeof data === 'string') {
+          localBuffer += data
+        } else if (msg['mime_type'] === 'text/plain' && typeof data === 'string') {
+          localBuffer += data
         }
       }
 
@@ -184,15 +185,11 @@ export function ChatClient({ locale }: { locale: string }) {
 
   return (
     <div
-      className="flex flex-col h-screen text-white relative overflow-hidden min-h-0"
-      style={{
-        background: 'radial-gradient(ellipse at center, #0a2a3a 0%, #062633 25%, #03141d 50%, #020c12 100%)',
-        height: '100dvh',
-      }}
+      className="flex flex-col min-h-0 text-white relative overflow-hidden bg-chat-gradient min-h-[100svh]"
     >
       {/* Header */}
       <header className="flex-shrink-0 relative z-10">
-        <div className="px-4 py-4 sm:px-16 sm:py-6">
+        <div className="px-4 py-4 sm:px-16 sm:py-6 pt-[env(safe-area-inset-top)]">
           <div className="flex items-center justify-between max-w-[1312px] mx-auto">
             <div className="flex items-center gap-3">
               <button
@@ -218,21 +215,17 @@ export function ChatClient({ locale }: { locale: string }) {
       </header>
 
       {/* Main chat area with safe-area padding on mobile */}
-      <main className="flex-1 min-h-0 flex flex-col overflow-hidden px-4 sm:px-16 pb-[env(safe-area-inset-bottom)] sm:pb-8" style={{ paddingTop: '16px' }}>
+      <main className="flex-1 min-h-0 flex flex-col overflow-hidden px-4 sm:px-16 sm:pb-8 pt-4">
         <div className="flex-1 min-h-0 flex flex-col max-w-[1312px] w-full mx-auto">
           {/* Messages container - Enhanced glassmorphic card with visible borders */}
           <div
-            className="flex-1 min-h-0 overflow-y-auto rounded-[16px] sm:rounded-[24px] backdrop-blur-md relative ring-1 ring-white/20 shadow-lg"
-            style={{
-              background: 'rgba(8, 20, 28, 0.55)',
-              boxShadow: '0 0 0 1px rgba(155, 247, 235, 0.25), 0 10px 40px rgba(0, 0, 0, 0.4)',
-            }}
+            className="flex-1 min-h-0 overflow-y-auto rounded-[16px] sm:rounded-[24px] backdrop-blur-md relative ring-1 ring-white/20 shadow-glass bg-card-glass"
           >
-            <div className="px-4 sm:px-8" style={{ paddingTop: '32px', paddingBottom: '24px' }}>
+            <div className="px-4 sm:px-8 pt-8 pb-6">
               {messages.length === 0 && !isLoading && (
                 <div className="flex flex-col items-center justify-center text-center">
                   <p className="text-[18px] font-bold mb-2 text-white">{t.subtitle}</p>
-                  <p className="text-[14px] leading-[22px]" style={{ color: 'rgba(255, 255, 255, 0.45)' }}>{t.placeholder}</p>
+                  <p className="text-[14px] leading-[22px] text-white/45">{t.placeholder}</p>
                 </div>
               )}
 
@@ -288,8 +281,8 @@ export function ChatClient({ locale }: { locale: string }) {
                       <div className="flex items-center gap-3">
                         <div className="flex gap-1">
                           <div className="w-2 h-2 bg-[#9BF7EB] rounded-full animate-pulse" />
-                          <div className="w-2 h-2 bg-[#9BF7EB] rounded-full animate-pulse" style={{ animationDelay: '150ms' }} />
-                          <div className="w-2 h-2 bg-[#9BF7EB] rounded-full animate-pulse" style={{ animationDelay: '300ms' }} />
+                          <div className="w-2 h-2 bg-[#9BF7EB] rounded-full animate-pulse delay-150" />
+                          <div className="w-2 h-2 bg-[#9BF7EB] rounded-full animate-pulse delay-300" />
                         </div>
                         <span className="text-[14px] leading-[22px] text-white/45">{t.thinking}</span>
                       </div>
@@ -303,13 +296,7 @@ export function ChatClient({ locale }: { locale: string }) {
           </div>
 
           {/* Input dock - sticky on mobile, static on larger screens */}
-          <div className="mt-2 sm:mt-4 sticky bottom-0 sm:static z-10 flex items-center h-[56px] rounded-full backdrop-blur-md relative overflow-hidden ring-1 ring-white/20"
-            style={{
-              background: 'rgba(8, 20, 28, 0.55)',
-              boxShadow: '0 0 0 1px rgba(155, 247, 235, 0.25), 0 4px 20px rgba(0, 0, 0, 0.3)',
-              paddingBottom: 'env(safe-area-inset-bottom)',
-            }}
-          >
+          <div className="mt-2 sm:mt-4 sticky bottom-0 sm:static z-10 flex items-center h-[56px] rounded-full backdrop-blur-md relative overflow-hidden ring-1 ring-white/20 bg-card-glass shadow-glass pb-[env(safe-area-inset-bottom)]">
             <textarea
               value={input}
               onChange={handleInputChange}
@@ -327,11 +314,7 @@ export function ChatClient({ locale }: { locale: string }) {
               className={`w-[56px] h-[56px] flex items-center justify-center rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
                 !isLoading && input.trim() ? 'hover:bg-[#7EEBD9] active:bg-[#65D9C6]' : ''
               }`}
-              style={{
-                background: isLoading || !input.trim()
-                  ? 'rgba(155, 247, 235, 0.2)'
-                  : '#9BF7EB',
-              }}
+              data-btn-bg={isLoading || !input.trim() ? 'muted' : 'accent'}
             >
               <svg className={`w-5 h-5 ${isLoading || !input.trim() ? 'text-white/30' : 'text-[#002e34]'}`} fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />

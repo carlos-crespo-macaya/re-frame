@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { GlassCard } from '@/components/layout/GlassCard'
 import { executeRecaptcha } from '@/lib/recaptcha'
+import { postFeedbackApiFeedbackPost } from '@/lib/api/generated/sdk.gen'
+import { FeedbackIn } from '@/lib/api/generated/types.gen'
 
 export default function SettingsPage({ params }: { params: { locale: string } }) {
   const [optIn, setOptIn] = useState(false)
@@ -24,23 +26,16 @@ export default function SettingsPage({ params }: { params: { locale: string } })
     try {
       setSubmitting(true); setMsg(null)
       const token = await executeRecaptcha('submit_feedback', siteKey)
-      const res = await fetch('/api/feedback', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(optIn ? { 'X-Observability-Opt-In': '1' } : {}),
-        },
-        body: JSON.stringify({
-          helpful,
-          reasons: [],
-          session_id: crypto.getRandomValues(new Uint32Array(1))[0].toString(16),
-          lang: params.locale,
-          platform: 'web',
-          recaptcha_token: token,
-          recaptcha_action: 'submit_feedback',
-        })
-      })
-      if (!res.ok) throw new Error(await res.text())
+      const body: FeedbackIn = {
+        helpful,
+        reasons: [],
+        session_id: crypto.getRandomValues(new Uint32Array(1))[0].toString(16),
+        lang: params.locale,
+        platform: 'web',
+        recaptcha_token: token,
+        recaptcha_action: 'submit_feedback',
+      }
+      await postFeedbackApiFeedbackPost({ requestBody: body, xObservabilityOptIn: optIn ? '1' : undefined })
       setMsg('Thanks for the feedback!')
     } catch (e) {
       setMsg('Could not submit feedback. Please try later.')
@@ -89,7 +84,7 @@ export default function SettingsPage({ params }: { params: { locale: string } })
           <h2 className="text-lg font-medium text-white mb-2">{t('helpUs')}</h2>
           <p className="text-sm text-white/70 mb-3">{t('helpUsDesc')}</p>
           <label className="inline-flex items-center gap-3 text-white">
-            <input type="checkbox" checked={optIn} onChange={(e) => saveOptIn(e.target.checked)} />
+            <input type="checkbox" checked={optIn} onChange={(event) => saveOptIn(event.target.checked)} />
             <span>{t('toggle')}</span>
           </label>
         </GlassCard>

@@ -3,15 +3,18 @@ import { render, screen } from '@testing-library/react';
 import LocalePage from '../page';
 
 // Mock the InterfaceSelector component to avoid feature flag dependencies
+type LangProps = { value: string; onChange: (v: string) => void };
+type InterfaceProps = { locale: string };
+
 jest.mock('@/components/ui', () => ({
-  LanguageSelector: ({ value, onChange }: any) => (
-    <select data-testid="language-selector" value={value} onChange={(e) => onChange(e.target.value)}>
+  LanguageSelector: ({ value, onChange }: LangProps) => (
+    <select aria-label="Language" data-testid="language-selector" value={value} onChange={(e) => onChange(e.target.value)}>
       <option value="en-US">English</option>
       <option value="es-ES">Español</option>
     </select>
   ),
-  InterfaceSelector: ({ locale }: any) => (
-    <div data-testid="interface-selector">
+  InterfaceSelector: ({ locale }: InterfaceProps) => (
+    <div data-testid="interface-selector" data-locale={locale}>
       <div>Interface options here</div>
     </div>
   ),
