@@ -1,7 +1,7 @@
 import os
 
 from fastapi import APIRouter, Header, HTTPException
-from google.cloud import firestore
+from google.cloud import firestore  # type: ignore[attr-defined]
 from pydantic import BaseModel, Field
 
 from src.utils.logging import get_logger

@@ -103,6 +103,10 @@ warn_unused_ignores = true
 module = ["crawl4ai", "bs4", "google.adk.*", "google.genai.*"]
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+module = ["google.cloud.firestore", "google.cloud.recaptchaenterprise_v1"]
+ignore_missing_imports = true
+
 # Pytest configuration
 [tool.pytest.ini_options]
 testpaths = ["tests"]
