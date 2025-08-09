@@ -203,11 +203,7 @@ export function useNaturalConversation(options: UseNaturalConversationOptions = 
   // Setup voice SSE connection
   const setupSSEConnection = useCallback((sessionId: string) => {
     // For voice mode, use the voice-specific EventSource
-    if (eventSourceRef.current) {
-      eventSourceRef.current.close()
-      eventSourceRef.current = null
-    }
-    const eventSource = ApiClient.createVoiceEventSource(sessionId)
+    const eventSource = REDACTED(sessionId)
 
     eventSource.onopen = () => {
       if (process.env.NODE_ENV === 'development') {
@@ -275,7 +271,7 @@ export function useNaturalConversation(options: UseNaturalConversationOptions = 
     }
 
     eventSourceRef.current = eventSource
-  }, [onTranscription, onError])
+  }, [language, onTranscription, onError])
 
   // Setup audio recording
   const setupAudioRecording = useCallback(async () => {

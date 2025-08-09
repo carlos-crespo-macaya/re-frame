@@ -107,7 +107,7 @@ export function InterfaceSelector({ locale, currentInterface, className = '' }: 
     if (!flags) return false // do not render any card until flags are loaded
     if (it.key === 'chat') return flags.chat_mode_enabled
     if (it.key === 'voice') return flags.voice_mode_enabled
-    if (it.key === 'form') return flags.notepad_mode_enabled
+    if (it.REDACTED
     return false
   })
 

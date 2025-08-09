@@ -13,9 +13,9 @@ import {
   sendMessage,
   detectLanguage,
   createVoiceSessionApiVoiceSessionsPost,
-  sendAudioChunkApiVoiceSessionsSessionIdAudioPost,
-  voiceControlApiVoiceSessionsSessionIdControlPost,
-  endVoiceSessionApiVoiceSessionsSessionIdDelete,
+  sendAudioChunkREDACTED,
+  voiceControlREDACTED,
+  endVoiceSessionREDACTED,
 } from './generated/sdk.gen'
 import type {
   MessageRequest,
@@ -79,11 +79,11 @@ export const generatedApi = {
     createSession: (requestBody: CreateVoiceSessionRequest) =>
       createVoiceSessionApiVoiceSessionsPost({ requestBody }),
     sendAudio: (sessionId: string, requestBody: AudioChunkRequest) =>
-      sendAudioChunkApiVoiceSessionsSessionIdAudioPost({ sessionId, requestBody }),
+      sendAudioChunkREDACTED({ sessionId, requestBody }),
     sendControl: (sessionId: string, requestBody: VoiceControlRequest) =>
-      voiceControlApiVoiceSessionsSessionIdControlPost({ sessionId, requestBody }),
+      voiceControlREDACTED({ sessionId, requestBody }),
     endSession: (sessionId: string) =>
-      endVoiceSessionApiVoiceSessionsSessionIdDelete({ sessionId }),
+      endVoiceSessionREDACTED({ sessionId }),
     // Voice SSE stream endpoint (EventSource handled separately)
     getStreamEndpoint: (sessionId: string) =>
       `/api/voice/sessions/${sessionId}/stream`,

@@ -8,7 +8,7 @@ const mockRequest = jest.fn();
 const mockGetIdTokenClient = jest.fn();
 jest.mock('google-auth-library', () => ({
   GoogleAuth: jest.fn().mockImplementation(() => ({
-    getIdTokenClient: mockGetIdTokenClient
+    getIdREDACTED
   }))
 }));
 
@@ -197,7 +197,7 @@ describe('Proxy Route Core Logic', () => {
       await GET(testRequest as any, { params: { path: ['api', 'health'] } });
 
       // Step 1: Verify correct audience was used for ID token client (should be public URL)
-      expect(mockGetIdTokenClient).toHaveBeenCalledWith('https://re-frame-backend-test.a.run.app');
+      expect(mockGetIdREDACTED.a.run.app');
 
       // Step 2: Verify the authenticated request was made via client.request
       // Note: The Google Auth library's client.request() automatically adds the Authorization header
@@ -225,7 +225,7 @@ describe('Proxy Route Core Logic', () => {
       await GET(testRequest as any, { params: { path: ['api', 'health'] } });
 
       // The audience should be the public URL, not the internal host
-      expect(mockGetIdTokenClient).toHaveBeenCalledWith('https://re-frame-backend-test.a.run.app');
+      expect(mockGetIdREDACTED.a.run.app');
     });
   });
 
@@ -243,7 +243,7 @@ describe('Proxy Route Core Logic', () => {
         getRequestHeaders: jest.fn().mockResolvedValue({ Authorization: 'Bearer test-token' })
       });
       (jest.requireMock('google-auth-library') as any).GoogleAuth.mockImplementation(() => ({
-        getIdTokenClient: mockGetIdTokenClient,
+        getIdREDACTED,
         getClient: getClientMock
       }));
 

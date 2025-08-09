@@ -1,0 +1,8 @@
+[2025-08-09T01:29:41.389Z] Error: Unsupported OpenAPI specification: {}
+Stack:
+Error: Unsupported OpenAPI specification: {}
+    at $p (/Users/carlos/workspace-org/re-frame/frontend/node_modules/.pnpm/@hey-api+openapi-ts@0.78.3_typescript@5.9.2/node_modules/@hey-api/openapi-ts/dist/index.cjs:32:123812)
+    at ti (/Users/carlos/workspace-org/re-frame/frontend/node_modules/.pnpm/@hey-api+openapi-ts@0.78.3_typescript@5.9.2/node_modules/@hey-api/openapi-ts/dist/index.cjs:42:9066)
+    at async Promise.all (index 0)
+    at async RD (/Users/carlos/workspace-org/re-frame/frontend/node_modules/.pnpm/@hey-api+openapi-ts@0.78.3_typescript@5.9.2/node_modules/@hey-api/openapi-ts/dist/index.cjs:1338:4634)
+    at async start (/Users/carlos/workspace-org/re-frame/frontend/node_modules/.pnpm/@hey-api+openapi-ts@0.78.3_typescript@5.9.2/node_modules/@hey-api/openapi-ts/bin/index.cjs:131:21)
