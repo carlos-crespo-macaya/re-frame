@@ -99,8 +99,8 @@ describe('ChatClient - Inline Feedback', () => {
     expect(noteInput).toBeInTheDocument()
     expect(noteInput).not.toBeDisabled()
 
-    // Verify "Skip note" button appears
-    expect(screen.getByText('Skip note')).toBeInTheDocument()
+    // Verify single Send button is present (no separate Skip button)
+    expect(screen.getAllByText('Send')[0]).toBeInTheDocument()
   })
 
   it('allows entering and sending feedback with note', async () => {
@@ -175,9 +175,9 @@ describe('ChatClient - Inline Feedback', () => {
     const thumbsUpButtons = screen.getAllByLabelText('Thumbs up')
     fireEvent.click(thumbsUpButtons[thumbsUpButtons.length - 1])
 
-    // Click skip note
-    const skipButton = await screen.findByText('Skip note')
-    fireEvent.click(skipButton)
+    // Click Send without entering a note
+    const sendButtons = await screen.findAllByText('Send')
+    fireEvent.click(sendButtons[0])
 
     // Verify feedback was sent without note
     await waitFor(() => {
@@ -219,9 +219,9 @@ describe('ChatClient - Inline Feedback', () => {
     const thumbsUpButtons = screen.getAllByLabelText('Thumbs up')
     fireEvent.click(thumbsUpButtons[thumbsUpButtons.length - 1])
 
-    // Skip note initially
-    const skipButton = await screen.findByText('Skip note')
-    fireEvent.click(skipButton)
+    // Send without note initially
+    const sendButtons = await screen.findAllByText('Send')
+    fireEvent.click(sendButtons[0])
 
     // Wait for thanks message
     await waitFor(() => {
@@ -258,9 +258,8 @@ describe('ChatClient - Inline Feedback', () => {
     const thumbsUpButtons = screen.getAllByLabelText('Thumbs up')
     fireEvent.click(thumbsUpButtons[thumbsUpButtons.length - 1])
 
-    // Verify Spanish UI elements
+    // Verify Spanish UI elements (single Send button, optional note)
     expect(await screen.findByPlaceholderText('Nota opcional…')).toBeInTheDocument()
-    expect(screen.getByText('Omitir nota')).toBeInTheDocument()
     expect(screen.getByText('Enviar')).toBeInTheDocument()
   })
 
@@ -330,8 +329,9 @@ describe('ChatClient - Inline Feedback', () => {
     const thumbsDownButtons = screen.getAllByLabelText('Thumbs down')
     fireEvent.click(thumbsDownButtons[thumbsDownButtons.length - 1])
 
-    const skipButton = await screen.findByText('Skip note')
-    fireEvent.click(skipButton)
+    // Click Send without entering a note to trigger error path
+    const sendButtons = await screen.findAllByText('Send')
+    fireEvent.click(sendButtons[0])
 
     // Verify error message appears
     await waitFor(() => {

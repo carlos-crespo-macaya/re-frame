@@ -445,17 +445,7 @@ export function ChatClient({ locale }: { locale: string }) {
                                       {inlineFeedback[index]?.sending ? (locale==='es'?'Enviando…':'Sending…') : (locale==='es'?'Enviar':'Send')}
                                     </button>
                                   </div>
-                                  {!inlineFeedback[index]?.sending && (
-                                    <div className="text-right">
-                                      <button
-                                        type="button"
-                                        onClick={() => handleSkipNote(index)}
-                                        className="text-xs text-white/60 hover:text-[#9BF7EB] transition-colors"
-                                      >
-                                        {locale==='es' ? 'Omitir nota' : 'Skip note'}
-                                      </button>
-                                    </div>
-                                  )}
+                                  {/* Removed separate 'Skip note' button: single Send handles with/without note */}
                                 </div>
                               )}
                               {inlineFeedback[index]?.error && (
