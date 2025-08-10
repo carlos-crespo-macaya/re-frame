@@ -13,6 +13,7 @@ from google.adk.runners import InMemoryRunner
 from google.genai.types import Content, Part, SpeechConfig
 
 from src.agents.cbt_assistant import create_cbt_assistant
+from src.agents.orchestrator import _extract_ui  # Server-side sanitize of model output
 from src.models.api import (
     LanguageDetectionRequest,
     LanguageDetectionResponse,
@@ -21,7 +22,6 @@ from src.models.api import (
     SessionInfo,
     SessionListResponse,
 )
-from src.agents.orchestrator import _extract_ui  # Server-side sanitize of model output
 from src.utils.language_utils import (
     get_default_language,
     normalize_language_code,
@@ -237,6 +237,9 @@ async def sse_endpoint(
                     logger.error("queue_get_error", error=str(e))
                     return None
 
+            # Accumulate raw text for a turn across loop iterations; flush on turn_complete
+            turn_text_buffer: list[str] = []
+
             while True:
                 # Check if client has disconnected
                 if await request.is_disconnected():
@@ -283,8 +286,6 @@ async def sse_endpoint(
                         pass
 
                 # Process completed tasks
-                # Accumulate raw text for the current turn; sanitize at turn end
-                turn_text_buffer: list[str] = []
                 for task in done:
                     if task == heartbeat_task_wait:
                         try:
@@ -295,7 +296,7 @@ async def sse_endpoint(
                                 session_id=session_id,
                                 timestamp=heartbeat_msg.get("timestamp"),
                             )
-                        except Exception as e:  # noqa: BLE001
+                        except Exception as e:
                             logger.error("heartbeat_error", error=str(e))
                     elif task == event_task:
                         try:
@@ -360,7 +361,7 @@ async def sse_endpoint(
                                     session_id=session_id,
                                     interrupted=getattr(event, "interrupted", False),
                                 )
-                        except Exception as e:  # noqa: BLE001
+                        except Exception as e:
                             logger.error(
                                 "event_processing_error",
                                 error=str(e),
@@ -370,7 +371,7 @@ async def sse_endpoint(
         except asyncio.CancelledError:
             logger.info("sse_connection_cancelled", session_id=session_id)
             raise
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             logger.error("sse_stream_error", error=str(e), session_id=session_id)
             error_msg = {
                 "type": "error",
