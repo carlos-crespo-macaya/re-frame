@@ -50,6 +50,9 @@ export default function FeedbackPage({ params }: { params: { locale: string } })
       } as unknown as FeedbackIn
       await postFeedbackApiFeedbackPost({ requestBody: body })
       setMsg(params.locale === 'es' ? '¡Gracias por tu opinión!' : 'Thanks for the feedback!')
+      // Clear form state after successful submission
+      setComment('')
+      setSelected(null)
     } catch {
       setMsg(params.locale === 'es' ? 'No se pudo enviar la opinión. Inténtalo más tarde.' : 'Could not submit feedback. Please try later.')
     } finally { setSubmitting(false) }
@@ -105,6 +108,7 @@ export default function FeedbackPage({ params }: { params: { locale: string } })
             {/* Feedback buttons */}
             <div className="flex justify-center gap-4">
               <button
+                type="button"
                 aria-label={t('thumbsUp')}
                 title={t('thumbsUp')}
                 onClick={() => { setSelected('up'); sendFeedback(true) }}
@@ -123,6 +127,7 @@ export default function FeedbackPage({ params }: { params: { locale: string } })
               </button>
 
               <button
+                type="button"
                 aria-label={t('thumbsDown')}
                 title={t('thumbsDown')}
                 onClick={() => { setSelected('down'); sendFeedback(false) }}
