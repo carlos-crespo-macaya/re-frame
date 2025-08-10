@@ -2,7 +2,7 @@
 
 import { useSearchParams, useRouter, useParams } from 'next/navigation'
 import Script from 'next/script'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { GlassCard } from '@/components/layout/GlassCard'
 
 declare global {
@@ -10,6 +10,33 @@ declare global {
 }
 
 const SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY as string | undefined
+
+function sanitizeRedirect(raw: string | null, locale: 'en' | 'es'): string {
+  if (!raw) return `/${locale}`
+  try {
+    const u = new URL(raw, typeof window !== 'undefined' ? window.location.origin : 'https://local')
+    let path = u.pathname
+    if (!path.startsWith('/')) path = `/${path}`
+    const segments = path.split('/')
+    const hasLocale = segments[1] === 'en' || segments[1] === 'es'
+    if (hasLocale) {
+      if (segments[1] !== locale) segments[1] = locale
+      path = segments.join('/')
+    } else {
+      path = `/${locale}${path}`
+    }
+    return `${path}${u.search}`
+  } catch {
+    // Fallback for non-URL strings
+    if (!raw.startsWith('/')) return `/${locale}`
+    const segments = raw.split('/')
+    if (segments[1] === 'en' || segments[1] === 'es') {
+      segments[1] = locale
+      return segments.join('/')
+    }
+    return `/${locale}${raw}`
+  }
+}
 
 export default function GatePage() {
   const sp = useSearchParams()
@@ -19,7 +46,14 @@ export default function GatePage() {
   const [err, setErr] = useState<string | null>(null)
 
   const action = (sp.get('action') as 'chat_gate' | 'feedback_gate') ?? 'chat_gate'
-  const redirect = sp.get('redirect') ?? `/${locale}`
+  const redirect = useMemo(() => {
+    const raw = sp.get('redirect')
+    let decoded: string | null = raw
+    if (raw && /%2F/i.test(raw)) {
+      try { decoded = decodeURIComponent(raw) } catch { decoded = raw }
+    }
+    return sanitizeRedirect(decoded, locale)
+  }, [sp, locale])
 
   async function handleVerify() {
     setErr(null); setLoading(true)
@@ -36,7 +70,23 @@ export default function GatePage() {
         body: JSON.stringify({ token, action }),
       })
       if (!r.ok) throw new Error('verify_failed')
+      // Primary: SPA navigation
       router.replace(redirect)
+      // Fallback: ensure navigation even if SPA router stalls (rare)
+      setTimeout(() => {
+        if (typeof window !== 'undefined') {
+          try {
+            const dest = new URL(redirect, window.location.origin)
+            const current = window.location.pathname + window.location.search
+            const target = dest.pathname + dest.search
+            if (current !== target) {
+              window.location.assign(dest.toString())
+            }
+          } catch {
+            // noop
+          }
+        }
+      }, 800)
     } catch {
       setErr(locale === 'es'
         ? 'No se pudo verificar reCAPTCHA. Inténtalo de nuevo.'

@@ -96,6 +96,30 @@ async function handleMiddleware(request: NextRequest) {
     return NextResponse.redirect(newUrl)
   }
 
+  // Normalize cross-locale redirect on gate page itself to avoid language flips
+  {
+    const url = request.nextUrl
+    const locale = pathname.split('/')[1] || 'en'
+    if (new RegExp(`^\/(${LOCALE_GROUP})\/gate$`).test(pathname)) {
+      const r = url.searchParams.get('redirect')
+      if (r && r.startsWith('/')) {
+        const segs = r.split('/')
+        const hasLocale = segs[1] && locales.includes(segs[1])
+        if (hasLocale && segs[1] !== locale) {
+          segs[1] = locale
+          const dest = request.nextUrl.clone()
+          dest.searchParams.set('redirect', segs.join('/'))
+          return NextResponse.redirect(dest)
+        }
+        if (!hasLocale) {
+          const dest = request.nextUrl.clone()
+          dest.searchParams.set('redirect', `/${locale}${r}`)
+          return NextResponse.redirect(dest)
+        }
+      }
+    }
+  }
+
   // reCAPTCHA gate checks (skip when disabled)
   if (!DISABLED) {
     const url = request.nextUrl
