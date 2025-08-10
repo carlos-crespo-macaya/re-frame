@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import { ChatClient } from '../chat-client'
 import { postFeedbackApiFeedbackPost } from '@/lib/api/generated/sdk.gen'
@@ -99,8 +99,9 @@ describe('ChatClient - Inline Feedback', () => {
     expect(noteInput).toBeInTheDocument()
     expect(noteInput).not.toBeDisabled()
 
-    // Verify single Send button is present (no separate Skip button)
-    expect(screen.getAllByText('Send')[0]).toBeInTheDocument()
+    // Verify note row Send button is present via role (scope within note row)
+    const noteRowButton = within(noteInput.parentElement as HTMLElement).getByRole('button', { name: /send/i })
+    expect(noteRowButton).toBeInTheDocument()
   })
 
   it('allows entering and sending feedback with note', async () => {
@@ -129,10 +130,9 @@ describe('ChatClient - Inline Feedback', () => {
     const noteInput = await screen.findByPlaceholderText('Optional note…')
     fireEvent.change(noteInput, { target: { value: 'Could be better' } })
 
-    // Click send - use getAllByText since there are multiple Send buttons
-    const sendButtons = screen.getAllByText('Send')
-    // The first Send button should be the one for the feedback note
-    fireEvent.click(sendButtons[0])
+    // Click the Send button for the note by role (scoped within the note row)
+    const noteSendButton = within(noteInput.parentElement as HTMLElement).getByRole('button', { name: /send/i })
+    fireEvent.click(noteSendButton)
 
     // Verify feedback was sent with note
     await waitFor(() => {
@@ -175,9 +175,10 @@ describe('ChatClient - Inline Feedback', () => {
     const thumbsUpButtons = screen.getAllByLabelText('Thumbs up')
     fireEvent.click(thumbsUpButtons[thumbsUpButtons.length - 1])
 
-    // Click Send without entering a note
-    const sendButtons = await screen.findAllByText('Send')
-    fireEvent.click(sendButtons[0])
+    // Click Send without entering a note (scoped to note row)
+    const noteInput = await screen.findByPlaceholderText('Optional note…')
+    const sendButton = within(noteInput.parentElement as HTMLElement).getByRole('button', { name: /send/i })
+    fireEvent.click(sendButton)
 
     // Verify feedback was sent without note
     await waitFor(() => {
@@ -219,9 +220,10 @@ describe('ChatClient - Inline Feedback', () => {
     const thumbsUpButtons = screen.getAllByLabelText('Thumbs up')
     fireEvent.click(thumbsUpButtons[thumbsUpButtons.length - 1])
 
-    // Send without note initially
-    const sendButtons = await screen.findAllByText('Send')
-    fireEvent.click(sendButtons[0])
+    // Send without note initially (scoped to note row)
+    const noteInput = await screen.findByPlaceholderText('Optional note…')
+    const firstSend = within(noteInput.parentElement as HTMLElement).getByRole('button', { name: /send/i })
+    fireEvent.click(firstSend)
 
     // Wait for thanks message
     await waitFor(() => {
@@ -259,8 +261,9 @@ describe('ChatClient - Inline Feedback', () => {
     fireEvent.click(thumbsUpButtons[thumbsUpButtons.length - 1])
 
     // Verify Spanish UI elements (single Send button, optional note)
-    expect(await screen.findByPlaceholderText('Nota opcional…')).toBeInTheDocument()
-    expect(screen.getByText('Enviar')).toBeInTheDocument()
+    const noteInputEs = await screen.findByPlaceholderText('Nota opcional…')
+    expect(noteInputEs).toBeInTheDocument()
+    expect(within(noteInputEs.parentElement as HTMLElement).getByRole('button', { name: 'Enviar' })).toBeInTheDocument()
   })
 
   it('disables input while sending feedback', async () => {
@@ -292,8 +295,8 @@ describe('ChatClient - Inline Feedback', () => {
     const noteInput = await screen.findByPlaceholderText('Optional note…')
     fireEvent.change(noteInput, { target: { value: 'Great!' } })
     
-    const sendButtons = screen.getAllByText('Send')
-    fireEvent.click(sendButtons[0])
+    const noteSendButton = within(noteInput.parentElement as HTMLElement).getByRole('button', { name: /send/i })
+    fireEvent.click(noteSendButton)
 
     // Verify button shows "Sending..." and input is disabled
     expect(screen.getByText('Sending…')).toBeInTheDocument()
@@ -330,8 +333,10 @@ describe('ChatClient - Inline Feedback', () => {
     fireEvent.click(thumbsDownButtons[thumbsDownButtons.length - 1])
 
     // Click Send without entering a note to trigger error path
-    const sendButtons = await screen.findAllByText('Send')
-    fireEvent.click(sendButtons[0])
+    const noteInput = await screen.findByPlaceholderText('Optional note…')
+    const sendButton = within(noteInput.parentElement as HTMLElement).getByRole('button', { name: /send/i })
+    expect(sendButton).toBeEnabled()
+    fireEvent.click(sendButton)
 
     // Verify error message appears
     await waitFor(() => {
