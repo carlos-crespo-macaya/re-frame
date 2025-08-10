@@ -20,7 +20,7 @@ async function proxy(req: NextRequest, { params }: { params: { path: string[] } 
       const u = new URL(backendPublicUrl);
       protocol = (u.protocol === 'http:') ? 'http' : 'https';
     }
-  } catch (_err: unknown) {
+  } catch {
     // keep default https
   }
 
@@ -145,7 +145,7 @@ async function proxy(req: NextRequest, { params }: { params: { path: string[] } 
     }
 
     // Use the client's request method which automatically adds the Authorization header
-    const response = await client.request({
+    const requestOptions: any = {
       url: targetUrl,
       method: req.method,
       headers: requestHeaders,
@@ -153,7 +153,12 @@ async function proxy(req: NextRequest, { params }: { params: { path: string[] } 
         ? undefined
         : await req.arrayBuffer(),
       responseType: 'stream',
-    });
+    };
+    // In production, prevent axios from throwing on non-2xx so we can forward status/body
+    if (isProd) {
+      requestOptions.validateStatus = () => true;
+    }
+    const response = await client.request(requestOptions);
 
     // Process response headers
     const responseHeaders = response.headers as Record<string, string> | Headers;
@@ -182,7 +187,7 @@ async function proxy(req: NextRequest, { params }: { params: { path: string[] } 
       cleanHeaders['content-type'] = 'application/octet-stream';
     }
 
-    // Return the response with proper headers
+    // Return the response with proper headers and original status
     return new NextResponse(response.data as unknown as BodyInit, {
       status: response.status,
       headers: cleanHeaders,
