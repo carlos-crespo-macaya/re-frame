@@ -4,6 +4,8 @@ import re
 from collections.abc import Callable
 from typing import Any
 
+from src.utils.logging import get_logger
+
 from .composer import compose_system_prompt, retrieve_micro_knowledge
 from .crisis import crisis_scan, safety_message
 from .state import (
@@ -31,6 +33,11 @@ def _sanitize_text(raw: str) -> str:
     """
     if not raw:
         return ""
+    # Lightweight metrics for observability
+    raw_len = len(raw)
+    has_control = bool(re.search(r"<control>.*?</control>", raw, flags=re.S | re.I))
+    has_fences = "```" in raw
+
     txt = re.sub(r"<control>.*?</control>", "", raw, flags=re.S | re.I)
     # Remove any triple backtick fenced code blocks
     txt = re.sub(r"```[a-zA-Z_]*\s*[\s\S]*?```", "", txt, flags=re.S)
@@ -38,6 +45,20 @@ def _sanitize_text(raw: str) -> str:
     txt = txt.replace("```", "")
     # Normalize whitespace
     txt = re.sub(r"\s+", " ", txt).strip()
+    cleaned_len = len(txt)
+
+    try:
+        logger.debug(
+            "sanitize_text",
+            raw_len=raw_len,
+            cleaned_len=cleaned_len,
+            had_control=has_control,
+            had_fences=has_fences,
+            sample=(txt[:120] if txt else ""),
+        )
+    except Exception:
+        # Never fail due to logging
+        pass
     return txt
 
 
@@ -59,13 +80,34 @@ def _extract_control_block(raw: str) -> ControlBlock | None:
         return None
 
 
+logger = get_logger(__name__)
+
+
 def _extract_ui(raw: str) -> str:
     ui = _extract_between(raw, "ui")
     if ui:
         cleaned = _sanitize_text(ui)
+        try:
+            logger.debug(
+                "ui_block_extracted",
+                ui_len=len(ui),
+                cleaned_len=len(cleaned),
+                sample=(cleaned[:120] if cleaned else ""),
+            )
+        except Exception:
+            pass
         return cleaned if cleaned else "Thanks for sharing that."
     # Fallback: sanitize whole text (after removing control) and cap length
     cleaned = _sanitize_text(raw or "")
+    try:
+        logger.debug(
+            "ui_block_missing_fallback_to_sanitized_text",
+            raw_len=len(raw or ""),
+            cleaned_len=len(cleaned),
+            sample=(cleaned[:120] if cleaned else ""),
+        )
+    except Exception:
+        pass
     return cleaned[:600] if cleaned else "Thanks for sharing that."
 
 
