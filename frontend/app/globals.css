@@ -51,6 +51,6 @@ body {
 
 /* Optional: move reCAPTCHA v3 badge to bottom-left while keeping it visible */
 .grecaptcha-badge {
-  left: 12px !important;
-  right: auto !important;
+  transform: scale(0.8);
+  transform-origin: bottom right;
 }

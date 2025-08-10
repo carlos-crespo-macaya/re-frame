@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { GlassCard } from '@/components/layout/GlassCard'
+import { ThumbsUpIcon, ThumbsDownIcon } from '@/components/icons'
 import { useRecaptcha } from '@/lib/recaptcha/useRecaptcha'
 import { postFeedbackApiFeedbackPost } from '@/lib/api/generated/sdk.gen'
 import { FeedbackIn } from '@/lib/api/generated/types.gen'
@@ -13,6 +14,7 @@ export default function FeedbackPage({ params }: { params: { locale: string } })
   const [submitting, setSubmitting] = useState(false)
   const [msg, setMsg] = useState<string | null>(null)
   const [comment, setComment] = useState('')
+  const [selected, setSelected] = useState<null | 'up' | 'down'>(null)
   const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY
   const provider = process.env.NEXT_PUBLIC_RECAPTCHA_PROVIDER === 'enterprise' ? 'enterprise' : 'classic'
   const { ready, execute, error } = useRecaptcha(siteKey, provider)
@@ -33,7 +35,7 @@ export default function FeedbackPage({ params }: { params: { locale: string } })
         setMsg(params.locale === 'es' ? 'No se pudo validar reCAPTCHA.' : 'Could not validate reCAPTCHA.')
         return
       }
-      const body: FeedbackIn = {
+      const body = {
         helpful,
         reasons: [],
         session_id: crypto.getRandomValues(new Uint32Array(1))[0].toString(16),
@@ -41,8 +43,11 @@ export default function FeedbackPage({ params }: { params: { locale: string } })
         platform: 'web',
         comment: comment || undefined,
         recaptcha_token: token,
-          recaptcha_action: `feedback_${helpful ? 'up' : 'down'}`,
-      }
+        recaptcha_action: `feedback_${helpful ? 'up' : 'down'}`,
+        // Enhanced metadata from the page
+        source: 'feedback_page',
+        page_path: typeof window !== 'undefined' ? window.location.pathname : undefined,
+      } as unknown as FeedbackIn
       await postFeedbackApiFeedbackPost({ requestBody: body })
       setMsg(params.locale === 'es' ? '¡Gracias por tu opinión!' : 'Thanks for the feedback!')
     } catch {
@@ -51,58 +56,127 @@ export default function FeedbackPage({ params }: { params: { locale: string } })
   }
 
   const t = (key: string) => {
-    const dict: Record<string, Record<string, string>> = {
+    const dict: Record<'en' | 'es', Record<string, string>> = {
       en: {
         title: 'Feedback',
-        helpUs: 'Quick feedback',
-        helpUsDesc: 'Share a brief thought (optional) and tap a thumb to send.',
-        quickFeedback: 'Quick feedback',
-        optionalComment: 'Optional comment',
+        helpUs: 'Help shape what’s next',
+        optionalComment: 'Add a note… (optional)',
         thumbsUp: 'Thumbs up',
         thumbsDown: 'Thumbs down',
+        send: 'Send feedback',
+        sending: 'Sending…',
       },
       es: {
         title: 'Opinión',
-        helpUs: 'Opinión rápida',
-        helpUsDesc: 'Comparte algo breve (opcional) y pulsa un pulgar para enviar.',
-        quickFeedback: 'Opinión rápida',
-        optionalComment: 'Comentario opcional',
+        helpUs: 'Ayúdanos a mejorar',
+        optionalComment: 'Añade una nota… (opcional)',
         thumbsUp: 'Pulgar arriba',
         thumbsDown: 'Pulgar abajo',
-      }
+        send: 'Enviar opinión',
+        sending: 'Enviando…',
+      },
     }
-    return (dict[params.locale as 'en' | 'es'] || dict.en)[key]
+    return (dict[params.locale as 'en' | 'es'] || dict.en)[key] ?? key
   }
 
   return (
     <AppLayout
       locale={params.locale}
       showBackButton
+      showFeedbackButton={false}
+      showFooter={true}
       currentLanguage={params.locale === 'es' ? 'ES' : 'EN'}
       onLanguageChange={(newLocale) => {
         const next = pathname.replace(`/${params.locale}`, `/${newLocale}`)
         router.push(next)
       }}
     >
-      <main className="max-w-2xl mx-auto p-6 space-y-6">
-        <h1 className="text-2xl font-semibold text-white">{t('title')}</h1>
+      <div className="max-w-md mx-auto w-full px-4 sm:px-6">
+        <div className="text-center mb-8 mt-8 sm:mt-12">
+          <h1 className="text-3xl sm:text-4xl font-heading font-bold text-white mb-3">{t('title')}</h1>
+        </div>
 
-        <GlassCard className="p-4">
-          <h2 className="text-lg font-medium text-white mb-2">{t('quickFeedback')}</h2>
-          <p className="text-sm text-white/70 mb-3">{t('helpUsDesc')}</p>
-          <label className="block text-sm text-white/80 mb-2" htmlFor="comment">{t('optionalComment')}</label>
-          <textarea id="comment" value={comment} onChange={(e)=>setComment(e.target.value)} className="w-full mb-3 rounded bg-white/5 text-white p-2 border border-white/10 focus:ring-2 focus:ring-[#aefcf5]/50" rows={3} placeholder={params.locale==='es'?'Comparte algo breve (opcional)':'Share something brief (optional)'} />
-          <div className="flex gap-3">
-            <button aria-label={t('thumbsUp')} title={t('thumbsUp')} className="px-3 py-2 rounded bg-[#aefcf5]/10 hover:bg-[#aefcf5]/20 text-[#aefcf5] border border-[#aefcf5]/30 disabled:opacity-50" disabled={submitting || !ready} onClick={() => sendFeedback(true)}>
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M2 10h4v12H2zM22 11c0-.55-.45-1-1-1h-6.31l1.1-5.27.03-.32c0-.41-.17-.79-.44-1.06L14 2 7.59 8.41C7.22 8.78 7 9.3 7 9.83V20c0 .55.45 1 1 1h9c.4 0 .75-.24.91-.59l3-7c.06-.13.09-.27.09-.41v-2z"/></svg>
-            </button>
-            <button aria-label={t('thumbsDown')} title={t('thumbsDown')} className="px-3 py-2 rounded bg-[#aefcf5]/10 hover:bg-[#aefcf5]/20 text-[#aefcf5] border border-[#aefcf5]/30 disabled:opacity-50" disabled={submitting || !ready} onClick={() => sendFeedback(false)}>
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M2 2h4v12H2zM22 9c0 .55-.45 1-1 1h-6.31l1.1 5.27.03.32c0 .41-.17.79-.44 1.06L14 20l-6.41-6.41C7.22 13.22 7 12.7 7 12.17V2c0-.55.45-1 1-1h9c.4 0 .75.24.91.59l3 7c.06.13.09.27.09.41v2z"/></svg>
-            </button>
+        <GlassCard className="p-0 overflow-hidden">
+          <div className="px-6 py-5 sm:px-8 sm:py-6 bg-gradient-to-br from-white/5 to-white/[0.02] border-b border-white/10">
+            <h2 className="text-base font-medium text-center text-white">{t('helpUs')}</h2>
           </div>
-          {msg && <p className="mt-3 text-sm text-white/80">{msg}</p>}
+
+          <div className="p-6 sm:p-8 space-y-6">
+            {/* Feedback buttons */}
+            <div className="flex justify-center gap-4">
+              <button
+                aria-label={t('thumbsUp')}
+                title={t('thumbsUp')}
+                onClick={() => { setSelected('up'); sendFeedback(true) }}
+                disabled={submitting || !ready}
+                className={`
+                  w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center 
+                  transition-all duration-200 transform
+                  ${selected === 'up'
+                    ? 'bg-[#aefcf5] text-[#03141d] scale-110 shadow-lg shadow-[#aefcf5]/20'
+                    : 'bg-white/5 text-white/70 hover:bg-white/10 hover:scale-105 hover:text-white'
+                  } 
+                  disabled:opacity-50 disabled:cursor-not-allowed
+                `}
+              >
+                <ThumbsUpIcon className="w-8 h-8 sm:w-10 sm:h-10" />
+              </button>
+
+              <button
+                aria-label={t('thumbsDown')}
+                title={t('thumbsDown')}
+                onClick={() => { setSelected('down'); sendFeedback(false) }}
+                disabled={submitting || !ready}
+                className={`
+                  w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center 
+                  transition-all duration-200 transform
+                  ${selected === 'down'
+                    ? 'bg-red-500/80 text-white scale-110 shadow-lg shadow-red-500/20'
+                    : 'bg-white/5 text-white/70 hover:bg-white/10 hover:scale-105 hover:text-white'
+                  } 
+                  disabled:opacity-50 disabled:cursor-not-allowed
+                `}
+              >
+                <ThumbsDownIcon className="w-8 h-8 sm:w-10 sm:h-10" />
+              </button>
+            </div>
+
+            {/* Optional comment */}
+            <div className="space-y-2">
+              <textarea
+                id="comment"
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                className={`
+                  w-full rounded-xl bg-white/5 text-white px-4 py-3 
+                  border transition-all duration-200
+                  ${comment
+                    ? 'border-[#aefcf5]/30 bg-white/[0.07]'
+                    : 'border-white/10 focus:border-[#aefcf5]/30'
+                  }
+                  focus:outline-none focus:ring-2 focus:ring-[#aefcf5]/20 focus:bg-white/[0.07]
+                  placeholder:text-white/30 resize-none
+                `}
+                rows={4}
+                placeholder={t('optionalComment')}
+              />
+            </div>
+
+            {/* Status message */}
+            {msg && (
+              <div className={`
+                text-center py-3 px-4 rounded-xl text-sm font-medium
+                ${msg.includes('Gracias') || msg.includes('Thanks')
+                  ? 'bg-[#aefcf5]/10 text-[#aefcf5] border border-[#aefcf5]/20'
+                  : 'bg-red-500/10 text-red-400 border border-red-500/20'
+                }
+              `}>
+                {msg}
+              </div>
+            )}
+          </div>
         </GlassCard>
-      </main>
+      </div>
     </AppLayout>
   )
 }

@@ -3,6 +3,7 @@
 import { useRouter, usePathname } from 'next/navigation'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { GlassCard } from '@/components/layout/GlassCard'
+import { ImportantReminder } from '@/components/ui/ImportantReminder'
 
 interface LearnCBTClientProps {
   locale: string
@@ -55,6 +56,7 @@ export function LearnCBTClient({ locale, translations: t }: LearnCBTClientProps)
     <AppLayout
       locale={locale}
       showBackButton={true}
+      showFooter={true}
       currentLanguage={locale === 'es' ? 'ES' : 'EN'}
       onLanguageChange={(newLocale) => {
         const newPath = pathname.replace(`/${locale}`, `/${newLocale}`)
@@ -108,16 +110,8 @@ export function LearnCBTClient({ locale, translations: t }: LearnCBTClientProps)
               </p>
             </GlassCard>
 
-            {/* Reminder */}
-            <div className="rounded-[24px] backdrop-blur-[12px] p-8 border border-yellow-500/30"
-              style={{
-                background: 'rgba(161, 98, 7, 0.1)',
-              }}
-            >
-              <p className="text-white">
-                <span className="font-semibold">{t.reminder.prefix}</span> {t.reminder.text}
-              </p>
-            </div>
+            {/* Important reminder */}
+            <ImportantReminder locale={locale} variant="default" />
 
             {/* References */}
             <GlassCard>
@@ -128,9 +122,6 @@ export function LearnCBTClient({ locale, translations: t }: LearnCBTClientProps)
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-white/10">
-                      <th className="text-left py-2 pr-4 text-white/70 font-medium">
-                        {t.references.tableHeaders.number}
-                      </th>
                       <th className="text-left py-2 px-4 text-white/70 font-medium">
                         {t.references.tableHeaders.source}
                       </th>
@@ -142,7 +133,6 @@ export function LearnCBTClient({ locale, translations: t }: LearnCBTClientProps)
                   <tbody>
                     {t.references.entries.map((entry, index) => (
                       <tr key={index} className="border-b border-white/10">
-                        <td className="py-3 pr-4 text-[#aefcf5]">{entry.number}</td>
                         <td className="py-3 px-4 text-white/70">{entry.source}</td>
                         <td className="py-3 pl-4 text-white/70">{entry.keyPoint}</td>
                       </tr>
@@ -151,23 +141,7 @@ export function LearnCBTClient({ locale, translations: t }: LearnCBTClientProps)
                 </table>
               </div>
             </GlassCard>
-
-            {/* Note */}
-            <GlassCard padding="md">
-              <p className="text-white/70">
-                <span className="font-semibold text-white">{t.note.title}</span> {t.note.text}
-              </p>
-            </GlassCard>
           </div>
-
-          {/* Footer */}
-          <footer className="mt-24 pt-8 border-t border-white/10">
-            <div className="flex flex-col items-center gap-4">
-              <p className="text-xs text-white/45">
-                © 2025 re-frame.social
-              </p>
-            </div>
-          </footer>
         </div>
       </div>
     </AppLayout>

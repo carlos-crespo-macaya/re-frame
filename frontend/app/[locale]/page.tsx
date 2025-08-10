@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { GlassCard } from '@/components/layout/GlassCard'
 import { InterfaceSelector } from '@/components/ui'
+import { ImportantReminder } from '@/components/ui/ImportantReminder'
 
 // Translation dictionary
 const translations = {
@@ -15,34 +16,33 @@ const translations = {
     },
     hero: {
       title: 'Find a kinder perspective',
-      description: "With evidence-based CBT, we’ll help you notice thinking patterns and try gentler, more balanced perspectives.",
-      learnMore: 'Learn about',
+      description: 'Made with care for people navigating avoidant patterns.',
+      body: 'Using ideas from Cognitive Behavioral Therapy (CBT), we help you notice thinking traps and try gentler, more balanced perspectives. You choose what fits.',
       learnMoreLink: 'The approach behind re-frame',
     },
     cta: {
-      title: 'Ready to begin?',
-      description: 'Start a private session to explore your thoughts using evidence-based CBT tools.',
+      title: 'Start a private session',
       button: 'Start Your Session',
       privacy: "Private session — we don't store personal data.",
     },
     steps: {
       title: 'How re-frame helps',
       step1: {
-        title: 'Share what’s on your mind',
-        description: 'Use your own words, at your own pace.',
+        title: 'Share in your words',
+        description: 'Short is fine.',
       },
       step2: {
-        title: 'Spot common thinking patterns',
-        description: "We surface likely patterns and offer perspective-taking prompts.",
+        title: 'Notice patterns',
+        description: 'We surface likely traps.',
       },
       step3: {
-        title: 'Choose what feels true and helpful',
-        description: 'Pick alternative viewpoints that resonate with you.',
+        title: 'Try a kinder view',
+        description: 'Pick what feels true.',
       },
     },
-    trust: {
-      title: 'Made with care for AvPD & social anxiety',
-      description: "Built on evidence-based techniques. Your privacy matters—we don’t store personal information.",
+    reminder: {
+      title: 'Important reminder',
+      description: "re-frame is a self-help companion that uses ideas from CBT. It isn’t psychotherapy, medical advice, or a crisis service.",
     },
     footer: {
       privacy: 'Privacy',
@@ -59,34 +59,33 @@ const translations = {
     },
     hero: {
       title: 'Encuentra una perspectiva más amable',
-      description: 'Con TCC basada en evidencia, te ayudamos a notar patrones de pensamiento y a probar perspectivas más amables y equilibradas.',
-      learnMore: 'Aprende sobre',
+      description: 'Creado con cuidado para personas que transitan patrones evitativos.',
+      body: 'Con ideas de la Terapia Cognitivo-Conductual (TCC), te ayudamos a notar trampas de pensamiento y a probar perspectivas más amables y equilibradas. Tú eliges lo que te sirva.',
       learnMoreLink: 'El enfoque detrás de re-frame',
     },
     cta: {
       title: '¿Listo para empezar?',
-      description: 'Inicia una sesión privada para explorar tus pensamientos con herramientas de TCC basadas en evidencia.',
-      button: 'Iniciar Tu Sesión',
+      button: 'Iniciar tu sesión',
       privacy: 'Sesión privada — no almacenamos datos personales.',
     },
     steps: {
       title: 'Cómo te ayuda re-frame',
       step1: {
-        title: 'Comparte lo que tengas en mente',
-        description: 'Con tus palabras y a tu ritmo.',
+        title: 'Comparte con tus palabras',
+        description: 'Breve también vale.',
       },
       step2: {
-        title: 'Detecta patrones de pensamiento comunes',
-        description: 'Mostramos posibles patrones y sugerimos ejercicios de cambio de perspectiva.',
+        title: 'Detecta patrones',
+        description: 'Mostramos trampas probables.',
       },
       step3: {
-        title: 'Elige lo que se sienta verdadero y útil',
-        description: 'Selecciona puntos de vista alternativos que resuenen contigo.',
+        title: 'Prueba una mirada más amable',
+        description: 'Elige lo que te resulte verdadero.',
       },
     },
-    trust: {
-      title: 'Creado con cuidado para TEP y ansiedad social',
-      description: 'Basado en técnicas validadas. Tu privacidad importa: no almacenamos información personal.',
+    reminder: {
+      title: 'Recordatorio importante',
+      description: 're-frame es un acompañante de autoayuda que utiliza ideas de TCC. No es psicoterapia, consejo médico ni un servicio de crisis.',
     },
     footer: {
       privacy: 'Privacidad',
@@ -108,6 +107,8 @@ export default function LocalePage({ params }: { params: { locale: string } }) {
     <AppLayout
       locale={params.locale}
       showBackButton={false}
+      showFooter={true}
+      footerTranslations={t.footer}
       currentLanguage={params.locale === 'es' ? 'ES' : 'EN'}
       onLanguageChange={(newLocale) => {
         const newPath = pathname.replace(`/${params.locale}`, `/${newLocale}`)
@@ -116,37 +117,52 @@ export default function LocalePage({ params }: { params: { locale: string } }) {
     >
       <div className="max-w-[1312px] mx-auto w-full">
         {/* Welcome section */}
-        <section className="text-center mb-12 animate-fade-in">
+        <section className="text-center mb-8 animate-fade-in">
           <h2 className="text-3xl md:text-4xl font-heading font-bold text-white mb-6">
             {t.hero.title}
           </h2>
           <p className="text-lg text-white/70 mb-4 leading-relaxed max-w-3xl mx-auto">
             {t.hero.description}
           </p>
+          {/* Hero body — mobile friendly layout */}
+          <p className="mx-auto text-white/70 text-[14px] leading-snug tracking-tight max-w-[36ch] sm:text-[15px] sm:leading-relaxed sm:max-w-[60ch]">
+            {t.hero.body
+              .split(/\.\s+/)
+              .map((s: string, i: number, arr: string[]) => (
+                <span key={i} className="block sm:inline">
+                  {s}
+                  {i < arr.length - 1 ? '. ' : ''}
+                </span>
+              ))}
+          </p>
           <p className="text-white/45 max-w-2xl mx-auto">
-            <span className="text-sm">{t.hero.learnMore} <Link href={`/${params.locale}/learn-cbt`} className="text-[#aefcf5] underline hover:text-white transition-colors">{t.hero.learnMoreLink}</Link></span>
+            <span className="text-sm">
+              <Link href={`/${params.locale}/learn-cbt`} className="text-[#aefcf5] underline hover:text-white transition-colors">{t.hero.learnMoreLink}</Link>
+            </span>
           </p>
         </section>
 
         {/* Interface selection - Enhanced with proper hierarchy */}
         <GlassCard className="max-w-5xl mx-auto mb-12" padding="xl">
           <div className="text-center mb-8">
-            <h3 className="text-xl font-heading font-semibold text-white/90 mb-4">
+            <h3 className="sr-only">
               {t.cta.title}
             </h3>
-            <p className="text-[15px] text-[#cdd5d7]/70 mb-2 leading-relaxed max-w-[48ch] mx-auto">
-              {t.cta.description}
-            </p>
-            <p className="text-[13px] text-white/40 mt-2">
-              {t.cta.privacy}
-            </p>
           </div>
           <InterfaceSelector locale={params.locale} />
+          <p className="text-[13px] text-white/40 mt-6 text-center">
+            {t.cta.privacy}
+          </p>
         </GlassCard>
 
+        {/* Important reminder with crisis warning */}
+        <div className="mt-8">
+          <ImportantReminder locale={params.locale} variant="default" className="max-w-3xl mx-auto" />
+        </div>
+
         {/* How it works */}
-        <section className="max-w-4xl mx-auto mt-16">
-          <h3 className="text-2xl font-heading font-bold text-white text-center mb-12">
+        <section className="max-w-4xl mx-auto mt-12">
+          <h3 className="text-2xl font-heading font-bold text-white text-center mb-8">
             {t.steps.title}
           </h3>
           <div className="grid md:grid-cols-3 gap-8">
@@ -195,64 +211,7 @@ export default function LocalePage({ params }: { params: { locale: string } }) {
               </p>
             </GlassCard>
           </div>
-
-          {/* Trust message */}
-          <div className="mt-16 text-center">
-            <GlassCard className="max-w-3xl mx-auto">
-              <p className="text-lg font-heading font-semibold text-[#aefcf5] mb-3">
-                {t.trust.title}
-              </p>
-              <p className="text-white/70 leading-relaxed">
-                {t.trust.description}
-              </p>
-            </GlassCard>
-          </div>
         </section>
-
-        {/* Footer */}
-        <footer className="mt-24 pt-8 border-t border-white/10">
-          <div className="flex flex-col items-center gap-4">
-            <nav aria-label="Footer navigation">
-              <ul className="flex gap-6 text-sm">
-                <li>
-                  <Link
-                    href={`/${params.locale}/privacy`}
-                    className="text-white/45 hover:text-[#aefcf5] transition-colors"
-                  >
-                    {t.footer.privacy}
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href={`/${params.locale}/support`}
-                    className="text-white/45 hover:text-[#aefcf5] transition-colors"
-                  >
-                    {t.footer.support}
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href={`/${params.locale}/about`}
-                    className="text-white/45 hover:text-[#aefcf5] transition-colors"
-                  >
-                    {t.footer.about}
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href={`/${params.locale}/feedback`}
-                    className="text-white/45 hover:text-[#aefcf5] transition-colors"
-                  >
-                    {t.footer.feedback}
-                  </Link>
-                </li>
-              </ul>
-            </nav>
-            <p className="text-xs text-white/45">
-              {t.footer.copyright}
-            </p>
-          </div>
-        </footer>
       </div>
     </AppLayout>
   );

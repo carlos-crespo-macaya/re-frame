@@ -6,6 +6,9 @@ import { useSSEClient } from '@/lib/streaming/use-sse-client'
 import ReactMarkdown from 'react-markdown'
 // useEffect already imported above
 import { useRecaptcha } from '@/lib/recaptcha/useRecaptcha'
+import { postFeedbackApiFeedbackPost } from '@/lib/api/generated/sdk.gen'
+import type { FeedbackIn } from '@/lib/api/generated/types.gen'
+import { ChevronLeftIcon, SendIcon, ThumbsUpIcon, ThumbsDownIcon } from '@/components/icons'
 // Chat screen does not display a language selector; language follows route locale
 
 interface Message {
@@ -33,6 +36,14 @@ export function ChatClient({ locale }: { locale: string }) {
   const processedIndexRef = useRef(0)
   const bufferRef = useRef('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const [inlineFeedback, setInlineFeedback] = useState<Record<number, {
+    selected?: 'up' | 'down'
+    open?: boolean
+    note?: string
+    sending?: boolean
+    sent?: boolean
+    error?: string | null
+  }>>({})
 
   // Translations
   const translations: Record<string, Translations> = {
@@ -165,6 +176,79 @@ export function ChatClient({ locale }: { locale: string }) {
   const handleBack = () => {
     router.push(`/${locale}`)
   }
+  // Build lightweight context from the visible conversation
+  const buildConversationContext = () => {
+    const last = messages.slice(-12)
+    return last.map(m => ({ role: m.role, content: m.content }))
+  }
+
+  const getOptInHeader = () => {
+    try {
+      const v = typeof window !== 'undefined' ? localStorage.getItem('telemetry_opt_in') : null
+      return v === 'true' ? '1' : undefined
+    } catch {
+      return undefined
+    }
+  }
+
+  const sendInlineFeedback = async (index: number, helpful: boolean, note?: string) => {
+    try {
+      setInlineFeedback(prev => ({
+        ...prev,
+        [index]: { ...(prev[index] || {}), sending: true, error: null }
+      }))
+
+      if (!ready) {
+        setInlineFeedback(prev => ({
+          ...prev,
+          [index]: { ...(prev[index] || {}), sending: false, error: locale==='es' ? 'Verificando… inténtalo de nuevo' : 'Verifying… try again' }
+        }))
+        return
+      }
+      const token = await execute(`inline_feedback_${helpful ? 'up' : 'down'}`)
+
+      const body = {
+        helpful,
+        reasons: [],
+        session_id: sseClient.sessionId || crypto.getRandomValues(new Uint32Array(1))[0].toString(16),
+        lang: locale,
+        platform: 'web',
+        comment: note || undefined,
+        recaptcha_token: token,
+        recaptcha_action: `inline_feedback_${helpful ? 'up' : 'down'}`,
+        source: 'chat_inline',
+        message_id: `assistant-${index}`,
+        context: buildConversationContext(),
+      } as unknown as FeedbackIn
+
+      await postFeedbackApiFeedbackPost({
+        requestBody: body,
+        xObservabilityOptIn: getOptInHeader()
+      })
+
+      setInlineFeedback(prev => ({
+        ...prev,
+        [index]: { ...(prev[index] || {}), sending: false, sent: true }
+      }))
+    } catch {
+      setInlineFeedback(prev => ({
+        ...prev,
+        [index]: { ...(prev[index] || {}), sending: false, error: 'Could not send feedback' }
+      }))
+    }
+  }
+
+  const handleThumbClick = async (index: number, dir: 'up' | 'down') => {
+    setInlineFeedback(prev => ({ ...prev, [index]: { selected: dir, open: true } }))
+    // Send immediate rating without note for snappy UX
+    await sendInlineFeedback(index, dir === 'up', undefined)
+  }
+
+  const handleSendNote = async (index: number) => {
+    const fb = inlineFeedback[index]
+    if (!fb?.selected) return
+    await sendInlineFeedback(index, fb.selected === 'up', fb.note)
+  }
 
   // No language selector in chat; language is derived from route
 
@@ -202,12 +286,12 @@ export function ChatClient({ locale }: { locale: string }) {
     }
   }
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setInput(e.target.value)
+  const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInput(event.target.value)
 
     // Auto-resize textarea
-    e.target.style.height = '56px'
-    e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px'
+    event.target.style.height = '56px'
+    event.target.style.height = Math.min(event.target.scrollHeight, 120) + 'px'
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -232,9 +316,7 @@ export function ChatClient({ locale }: { locale: string }) {
                 className="text-[#9BF7EB] hover:text-white transition-colors"
                 aria-label="Back to home"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                </svg>
+                <ChevronLeftIcon />
               </button>
               <div className="w-8 h-8 rounded-full bg-[#9BF7EB] flex items-center justify-center">
                 <span className="text-[#002e34] font-bold text-sm">R</span>
@@ -270,7 +352,7 @@ export function ChatClient({ locale }: { locale: string }) {
                     className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     <div
-                      className={`max-w-[90%] sm:max-w-[75%] break-words ${
+                      className={`relative max-w-[90%] sm:max-w-[75%] break-words ${
                         message.role === 'user'
                           ? 'bg-[#9BF7EB] text-[#002e34]'
                           : 'bg-[#131e24] text-white/90 ring-1 ring-white/5'
@@ -288,6 +370,73 @@ export function ChatClient({ locale }: { locale: string }) {
                       <div className="text-[14px] leading-[22px]">
                         <ReactMarkdown>{message.content}</ReactMarkdown>
                       </div>
+
+                      {/* Inline feedback controls for assistant messages */}
+                      {message.role === 'assistant' && (
+                        <div className="mt-2 select-none">
+                          <div className="flex items-center justify-end gap-1">
+                            <button
+                              type="button"
+                              aria-label="Thumbs up"
+                              onClick={() => handleThumbClick(index, 'up')}
+                              className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors ${
+                                inlineFeedback[index]?.selected === 'up' ? 'bg-[#9BF7EB] text-[#002e34]' : 'text-white/60 hover:bg-white/10'
+                              }`}
+                            >
+                              <ThumbsUpIcon className="w-4 h-4" />
+                            </button>
+                            <button
+                              type="button"
+                              aria-label="Thumbs down"
+                              onClick={() => handleThumbClick(index, 'down')}
+                              className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors ${
+                                inlineFeedback[index]?.selected === 'down' ? 'bg-[#F59E0B] text-[#0b140f]' : 'text-white/60 hover:bg-white/10'
+                              }`}
+                            >
+                              <ThumbsDownIcon className="w-4 h-4" />
+                            </button>
+                          </div>
+
+                          {/* Minimal, non-intrusive note input */}
+                          {inlineFeedback[index]?.open && (
+                            <div className="mt-2">
+                              {inlineFeedback[index]?.sent && !inlineFeedback[index]?.note ? (
+                                <div className="flex items-center justify-end gap-2 text-xs text-white/60">
+                                  <span>{locale==='es' ? '¡Gracias!' : 'Thanks!'}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => setInlineFeedback(prev => ({ ...prev, [index]: { ...(prev[index]||{}), note: '', open: true } }))}
+                                    className="text-[#9BF7EB] hover:underline"
+                                  >
+                                    {locale==='es' ? 'Añadir nota' : 'Add note'}
+                                  </button>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    type="text"
+                                    value={inlineFeedback[index]?.note || ''}
+                                    onChange={(e) => setInlineFeedback(prev => ({ ...prev, [index]: { ...(prev[index]||{}), note: e.target.value } }))}
+                                    placeholder={locale==='es' ? 'Nota opcional…' : 'Optional note…'}
+                                    className="flex-1 min-w-0 bg-white/5 text-white placeholder:text-white/40 rounded-full px-3 py-2 text-xs ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-[#9BF7EB]/40"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSendNote(index)}
+                                    disabled={inlineFeedback[index]?.sending}
+                                    className="text-xs px-3 py-2 rounded-full bg-[#9BF7EB] text-[#002e34] disabled:opacity-50"
+                                  >
+                                    {inlineFeedback[index]?.sending ? (locale==='es'?'Enviando…':'Sending…') : (locale==='es'?'Enviar':'Send')}
+                                  </button>
+                                </div>
+                              )}
+                              {inlineFeedback[index]?.error && (
+                                <div className="mt-1 text-xs text-red-400 text-right">{inlineFeedback[index]?.error}</div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -350,9 +499,7 @@ export function ChatClient({ locale }: { locale: string }) {
               }`}
               data-btn-bg={isLoading || !input.trim() ? 'muted' : 'accent'}
             >
-              <svg className={`w-5 h-5 ${isLoading || !input.trim() ? 'text-white/30' : 'text-[#002e34]'}`} fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
-              </svg>
+              <SendIcon className={`w-5 h-5 ${isLoading || !input.trim() ? 'text-white/30' : 'text-[#002e34]'}`} />
             </button>
           </div>
         </div>

@@ -30,7 +30,7 @@ describe('LocalePage', () => {
 
     expect(screen.getAllByText('re-frame')[0]).toBeInTheDocument();
     expect(screen.getByText('Find a kinder perspective')).toBeInTheDocument();
-    expect(screen.getAllByText(/evidence-based/i)[0]).toBeInTheDocument();
+    expect(screen.getAllByText(/Cognitive Behavioral Therapy/i)[0]).toBeInTheDocument();
   });
 
   it('renders the home page for Spanish locale', () => {
@@ -38,7 +38,7 @@ describe('LocalePage', () => {
 
     expect(screen.getAllByText('re-frame')[0]).toBeInTheDocument();
     expect(screen.getByText('Encuentra una perspectiva más amable')).toBeInTheDocument();
-    expect(screen.getAllByText(/basada en evidencia/i)[0]).toBeInTheDocument();
+    expect(screen.getAllByText(/Terapia Cognitivo-Conductual/i)[0]).toBeInTheDocument();
   });
 
   it('interface cards should not display selector header text', () => {

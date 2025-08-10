@@ -34,6 +34,7 @@ export function PrivacyClient({ locale, translations: t }: PrivacyClientProps) {
     <AppLayout
       locale={locale}
       showBackButton={true}
+      showFooter={true}
       currentLanguage={locale === 'es' ? 'ES' : 'EN'}
       onLanguageChange={(newLocale) => {
         const newPath = pathname.replace(`/${locale}`, `/${newLocale}`)
