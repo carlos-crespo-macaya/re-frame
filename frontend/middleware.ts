@@ -99,7 +99,8 @@ async function handleMiddleware(request: NextRequest) {
     const search = url.searchParams.toString()
 
     // Gate /chat
-    if (/^\/(en|es)\/chat(\/|$)/.test(pathname)) {
+    const localeGroupChat = locales.join('|')
+    if (new RegExp(`^\/(${localeGroupChat})\/chat(\/|$)`).test(pathname)) {
       const ok = await validGate(request.cookies.get('rf_chat_gate')?.value, 'chat_gate')
       if (!ok) {
         const dest = url.clone()
@@ -111,7 +112,8 @@ async function handleMiddleware(request: NextRequest) {
     }
 
     // Gate /feedback
-    if (/^\/(en|es)\/feedback(\/|$)/.test(pathname)) {
+    const localeGroupFeedback = locales.join('|')
+    if (new RegExp(`^\/(${localeGroupFeedback})\/feedback(\/|$)`).test(pathname)) {
       const ok = await validGate(request.cookies.get('rf_feedback_gate')?.value, 'feedback_gate')
       if (!ok) {
         const dest = url.clone()
