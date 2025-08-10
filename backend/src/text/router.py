@@ -317,6 +317,23 @@ async def sse_endpoint(
                                     logger.info(
                                         "stream_end_received", session_id=session_id
                                     )
+                                    # Flush any buffered text if turn_complete wasn't received
+                                    if turn_text_buffer:
+                                        raw_text = "".join(turn_text_buffer)
+                                        safe_text = _extract_ui(raw_text)
+                                        clean_message = {
+                                            "type": "content",
+                                            "content_type": "text/plain",
+                                            "mime_type": "text/plain",
+                                            "data": safe_text,
+                                        }
+                                        yield f"data: {json.dumps(clean_message)}\n\n"
+                                        logger.debug(
+                                            "sanitized_stream_end_message_sent",
+                                            session_id=session_id,
+                                            content_length=len(safe_text),
+                                        )
+                                        turn_text_buffer.clear()
                                     break
                                 else:
                                     # Buffer raw text; sanitize upon turn completion before emitting
@@ -341,6 +358,7 @@ async def sse_endpoint(
                                     clean_message = {
                                         "type": "content",
                                         "content_type": "text/plain",
+                                        "mime_type": "text/plain",
                                         "data": safe_text,
                                     }
                                     yield f"data: {json.dumps(clean_message)}\n\n"
