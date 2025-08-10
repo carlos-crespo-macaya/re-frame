@@ -84,11 +84,17 @@ async def post_feedback(
                 if len(content) > 1200:
                     content = content[:1200]
                 ts = entry.get("timestamp")
-                trimmed.append({
-                    "role": role,
-                    "content": content,
-                    **({"timestamp": int(ts)} if isinstance(ts, (int, float)) else {}),
-                })
+                trimmed.append(
+                    {
+                        "role": role,
+                        "content": content,
+                        **(
+                            {"timestamp": int(ts)}
+                            if isinstance(ts, int | float)
+                            else {}
+                        ),
+                    }
+                )
             except Exception:
                 # Skip malformed entries silently
                 continue

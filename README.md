@@ -408,7 +408,7 @@ graph TD
 
 ## 📄 License
 
-This project is proprietary. All rights reserved.
+Apache-2.0
 
 ---
 
