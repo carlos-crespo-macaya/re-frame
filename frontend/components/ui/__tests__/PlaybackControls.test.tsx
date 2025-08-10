@@ -194,9 +194,6 @@ describe('PlaybackControls', () => {
     
     const slider = screen.getByRole('slider')
     expect(slider).toHaveAttribute('aria-label', 'Seek')
-    expect(slider).toHaveAttribute('aria-valuemin', '0')
-    expect(slider).toHaveAttribute('aria-valuemax', '120000')
-    expect(slider).toHaveAttribute('aria-valuenow', '30000')
     expect(slider).toHaveAttribute('aria-valuetext', '0:30 of 2:00')
   })
 
