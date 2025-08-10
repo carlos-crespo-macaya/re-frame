@@ -27,6 +27,7 @@ interface Translations {
 }
 
 export function ChatClient({ locale }: { locale: string }) {
+  // Backend now sanitizes UI (<ui> extraction); no frontend sanitization needed.
   const router = useRouter()
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
@@ -152,7 +153,7 @@ export function ChatClient({ locale }: { locale: string }) {
         setMessages(prev => [...prev, {
           role: 'assistant',
           content: finalContent,
-          frameworks: ['CBT'] // Default framework
+          frameworks: ['Aura'] // Default framework
         }])
       }
       bufferRef.current = ''
@@ -248,12 +249,6 @@ export function ChatClient({ locale }: { locale: string }) {
       } 
     }))
     // Don't send immediately - wait for user to add note or skip
-  }
-
-  const handleSkipNote = async (index: number) => {
-    const fb = inlineFeedback[index]
-    if (!fb?.selected) return
-    await sendInlineFeedback(index, fb.selected === 'up', undefined)
   }
 
   const handleSendNote = async (index: number) => {

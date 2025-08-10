@@ -13,6 +13,7 @@ from google.adk.runners import InMemoryRunner
 from google.genai.types import Content, Part, SpeechConfig
 
 from src.agents.cbt_assistant import create_cbt_assistant
+from src.agents.orchestrator import _extract_ui  # Server-side sanitize of model output
 from src.models.api import (
     LanguageDetectionRequest,
     LanguageDetectionResponse,
@@ -236,6 +237,9 @@ async def sse_endpoint(
                     logger.error("queue_get_error", error=str(e))
                     return None
 
+            # Accumulate raw text for a turn across loop iterations; flush on turn_complete
+            turn_text_buffer: list[str] = []
+
             while True:
                 # Check if client has disconnected
                 if await request.is_disconnected():
@@ -313,42 +317,57 @@ async def sse_endpoint(
                                     logger.info(
                                         "stream_end_received", session_id=session_id
                                     )
+                                    # Flush any buffered text if turn_complete wasn't received
+                                    if turn_text_buffer:
+                                        raw_text = "".join(turn_text_buffer)
+                                        safe_text = _extract_ui(raw_text)
+                                        clean_message = {
+                                            "type": "content",
+                                            "content_type": "text/plain",
+                                            "mime_type": "text/plain",
+                                            "data": safe_text,
+                                        }
+                                        yield f"data: {json.dumps(clean_message)}\n\n"
+                                        logger.debug(
+                                            "sanitized_stream_end_message_sent",
+                                            session_id=session_id,
+                                            content_length=len(safe_text),
+                                        )
+                                        turn_text_buffer.clear()
                                     break
                                 else:
-                                    # Regular string message - use SSEMessage format
-                                    string_message = {
-                                        "type": "content",
-                                        "content_type": "text/plain",
-                                        "data": event,  # Text content directly, no base64 encoding needed
-                                    }
-                                    yield f"data: {json.dumps(string_message)}\n\n"
-                                    logger.debug(
-                                        "message_sent",
-                                        session_id=session_id,
-                                        content_length=len(event),
-                                    )
+                                    # Buffer raw text; sanitize upon turn completion before emitting
+                                    if event:
+                                        turn_text_buffer.append(event)
                             # Handle Event objects
                             elif hasattr(event, "content") and event.content:
                                 content = event.content
                                 if hasattr(content, "parts") and content.parts:
                                     for part in content.parts:
                                         if hasattr(part, "text") and part.text:
-                                            # Use SSEMessage format
-                                            part_message = {
-                                                "type": "content",
-                                                "content_type": "text/plain",
-                                                "data": part.text,  # Text content directly
-                                            }
-                                            yield f"data: {json.dumps(part_message)}\n\n"
-                                            logger.debug(
-                                                "event_message_sent",
-                                                session_id=session_id,
-                                                content_length=len(part.text),
-                                            )
+                                            # Buffer part text; sanitize at turn end
+                                            turn_text_buffer.append(part.text)
                             # Handle turn_complete events
                             elif (
                                 hasattr(event, "turn_complete") and event.turn_complete
                             ):
+                                # Emit sanitized UI text accumulated for this turn
+                                if turn_text_buffer:
+                                    raw_text = "".join(turn_text_buffer)
+                                    safe_text = _extract_ui(raw_text)
+                                    clean_message = {
+                                        "type": "content",
+                                        "content_type": "text/plain",
+                                        "mime_type": "text/plain",
+                                        "data": safe_text,
+                                    }
+                                    yield f"data: {json.dumps(clean_message)}\n\n"
+                                    logger.debug(
+                                        "sanitized_turn_message_sent",
+                                        session_id=session_id,
+                                        content_length=len(safe_text),
+                                    )
+                                    turn_text_buffer.clear()
                                 turn_message: dict[str, Any] = {
                                     "type": "turn_complete",
                                     "turn_complete": True,
