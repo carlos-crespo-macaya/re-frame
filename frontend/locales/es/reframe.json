@@ -11,7 +11,7 @@
     "microphoneAccess": "Esta aplicación necesita acceso al micrófono para conversaciones por voz."
   },
   "session": {
-    "greeting": "¡Hola! Estoy aquí para ayudarte a explorar tus pensamientos usando técnicas de TCC. ¿Qué has estado pensando últimamente?",
+    "greeting": "¡Hola! Estoy aquí para ayudarte a explorar tus pensamientos usando ideas de reestructuración cognitiva (TCC). ¿Qué has estado pensando últimamente?",
     "ending": "Gracias por esta sesión. Recuerda, desafiar los pensamientos requiere práctica y paciencia.",
     "summary": "Resumen de la Sesión",
     "downloadSummary": "Descargar resumen de la sesión",
@@ -25,24 +25,24 @@
     "labeling": "Etiquetado",
     "shouldStatements": "Declaraciones de \"debería\"",
     "emotionalReasoning": "Razonamiento emocional",
-    "mentaFilter": "Filtro mental",
     "personalization": "Personalización",
-    "magnification": "Magnificación"
+    "magnification": "Magnificación",
+    "mentalFilter": "Filtro mental"
   },
   "reframing": {
     "alternativePerspectives": "Perspectivas alternativas:",
     "considerThis": "Considera esta perspectiva:",
     "anotherWayToThink": "Otra forma de pensar sobre esto:",
-    "whatIfInstead": "¿Qué tal si en cambio...?",
+    "whatIfInstead": "¿Y si, en cambio:",
     "evidenceFor": "Evidencia a favor de este pensamiento:",
     "evidenceAgainst": "Evidencia en contra de este pensamiento:",
     "balancedThought": "Pensamiento más equilibrado:"
   },
   "audio": {
-    "microphonePermissionDenied": "Permiso de micrófono denegado. Por favor, habilita el acceso al micrófono en la configuración de tu navegador.",
-    "microphoneNotSupported": "Micrófono no compatible en este navegador.",
-    "recordingError": "Error de grabación ocurrido. Por favor, inténtalo de nuevo.",
-    "playbackError": "Error de reproducción ocurrido.",
-    "connectionError": "Error de conexión. Por favor, verifica tu conexión a internet."
+    "microphonePermissionDenied": "Permiso de micrófono denegado. Por favor, habilita el acceso al micrófono en la configuración del navegador.",
+    "microphoneNotSupported": "El micrófono no es compatible en este navegador.",
+    "recordingError": "Se produjo un error de grabación. Por favor, inténtalo de nuevo.",
+    "playbackError": "Se produjo un error de reproducción.",
+    "connectionError": "Error de conexión. Verifica tu conexión a internet."
   }
 }

@@ -7,11 +7,11 @@
   "details": {
     "whatIs": {
       "label": "Qué es:",
-      "description": "Una herramienta inspirada en la reestructuración cognitiva que te ayuda a detectar trampas de pensamiento —como el catastrofismo o la lectura de mente— y a explorar perspectivas más amables."
+      "description": "Una herramienta que utiliza ideas de reestructuración cognitiva para detectar trampas de pensamiento (catastrofismo, lectura de mente, etc.) y proponer perspectivas más amables."
     },
     "whatIsnt": {
       "label": "Qué no es:",
-      "description": "psicoterapia, consejo médico, ni servicio de crisis."
+      "description": "no es psicoterapia, consejo médico ni un servicio de crisis."
     },
     "creator": {
       "title": "Motivación",

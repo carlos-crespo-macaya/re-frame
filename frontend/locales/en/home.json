@@ -7,7 +7,7 @@
   },
   "cta": {
     "title": "Ready to begin?",
-    "description": "Start a private session to explore your thoughts using compassionate, evidence-based CBT tools.",
+    "description": "Start a private session to explore your thoughts using compassionate, CBT-inspired tools.",
     "button": "Start Your Session",
     "privacy": "Private session — we don't store personal data."
   },
@@ -28,6 +28,6 @@
   },
   "trust": {
     "title": "Made with care for AvPD and social anxiety",
-    "description": "Built on ideas from well-established CBT techniques. Your privacy matters — we don’t store personal information."
+    "description": "Built on ideas from well-established CBT techniques. Your privacy matters — we don't store personal information."
   }
 }

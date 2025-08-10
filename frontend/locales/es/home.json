@@ -7,8 +7,8 @@
   },
   "cta": {
     "title": "¿Listo para empezar?",
-    "description": "Inicia una sesión privada para explorar tus pensamientos con herramientas compasivas de TCC basadas en evidencia.",
-    "button": "Iniciar Tu Sesión",
+    "description": "Inicia una sesión privada para explorar tus pensamientos con herramientas compasivas inspiradas en la TCC.",
+    "button": "Iniciar tu sesión",
     "privacy": "Sesión privada — no almacenamos datos personales."
   },
   "steps": {
@@ -27,7 +27,7 @@
     }
   },
   "trust": {
-    "title": "Creado con cuidado para TEP y ansiedad social",
+    "title": "Creado con cuidado para el trastorno de personalidad por evitación y la ansiedad social",
     "description": "Basado en ideas de técnicas de TCC validadas. Tu privacidad importa: no almacenamos información personal."
   }
 }
