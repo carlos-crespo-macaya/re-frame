@@ -21,6 +21,7 @@ from src.models.api import (
     SessionInfo,
     SessionListResponse,
 )
+from src.agents.orchestrator import _extract_ui  # Server-side sanitize of model output
 from src.utils.language_utils import (
     get_default_language,
     normalize_language_code,
@@ -282,6 +283,8 @@ async def sse_endpoint(
                         pass
 
                 # Process completed tasks
+                # Accumulate raw text for the current turn; sanitize at turn end
+                turn_text_buffer: list[str] = []
                 for task in done:
                     if task == heartbeat_task_wait:
                         try:
@@ -292,7 +295,7 @@ async def sse_endpoint(
                                 session_id=session_id,
                                 timestamp=heartbeat_msg.get("timestamp"),
                             )
-                        except Exception as e:
+                        except Exception as e:  # noqa: BLE001
                             logger.error("heartbeat_error", error=str(e))
                     elif task == event_task:
                         try:
@@ -315,40 +318,37 @@ async def sse_endpoint(
                                     )
                                     break
                                 else:
-                                    # Regular string message - use SSEMessage format
-                                    string_message = {
-                                        "type": "content",
-                                        "content_type": "text/plain",
-                                        "data": event,  # Text content directly, no base64 encoding needed
-                                    }
-                                    yield f"data: {json.dumps(string_message)}\n\n"
-                                    logger.debug(
-                                        "message_sent",
-                                        session_id=session_id,
-                                        content_length=len(event),
-                                    )
+                                    # Buffer raw text; sanitize upon turn completion before emitting
+                                    if event:
+                                        turn_text_buffer.append(event)
                             # Handle Event objects
                             elif hasattr(event, "content") and event.content:
                                 content = event.content
                                 if hasattr(content, "parts") and content.parts:
                                     for part in content.parts:
                                         if hasattr(part, "text") and part.text:
-                                            # Use SSEMessage format
-                                            part_message = {
-                                                "type": "content",
-                                                "content_type": "text/plain",
-                                                "data": part.text,  # Text content directly
-                                            }
-                                            yield f"data: {json.dumps(part_message)}\n\n"
-                                            logger.debug(
-                                                "event_message_sent",
-                                                session_id=session_id,
-                                                content_length=len(part.text),
-                                            )
+                                            # Buffer part text; sanitize at turn end
+                                            turn_text_buffer.append(part.text)
                             # Handle turn_complete events
                             elif (
                                 hasattr(event, "turn_complete") and event.turn_complete
                             ):
+                                # Emit sanitized UI text accumulated for this turn
+                                if turn_text_buffer:
+                                    raw_text = "".join(turn_text_buffer)
+                                    safe_text = _extract_ui(raw_text)
+                                    clean_message = {
+                                        "type": "content",
+                                        "content_type": "text/plain",
+                                        "data": safe_text,
+                                    }
+                                    yield f"data: {json.dumps(clean_message)}\n\n"
+                                    logger.debug(
+                                        "sanitized_turn_message_sent",
+                                        session_id=session_id,
+                                        content_length=len(safe_text),
+                                    )
+                                    turn_text_buffer.clear()
                                 turn_message: dict[str, Any] = {
                                     "type": "turn_complete",
                                     "turn_complete": True,
@@ -360,7 +360,7 @@ async def sse_endpoint(
                                     session_id=session_id,
                                     interrupted=getattr(event, "interrupted", False),
                                 )
-                        except Exception as e:
+                        except Exception as e:  # noqa: BLE001
                             logger.error(
                                 "event_processing_error",
                                 error=str(e),
@@ -370,7 +370,7 @@ async def sse_endpoint(
         except asyncio.CancelledError:
             logger.info("sse_connection_cancelled", session_id=session_id)
             raise
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             logger.error("sse_stream_error", error=str(e), session_id=session_id)
             error_msg = {
                 "type": "error",

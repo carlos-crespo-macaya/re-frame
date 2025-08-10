@@ -27,6 +27,8 @@ interface Translations {
 }
 
 export function ChatClient({ locale }: { locale: string }) {
+  // Backend now sanitizes UI (<ui> extraction), so frontend no longer strips content.
+  function passthroughText(raw: string): string { return raw || '' }
   const router = useRouter()
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
@@ -147,7 +149,7 @@ export function ChatClient({ locale }: { locale: string }) {
 
     // If the turn completed, flush everything we've accumulated
     if (didTurnComplete) {
-      const finalContent = localBuffer
+      const finalContent = passthroughText(localBuffer)
       if (finalContent) {
         setMessages(prev => [...prev, {
           role: 'assistant',
