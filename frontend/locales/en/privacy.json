@@ -41,11 +41,6 @@
           "name": "Google Cloud",
           "purpose": "AI processing and hosting",
           "dataSharing": "Temporary conversation data for processing only"
-        },
-        {
-          "name": "Vercel",
-          "purpose": "Website hosting and delivery",
-          "dataSharing": "Standard web request logs"
         }
       ]
     },

@@ -1,20 +1,20 @@
 {
   "title": "📖 ¿Qué es la TCC?",
   "quickLink": "Resumen de la TCC en 2 minutos",
-  "introduction": "La Terapia Cognitivo-Conductual (TCC) es un enfoque basado en la evidencia que conecta pensamientos, sentimientos y acciones. Al identificar trampas de pensamiento comunes, como el catastrofismo, la lectura de la mente o las declaraciones de \"todo o nada\", puedes practicar perspectivas más amables y equilibradas.",
+  "introduction": "La Terapia Cognitivo-Conductual (TCC) es un enfoque basado en la evidencia que conecta pensamientos, sentimientos y acciones. Al nombrar trampas de pensamiento comunes —como el catastrofismo, la lectura de la mente o las afirmaciones de \"todo o nada\"— puedes practicar perspectivas más amables y equilibradas.",
   "whyHelpsAvpd": {
     "title": "Por qué ayuda con el TEP",
-    "description": "Las personas que viven con Trastorno de Personalidad por Evitación a menudo luchan contra la autocrítica intensa y el miedo a la evaluación negativa. La TCC ofrece herramientas prácticas para:",
+    "description": "Las personas que viven con Trastorno de Personalidad por Evitación suelen luchar con una autocrítica intensa y el miedo a la evaluación negativa. La TCC ofrece herramientas prácticas para:",
     "tools": [
-      "Nombrar pensamientos inútiles en lugar de aceptarlos como hechos.",
-      "Probar esos pensamientos contra evidencia del mundo real.",
+      "Nombrar pensamientos poco útiles en lugar de aceptarlos como hechos.",
+      "Poner a prueba esos pensamientos frente a evidencia del mundo real.",
       "Practicar interpretaciones alternativas en pasos pequeños y seguros."
     ],
-    "conclusion": "Los ejercicios consistentes de TCC pueden erosionar gradualmente la creencia \"Siempre seré rechazado.\""
+    "conclusion": "Los ejercicios consistentes de TCC pueden ir erosionando gradualmente la creencia \"Siempre seré rechazado.\""
   },
   "howWeUse": {
     "title": "Cómo re-frame utiliza la TCC",
-    "description": "Cuando describes una situación, re-frame resalta posibles trampas de pensamiento y sugiere perspectivas más gentiles. Tú mantienes el control—elige lo que se sienta verdadero y útil, descarta el resto."
+    "description": "Cuando describes una situación, re-frame señala posibles trampas de pensamiento y ofrece perspectivas más amables. Tú tienes el control — toma lo que te resulte útil y deja lo que no."
   },
   "reminder": {
     "prefix": "Recordatorio:",

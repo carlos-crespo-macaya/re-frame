@@ -2,24 +2,24 @@
   "title": "ℹ️ Acerca de re-frame",
   "mission": {
     "label": "Misión",
-    "description": "ofrecer a quienes luchan con patrones evitativos una forma amable de cuestionar pensamientos duros."
+    "description": "Ofrecer a quienes viven con patrones evitativos una forma más amable de cuestionar pensamientos duros."
   },
   "details": {
     "whatIs": {
       "label": "Qué es:",
-      "description": "una herramienta de reestructuración cognitiva inspirada en marcos terapéuticos que detecta trampas de pensamiento (catastrofismo, lectura de mente, etc.) y propone perspectivas más amables."
+      "description": "Una herramienta que utiliza ideas de reestructuración cognitiva para detectar trampas de pensamiento (catastrofismo, lectura de mente, etc.) y proponer perspectivas más amables."
     },
     "whatIsnt": {
       "label": "Qué no es:",
-      "description": "psicoterapia completa, consejo médico ni servicio de crisis."
+      "description": "no es psicoterapia, consejo médico ni un servicio de crisis."
     },
     "creator": {
-      "title": "Sobre mí",
-      "content": "Soy <a href='https://carlos-crespo.com/' target='_blank' rel='noopener noreferrer' class='text-brand-green-400 hover:text-brand-green-300 underline'>Carlos</a>, esta página tiene como fin crear, recopilar y compartir recursos que pudieran ayudar a personas como yo en su camino."
+      "title": "Motivación",
+      "content": "La motivación detrás de re-frame es sencilla: facilitar que cualquier persona pueda cuestionar pensamientos poco útiles con amabilidad y curiosidad."
     },
     "thankYou": {
       "title": "Gracias",
-      "content": "Gracias por probar re-frame. Esperamos que te ayude de alguna manera en tu camino."
+      "content": "Gracias por probar re-frame."
     }
   },
   "contact": {

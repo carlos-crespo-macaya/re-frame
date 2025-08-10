@@ -1,33 +1,33 @@
 {
   "hero": {
-    "title": "Explora una nueva perspectiva",
-    "description": "Usaremos técnicas terapéuticas basadas en evidencia para identificar patrones de pensamiento y sugerir perspectivas más amables.",
+    "title": "Encuentra una perspectiva más amable",
+    "description": "Con ideas de la TCC, te ayudamos a notar patrones de pensamiento y a probar perspectivas más amables y equilibradas.",
     "learnMore": "Aprende sobre",
     "learnMoreLink": "El enfoque detrás de re-frame"
   },
   "cta": {
-    "title": "¿Listo para comenzar?",
-    "description": "Comienza una sesión privada para explorar tus pensamientos con técnicas de TCC basadas en evidencia.",
-    "button": "Iniciar Tu Sesión",
+    "title": "¿Listo para empezar?",
+    "description": "Inicia una sesión privada para explorar tus pensamientos con herramientas compasivas inspiradas en la TCC.",
+    "button": "Iniciar tu sesión",
     "privacy": "Sesión privada — no almacenamos datos personales."
   },
   "steps": {
-    "title": "Cómo funciona re-frame",
+    "title": "Cómo te ayuda re-frame",
     "step1": {
-      "title": "Cuéntanos qué pasó",
-      "description": "Usa tus propias palabras. Tómate el tiempo que necesites."
+      "title": "Comparte lo que tengas en mente",
+      "description": "Con tus palabras y a tu ritmo."
     },
     "step2": {
-      "title": "Identifica patrones de pensamiento",
-      "description": "Aplicaremos marcos terapéuticos para resaltar perspectivas alternativas."
+      "title": "Detecta patrones de pensamiento comunes",
+      "description": "Mostramos posibles patrones y sugerimos ejercicios de cambio de perspectiva."
     },
     "step3": {
-      "title": "Elige una perspectiva que se sienta verdadera",
-      "description": "Selecciona entre formas alternativas de ver tu situación."
+      "title": "Elige lo que se sienta verdadero y útil",
+      "description": "Selecciona puntos de vista alternativos que resuenen contigo."
     }
   },
   "trust": {
-    "title": "Diseñado para personas con TPA y ansiedad social",
-    "description": "Esta herramienta utiliza técnicas terapéuticas basadas en evidencia. Tu privacidad está protegida - no almacenamos ninguna información personal."
+    "title": "Creado con cuidado para el trastorno de personalidad por evitación y la ansiedad social",
+    "description": "Basado en ideas de técnicas de TCC validadas. Tu privacidad importa: no almacenamos información personal."
   }
 }

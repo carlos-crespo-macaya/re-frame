@@ -1,33 +1,33 @@
 {
   "hero": {
-    "title": "Explore a new perspective",
-    "description": "We'll use evidence-based therapeutic techniques to spot thinking patterns and suggest gentler perspectives.",
+    "title": "Find a kinder perspective",
+    "description": "Using ideas from CBT, we help you notice thinking patterns and experiment with gentler, more balanced perspectives.",
     "learnMore": "Learn about",
     "learnMoreLink": "The approach behind re-frame"
   },
   "cta": {
-    "title": "Ready to start?",
-    "description": "Begin a private session to explore your thoughts with evidence-based CBT techniques.",
+    "title": "Ready to begin?",
+    "description": "Start a private session to explore your thoughts using compassionate, CBT-inspired tools.",
     "button": "Start Your Session",
     "privacy": "Private session — we don't store personal data."
   },
   "steps": {
-    "title": "How re-frame works",
+    "title": "How re-frame helps",
     "step1": {
-      "title": "Tell us what happened",
-      "description": "Use your own words. Take the time you need."
+      "title": "Share what’s on your mind",
+      "description": "Use your own words, at your own pace."
     },
     "step2": {
-      "title": "Notice thinking patterns",
-      "description": "We'll apply therapeutic frameworks to highlight alternative perspectives."
+      "title": "Spot common thinking patterns",
+      "description": "We surface likely patterns and offer perspective-taking prompts."
     },
     "step3": {
-      "title": "Pick a perspective that feels true",
-      "description": "Select from alternative ways to view your situation."
+      "title": "Choose what feels true and helpful",
+      "description": "Pick alternative viewpoints that resonate with you."
     }
   },
   "trust": {
-    "title": "Designed for people living with AvPD & social anxiety",
-    "description": "This tool uses evidence-based therapeutic techniques. Your privacy is protected - we don't store any personal information."
+    "title": "Made with care for AvPD and social anxiety",
+    "description": "Built on ideas from well-established CBT techniques. Your privacy matters — we don't store personal information."
   }
 }

@@ -11,7 +11,7 @@
     "microphoneAccess": "This app needs microphone access for voice conversations."
   },
   "session": {
-    "greeting": "Hello! I'm here to help you explore your thoughts using CBT techniques. What's been on your mind lately?",
+    "greeting": "Hello! I'm here to help you explore your thoughts using ideas from cognitive restructuring (CBT). What's been on your mind lately?",
     "ending": "Thank you for this session. Remember, challenging thoughts takes practice and patience.",
     "summary": "Session Summary",
     "downloadSummary": "Download session summary",
@@ -25,15 +25,15 @@
     "labeling": "Labeling",
     "shouldStatements": "Should statements",
     "emotionalReasoning": "Emotional reasoning",
-    "mentaFilter": "Mental filter",
     "personalization": "Personalization",
-    "magnification": "Magnification"
+    "magnification": "Magnification",
+    "mentalFilter": "Mental filter"
   },
   "reframing": {
     "alternativePerspectives": "Alternative perspectives:",
     "considerThis": "Consider this perspective:",
     "anotherWayToThink": "Another way to think about this:",
-    "whatIfInstead": "What if instead...",
+    "whatIfInstead": "What if instead:",
     "evidenceFor": "Evidence for this thought:",
     "evidenceAgainst": "Evidence against this thought:",
     "balancedThought": "More balanced thought:"
