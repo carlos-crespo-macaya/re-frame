@@ -2,6 +2,10 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 const locales = ['en', 'es']
+function escapeRegexSegment(input: string): string {
+  return input.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+const LOCALE_GROUP = locales.map(escapeRegexSegment).join('|')
 const defaultLocale = 'en'
 
 function getLocale(request: NextRequest): string {
@@ -99,31 +103,35 @@ async function handleMiddleware(request: NextRequest) {
     const search = url.searchParams.toString()
 
     // Gate /chat
-    const localeGroupChat = locales.join('|')
-    if (new RegExp(`^\/(${localeGroupChat})\/chat(\/|$)`).test(pathname)) {
+    if (new RegExp(`^\/(${LOCALE_GROUP})\/chat(\/|$)`).test(pathname)) {
       const ok = await validGate(request.cookies.get('rf_chat_gate')?.value, 'chat_gate')
       if (!ok) {
-        const dest = url.clone()
-        dest.pathname = `/${locale}/gate`
-        dest.searchParams.set('action', 'chat_gate')
-        dest.searchParams.set('redirect', pathname + (search ? `?${search}` : ''))
-        return NextResponse.redirect(dest)
+        return createGateRedirect(request, locale, pathname, search, 'chat_gate')
       }
     }
 
     // Gate /feedback
-    const localeGroupFeedback = locales.join('|')
-    if (new RegExp(`^\/(${localeGroupFeedback})\/feedback(\/|$)`).test(pathname)) {
+    if (new RegExp(`^\/(${LOCALE_GROUP})\/feedback(\/|$)`).test(pathname)) {
       const ok = await validGate(request.cookies.get('rf_feedback_gate')?.value, 'feedback_gate')
       if (!ok) {
-        const dest = url.clone()
-        dest.pathname = `/${locale}/gate`
-        dest.searchParams.set('action', 'feedback_gate')
-        dest.searchParams.set('redirect', pathname + (search ? `?${search}` : ''))
-        return NextResponse.redirect(dest)
+        return createGateRedirect(request, locale, pathname, search, 'feedback_gate')
       }
     }
   }
 
   return NextResponse.next()
+}
+
+function createGateRedirect(
+  req: NextRequest,
+  locale: string,
+  pathname: string,
+  search: string,
+  action: 'chat_gate' | 'feedback_gate'
+) {
+  const dest = req.nextUrl.clone()
+  dest.pathname = `/${locale}/gate`
+  dest.searchParams.set('action', action)
+  dest.searchParams.set('redirect', pathname + (search ? `?${search}` : ''))
+  return NextResponse.redirect(dest)
 }
