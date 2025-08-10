@@ -238,10 +238,22 @@ export function ChatClient({ locale }: { locale: string }) {
     }
   }
 
-  const handleThumbClick = async (index: number, dir: 'up' | 'down') => {
-    setInlineFeedback(prev => ({ ...prev, [index]: { selected: dir, open: true } }))
-    // Send immediate rating without note for snappy UX
-    await sendInlineFeedback(index, dir === 'up', undefined)
+  const handleThumbClick = (index: number, dir: 'up' | 'down') => {
+    setInlineFeedback(prev => ({ 
+      ...prev, 
+      [index]: { 
+        selected: dir, 
+        open: true,
+        sent: false  // Don't mark as sent immediately - allow note entry
+      } 
+    }))
+    // Don't send immediately - wait for user to add note or skip
+  }
+
+  const handleSkipNote = async (index: number) => {
+    const fb = inlineFeedback[index]
+    if (!fb?.selected) return
+    await sendInlineFeedback(index, fb.selected === 'up', undefined)
   }
 
   const handleSendNote = async (index: number) => {
@@ -400,34 +412,50 @@ export function ChatClient({ locale }: { locale: string }) {
                           {/* Minimal, non-intrusive note input */}
                           {inlineFeedback[index]?.open && (
                             <div className="mt-2">
-                              {inlineFeedback[index]?.sent && !inlineFeedback[index]?.note ? (
+                              {inlineFeedback[index]?.sent ? (
                                 <div className="flex items-center justify-end gap-2 text-xs text-white/60">
                                   <span>{locale==='es' ? '¡Gracias!' : 'Thanks!'}</span>
-                                  <button
-                                    type="button"
-                                    onClick={() => setInlineFeedback(prev => ({ ...prev, [index]: { ...(prev[index]||{}), note: '', open: true } }))}
-                                    className="text-[#9BF7EB] hover:underline"
-                                  >
-                                    {locale==='es' ? 'Añadir nota' : 'Add note'}
-                                  </button>
+                                  {!inlineFeedback[index]?.note && (
+                                    <button
+                                      type="button"
+                                      onClick={() => setInlineFeedback(prev => ({ ...prev, [index]: { ...(prev[index]||{}), sent: false, open: true } }))}
+                                      className="text-[#9BF7EB] hover:underline"
+                                    >
+                                      {locale==='es' ? 'Añadir nota' : 'Add note'}
+                                    </button>
+                                  )}
                                 </div>
                               ) : (
-                                <div className="flex items-center gap-2">
-                                  <input
-                                    type="text"
-                                    value={inlineFeedback[index]?.note || ''}
-                                    onChange={(e) => setInlineFeedback(prev => ({ ...prev, [index]: { ...(prev[index]||{}), note: e.target.value } }))}
-                                    placeholder={locale==='es' ? 'Nota opcional…' : 'Optional note…'}
-                                    className="flex-1 min-w-0 bg-white/5 text-white placeholder:text-white/40 rounded-full px-3 py-2 text-xs ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-[#9BF7EB]/40"
-                                  />
-                                  <button
-                                    type="button"
-                                    onClick={() => handleSendNote(index)}
-                                    disabled={inlineFeedback[index]?.sending}
-                                    className="text-xs px-3 py-2 rounded-full bg-[#9BF7EB] text-[#002e34] disabled:opacity-50"
-                                  >
-                                    {inlineFeedback[index]?.sending ? (locale==='es'?'Enviando…':'Sending…') : (locale==='es'?'Enviar':'Send')}
-                                  </button>
+                                <div className="space-y-2">
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="text"
+                                      value={inlineFeedback[index]?.note || ''}
+                                      onChange={(e) => setInlineFeedback(prev => ({ ...prev, [index]: { ...(prev[index]||{}), note: e.target.value } }))}
+                                      placeholder={locale==='es' ? 'Nota opcional…' : 'Optional note…'}
+                                      disabled={inlineFeedback[index]?.sending}
+                                      className="flex-1 min-w-0 bg-white/5 text-white placeholder:text-white/40 rounded-full px-3 py-2 text-xs ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-[#9BF7EB]/40 disabled:opacity-50"
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => handleSendNote(index)}
+                                      disabled={inlineFeedback[index]?.sending}
+                                      className="text-xs px-3 py-2 rounded-full bg-[#9BF7EB] text-[#002e34] disabled:opacity-50"
+                                    >
+                                      {inlineFeedback[index]?.sending ? (locale==='es'?'Enviando…':'Sending…') : (locale==='es'?'Enviar':'Send')}
+                                    </button>
+                                  </div>
+                                  {!inlineFeedback[index]?.sending && (
+                                    <div className="text-right">
+                                      <button
+                                        type="button"
+                                        onClick={() => handleSkipNote(index)}
+                                        className="text-xs text-white/60 hover:text-[#9BF7EB] transition-colors"
+                                      >
+                                        {locale==='es' ? 'Omitir nota' : 'Skip note'}
+                                      </button>
+                                    </div>
+                                  )}
                                 </div>
                               )}
                               {inlineFeedback[index]?.error && (
