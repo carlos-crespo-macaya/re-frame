@@ -4,6 +4,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { GlassCard } from '@/components/layout/GlassCard'
+import { ImportantReminder } from '@/components/ui/ImportantReminder'
 
 interface SupportClientProps {
   locale: string
@@ -163,56 +164,45 @@ export function SupportClient({ locale, translations: t }: SupportClientProps) {
             </GlassCard>
 
             {/* Important Reminder */}
-            <div className="rounded-[24px] backdrop-blur-[12px] p-8 border border-red-500/30"
-              style={{
-                background: 'rgba(127, 29, 29, 0.1)',
-              }}
-            >
-              <h2 className="text-xl font-heading font-semibold text-red-400 mb-4">
-                {t.reminder.title}
-              </h2>
-              <p className="text-white leading-relaxed">
-                {t.reminder.text}
-              </p>
-            </div>
-          </div>
+            <ImportantReminder locale={locale} variant="default" />
 
-          {/* Footer */}
-          <footer className="mt-24 pt-8 border-t border-white/10">
-            <div className="flex flex-col items-center gap-4">
-              <nav aria-label="Footer navigation">
-                <ul className="flex gap-6 text-sm">
-                  <li>
-                    <Link
-                      href={`/${locale}/privacy`}
-                      className="text-white/45 hover:text-[#aefcf5] transition-colors"
-                    >
-                      {t.footer.privacy}
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href={`/${locale}/support`}
-                      className="text-[#aefcf5] font-medium"
-                    >
-                      {t.footer.support}
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href={`/${locale}/about`}
-                      className="text-white/45 hover:text-[#aefcf5] transition-colors"
-                    >
-                      {t.footer.about}
-                    </Link>
-                  </li>
-                </ul>
-              </nav>
-              <p className="text-xs text-white/45">
-                © 2025 re-frame.social
-              </p>
-            </div>
-          </footer>
+            {/* Footer */}
+            <footer className="mt-24 pt-8 border-t border-white/10">
+              <div className="flex flex-col items-center gap-4">
+                <nav aria-label="Footer navigation">
+                  <ul className="flex gap-6 text-sm">
+                    <li>
+                      <Link
+                        href={`/${locale}/privacy`}
+                        className="text-white/45 hover:text-[#aefcf5] transition-colors"
+                      >
+                        {t.footer.privacy}
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        href={`/${locale}/support`}
+                        className="text-[#aefcf5] font-medium"
+                      >
+                        {t.footer.support}
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        href={`/${locale}/about`}
+                        className="text-white/45 hover:text-[#aefcf5] transition-colors"
+                      >
+                        {t.footer.about}
+                      </Link>
+                    </li>
+                  </ul>
+                </nav>
+                <p className="text-xs text-white/45">
+                  © 2025 re-frame.social
+                </p>
+              </div>
+            </footer>
+          </div>
         </div>
       </div>
     </AppLayout>
