@@ -1,6 +1,7 @@
-import importlib
 import os
 from typing import Final
+
+import httpx
 
 # Classic reCAPTCHA (v3 preferred) only
 RECAPTCHA_VERIFY_URL: Final[str] = "https://www.google.com/recaptcha/api/siteverify"
@@ -14,16 +15,26 @@ def verify_recaptcha(token: str, action: str = "submit_feedback") -> float:
     - For v2: Google does not return a score; treat success as 0.9
     - If misconfigured (missing secret), raise to allow caller to return 503
     """
-    if not (SECRET and token):
+    if not SECRET:
         raise RuntimeError("recaptcha_classic_misconfigured")
+    if not token:
+        return 0.0
 
-    httpx = importlib.import_module("httpx")
-    resp = httpx.post(
-        RECAPTCHA_VERIFY_URL,
-        data={"secret": SECRET, "response": token},
-        timeout=10,
-    )
-    data = resp.json()
+    try:
+        resp = httpx.post(
+            RECAPTCHA_VERIFY_URL,
+            data={"secret": SECRET, "response": token},
+            timeout=httpx.Timeout(10.0, connect=3.0),
+        )
+        resp.raise_for_status()
+        data = resp.json()
+    except httpx.TimeoutException:
+        return 0.0
+    except httpx.HTTPError:
+        return 0.0
+    except ValueError:
+        # JSON parse error
+        return 0.0
 
     if not data.get("success"):
         return 0.0

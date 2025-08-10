@@ -60,10 +60,10 @@ async function proxy(req: NextRequest, { params }: { params: { path: string[] } 
   const audience = backendPublicUrl;
 
   try {
-    // If localhost/127.* or explicitly allowed, skip Cloud Run IAM and proxy directly
+    // If localhost/127.* or explicitly allowed (non-production only), skip Cloud Run IAM and proxy directly
     // Avoid broadly skipping IAM just because protocol is http
-    const isLocalPlainHttp = /^(localhost|127\.)/i.test(backendHost) ||
-      process.env.PROXY_ALLOW_INSECURE === 'true';
+    const allowInsecure = process.env.PROXY_ALLOW_INSECURE === 'true' && process.env.NODE_ENV !== 'production';
+    const isLocalPlainHttp = /^(localhost|127\.)/i.test(backendHost) || allowInsecure;
     if (isLocalPlainHttp) {
       const requestHeaders = Object.fromEntries(req.headers.entries());
       delete requestHeaders.host;
