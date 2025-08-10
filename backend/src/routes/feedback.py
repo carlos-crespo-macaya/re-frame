@@ -40,6 +40,13 @@ class FeedbackIn(BaseModel):
     lang: str | None = None
     platform: str | None = None
     comment: str | None = None
+    # New optional metadata fields for richer feedback
+    message_id: str | None = None
+    source: str | None = None  # e.g. "feedback_page" | "chat_inline"
+    page_path: str | None = None
+    # Optional lightweight conversation context
+    # Expect a list of { role: str, content: str, timestamp?: int }
+    context: list[dict] | None = None
     recaptcha_token: str
     recaptcha_action: str = "submit_feedback"
 
@@ -63,6 +70,30 @@ async def post_feedback(
     if len(normalized_comment) > 1000:
         normalized_comment = normalized_comment[:1000]
 
+    # Normalize optional context: keep at most 12 recent turns, truncate content per turn
+    normalized_context: list[dict] | None = None
+    if isinstance(body.context, list) and body.context:
+        # Keep last N entries only
+        recent = body.context[-12:]
+        trimmed: list[dict] = []
+        for entry in recent:
+            try:
+                role = str(entry.get("role", ""))[:16]
+                content = str(entry.get("content", ""))
+                # Truncate overly long content to reduce payload size
+                if len(content) > 1200:
+                    content = content[:1200]
+                ts = entry.get("timestamp")
+                trimmed.append({
+                    "role": role,
+                    "content": content,
+                    **({"timestamp": int(ts)} if isinstance(ts, (int, float)) else {}),
+                })
+            except Exception:
+                # Skip malformed entries silently
+                continue
+        normalized_context = trimmed if trimmed else None
+
     doc = {
         "helpful": body.helpful,
         "reasons": [r for r in body.reasons if r in ALLOWED_REASONS],
@@ -71,6 +102,11 @@ async def post_feedback(
         "platform": body.platform or "unknown",
         "opt_in_observability": x_observability_opt_in == "1",
         "comment": normalized_comment or None,
+        # Optional metadata
+        "message_id": (body.message_id or None),
+        "source": (body.source or None),
+        "page_path": (body.page_path or None),
+        "context": normalized_context,
     }
 
     client = get_db_client()

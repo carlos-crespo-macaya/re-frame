@@ -13,6 +13,7 @@ export default function FeedbackPage({ params }: { params: { locale: string } })
   const [submitting, setSubmitting] = useState(false)
   const [msg, setMsg] = useState<string | null>(null)
   const [comment, setComment] = useState('')
+  const [selected, setSelected] = useState<null | 'up' | 'down'>(null)
   const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY
   const provider = process.env.NEXT_PUBLIC_RECAPTCHA_PROVIDER === 'enterprise' ? 'enterprise' : 'classic'
   const { ready, execute, error } = useRecaptcha(siteKey, provider)
@@ -33,7 +34,7 @@ export default function FeedbackPage({ params }: { params: { locale: string } })
         setMsg(params.locale === 'es' ? 'No se pudo validar reCAPTCHA.' : 'Could not validate reCAPTCHA.')
         return
       }
-      const body: FeedbackIn = {
+      const body = {
         helpful,
         reasons: [],
         session_id: crypto.getRandomValues(new Uint32Array(1))[0].toString(16),
@@ -42,7 +43,10 @@ export default function FeedbackPage({ params }: { params: { locale: string } })
         comment: comment || undefined,
         recaptcha_token: token,
           recaptcha_action: `feedback_${helpful ? 'up' : 'down'}`,
-      }
+        // Enhanced metadata from the page
+        source: 'feedback_page',
+        page_path: typeof window !== 'undefined' ? window.location.pathname : undefined,
+      } as unknown as FeedbackIn
       await postFeedbackApiFeedbackPost({ requestBody: body })
       setMsg(params.locale === 'es' ? '¡Gracias por tu opinión!' : 'Thanks for the feedback!')
     } catch {
@@ -54,21 +58,25 @@ export default function FeedbackPage({ params }: { params: { locale: string } })
     const dict: Record<string, Record<string, string>> = {
       en: {
         title: 'Feedback',
-        helpUs: 'Quick feedback',
-        helpUsDesc: 'Share a brief thought (optional) and tap a thumb to send.',
+        helpUs: 'We’d love your thoughts',
+        helpUsDesc: 'How was your experience? Leave a quick rating and an optional note.',
         quickFeedback: 'Quick feedback',
-        optionalComment: 'Optional comment',
+        optionalComment: 'Optional note',
         thumbsUp: 'Thumbs up',
         thumbsDown: 'Thumbs down',
+        send: 'Send',
+        sending: 'Sending…',
       },
       es: {
         title: 'Opinión',
-        helpUs: 'Opinión rápida',
-        helpUsDesc: 'Comparte algo breve (opcional) y pulsa un pulgar para enviar.',
+        helpUs: 'Nos encantaría tu opinión',
+        helpUsDesc: '¿Cómo fue tu experiencia? Deja una valoración rápida y una nota opcional.',
         quickFeedback: 'Opinión rápida',
-        optionalComment: 'Comentario opcional',
+        optionalComment: 'Nota opcional',
         thumbsUp: 'Pulgar arriba',
         thumbsDown: 'Pulgar abajo',
+        send: 'Enviar',
+        sending: 'Enviando…',
       }
     }
     return (dict[params.locale as 'en' | 'es'] || dict.en)[key]
@@ -87,20 +95,45 @@ export default function FeedbackPage({ params }: { params: { locale: string } })
       <main className="max-w-2xl mx-auto p-6 space-y-6">
         <h1 className="text-2xl font-semibold text-white">{t('title')}</h1>
 
-        <GlassCard className="p-4">
-          <h2 className="text-lg font-medium text-white mb-2">{t('quickFeedback')}</h2>
-          <p className="text-sm text-white/70 mb-3">{t('helpUsDesc')}</p>
-          <label className="block text-sm text-white/80 mb-2" htmlFor="comment">{t('optionalComment')}</label>
-          <textarea id="comment" value={comment} onChange={(e)=>setComment(e.target.value)} className="w-full mb-3 rounded bg-white/5 text-white p-2 border border-white/10 focus:ring-2 focus:ring-[#aefcf5]/50" rows={3} placeholder={params.locale==='es'?'Comparte algo breve (opcional)':'Share something brief (optional)'} />
-          <div className="flex gap-3">
-            <button aria-label={t('thumbsUp')} title={t('thumbsUp')} className="px-3 py-2 rounded bg-[#aefcf5]/10 hover:bg-[#aefcf5]/20 text-[#aefcf5] border border-[#aefcf5]/30 disabled:opacity-50" disabled={submitting || !ready} onClick={() => sendFeedback(true)}>
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M2 10h4v12H2zM22 11c0-.55-.45-1-1-1h-6.31l1.1-5.27.03-.32c0-.41-.17-.79-.44-1.06L14 2 7.59 8.41C7.22 8.78 7 9.3 7 9.83V20c0 .55.45 1 1 1h9c.4 0 .75-.24.91-.59l3-7c.06-.13.09-.27.09-.41v-2z"/></svg>
-            </button>
-            <button aria-label={t('thumbsDown')} title={t('thumbsDown')} className="px-3 py-2 rounded bg-[#aefcf5]/10 hover:bg-[#aefcf5]/20 text-[#aefcf5] border border-[#aefcf5]/30 disabled:opacity-50" disabled={submitting || !ready} onClick={() => sendFeedback(false)}>
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M2 2h4v12H2zM22 9c0 .55-.45 1-1 1h-6.31l1.1 5.27.03.32c0 .41-.17.79-.44 1.06L14 20l-6.41-6.41C7.22 13.22 7 12.7 7 12.17V2c0-.55.45-1 1-1h9c.4 0 .75.24.91.59l3 7c.06.13.09.27.09.41v2z"/></svg>
-            </button>
+        <GlassCard className="p-0 overflow-hidden">
+          <div className="px-5 py-5 sm:px-6 sm:py-6 bg-gradient-to-br from-[#0A2A30] to-[#102B33] border-b border-white/10">
+            <h2 className="text-lg font-medium text-white">{t('helpUs')}</h2>
+            <p className="text-sm text-white/70 mt-1">{t('helpUsDesc')}</p>
           </div>
-          {msg && <p className="mt-3 text-sm text-white/80">{msg}</p>}
+
+          <div className="p-5 sm:p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <button
+                aria-label={t('thumbsUp')}
+                title={t('thumbsUp')}
+                onClick={() => { setSelected('up'); sendFeedback(true) }}
+                disabled={submitting || !ready}
+                className={`w-12 h-12 rounded-2xl flex items-center justify-center ring-1 transition-all ${selected==='up' ? 'bg-[#9BF7EB] text-[#002e34] ring-[#9BF7EB]/40' : 'bg-white/5 text-white ring-white/10 hover:bg-white/10'} disabled:opacity-50`}
+              >
+                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor"><path d="M2 10h4v12H2zM22 11c0-.55-.45-1-1-1h-6.31l1.1-5.27.03-.32c0-.41-.17-.79-.44-1.06L14 2 7.59 8.41C7.22 8.78 7 9.3 7 9.83V20c0 .55.45 1 1 1h9c.4 0 .75-.24.91-.59l3-7c.06-.13.09-.27.09-.41v-2z"/></svg>
+              </button>
+              <button
+                aria-label={t('thumbsDown')}
+                title={t('thumbsDown')}
+                onClick={() => { setSelected('down'); sendFeedback(false) }}
+                disabled={submitting || !ready}
+                className={`w-12 h-12 rounded-2xl flex items-center justify-center ring-1 transition-all ${selected==='down' ? 'bg-[#F59E0B] text-[#0b140f] ring-[#F59E0B]/40' : 'bg-white/5 text-white ring-white/10 hover:bg-white/10'} disabled:opacity-50`}
+              >
+                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor"><path d="M2 2h4v12H2zM22 9c0 .55-.45 1-1 1h-6.31l1.1 5.27.03.32c0 .41-.17.79-.44 1.06L14 20l-6.41-6.41C7.22 13.22 7 12.7 7 12.17V2c0-.55.45-1 1-1h9c.4 0 .75.24.91.59l3 7c.06.13.09.27.09.41v2z"/></svg>
+              </button>
+            </div>
+
+            <label className="block text-sm text-white/80 mb-2" htmlFor="comment">{t('optionalComment')}</label>
+            <textarea
+              id="comment"
+              value={comment}
+              onChange={(e)=>setComment(e.target.value)}
+              className="w-full mb-3 rounded-2xl bg-white/5 text-white px-4 py-3 border border-white/10 focus:ring-2 focus:ring-[#9BF7EB]/50 placeholder:text-white/40"
+              rows={3}
+              placeholder={params.locale==='es'?'Comparte algo breve (opcional)':'Share something brief (optional)'}
+            />
+            {msg && <p className="mt-1 text-sm text-white/80">{msg}</p>}
+          </div>
         </GlassCard>
       </main>
     </AppLayout>
