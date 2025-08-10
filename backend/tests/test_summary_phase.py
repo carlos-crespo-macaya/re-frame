@@ -81,11 +81,10 @@ class TestSummaryAgent:
 
         assert agent is not None
         assert agent.name == "SummaryAgent"
-        assert len(agent.tools) == 4
+        assert len(agent.tools) == 3
         tool_names = [tool.__name__ for tool in agent.tools]
         assert "check_phase_transition" in tool_names
         assert "extract_key_insights" in tool_names
-        assert "generate_action_items" in tool_names
         assert "format_session_summary" in tool_names
 
     def test_summary_agent_instruction_content(self):
@@ -116,7 +115,6 @@ class TestSummaryAgent:
         instruction = agent.instruction
         assert "Closing Options" in instruction
         assert "download" in instruction
-        assert "micro-action" in instruction
         assert "Thank them" in instruction
 
 
