@@ -9,7 +9,7 @@ class Phase(str, Enum):
     WARMUP = "warmup"
     CLARIFY = "clarify"  # gather situation, thought, emotion, intensity
     REFRAME = "reframe"  # identify distortions + offer balanced thought
-    SUMMARY = "summary"  # recap + ask 0–10 anxiety & confidence
+    SUMMARY = "summary"  # recap + ask 0-10 anxiety & confidence
     FOLLOWUP = "followup"  # limited short answers based on the summary
     CLOSED = "closed"
 

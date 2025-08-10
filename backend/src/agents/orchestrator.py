@@ -63,11 +63,11 @@ def _next_phase(current: Phase, suggested: Phase | None) -> Phase:
 
 def _phase_banner(phase: Phase, note: str | None = None) -> str:
     labels = {
-        Phase.WARMUP: "Phase: Warm‑up — I'll make sure I understood you.",
+        Phase.WARMUP: "Phase: Warm-up — I'll make sure I understood you.",
         Phase.CLARIFY: "Phase: Clarify — I'll ask at most one quick question.",
         Phase.REFRAME: "Phase: Reframe — I'll offer a balanced perspective.",
         Phase.SUMMARY: "Phase: Summary — I'll recap and check how you feel.",
-        Phase.FOLLOWUP: "Phase: Follow‑ups — short answers based on the summary.",
+        Phase.FOLLOWUP: "Phase: Follow-ups — short answers based on the summary.",
         Phase.CLOSED: "Phase: Closed — this session has ended.",
     }
     msg = labels.get(phase, f"Phase: {phase.value.title()}")
@@ -81,7 +81,7 @@ def _session_closed_message(language: str = "en") -> str:
             "Puedes volver cuando quieras para una nueva sesión."
         )
     return (
-        "Thanks for talking with me. We've reached the end of the follow‑ups. "
+        "Thanks for talking with me. We've reached the end of the follow-ups. "
         "You can start a new session anytime."
     )
 

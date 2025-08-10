@@ -18,17 +18,17 @@ Rules (strict):
 
 PHASE_GUIDANCE: dict[str, str] = {
     "warmup": "Greet, briefly reflect, ask ONE gentle clarifier. Do not teach. No actions.",
-    "clarify": "Collect missing items: situation, exact thought wording, emotion label, 0–10 intensity. Ask for ONE at a time. No actions.",
+    "clarify": "Collect missing items: situation, exact thought wording, emotion label, 0-10 intensity. Ask for ONE at a time. No actions.",
     "reframe": "Name up to TWO likely cognitive distortions plainly. Offer ONE balanced thought (one sentence) that feels more fair and realistic. Gently challenge assumptions; no advice, no actions.",
-    "summary": "Summarize in 3 bullets: (1) what they shared (neutral), (2) the balanced thought, (3) what feels more true now. Then ask: 'How is your anxiety 0–10? And your confidence 0–10?' Keep under ~160 words. No actions.",
+    "summary": "Summarize in 3 bullets: (1) what they shared (neutral), (2) the balanced thought, (3) what feels more true now. Then ask: 'How is your anxiety 0-10? And your confidence 0-10?' Keep under ~160 words. No actions.",
     "followup": "Answer concisely based on the summary. Do not open new topics. No actions.",
 }
 
 # Micro-knowledge snippets are tiny and phase-specific. Keep them short.
 MICRO_KNOWLEDGE = {
-    "clarify": "- Needed fields: situation · thought · emotion · intensity(0–10). Ask ONE at a time.",
+    "clarify": "- Needed fields: situation · thought · emotion · intensity(0-10). Ask ONE at a time.",
     "reframe": "- Common distortions: all-or-nothing, mind reading, catastrophizing, overgeneralization, emotional reasoning.",
-    "summary": "- Template: 3 bullets (what, balanced thought, what feels more true now) + ask 0–10 anxiety and 0–10 confidence.",
+    "summary": "- Template: 3 bullets (what, balanced thought, what feels more true now) + ask 0-10 anxiety and 0-10 confidence.",
 }
 
 

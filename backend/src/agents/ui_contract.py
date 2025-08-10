@@ -5,7 +5,6 @@ We append a small, strict output contract to any agent instruction.
 This keeps responses concise, phase-aware, and action-free for the PoC.
 """
 
-
 NO_ACTIONS_RULE = (
     "- Do NOT recommend actions, exercises, or tasks in this PoC. "
     "Avoid words like: try, practice, do, schedule, exercise, breathing, journaling."

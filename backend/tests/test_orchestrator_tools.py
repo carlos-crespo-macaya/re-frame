@@ -54,14 +54,14 @@ class TestOrchestrator:
     def test_handle_turn_crisis(self):
         """Test that crisis detection triggers safety response."""
         state = SessionState()
-        
+
         # Mock ADK call function
         def mock_adk_call(**kwargs):
             return '<ui>Response</ui><control>{"next_phase":"warmup","missing_fields":[],"suggest_questions":[],"crisis_detected":false}</control>'
-        
+
         # Test crisis detection
         result = handle_turn(state, "I want to kill myself", mock_adk_call)
-        
+
         assert state.crisis_flag is True
         assert state.phase.value == "summary"
         assert "safety matters" in result["ui_text"]
@@ -69,13 +69,13 @@ class TestOrchestrator:
     def test_handle_turn_normal(self):
         """Test normal conversation flow."""
         state = SessionState()
-        
+
         # Mock ADK call function
         def mock_adk_call(**kwargs):
             return '<ui>Hello! What brings you here today?</ui><control>{"next_phase":"clarify","missing_fields":[],"suggest_questions":[],"crisis_detected":false}</control>'
-        
+
         result = handle_turn(state, "I'm feeling anxious", mock_adk_call)
-        
+
         assert state.crisis_flag is False
         assert result["ui_text"] == "Hello! What brings you here today?"
         assert state.turn == 1
@@ -83,7 +83,7 @@ class TestOrchestrator:
     def test_session_state_initialization(self):
         """Test that SessionState initializes correctly."""
         state = SessionState()
-        
+
         assert state.phase.value == "warmup"
         assert state.turn == 0
         assert state.max_turns == 14
