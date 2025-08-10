@@ -22,6 +22,25 @@ def _extract_between(text: str, tag: str) -> str | None:
     return m.group(1).strip() if m else None
 
 
+def _sanitize_text(raw: str) -> str:
+    """Remove tool/code fences and control blocks; trim whitespace.
+
+    - Strips triple-backtick code blocks (```tool_code, ```python, or any fenced block)
+    - Removes any remaining <control>...</control>
+    - Collapses excessive whitespace
+    """
+    if not raw:
+        return ""
+    txt = re.sub(r"<control>.*?</control>", "", raw, flags=re.S | re.I)
+    # Remove any triple backtick fenced code blocks
+    txt = re.sub(r"```[a-zA-Z_]*\s*[\s\S]*?```", "", txt, flags=re.S)
+    # Tidy up leftover backticks or stray markers
+    txt = txt.replace("```", "")
+    # Normalize whitespace
+    txt = re.sub(r"\s+", " ", txt).strip()
+    return txt
+
+
 def _extract_control_block(raw: str) -> ControlBlock | None:
     block = _extract_between(raw, "control")
     if not block:
@@ -43,10 +62,11 @@ def _extract_control_block(raw: str) -> ControlBlock | None:
 def _extract_ui(raw: str) -> str:
     ui = _extract_between(raw, "ui")
     if ui:
-        return ui
-    # Fallback: strip control tag if present; return trimmed.
-    txt = re.sub(r"<control>.*?</control>", "", raw or "", flags=re.S | re.I).strip()
-    return txt[:600] if txt else "Thanks for sharing that."
+        cleaned = _sanitize_text(ui)
+        return cleaned if cleaned else "Thanks for sharing that."
+    # Fallback: sanitize whole text (after removing control) and cap length
+    cleaned = _sanitize_text(raw or "")
+    return cleaned[:600] if cleaned else "Thanks for sharing that."
 
 
 def _next_phase(current: Phase, suggested: Phase | None) -> Phase:
