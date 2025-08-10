@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MIT
 import json
+import os
 import re
 from collections.abc import Callable
 from typing import Any
@@ -39,10 +40,12 @@ def _sanitize_text(raw: str) -> str:
     has_fences = "```" in raw
 
     txt = re.sub(r"<control>.*?</control>", "", raw, flags=re.S | re.I)
-    # Remove any triple backtick fenced code blocks
-    txt = re.sub(r"```[a-zA-Z_]*\s*[\s\S]*?```", "", txt, flags=re.S)
-    # Tidy up leftover backticks or stray markers
-    txt = txt.replace("```", "")
+    # Remove known tool/code blocks entirely
+    txt = re.sub(
+        r"```(?:tool_code|python|json)\s*[\s\S]*?```", "", txt, flags=re.S | re.I
+    )
+    # For any remaining generic fenced blocks, unwrap by keeping inner text
+    txt = re.sub(r"```\s*([\s\S]*?)\s*```", r"\1", txt, flags=re.S)
     # Normalize whitespace
     txt = re.sub(r"\s+", " ", txt).strip()
     cleaned_len = len(txt)
@@ -108,7 +111,24 @@ def _extract_ui(raw: str) -> str:
         )
     except Exception:
         pass
-    return cleaned[:600] if cleaned else "Thanks for sharing that."
+    if cleaned:
+        return cleaned[:600]
+    # Final guard: if sanitized is empty, pass through original text stripped of tags/fences
+    passthrough = re.sub(r"<[^>]*>", "", raw or "", flags=re.S)
+    passthrough = re.sub(
+        r"```(?:[a-zA-Z_]+)?\s*[\s\S]*?```", "", passthrough, flags=re.S
+    )
+    passthrough = passthrough.replace("```", "")
+    passthrough = re.sub(r"\s+", " ", passthrough).strip()
+    try:
+        logger.debug(
+            "ui_sanitized_empty_passthrough_raw",
+            passthrough_len=len(passthrough),
+            sample=(passthrough[:120] if passthrough else ""),
+        )
+    except Exception:
+        pass
+    return passthrough[:600] if passthrough else "Thanks for sharing that."
 
 
 def _next_phase(current: Phase, suggested: Phase | None) -> Phase:
@@ -202,6 +222,24 @@ def handle_turn(
         state=model_dump(state),
         user=user_text,
     )
+
+    # Debug logging of model output. Guard full text behind env flag to prevent leaking PII in prod logs.
+    try:
+        logger.debug(
+            "model_reply_received",
+            raw_len=len(raw_reply or ""),
+            sample=(raw_reply[:500] if raw_reply else ""),
+        )
+        if os.getenv("LOG_FULL_MODEL_OUTPUT", "0").strip() in {
+            "1",
+            "true",
+            "TRUE",
+            "yes",
+            "on",
+        }:
+            logger.info("model_reply_full", text=(raw_reply or ""))
+    except Exception:
+        pass
 
     # 4) Parse + pick next phase
     control = _extract_control_block(raw_reply)
