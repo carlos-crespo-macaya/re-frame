@@ -1,9 +1,9 @@
 'use client'
 
 import { useRouter, usePathname } from 'next/navigation'
-import Link from 'next/link'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { GlassCard } from '@/components/layout/GlassCard'
+import { ImportantReminder } from '@/components/ui/ImportantReminder'
 
 interface AboutClientProps {
   locale: string
@@ -54,6 +54,7 @@ export function AboutClient({ locale, translations: t }: AboutClientProps) {
     <AppLayout
       locale={locale}
       showBackButton={true}
+      showFooter={true}
       currentLanguage={locale === 'es' ? 'ES' : 'EN'}
       onLanguageChange={(newLocale) => {
         const newPath = pathname.replace(`/${locale}`, `/${newLocale}`)
@@ -72,10 +73,10 @@ export function AboutClient({ locale, translations: t }: AboutClientProps) {
           <div className="space-y-8">
             {/* Mission */}
             <GlassCard>
-              <h2 className="text-xl font-heading font-semibold text-[#aefcf5] mb-4">
+              <h3 className="text-lg font-heading font-semibold text-white mb-3">
                 {t.mission.label}
-              </h2>
-              <p className="text-lg text-white/70 leading-relaxed">
+              </h3>
+              <p className="text-white/70 leading-relaxed">
                 {t.mission.description}
               </p>
             </GlassCard>
@@ -124,6 +125,9 @@ export function AboutClient({ locale, translations: t }: AboutClientProps) {
               </GlassCard>
             </div>
 
+            {/* Important reminder */}
+            <ImportantReminder locale={locale} variant="default" />
+
             {/* Contact */}
             <GlassCard className="text-center">
               <p className="text-white">
@@ -134,43 +138,6 @@ export function AboutClient({ locale, translations: t }: AboutClientProps) {
               </p>
             </GlassCard>
           </div>
-
-          {/* Footer */}
-          <footer className="mt-24 pt-8 border-t border-white/10">
-            <div className="flex flex-col items-center gap-4">
-              <nav aria-label="Footer navigation">
-                <ul className="flex gap-6 text-sm">
-                  <li>
-                    <Link
-                      href={`/${locale}/privacy`}
-                      className="text-white/45 hover:text-[#aefcf5] transition-colors"
-                    >
-                      {t.footer.privacy}
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href={`/${locale}/support`}
-                      className="text-white/45 hover:text-[#aefcf5] transition-colors"
-                    >
-                      {t.footer.support}
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href={`/${locale}/about`}
-                      className="text-[#aefcf5] font-medium"
-                    >
-                      {t.footer.about}
-                    </Link>
-                  </li>
-                </ul>
-              </nav>
-              <p className="text-xs text-white/45">
-                © 2025 re-frame.social
-              </p>
-            </div>
-          </footer>
         </div>
       </div>
     </AppLayout>

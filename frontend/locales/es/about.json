@@ -1,7 +1,7 @@
 {
   "title": "ℹ️ Acerca de re-frame",
   "mission": {
-    "label": "Misión",
+    "label": "Misión:",
     "description": "Ofrecer a quienes viven con patrones evitativos una forma más amable de cuestionar pensamientos duros."
   },
   "details": {
@@ -14,11 +14,11 @@
       "description": "no es psicoterapia, consejo médico ni un servicio de crisis."
     },
     "creator": {
-      "title": "Motivación",
+      "title": "Motivación:",
       "content": "La motivación detrás de re-frame es sencilla: facilitar que cualquier persona pueda cuestionar pensamientos poco útiles con amabilidad y curiosidad."
     },
     "thankYou": {
-      "title": "Gracias",
+      "title": "Gracias!",
       "content": "Gracias por probar re-frame."
     }
   },

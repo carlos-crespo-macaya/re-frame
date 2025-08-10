@@ -17,37 +17,29 @@
     "description": "When you describe a situation, re-frame points out possible thinking traps and offers gentler viewpoints. You’re in control — take what feels useful and leave what doesn’t."
   },
   "reminder": {
-    "prefix": "Reminder:",
-    "text": "re-frame is a self-help companion, not a substitute for professional care. If you feel unsafe with your thoughts, please reach out to a qualified therapist or crisis line."
+    "prefix": "Important reminder",
+    "text": "re-frame is a self-help companion that uses ideas from CBT. It isn’t psychotherapy, medical advice, or a crisis service."
   },
   "references": {
     "title": "References",
     "tableHeaders": {
-      "number": "#",
       "source": "Source",
       "keyPoint": "Key Point Supported"
     },
     "entries": [
       {
-        "number": "[1]",
         "source": "Beck, A.T. Cognitive Therapy and the Emotional Disorders. International Universities Press, 1976.",
         "keyPoint": "Definition of CBT & thought–emotion–behaviour link"
       },
       {
-        "number": "[2]",
         "source": "Lampe, L., & Sunderland, M. (2013). Avoidant Personality Disorder: current status and future directions. Australian & New Zealand Journal of Psychiatry, 47(6), 515-22.",
         "keyPoint": "AvPD features: fear of evaluation, self-criticism"
       },
       {
-        "number": "[3]",
         "source": "Clark, D.A. & Beck, A.T. Cognitive Therapy of Anxiety Disorders. The Guilford Press, 2010.",
         "keyPoint": "CBT techniques: naming, testing, practising alternatives"
       }
     ]
-  },
-  "note": {
-    "title": "Note:",
-    "text": "CCI's \"Unhelpful Thinking Styles\" PDF and Psychology Tools workbooks are freely available, evidence-aligned handouts often recommended by clinicians."
   },
   "navigation": {
     "return": "← Return to re-frame"

@@ -6,16 +6,16 @@
     "learnMoreLink": "The approach behind re-frame"
   },
   "cta": {
-    "title": "Ready to begin?",
-    "description": "Start a private session to explore your thoughts using compassionate, CBT-inspired tools.",
+    "title": "Start a private session",
+    "description": "Explore your thoughts with compassionate, CBT-inspired tools",
     "button": "Start Your Session",
     "privacy": "Private session — we don't store personal data."
   },
   "steps": {
     "title": "How re-frame helps",
     "step1": {
-      "title": "Share what’s on your mind",
-      "description": "Use your own words, at your own pace."
+      "title": "Share at your own pace",
+      "description": "Use your own words; short is fine"
     },
     "step2": {
       "title": "Spot common thinking patterns",

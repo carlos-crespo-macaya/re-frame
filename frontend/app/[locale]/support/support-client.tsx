@@ -47,6 +47,7 @@ export function SupportClient({ locale, translations: t }: SupportClientProps) {
     <AppLayout
       locale={locale}
       showBackButton={true}
+      showFooter={true}
       currentLanguage={locale === 'es' ? 'ES' : 'EN'}
       onLanguageChange={(newLocale) => {
         const newPath = pathname.replace(`/${locale}`, `/${newLocale}`)

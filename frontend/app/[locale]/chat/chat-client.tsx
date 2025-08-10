@@ -8,6 +8,7 @@ import ReactMarkdown from 'react-markdown'
 import { useRecaptcha } from '@/lib/recaptcha/useRecaptcha'
 import { postFeedbackApiFeedbackPost } from '@/lib/api/generated/sdk.gen'
 import type { FeedbackIn } from '@/lib/api/generated/types.gen'
+import { ChevronLeftIcon, SendIcon, ThumbsUpIcon, ThumbsDownIcon } from '@/components/icons'
 // Chat screen does not display a language selector; language follows route locale
 
 interface Message {
@@ -315,9 +316,7 @@ export function ChatClient({ locale }: { locale: string }) {
                 className="text-[#9BF7EB] hover:text-white transition-colors"
                 aria-label="Back to home"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                </svg>
+                <ChevronLeftIcon />
               </button>
               <div className="w-8 h-8 rounded-full bg-[#9BF7EB] flex items-center justify-center">
                 <span className="text-[#002e34] font-bold text-sm">R</span>
@@ -384,7 +383,7 @@ export function ChatClient({ locale }: { locale: string }) {
                                 inlineFeedback[index]?.selected === 'up' ? 'bg-[#9BF7EB] text-[#002e34]' : 'text-white/60 hover:bg-white/10'
                               }`}
                             >
-                              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M2 10h4v12H2zM22 11c0-.55-.45-1-1-1h-6.31l1.1-5.27.03-.32c0-.41-.17-.79-.44-1.06L14 2 7.59 8.41C7.22 8.78 7 9.3 7 9.83V20c0 .55.45 1 1 1h9c.4 0 .75-.24.91-.59l3-7c.06-.13.09-.27.09-.41v-2z"/></svg>
+                              <ThumbsUpIcon className="w-4 h-4" />
                             </button>
                             <button
                               type="button"
@@ -394,7 +393,7 @@ export function ChatClient({ locale }: { locale: string }) {
                                 inlineFeedback[index]?.selected === 'down' ? 'bg-[#F59E0B] text-[#0b140f]' : 'text-white/60 hover:bg-white/10'
                               }`}
                             >
-                              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M2 2h4v12H2zM22 9c0 .55-.45 1-1 1h-6.31l1.1 5.27.03.32c0 .41-.17.79-.44 1.06L14 20l-6.41-6.41C7.22 13.22 7 12.7 7 12.17V2c0-.55.45-1 1-1h9c.4 0 .75.24.91.59l3 7c.06.13.09.27.09.41v2z"/></svg>
+                              <ThumbsDownIcon className="w-4 h-4" />
                             </button>
                           </div>
 
@@ -500,9 +499,7 @@ export function ChatClient({ locale }: { locale: string }) {
               }`}
               data-btn-bg={isLoading || !input.trim() ? 'muted' : 'accent'}
             >
-              <svg className={`w-5 h-5 ${isLoading || !input.trim() ? 'text-white/30' : 'text-[#002e34]'}`} fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
-              </svg>
+              <SendIcon className={`w-5 h-5 ${isLoading || !input.trim() ? 'text-white/30' : 'text-[#002e34]'}`} />
             </button>
           </div>
         </div>

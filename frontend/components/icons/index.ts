@@ -1,0 +1,6 @@
+export { FeedbackIcon } from './FeedbackIcon'
+export { GlobeIcon } from './GlobeIcon'
+export { ThumbsUpIcon } from './ThumbsUpIcon'
+export { ThumbsDownIcon } from './ThumbsDownIcon'
+export { ChevronLeftIcon } from './ChevronLeftIcon'
+export { SendIcon } from './SendIcon'

@@ -30,7 +30,7 @@ jest.mock('next-intl/server', () => ({
         'sections.changes.description': 'We may update this privacy policy from time to time. We will notify users of any significant changes by posting the new policy on this page. The principle of privacy protection will not be affected by any changes.',
         'sections.contact.title': 'Contact Us',
         'sections.contact.description': 'If you have questions about this privacy policy, please contact us at:',
-        'sections.contact.email': 'hello@re-frame.social',
+        'sections.contact.email': 'privacy@re-frame.social',
         'footer.privacy': 'Privacy',
         'footer.support': 'Support',
         'footer.about': 'About'
