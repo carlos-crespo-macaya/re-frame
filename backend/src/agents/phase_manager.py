@@ -134,9 +134,9 @@ class PhaseManager:
             ),
             ConversationPhase.SUMMARY: (
                 "You are in the SUMMARY phase. "
-                "Summarize the key insights from the conversation, "
-                "highlight the reframed thoughts, and provide actionable next steps. "
-                "Encourage the user to practice their new thinking patterns."
+                "Summarize key insights and highlight the reframed thoughts. "
+                "Gently check in on feelings (SUDS 0-10) and confidence in the reframe. "
+                "Avoid recommending actions or tasks; keep responses concise and supportive."
             ),
         }
         return instructions.get(phase, "")

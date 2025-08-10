@@ -10,7 +10,6 @@ from google.adk.agents import LlmAgent
 from src.agents.phase_manager import (
     ConversationPhase,
     PhaseManager,
-    check_phase_transition,
 )
 from src.knowledge.cbt_context import BASE_CBT_CONTEXT
 from src.utils.language_utils import get_language_instruction
@@ -44,35 +43,7 @@ def extract_key_insights(
     }
 
 
-def generate_action_items(
-    balanced_thought: str, micro_action: str, distortions: list[str]
-) -> dict:
-    """
-    Generate personalized action items based on the session.
-
-    Args:
-        balanced_thought: The reframed thought
-        micro_action: The behavioral experiment planned
-        distortions: Identified cognitive distortions
-
-    Returns:
-        dict: Action items for continued practice
-    """
-    return {
-        "status": "success",
-        "action_categories": [
-            "Complete the micro-action experiment",
-            "Practice the balanced thought when similar situations arise",
-            "Notice when the identified distortions appear",
-            "Optional: Journal about the experiment results",
-        ],
-        "principles": [
-            "Keep actions simple and specific",
-            "Focus on observation, not perfection",
-            "Frame as experiments and learning",
-            "Maximum 3-4 action items",
-        ],
-    }
+# Action generation removed per no-action philosophy
 
 
 def format_session_summary(
@@ -81,9 +52,7 @@ def format_session_summary(
     emotions: dict,
     distortions: list[str],
     balanced_thought: str,
-    micro_action: str,
     insights: list[str],
-    action_items: list[str],
 ) -> dict:
     """
     Format the complete session summary.
@@ -94,9 +63,7 @@ def format_session_summary(
         emotions: Emotions and intensities
         distortions: Identified distortions
         balanced_thought: Reframed thought
-        micro_action: Planned experiment
         insights: Key insights
-        action_items: Future actions
 
     Returns:
         dict: Formatted summary structure
@@ -109,9 +76,12 @@ def format_session_summary(
             "emotions_identified": emotions,
             "thinking_patterns": distortions,
             "balanced_perspective": balanced_thought,
-            "experiment_planned": micro_action,
             "key_insights": insights,
-            "next_steps": action_items,
+            "how_it_feels_now": {
+                "truth_rating_0_10": None,
+                "anxiety_0_10": None,
+                "confidence_0_10": None,
+            },
         },
         "formatting_guidelines": [
             "Use clear section headers",
@@ -164,10 +134,6 @@ def create_summary_agent(
         + "- Truth rating for the balanced thought (0-10): [ask user]\n"
         + "- Anxiety now (0-10): [ask user]\n"
         + "- Confidence now (0-10): [ask user]\n\n"
-        + "### Your Action Plan\n"
-        + "- Today's experiment: [The micro-action]\n"
-        + "- Practice opportunities: [When to use balanced thought]\n"
-        + "- What to notice: [Patterns to observe]\n\n"
         + "### Key Takeaways\n"
         + "- [2-3 personalized insights]\n\n"
         + "## Guidelines:\n"
@@ -184,7 +150,7 @@ def create_summary_agent(
         + "## Closing Options:\n"
         + "1. Offer to clarify any part of the summary\n"
         + "2. Mention summary will be available for download (coming soon)\n"
-        + "3. Encourage trying the micro-action\n"
+        + "3. Offer a brief feelings check if helpful (no actions)\n"
         + "4. Thank them for engaging with the process\n\n"
         + "## Do NOT:\n"
         + "- Make the summary too long or detailed\n"
@@ -199,7 +165,6 @@ def create_summary_agent(
         name="SummaryAgent",
         instruction=enforce_ui_contract(summary_instruction, phase="summary"),
         tools=[
-            check_phase_transition,
             extract_key_insights,
             format_session_summary,
         ],

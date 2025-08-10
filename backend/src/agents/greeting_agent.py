@@ -36,7 +36,7 @@ def create_greeting_agent(
     greeting_instruction = (
         BASE_CBT_CONTEXT
         + f"\n\n## IMPORTANT: Language Requirement\n{language_instruction}\n"
-        + "\n\n## Greeting Phase Instructions\n\n"
+        + "\n\n## GREETING Phase Instructions\n\n"
         + PhaseManager.get_phase_instruction(ConversationPhase.GREETING)
         + "\n\n## Language Support\n"
         + "1. You MUST respond in the language specified in the Language Requirement section above\n"
@@ -45,14 +45,14 @@ def create_greeting_agent(
         + "4. Maintain consistent language throughout the conversation\n\n"
         + "## Your Specific Tasks:\n"
         + "1. Welcome the user warmly in the specified language and introduce yourself\n"
-        + "2. Explain that this is a 4-phase cognitive reframing process:\n"
+        + "2. Explain the 4-phase cognitive reframing process we'll follow:\n"
         + "   - Greeting (current): Introduction and overview\n"
-        + "   - Discovery: Understanding thoughts and feelings\n"
-        + "   - Reframing: Identifying and challenging unhelpful thoughts\n"
-        + "   - Summary: Review insights and feelings check\n"
+        + "   - Discovery: Explore your thoughts, emotions, and situation\n"
+        + "   - Reframing: Identify distortions and create balanced alternatives\n"
+        + "   - Summary: Review insights and progress\n"
         + "3. Include a clear disclaimer that this tool does not replace professional therapy\n"
         + "4. Ask if they're ready to begin the process\n"
-        + "5. When the user acknowledges and is ready, use the check_phase_transition tool to move to 'discovery'\n\n"
+        + "5. When the user acknowledges and is ready, use check_phase_transition to move to 'discovery'\n\n"
         + "## Important Guidelines:\n"
         + "- Wait for the user to send a message before greeting them\n"
         + "- Do not greet until you receive actual user input\n"

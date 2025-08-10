@@ -6,12 +6,22 @@ This module provides the bridge between the new orchestration system
 and the existing Google ADK agents.
 """
 
+import asyncio
+import json
+import logging
+import re
+from threading import RLock
 from typing import Any
 
 from google.generativeai import GenerativeModel
 
+from src.knowledge.cbt_context import BASE_CBT_CONTEXT
+
 from .orchestrator import handle_turn
 from .state import SessionState
+from .ui_contract import enforce_ui_contract
+
+logger = logging.getLogger(__name__)
 
 
 class ADKIntegration:
@@ -21,12 +31,14 @@ class ADKIntegration:
         """Initialize with optional Gemini model."""
         self.model = model or GenerativeModel("gemini-1.5-flash-latest")
         self.session_store: dict[str, SessionState] = {}
+        self._lock = RLock()
 
     def get_or_create_session(self, session_id: str) -> SessionState:
         """Get existing session or create new one."""
-        if session_id not in self.session_store:
-            self.session_store[session_id] = SessionState()
-        return self.session_store[session_id]
+        with self._lock:
+            if session_id not in self.session_store:
+                self.session_store[session_id] = SessionState()
+            return self.session_store[session_id]
 
     def adk_llm_call(self, *, system: str, kb: str, state: dict, user: str) -> str:
         """
@@ -44,8 +56,12 @@ class ADKIntegration:
         Returns:
             String containing <ui>...</ui> and <control>{...}</control> sections
         """
-        # Combine system prompt with knowledge base
-        full_prompt = system
+        # Include CBT context and enforce UI contract
+        sys_ctx = BASE_CBT_CONTEXT + "\n" + system
+        sys_ctx = enforce_ui_contract(sys_ctx, phase="adk")
+
+        # Combine with knowledge base
+        full_prompt = sys_ctx
         if kb:
             full_prompt += f"\n\nMICRO-KNOWLEDGE:\n{kb}"
 
@@ -61,20 +77,43 @@ class ADKIntegration:
                 },
             )
 
-            # Extract the text response
-            response_text = (
-                response.text if hasattr(response, "text") else str(response)
-            )
+            # Extract the text response more robustly
+            response_text = getattr(response, "text", None)
+            if not response_text:
+                # Fallbacks for SDK variants
+                candidates = getattr(response, "candidates", None)
+                if candidates:
+                    parts = [
+                        getattr(c, "content", None) or getattr(c, "text", "")
+                        for c in candidates
+                    ]
+                    response_text = " ".join([str(p) for p in parts if p]).strip()
+            if not response_text:
+                response_text = str(response).strip()
 
-            # Ensure response has proper format
-            if "<ui>" not in response_text or "<control>" not in response_text:
-                # Fallback formatting if agent doesn't produce expected format
-                response_text = f"""<ui>{response_text}</ui>
-<control>{{"next_phase":"{state.get('phase', 'warmup')}","missing_fields":[],"suggest_questions":[],"crisis_detected":false}}</control>"""
+            # Ensure response has proper format with stricter validation
+            ui_match = re.search(r"<ui>(.*?)</ui>", response_text, flags=re.S | re.I)
+            ctrl_match = re.search(
+                r"<control>(.*?)</control>", response_text, flags=re.S | re.I
+            )
+            valid = False
+            if ui_match and ctrl_match:
+                try:
+                    json.loads(ctrl_match.group(1).strip())
+                    valid = True
+                except Exception:
+                    valid = False
+            if not valid:
+                normalized_phase = str(state.get("phase", "warmup")).lower()
+                response_text = (
+                    f"<ui>{(ui_match.group(1).strip() if ui_match else response_text).strip()}</ui>\n"
+                    f'<control>{{"next_phase":"{normalized_phase}","missing_fields":[],"suggest_questions":[],"crisis_detected":false}}</control>'
+                )
 
             return response_text
 
         except Exception:
+            logger.exception("adk_llm_call failed")
             # Error fallback
             return f"""<ui>I'm here to listen and help you explore your thoughts. Could you tell me what's on your mind?</ui>
 <control>{{"next_phase":"{state.get('phase', 'warmup')}","missing_fields":[],"suggest_questions":[],"crisis_detected":false}}</control>"""
@@ -96,8 +135,9 @@ class ADKIntegration:
         # Process the turn using the new orchestrator
         result = handle_turn(state, user_text, adk_llm_call=self.adk_llm_call)
 
-        # Update stored session state
-        self.session_store[session_id] = SessionState(**result["state"])
+        # Update stored session state with thread safety
+        with self._lock:
+            self.session_store[session_id] = SessionState(**result["state"])
 
         return result
 
@@ -166,7 +206,10 @@ def integrate_with_fastapi():
     @app.post("/chat", response_model=ChatResponse)
     async def chat(request: ChatRequest):
         try:
-            result = integration.process_turn(request.session_id, request.message)
+            # Run blocking I/O in thread to avoid blocking event loop
+            result = await asyncio.to_thread(
+                integration.process_turn, request.session_id, request.message
+            )
 
             return ChatResponse(
                 phase=result["phase"],

@@ -33,12 +33,13 @@ MICRO_KNOWLEDGE = {
 
 
 def compose_system_prompt(state: SessionState) -> str:
+    allowed = "warmup|clarify|reframe|summary|followup|closed"
     return f"""{PERSONA}
-PHASE: {state.phase}
+PHASE: {state.phase.value}
 GUIDANCE: {PHASE_GUIDANCE[state.phase.value]}
-Strict output contract:
+Strict output contract (schema, fill actual values):
 <ui>...</ui>
-<control>{{"next_phase":"{state.phase.value}","missing_fields":[],"suggest_questions":[],"crisis_detected":false}}</control>
+<control>{{"next_phase":"<{allowed}>","missing_fields":[...],"suggest_questions":[...],"crisis_detected":false}}</control>
 """
 
 

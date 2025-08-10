@@ -36,13 +36,13 @@ def extract_thought_details(user_input: str) -> dict:
     return {
         "status": "success",
         "message": "Thought details captured. Continue exploring with the user.",
-        "components_to_explore": [
-            "situation",
-            "automatic_thoughts",
-            "emotions",
-            "physical_sensations",
-            "behaviors",
-        ],
+        "components_to_explore": {
+            "situation": "What happened? When? Where? Who was involved?",
+            "automatic_thoughts": "What went through your mind?",
+            "emotions": "What emotions did you feel?",
+            "physical_sensations": "What did you notice in your body?",
+            "behaviors": "What did you do or want to do?",
+        },
         "next_steps": [
             "Ask for more details about unclear components",
             "Validate the user's experience",
@@ -128,6 +128,6 @@ def create_discovery_agent(
     return LlmAgent(
         model=model,
         name="DiscoveryAgent",
-        instruction=enforce_ui_contract(discovery_instruction, phase="discovery"),
+        instruction=enforce_ui_contract(discovery_instruction, phase="clarify"),
         tools=[check_phase_transition, extract_thought_details, identify_emotions],
     )

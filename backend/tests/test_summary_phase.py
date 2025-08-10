@@ -10,7 +10,6 @@ from src.agents.summary_agent import (
     create_summary_agent,
     extract_key_insights,
     format_session_summary,
-    generate_action_items,
 )
 
 
@@ -30,18 +29,7 @@ class TestSummaryTools:
         assert "Thinking patterns noticed" in result["insight_categories"]
         assert "guidance" in result
 
-    def test_generate_action_items(self):
-        """Test action item generation based on session."""
-        result = generate_action_items(
-            balanced_thought="I'm prepared and one presentation doesn't define me",
-            micro_action="Practice opening slides for 10 minutes",
-            distortions=["FORTUNE", "CATAST"],
-        )
-
-        assert result["status"] == "success"
-        assert len(result["action_categories"]) >= 3
-        assert "Complete the micro-action experiment" in result["action_categories"]
-        assert len(result["principles"]) >= 3
+    # Action item test removed per no-action philosophy
 
     def test_format_session_summary(self):
         """Test formatting of complete session summary."""
@@ -51,14 +39,9 @@ class TestSummaryTools:
             emotions={"anxiety": 8, "fear": 7},
             distortions=["Fortune Telling", "Catastrophizing"],
             balanced_thought="I'm prepared and one presentation doesn't define me",
-            micro_action="Practice opening slides for 10 minutes",
             insights=[
                 "You tend to predict negative outcomes",
                 "Your anxiety peaks with performance situations",
-            ],
-            action_items=[
-                "Complete the 10-minute practice session",
-                "Notice fortune telling thoughts this week",
             ],
         )
 
@@ -81,9 +64,8 @@ class TestSummaryAgent:
 
         assert agent is not None
         assert agent.name == "SummaryAgent"
-        assert len(agent.tools) == 3
+        assert len(agent.tools) == 2
         tool_names = [tool.__name__ for tool in agent.tools]
-        assert "check_phase_transition" in tool_names
         assert "extract_key_insights" in tool_names
         assert "format_session_summary" in tool_names
 
@@ -96,7 +78,7 @@ class TestSummaryAgent:
         assert "summary specialist" in instruction
         assert "What We Explored" in instruction
         assert "What We Discovered" in instruction
-        assert "Your Action Plan" in instruction
+        assert "How It Feels Now" in instruction
         assert "Key Takeaways" in instruction
 
     def test_summary_agent_includes_base_context(self):
@@ -151,9 +133,7 @@ class TestSummaryPhaseIntegration:
             emotions={"stress": 8},
             distortions=["All-or-Nothing Thinking"],
             balanced_thought="I can handle this one step at a time",
-            micro_action="List three small tasks to complete today",
             insights=["You respond well to breaking things down"],
-            action_items=["Complete the three tasks"],
         )
 
         assert result["status"] == "success"
@@ -172,9 +152,7 @@ class TestSummaryPhaseIntegration:
             emotions={"worry": 9},
             distortions=["Mind Reading", "Mental Filter"],
             balanced_thought=user_balanced,
-            micro_action="Ask boss for feedback on recent work",
             insights=["You assume others' thoughts", "You focus on negatives"],
-            action_items=["Schedule feedback meeting", "Notice mind reading"],
         )
 
         sections = result["summary_sections"]

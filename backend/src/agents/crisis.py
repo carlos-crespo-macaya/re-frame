@@ -16,8 +16,20 @@ DANGER_TERMS = [
 
 
 def crisis_scan(text: str) -> bool:
-    t = (text or "").lower()
-    return any(term in t for term in DANGER_TERMS)
+    """
+    Scan text for crisis/danger keywords.
+
+    Args:
+        text: The text to scan for crisis indicators
+
+    Returns:
+        True if crisis keywords are detected, False otherwise
+    """
+    if not text:
+        return False
+
+    lower_text = text.lower()
+    return any(term in lower_text for term in DANGER_TERMS)
 
 
 def safety_message(language: str | None = "en") -> str:

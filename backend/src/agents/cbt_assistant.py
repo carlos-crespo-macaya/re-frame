@@ -50,7 +50,7 @@ def create_cbt_assistant(
         + "You have access to session state that persists between turns. "
         + "The session state includes:\n"
         + "- user_name: The user's name if they've shared it\n"
-        + "- phase: Current conversation phase (greeting/discovery/reframing/summary)\n"
+        + "- phase: Current conversation phase (warmup/clarify/reframe/summary/followup/closed)\n"
         + "- thoughts_recorded: List of thoughts the user has shared\n"
         + "- emotions_captured: List of emotions the user has expressed\n"
         + "- distortions_detected: List of cognitive distortion codes identified\n"
@@ -59,12 +59,12 @@ def create_cbt_assistant(
         + "If the user shares their name, remember to use it in subsequent interactions."
         + "\n\n## Conversation Phase Management\n"
         + "This conversation follows a structured flow through phases:\n"
-        + "1. GREETING - Welcome and introduction\n"
-        + "2. DISCOVERY - Understanding thoughts and feelings\n"
-        + "3. REFRAMING - Identifying distortions and creating alternatives\n"
-        + "4. SUMMARY - Recap and feelings check\n\n"
-        + "You must follow the phases in order and cannot skip ahead. "
-        + "Use the phase management tools to check and transition between phases."
+        + "1. greeting - Welcome and orientation\n"
+        + "2. discovery - Explore thoughts and emotions\n"
+        + "3. reframing - Identify distortions and create balanced alternatives\n"
+        + "4. summary - Recap insights and progress\n\n"
+        + "Use the phase management tools (check_phase_transition, get_current_phase_info) "
+        + "to follow the phases in order (greeting/discovery/reframing/summary)."
         + "\n\n## IMPORTANT: Reactive Behavior\n"
         + "Wait for the user to send their first message before greeting them. "
         + "When they do, provide a warm welcome message in response. "
@@ -75,13 +75,13 @@ def create_cbt_assistant(
         "creating_cbt_assistant",
         model=model,
         language_code=language_code,
-        tools=["check_phase_transition", "get_current_phase_info"],
+        tools=[check_phase_transition, get_current_phase_info],
     )
 
     agent = LlmAgent(
         model=model,
         name="CBTAssistant",
-        instruction=enforce_ui_contract(enhanced_instruction, phase="auto"),
+        instruction=enforce_ui_contract(enhanced_instruction, phase=None),
         tools=[check_phase_transition, get_current_phase_info],
     )
 
