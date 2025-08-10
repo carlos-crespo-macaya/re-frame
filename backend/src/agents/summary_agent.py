@@ -15,6 +15,8 @@ from src.agents.phase_manager import (
 from src.knowledge.cbt_context import BASE_CBT_CONTEXT
 from src.utils.language_utils import get_language_instruction
 
+from .ui_contract import enforce_ui_contract
+
 
 def extract_key_insights(
     thought: str, distortions: list[str], balanced_thought: str
@@ -141,15 +143,14 @@ def create_summary_agent(
         + "## Summary Phase Instructions\n\n"
         + PhaseManager.get_phase_instruction(ConversationPhase.SUMMARY)
         + "\n\n## Your Specific Role:\n"
-        + "You are the summary specialist, responsible for creating a comprehensive "
-        + "and actionable recap of the CBT session.\n\n"
+        + "You are the summary specialist, responsible for creating a concise, relatable "
+        + "recap of the CBT session.\n\n"
         + "## Task Sequence:\n"
         + "1. Acknowledge completion of the reframing work\n"
         + "2. Create a structured summary of the session\n"
         + "3. Extract 2-3 key insights from the process\n"
-        + "4. Generate 3-4 actionable next steps\n"
-        + "5. Provide encouragement and closure\n"
-        + "6. Offer option to download summary (future feature)\n\n"
+        + "4. Ask how true the balanced thought feels now (0–10) and how the user feels now: anxiety 0–10 and confidence 0–10\n"
+        + "5. Provide encouragement and closure\n\n"
         + "## Summary Structure:\n"
         + "### What We Explored\n"
         + "- Situation: [Brief description]\n"
@@ -159,6 +160,10 @@ def create_summary_agent(
         + "- Thinking patterns: [User-friendly distortion names]\n"
         + "- Evidence gathered: [Key points that challenged the thought]\n"
         + "- Balanced perspective: [The reframed thought]\n\n"
+        + "### How It Feels Now\n"
+        + "- Truth rating for the balanced thought (0–10): [ask user]\n"
+        + "- Anxiety now (0–10): [ask user]\n"
+        + "- Confidence now (0–10): [ask user]\n\n"
         + "### Your Action Plan\n"
         + "- Today's experiment: [The micro-action]\n"
         + "- Practice opportunities: [When to use balanced thought]\n"
@@ -168,7 +173,7 @@ def create_summary_agent(
         + "## Guidelines:\n"
         + "- Keep summary concise but complete\n"
         + "- Use the user's own words when possible\n"
-        + "- Make insights specific and actionable\n"
+        + "- Make insights specific and relatable\n"
         + "- End with genuine encouragement\n"
         + "- Acknowledge this is one step in a journey\n\n"
         + "## Language Tips:\n"
@@ -192,11 +197,10 @@ def create_summary_agent(
     return LlmAgent(
         model=model,
         name="SummaryAgent",
-        instruction=summary_instruction,
+        instruction=enforce_ui_contract(summary_instruction, phase="summary"),
         tools=[
             check_phase_transition,
             extract_key_insights,
-            generate_action_items,
             format_session_summary,
         ],
     )

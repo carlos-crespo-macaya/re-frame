@@ -21,6 +21,8 @@ from src.knowledge.cbt_context import (
 )
 from src.utils.language_utils import get_language_instruction
 
+from .ui_contract import enforce_ui_contract
+
 
 def gather_evidence_for_thought(thought: str, evidence_type: str) -> dict:
     """
@@ -201,11 +203,10 @@ def create_reframing_agent(
     return LlmAgent(
         model=model,
         name="ReframingAgent",
-        instruction=reframing_instruction,
+        instruction=enforce_ui_contract(reframing_instruction, phase="reframing"),
         tools=[
             check_phase_transition,
             gather_evidence_for_thought,
             create_balanced_thought,
-            design_micro_action,
         ],
     )

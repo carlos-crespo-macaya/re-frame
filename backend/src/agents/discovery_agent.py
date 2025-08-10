@@ -15,6 +15,8 @@ from src.agents.phase_manager import (
 from src.knowledge.cbt_context import BASE_CBT_CONTEXT, CBT_MODEL
 from src.utils.language_utils import get_language_instruction
 
+from .ui_contract import enforce_ui_contract
+
 
 def extract_thought_details(user_input: str) -> dict:
     """
@@ -126,6 +128,6 @@ def create_discovery_agent(
     return LlmAgent(
         model=model,
         name="DiscoveryAgent",
-        instruction=discovery_instruction,
+        instruction=enforce_ui_contract(discovery_instruction, phase="discovery"),
         tools=[check_phase_transition, extract_thought_details, identify_emotions],
     )

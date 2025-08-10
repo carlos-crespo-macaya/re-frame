@@ -12,6 +12,8 @@ from google.adk.agents import LlmAgent
 from src.knowledge.cbt_context import BASE_CBT_CONTEXT
 from src.utils.logging import get_logger
 
+from .ui_contract import enforce_ui_contract
+
 logger = get_logger(__name__)
 
 
@@ -211,7 +213,7 @@ def get_current_phase_info() -> dict:
             "next_phases": ["summary"],
         },
         "summary": {
-            "description": "Recap and next steps",
+            "description": "recap and feelings check",
             "next_phases": [],
         },
     }
@@ -249,7 +251,7 @@ def create_phase_aware_agent(
         + "1. GREETING - Welcome and introduction\n"
         + "2. DISCOVERY - Understanding thoughts and feelings\n"
         + "3. REFRAMING - Identifying distortions and creating alternatives\n"
-        + "4. SUMMARY - Recap and next steps\n\n"
+        + "4. SUMMARY - Recap and feelings check\n\n"
         + "You must follow the phases in order and cannot skip ahead. "
         + "Use the phase management tools to check and transition between phases."
         + phase_instruction
@@ -266,6 +268,6 @@ def create_phase_aware_agent(
     return LlmAgent(
         model=model,
         name="PhaseAwareCBTAssistant",
-        instruction=instruction,
+        instruction=enforce_ui_contract(instruction, phase="auto"),
         tools=[check_phase_transition, get_current_phase_info],
     )

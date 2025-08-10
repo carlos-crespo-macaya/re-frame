@@ -15,6 +15,8 @@ from src.agents.phase_manager import (
 from src.knowledge.cbt_context import BASE_CBT_CONTEXT
 from src.utils.language_utils import get_language_instruction
 
+from .ui_contract import enforce_ui_contract
+
 
 def create_greeting_agent(
     model: str = "gemini-2.0-flash", language_code: str | None = None
@@ -47,7 +49,7 @@ def create_greeting_agent(
         + "   - Greeting (current): Introduction and overview\n"
         + "   - Discovery: Understanding thoughts and feelings\n"
         + "   - Reframing: Identifying and challenging unhelpful thoughts\n"
-        + "   - Summary: Review insights and next steps\n"
+        + "   - Summary: Review insights and feelings check\n"
         + "3. Include a clear disclaimer that this tool does not replace professional therapy\n"
         + "4. Ask if they're ready to begin the process\n"
         + "5. When the user acknowledges and is ready, use the check_phase_transition tool to move to 'discovery'\n\n"
@@ -64,6 +66,6 @@ def create_greeting_agent(
     return LlmAgent(
         model=model,
         name="GreetingAgent",
-        instruction=greeting_instruction,
+        instruction=enforce_ui_contract(greeting_instruction, phase="greeting"),
         tools=[check_phase_transition],
     )
