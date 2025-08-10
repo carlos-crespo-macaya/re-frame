@@ -96,13 +96,10 @@ async function handleMiddleware(request: NextRequest) {
     return NextResponse.redirect(newUrl)
   }
 
-  // reCAPTCHA gate checks (skip when disabled)
-  if (!DISABLED) {
+  // Normalize cross-locale redirect on gate page itself to avoid language flips
+  {
     const url = request.nextUrl
     const locale = pathname.split('/')[1] || 'en'
-    const search = url.searchParams.toString()
-
-    // Normalize cross-locale redirect on gate page itself to avoid language flips
     if (new RegExp(`^\/(${LOCALE_GROUP})\/gate$`).test(pathname)) {
       const r = url.searchParams.get('redirect')
       if (r && r.startsWith('/')) {
@@ -121,6 +118,13 @@ async function handleMiddleware(request: NextRequest) {
         }
       }
     }
+  }
+
+  // reCAPTCHA gate checks (skip when disabled)
+  if (!DISABLED) {
+    const url = request.nextUrl
+    const locale = pathname.split('/')[1] || 'en'
+    const search = url.searchParams.toString()
 
     // Gate /chat
     if (new RegExp(`^\/(${LOCALE_GROUP})\/chat(\/|$)`).test(pathname)) {

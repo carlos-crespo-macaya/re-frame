@@ -74,8 +74,17 @@ export default function GatePage() {
       router.replace(redirect)
       // Fallback: ensure navigation even if SPA router stalls (rare)
       setTimeout(() => {
-        if (typeof window !== 'undefined' && window.location.pathname !== redirect) {
-          try { window.location.assign(redirect) } catch { /* noop */ }
+        if (typeof window !== 'undefined') {
+          try {
+            const dest = new URL(redirect, window.location.origin)
+            const current = window.location.pathname + window.location.search
+            const target = dest.pathname + dest.search
+            if (current !== target) {
+              window.location.assign(dest.toString())
+            }
+          } catch {
+            // noop
+          }
         }
       }, 800)
     } catch {
