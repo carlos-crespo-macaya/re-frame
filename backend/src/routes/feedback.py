@@ -23,7 +23,10 @@ def get_db_client() -> firestore.Client | None:
         return _db_client
     try:
         project = os.getenv("GOOGLE_CLOUD_PROJECT") or None
-        _db_client = firestore.Client(project=project)
+        database_id = (
+            os.getenv("FIRESTORE_DATABASE_ID") or os.getenv("FIRESTORE_DB") or "reframe"
+        )
+        _db_client = firestore.Client(project=project, database=database_id)
     except Exception as exc:
         logger.warning("firestore_client_unavailable", error=str(exc))
         _db_client = None
