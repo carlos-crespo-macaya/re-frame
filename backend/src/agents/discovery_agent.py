@@ -7,13 +7,10 @@ helping users explore their thoughts and emotions.
 
 from google.adk.agents import LlmAgent
 
-from src.agents.phase_manager import (
-    ConversationPhase,
-    PhaseManager,
-    check_phase_transition,
-)
 from src.knowledge.cbt_context import BASE_CBT_CONTEXT, CBT_MODEL
 from src.utils.language_utils import get_language_instruction
+
+from .ui_contract import enforce_ui_contract
 
 
 def extract_thought_details(user_input: str) -> dict:
@@ -34,13 +31,13 @@ def extract_thought_details(user_input: str) -> dict:
     return {
         "status": "success",
         "message": "Thought details captured. Continue exploring with the user.",
-        "components_to_explore": [
-            "situation",
-            "automatic_thoughts",
-            "emotions",
-            "physical_sensations",
-            "behaviors",
-        ],
+        "components_to_explore": {
+            "situation": "What happened? When? Where? Who was involved?",
+            "automatic_thoughts": "What went through your mind?",
+            "emotions": "What emotions did you feel?",
+            "physical_sensations": "What did you notice in your body?",
+            "behaviors": "What did you do or want to do?",
+        },
         "next_steps": [
             "Ask for more details about unclear components",
             "Validate the user's experience",
@@ -94,8 +91,8 @@ def create_discovery_agent(
     discovery_instruction = (
         BASE_CBT_CONTEXT
         + f"\n\n## IMPORTANT: Language Requirement\n{language_instruction}\n"
-        + "## Discovery Phase Instructions\n\n"
-        + PhaseManager.get_phase_instruction(ConversationPhase.DISCOVERY)
+        + "## CLARIFY Phase Instructions\n\n"
+        + "You are in the CLARIFY phase. Help the user explore their situation, thoughts, emotions, and intensity."
         + "\n\n## Your Specific Tasks:\n"
         + "1. Help the user explore their thoughts and feelings about a specific situation\n"
         + "2. Use the CBT model to structure your exploration:\n"
@@ -107,7 +104,7 @@ def create_discovery_agent(
         + "4. Validate their experience without judgment\n"
         + "5. Use the extract_thought_details tool to structure the information\n"
         + "6. Use the identify_emotions tool to help categorize emotions\n"
-        + "7. Once you have a clear picture of the situation, thoughts, and emotions, use check_phase_transition to move to 'reframing'\n\n"
+        + "7. Once you have a clear picture of the situation, thoughts, and emotions, the orchestrator will handle the transition\n\n"
         + "## Important Guidelines:\n"
         + "- Be curious and non-judgmental\n"
         + "- Use empathetic reflections\n"
@@ -126,6 +123,6 @@ def create_discovery_agent(
     return LlmAgent(
         model=model,
         name="DiscoveryAgent",
-        instruction=discovery_instruction,
-        tools=[check_phase_transition, extract_thought_details, identify_emotions],
+        instruction=enforce_ui_contract(discovery_instruction, phase="clarify"),
+        tools=[extract_thought_details, identify_emotions],
     )

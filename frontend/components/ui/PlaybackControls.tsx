@@ -113,9 +113,6 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
               value={progress}
               onChange={handleSeek}
               aria-label="Seek"
-              aria-valuemin={0}
-              aria-valuemax={duration}
-              aria-valuenow={currentTime}
               aria-valuetext={`${formatDuration(currentTime)} of ${formatDuration(duration)}`}
             />
             <div 

@@ -7,11 +7,6 @@ cognitive restructuring to create balanced alternative thoughts.
 
 from google.adk.agents import LlmAgent
 
-from src.agents.phase_manager import (
-    ConversationPhase,
-    PhaseManager,
-    check_phase_transition,
-)
 from src.knowledge.cbt_context import (
     BALANCED_THOUGHT_CRITERIA,
     BASE_CBT_CONTEXT,
@@ -20,6 +15,8 @@ from src.knowledge.cbt_context import (
     MICRO_ACTION_PRINCIPLES,
 )
 from src.utils.language_utils import get_language_instruction
+
+from .ui_contract import enforce_ui_contract
 
 
 def gather_evidence_for_thought(thought: str, evidence_type: str) -> dict:
@@ -148,8 +145,8 @@ def create_reframing_agent(
     reframing_instruction = (
         BASE_CBT_CONTEXT
         + f"\n\n## IMPORTANT: Language Requirement\n{language_instruction}\n"
-        + "## Reframing Phase Instructions\n\n"
-        + PhaseManager.get_phase_instruction(ConversationPhase.REFRAMING)
+        + "## REFRAME Phase Instructions\n\n"
+        + "You are in the REFRAME phase. Help identify distortions and offer a balanced alternative."
         + "\n\n## Your Specific Role:\n"
         + "You are the reframing specialist, focused on performing a single cognitive "
         + "restructuring intervention on the user's automatic thought.\n\n"
@@ -158,8 +155,7 @@ def create_reframing_agent(
         + "2. Share 1-2 main distortions with the user in simple terms\n"
         + "3. Guide evidence gathering using Socratic questioning\n"
         + "4. Help create a balanced alternative thought\n"
-        + "5. Propose a micro-action to test the thought\n"
-        + "6. Transition to summary phase\n\n"
+        + "5. The orchestrator will handle the transition to summary\n\n"
         + "## Key Guidelines:\n"
         + "- Use collaborative language ('Let's explore...', 'What do you think...')\n"
         + "- Avoid CBT jargon when talking to users\n"
@@ -177,12 +173,6 @@ def create_reframing_agent(
         + "- Believable and moderate\n"
         + "- 30-40 words maximum\n"
         + "- User should feel it's realistic\n\n"
-        + "## Micro-Action Design:\n"
-        + "- 10 minutes or less\n"
-        + "- Targets the main distortion\n"
-        + "- Involves doing, not just thinking\n"
-        + "- Safe and achievable today\n"
-        + "- Framed as an experiment\n"
         + distortion_quick_ref
         + "\n\n## Internal Process:\n"
         + "When you receive a thought to work with:\n"
@@ -201,11 +191,9 @@ def create_reframing_agent(
     return LlmAgent(
         model=model,
         name="ReframingAgent",
-        instruction=reframing_instruction,
+        instruction=enforce_ui_contract(reframing_instruction, phase="reframe"),
         tools=[
-            check_phase_transition,
             gather_evidence_for_thought,
             create_balanced_thought,
-            design_micro_action,
         ],
     )

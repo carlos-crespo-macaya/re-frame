@@ -17,11 +17,9 @@ class TestPhaseIntegration:
         """Test that CBT assistant has phase management tools."""
         agent = create_cbt_assistant()
 
-        # Check tools are included
-        assert len(agent.tools) == 2
-        tool_names = [tool.__name__ for tool in agent.tools]
-        assert "check_phase_transition" in tool_names
-        assert "get_current_phase_info" in tool_names
+        # Check that agent has no phase management tools (orchestrator handles this)
+        # The cbt_assistant is now a simple conversational agent
+        assert len(agent.tools) == 0
 
     @pytest.mark.asyncio
     async def test_cbt_assistant_phase_awareness_in_instruction(self):
@@ -29,10 +27,14 @@ class TestPhaseIntegration:
         agent = create_cbt_assistant()
         instruction = agent.instruction
 
-        # Should have phase management section
-        assert "Conversation Phase Management" in instruction
-        assert "greeting/discovery/reframing/summary" in instruction
-        assert "follow the phases in order" in instruction
+        # Should have CBT context but phase management is handled by orchestrator
+        assert "cognitive reframing assistant" in instruction.lower()
+        # New phase names should be mentioned
+        assert (
+            "warmup" in instruction.lower()
+            or "clarify" in instruction.lower()
+            or "reframe" in instruction.lower()
+        )
 
     @pytest.mark.asyncio
     async def test_phase_flow_conversation(self):
@@ -54,17 +56,17 @@ class TestPhaseIntegration:
         test_exchanges = [
             {
                 "user": "Hello",
-                "expected_phase": "greeting",
+                "expected_phase": "warmup",
                 "response": "Hello! I'm here to help with cognitive reframing. Ready to begin?",
             },
             {
                 "user": "Yes, I'm ready",
-                "expected_phase": "discovery",
+                "expected_phase": "clarify",
                 "response": "Great! Let's explore what's on your mind. What thoughts are troubling you?",
             },
             {
                 "user": "I think everyone hates me",
-                "expected_phase": "reframing",
+                "expected_phase": "reframe",
                 "response": "That sounds like mind reading. Let's examine this thought more closely.",
             },
             {
@@ -106,31 +108,32 @@ class TestPhaseIntegration:
                 assert response_text == exchange["response"]
 
     @pytest.mark.asyncio
-    async def test_phase_tools_callable(self):
-        """Test that phase management tools can be called."""
-        from src.agents.phase_manager import (
-            check_phase_transition,
-            get_current_phase_info,
-        )
+    async def test_phase_order_integrity(self):
+        """Test that phase order is properly defined."""
+        from src.agents.state import PHASE_ORDER, Phase
 
-        # Test check_phase_transition
-        result = check_phase_transition("discovery")
-        assert isinstance(result, dict)
-        assert result["status"] == "success"
+        # Test phase order integrity
+        assert len(PHASE_ORDER) >= 4
+        assert Phase.WARMUP in PHASE_ORDER
+        assert Phase.CLARIFY in PHASE_ORDER
+        assert Phase.REFRAME in PHASE_ORDER
+        assert Phase.SUMMARY in PHASE_ORDER
 
-        # Test get_current_phase_info
-        info = get_current_phase_info()
-        assert isinstance(info, dict)
-        assert "phase_flow" in info
-        assert info["status"] == "success"
+        # Test phases are in correct order
+        warmup_index = PHASE_ORDER.index(Phase.WARMUP)
+        clarify_index = PHASE_ORDER.index(Phase.CLARIFY)
+        reframe_index = PHASE_ORDER.index(Phase.REFRAME)
+        summary_index = PHASE_ORDER.index(Phase.SUMMARY)
+
+        assert clarify_index == warmup_index + 1
+        assert reframe_index == clarify_index + 1
+        assert summary_index == reframe_index + 1
 
     def test_phase_instructions_in_enhanced_context(self):
         """Test that phase instructions are properly integrated."""
         agent = create_cbt_assistant()
         instruction = agent.instruction
 
-        # Should have both session state and phase management sections
-        assert "Session State Management" in instruction
-        assert "phase: Current conversation phase" in instruction
-        assert "Conversation Phase Management" in instruction
-        assert "Use the phase management tools" in instruction
+        # Should have CBT context and basic instruction
+        assert "cognitive reframing" in instruction.lower()
+        # Phase management is handled by orchestrator, not in individual agent instructions

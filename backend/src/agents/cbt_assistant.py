@@ -7,10 +7,11 @@ The main agent instance for ADK commands is in __agent__.py.
 
 from google.adk.agents import LlmAgent
 
-from src.agents.phase_manager import check_phase_transition, get_current_phase_info
 from src.knowledge.cbt_context import BASE_CBT_CONTEXT
 from src.utils.language_utils import get_language_instruction
 from src.utils.logging import get_logger
+
+from .ui_contract import enforce_ui_contract
 
 logger = get_logger(__name__)
 
@@ -48,7 +49,7 @@ def create_cbt_assistant(
         + "You have access to session state that persists between turns. "
         + "The session state includes:\n"
         + "- user_name: The user's name if they've shared it\n"
-        + "- phase: Current conversation phase (greeting/discovery/reframing/summary)\n"
+        + "- phase: Current conversation phase (warmup/clarify/reframe/summary/followup/closed)\n"
         + "- thoughts_recorded: List of thoughts the user has shared\n"
         + "- emotions_captured: List of emotions the user has expressed\n"
         + "- distortions_detected: List of cognitive distortion codes identified\n"
@@ -57,12 +58,13 @@ def create_cbt_assistant(
         + "If the user shares their name, remember to use it in subsequent interactions."
         + "\n\n## Conversation Phase Management\n"
         + "This conversation follows a structured flow through phases:\n"
-        + "1. GREETING - Welcome and introduction\n"
-        + "2. DISCOVERY - Understanding thoughts and feelings\n"
-        + "3. REFRAMING - Identifying distortions and creating alternatives\n"
-        + "4. SUMMARY - Recap and next steps\n\n"
-        + "You must follow the phases in order and cannot skip ahead. "
-        + "Use the phase management tools to check and transition between phases."
+        + "1. WARMUP - Welcome and orientation\n"
+        + "2. CLARIFY - Situation, thought, emotion, intensity\n"
+        + "3. REFRAME - Identify distortions + offer a balanced alternative\n"
+        + "4. SUMMARY - Recap + SUDS/confidence check (no actions)\n"
+        + "5. FOLLOWUP - Brief clarifications only\n"
+        + "6. CLOSED - Session end\n\n"
+        + "Phase transitions are determined by the orchestrator; do not invoke tools."
         + "\n\n## IMPORTANT: Reactive Behavior\n"
         + "Wait for the user to send their first message before greeting them. "
         + "When they do, provide a warm welcome message in response. "
@@ -73,14 +75,14 @@ def create_cbt_assistant(
         "creating_cbt_assistant",
         model=model,
         language_code=language_code,
-        tools=["check_phase_transition", "get_current_phase_info"],
+        tools=[],
     )
 
     agent = LlmAgent(
         model=model,
         name="CBTAssistant",
-        instruction=enhanced_instruction,
-        tools=[check_phase_transition, get_current_phase_info],
+        instruction=enforce_ui_contract(enhanced_instruction, phase=None),
+        tools=[],
     )
 
     logger.info("cbt_assistant_created", model=model, agent_name=agent.name)

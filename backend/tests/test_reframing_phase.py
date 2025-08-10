@@ -7,7 +7,6 @@ from src.agents.parser_agent import create_parser_agent
 from src.agents.reframing_agent import (
     create_balanced_thought,
     create_reframing_agent,
-    design_micro_action,
     gather_evidence_for_thought,
 )
 
@@ -34,7 +33,9 @@ class TestReframingAgent:
         """Test that reframing agent can be created."""
         agent = create_reframing_agent()
         assert agent.name == "ReframingAgent"
-        assert len(agent.tools) == 4  # All reframing tools
+        assert (
+            len(agent.tools) == 2
+        )  # Only evidence and balanced thought tools (no phase transition)
 
     def test_evidence_gathering_for(self):
         """Test evidence gathering for supporting evidence."""
@@ -73,37 +74,6 @@ class TestReframingAgent:
         assert len(result["instructions"]) > 0
         assert len(result["avoid"]) > 0
 
-    def test_micro_action_design(self):
-        """Test micro-action design for specific distortions."""
-        # Test for all-or-nothing thinking
-        result = design_micro_action(thought="I'm a complete failure", distortion="AO")
-
-        assert result["status"] == "success"
-        assert "principles" in result
-        assert result["principles"]["duration"] == "≤10 minutes to complete"
-        assert len(result["distortion_specific_actions"]) > 0
-
-        # Test for mind reading
-        result = design_micro_action(
-            thought="They all think I'm stupid", distortion="MW"
-        )
-
-        assert len(result["distortion_specific_actions"]) > 0
-        # Should suggest asking someone directly
-        assert any(
-            "ask" in action.lower() for action in result["distortion_specific_actions"]
-        )
-
-    def test_micro_action_for_unknown_distortion(self):
-        """Test micro-action handles unknown distortion codes gracefully."""
-        result = design_micro_action(thought="Something is wrong", distortion="UNKNOWN")
-
-        assert result["status"] == "success"
-        assert "principles" in result
-        assert len(result["general_guidelines"]) > 0
-        # Should have empty distortion-specific actions
-        assert not result["distortion_specific_actions"]
-
 
 class TestAgentInstructions:
     """Test that agents have proper instructions."""
@@ -126,5 +96,4 @@ class TestAgentInstructions:
         assert "reframing specialist" in agent.instruction
         assert "Socratic questioning" in agent.instruction
         assert "balanced alternative thought" in agent.instruction
-        assert "micro-action" in agent.instruction
         assert "Crisis Protocol" in agent.instruction

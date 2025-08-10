@@ -1,91 +1,185 @@
-"""
-Orchestrator for managing conversation phases with Sequential Agents.
+# SPDX-License-Identifier: MIT
+import json
+import re
+from collections.abc import Callable
+from typing import Any
 
-This module creates a sequential agent that routes conversations
-to the appropriate phase-specific agents.
-"""
-
-from google.adk.agents import LlmAgent
-
-from src.knowledge.cbt_context import (
-    BASE_CBT_CONTEXT,
-    CRISIS_INDICATORS,
-    CRISIS_RESPONSE_TEMPLATE,
+from .composer import compose_system_prompt, retrieve_micro_knowledge
+from .crisis import crisis_scan, safety_message
+from .state import (
+    PHASE_ORDER,
+    ControlBlock,
+    Phase,
+    SessionState,
+    model_dump,
+    model_validate,
 )
 
 
-def check_for_crisis(user_input: str) -> dict:
-    """
-    Check if user input contains crisis indicators.
+def _extract_between(text: str, tag: str) -> str | None:
+    patt = re.compile(rf"<{tag}>\s*(.*?)\s*</{tag}>", re.S | re.I)
+    m = patt.search(text or "")
+    return m.group(1).strip() if m else None
 
-    Args:
-        user_input: The user's message
 
-    Returns:
-        dict: Crisis check results
-    """
-    input_lower = user_input.lower()
+def _extract_control_block(raw: str) -> ControlBlock | None:
+    block = _extract_between(raw, "control")
+    if not block:
+        return None
+    try:
+        data = json.loads(block)
+        # Accept next_phase as string; coerce unknowns to current later.
+        if isinstance(data.get("next_phase"), str):
+            s = data["next_phase"].lower().strip()
+            if s not in {p.value for p in PHASE_ORDER}:
+                # Unknown phase label; let orchestrator ignore it.
+                data["next_phase"] = None
+        result = model_validate(ControlBlock, data)
+        return result if isinstance(result, ControlBlock) else None
+    except Exception:
+        return None
 
-    for indicator in CRISIS_INDICATORS:
-        if indicator in input_lower:
-            return {
-                "crisis_detected": True,
-                "response": CRISIS_RESPONSE_TEMPLATE,
-                "action": "provide_support",
-            }
 
-    return {
-        "crisis_detected": False,
-        "action": "continue",
+def _extract_ui(raw: str) -> str:
+    ui = _extract_between(raw, "ui")
+    if ui:
+        return ui
+    # Fallback: strip control tag if present; return trimmed.
+    txt = re.sub(r"<control>.*?</control>", "", raw or "", flags=re.S | re.I).strip()
+    return txt[:600] if txt else "Thanks for sharing that."
+
+
+def _next_phase(current: Phase, suggested: Phase | None) -> Phase:
+    idx = PHASE_ORDER.index(current)
+    if suggested is None:
+        return current
+    try:
+        sidx = PHASE_ORDER.index(suggested)
+    except ValueError:
+        return current
+    # Allow same or forward only (prevents loops/backjumps).
+    return PHASE_ORDER[max(idx, min(sidx, idx + 1))]
+
+
+def _phase_banner(phase: Phase, note: str | None = None) -> str:
+    labels = {
+        Phase.WARMUP: "Phase: Warm-up — I'll make sure I understood you.",
+        Phase.CLARIFY: "Phase: Clarify — I'll ask at most one quick question.",
+        Phase.REFRAME: "Phase: Reframe — I'll offer a balanced perspective.",
+        Phase.SUMMARY: "Phase: Summary — I'll recap and check how you feel.",
+        Phase.FOLLOWUP: "Phase: Follow-ups — short answers based on the summary.",
+        Phase.CLOSED: "Phase: Closed — this session has ended.",
     }
+    msg = labels.get(phase, f"Phase: {phase.value.title()}")
+    return f"{msg} {note}".strip() if note else msg
 
 
-def create_cbt_orchestrator(model: str = "gemini-2.0-flash") -> LlmAgent:
-    """
-    Create an orchestrator that manages the conversation flow through phases.
-
-    Args:
-        model: The Gemini model to use
-
-    Returns:
-        A SequentialAgent that routes to phase-specific agents
-    """
-    # Orchestrator instruction
-    orchestrator_instruction = (
-        BASE_CBT_CONTEXT
-        + "\n\n## Orchestrator Role\n"
-        + "You are the conversation orchestrator that routes user messages "
-        + "to the appropriate phase-specific agent.\n\n"
-        + "## Critical Safety Check\n"
-        + "ALWAYS check for crisis indicators first using the check_for_crisis tool.\n"
-        + "If a crisis is detected, immediately provide the crisis response "
-        + "and do not continue with CBT exercises.\n\n"
-        + "## Phase Routing\n"
-        + "Based on the current phase in session state, route to:\n"
-        + "- GREETING → GreetingAgent\n"
-        + "- DISCOVERY → DiscoveryAgent\n"
-        + "- REFRAMING → ReframingAgent\n"
-        + "- SUMMARY → SummaryAgent\n\n"
-        + "## Session State\n"
-        + "The session state tracks:\n"
-        + "- phase: Current conversation phase\n"
-        + "- automatic_thought: The thought being worked on\n"
-        + "- emotion_data: Captured emotions and intensity\n"
-        + "- balanced_thought: The reframed thought\n"
-        + "- micro_action: The behavioral experiment\n\n"
-        + "## Phase Transitions\n"
-        + "Agents will handle their own phase transitions using the check_phase_transition tool.\n"
-        + "Your role is to route to the correct agent based on the current phase."
+def _session_closed_message(language: str = "en") -> str:
+    if language.lower().startswith("es"):
+        return (
+            "Gracias por conversar. Hemos llegado al final de las preguntas de seguimiento. "
+            "Puedes volver cuando quieras para una nueva sesión."
+        )
+    return (
+        "Thanks for talking with me. We've reached the end of the follow-ups. "
+        "You can start a new session anytime."
     )
 
-    # Create main router agent that checks for crisis first
-    router_agent = LlmAgent(
-        model=model,
-        name="CBTRouter",
-        instruction=orchestrator_instruction,
-        tools=[check_for_crisis],
+
+def _emit(
+    state: SessionState,
+    ui_text: str,
+    *,
+    banner: str | None = None,
+    control: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    payload = {
+        "phase": state.phase.value,
+        "turn": state.turn,
+        "followups_left": state.followups_left,
+        "banner": banner,
+        "ui_text": ui_text,
+        "control": control or {},
+        "state": model_dump(state),
+        "end_of_session": state.phase in (Phase.CLOSED,),
+    }
+    # If we are in FOLLOWUP, decrement the allowance now.
+    if state.phase == Phase.FOLLOWUP and state.followups_left > 0:
+        state.followups_left -= 1
+    return payload
+
+
+def handle_turn(
+    state: SessionState,
+    user_text: str,
+    adk_llm_call: Callable[..., str],
+) -> dict[str, Any]:
+    """
+    Orchestrates one turn of the session.
+    - crisis handled first (backend)
+    - builds compact system prompt and tiny micro-knowledge
+    - enforces output contract <ui> + <control>{...}</control>
+    - deterministic phase transitions + turn caps + banners
+    """
+    # 1) Crisis pre-check
+    if crisis_scan(user_text):
+        state.crisis_flag = True
+        state.phase = Phase.SUMMARY  # pivot to a safe summary end
+        ui = safety_message(state.user_language)
+        return _emit(state, ui, banner=_phase_banner(state.phase))
+
+    # 2) Prepare prompt materials
+    sys_prompt = compose_system_prompt(state)
+    kb_snippets = retrieve_micro_knowledge(state)
+
+    # 3) Call your Google ADK agent (you pass your own callable)
+    #    We pass state only for context; the model should not echo it.
+    raw_reply = adk_llm_call(
+        system=sys_prompt,
+        kb=kb_snippets,
+        state=model_dump(state),
+        user=user_text,
     )
 
-    # For now, return a simple CBT assistant that can handle all phases
-    # SequentialAgent requires a different architecture
-    return router_agent
+    # 4) Parse + pick next phase
+    control = _extract_control_block(raw_reply)
+    suggested = control.next_phase if control else None
+    prev_phase = state.phase
+    state.phase = _next_phase(state.phase, suggested)
+
+    # 5) Turn management
+    state.turn += 1
+    halfway = state.turn == int(state.max_turns * 0.5)
+    last_turn = state.turn >= state.max_turns - 1
+
+    banner: str | None = None
+    # Announce any phase change.
+    if state.phase != prev_phase:
+        banner = _phase_banner(state.phase)
+
+    # Halfway nudge (non-intrusive).
+    if halfway and state.phase not in (Phase.SUMMARY, Phase.FOLLOWUP, Phase.CLOSED):
+        note = "Halfway through; we'll aim to reframe and move toward the summary soon."
+        banner = _phase_banner(state.phase, note)
+
+    # Enforce a timely summary near the end.
+    if last_turn and state.phase not in (Phase.SUMMARY, Phase.FOLLOWUP, Phase.CLOSED):
+        state.phase = Phase.SUMMARY
+        banner = _phase_banner(
+            state.phase, "We're at the end of this session. I'll summarize next."
+        )
+
+    # 6) Follow-up budget
+    if state.phase == Phase.FOLLOWUP and state.followups_left <= 0:
+        state.phase = Phase.CLOSED
+        return _emit(
+            state,
+            _session_closed_message(state.user_language),
+            banner=_phase_banner(state.phase),
+        )
+
+    # 7) Extract UI text and emit
+    ui = _extract_ui(raw_reply)
+    return _emit(
+        state, ui, banner=banner, control=(model_dump(control) if control else {})
+    )

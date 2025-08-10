@@ -7,13 +7,10 @@ welcoming users and explaining the process.
 
 from google.adk.agents import LlmAgent
 
-from src.agents.phase_manager import (
-    ConversationPhase,
-    PhaseManager,
-    check_phase_transition,
-)
 from src.knowledge.cbt_context import BASE_CBT_CONTEXT
 from src.utils.language_utils import get_language_instruction
+
+from .ui_contract import enforce_ui_contract
 
 
 def create_greeting_agent(
@@ -34,8 +31,8 @@ def create_greeting_agent(
     greeting_instruction = (
         BASE_CBT_CONTEXT
         + f"\n\n## IMPORTANT: Language Requirement\n{language_instruction}\n"
-        + "\n\n## Greeting Phase Instructions\n\n"
-        + PhaseManager.get_phase_instruction(ConversationPhase.GREETING)
+        + "\n\n## WARMUP Phase Instructions\n\n"
+        + "You are in the WARMUP phase. Welcome the user and explain the process."
         + "\n\n## Language Support\n"
         + "1. You MUST respond in the language specified in the Language Requirement section above\n"
         + "2. The language has been pre-selected by the user\n"
@@ -43,14 +40,14 @@ def create_greeting_agent(
         + "4. Maintain consistent language throughout the conversation\n\n"
         + "## Your Specific Tasks:\n"
         + "1. Welcome the user warmly in the specified language and introduce yourself\n"
-        + "2. Explain that this is a 4-phase cognitive reframing process:\n"
-        + "   - Greeting (current): Introduction and overview\n"
-        + "   - Discovery: Understanding thoughts and feelings\n"
-        + "   - Reframing: Identifying and challenging unhelpful thoughts\n"
-        + "   - Summary: Review insights and next steps\n"
+        + "2. Explain the cognitive reframing process we'll follow:\n"
+        + "   - WARMUP (current): Introduction and overview\n"
+        + "   - CLARIFY: Explore your situation, thoughts, emotions, and intensity\n"
+        + "   - REFRAME: Identify distortions and create balanced alternatives\n"
+        + "   - SUMMARY: Review insights and progress (no actions)\n"
         + "3. Include a clear disclaimer that this tool does not replace professional therapy\n"
         + "4. Ask if they're ready to begin the process\n"
-        + "5. When the user acknowledges and is ready, use the check_phase_transition tool to move to 'discovery'\n\n"
+        + "5. When the user acknowledges and is ready, the orchestrator will handle the transition\n\n"
         + "## Important Guidelines:\n"
         + "- Wait for the user to send a message before greeting them\n"
         + "- Do not greet until you receive actual user input\n"
@@ -64,6 +61,6 @@ def create_greeting_agent(
     return LlmAgent(
         model=model,
         name="GreetingAgent",
-        instruction=greeting_instruction,
-        tools=[check_phase_transition],
+        instruction=enforce_ui_contract(greeting_instruction, phase="warmup"),
+        tools=[],
     )

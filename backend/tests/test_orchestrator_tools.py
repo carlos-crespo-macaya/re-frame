@@ -12,43 +12,80 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Tests for the orchestrator crisis check and router agent."""
+"""Tests for the new orchestrator crisis check and session management."""
 
 import pytest
-from google.adk.agents import LlmAgent
 
-from src.agents.orchestrator import (
-    check_for_crisis,
-    create_cbt_orchestrator,
-)
-from src.knowledge.cbt_context import CRISIS_RESPONSE_TEMPLATE
+from src.agents.crisis import crisis_scan, safety_message
+from src.agents.orchestrator import handle_turn
+from src.agents.state import SessionState
 
 
-class TestCheckForCrisis:
+class TestCrisisDetection:
     @pytest.mark.parametrize(
         "text,expected",
         [
-            ("I feel like I want to die", True),
-            ("This is okay", False),
-            ("Thinking of SUICIDE scares me", True),
+            ("I want to kill myself", True),
+            ("I'm going to end it all", True),
+            ("I want to harm others", True),
+            ("I'm feeling sad", False),
+            ("I'm anxious", False),
+            ("I'm stressed about work", False),
         ],
     )
-    def test_crisis_detection_flag(self, text, expected):
-        result = check_for_crisis(text)
-        assert result.get("crisis_detected") is expected
+    def test_crisis_scan(self, text, expected):
+        """Test crisis keyword detection."""
+        assert crisis_scan(text) == expected
 
-    def test_crisis_response_included(self):
-        sample = "I might kill myself"
-        result = check_for_crisis(sample)
-        assert result.get("crisis_detected")
-        assert "support" in result.get("response", "").lower()
-        assert CRISIS_RESPONSE_TEMPLATE in result.get("response")
+    def test_safety_message_english(self):
+        """Test English safety message."""
+        message = safety_message("en")
+        assert "safety matters" in message
+        assert "immediate help" in message
+
+    def test_safety_message_spanish(self):
+        """Test Spanish safety message."""
+        message = safety_message("es")
+        assert "seguridad importa" in message
+        assert "ayuda inmediata" in message
 
 
-class TestCreateOrchestrator:
-    def test_router_agent_structure(self):
-        router = create_cbt_orchestrator(model="test-model")
-        assert isinstance(router, LlmAgent)
-        assert router.name == "CBTRouter"
-        tools = {tool.__name__ for tool in router.tools}
-        assert "check_for_crisis" in tools
+class TestOrchestrator:
+    def test_handle_turn_crisis(self):
+        """Test that crisis detection triggers safety response."""
+        state = SessionState()
+
+        # Mock ADK call function
+        def mock_adk_call(**kwargs):
+            return '<ui>Response</ui><control>{"next_phase":"warmup","missing_fields":[],"suggest_questions":[],"crisis_detected":false}</control>'
+
+        # Test crisis detection
+        result = handle_turn(state, "I want to kill myself", mock_adk_call)
+
+        assert state.crisis_flag is True
+        assert state.phase.value == "summary"
+        assert "safety matters" in result["ui_text"]
+
+    def test_handle_turn_normal(self):
+        """Test normal conversation flow."""
+        state = SessionState()
+
+        # Mock ADK call function
+        def mock_adk_call(**kwargs):
+            return '<ui>Hello! What brings you here today?</ui><control>{"next_phase":"clarify","missing_fields":[],"suggest_questions":[],"crisis_detected":false}</control>'
+
+        result = handle_turn(state, "I'm feeling anxious", mock_adk_call)
+
+        assert state.crisis_flag is False
+        assert result["ui_text"] == "Hello! What brings you here today?"
+        assert state.turn == 1
+
+    def test_session_state_initialization(self):
+        """Test that SessionState initializes correctly."""
+        state = SessionState()
+
+        assert state.phase.value == "warmup"
+        assert state.turn == 0
+        assert state.max_turns == 14
+        assert state.followups_left == 3
+        assert state.crisis_flag is False

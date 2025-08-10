@@ -91,56 +91,6 @@ class TestAgentLanguageInstructions:
             assert "CBT" in agent.instruction or "cognitive" in agent.instruction
 
 
-class TestPhaseManagerLanguageHandling:
-    """Test that phase manager preserves language across transitions."""
-
-    def test_phase_manager_preserves_language(self):
-        """Test that language is preserved when transitioning phases."""
-        from src.agents.phase_manager import PhaseManager
-
-        phase_manager = PhaseManager()
-
-        # Initial context with language
-        context = {
-            "current_phase": "greeting",
-            "language": "es-ES",
-            "user_id": "test-user",
-            "session_id": "test-session",
-        }
-
-        # Transition through phases
-        phases = ["discovery", "reframing", "summary"]
-
-        for next_phase in phases:
-            # Transition to next phase
-            new_context = phase_manager.transition_to_phase(context, next_phase)
-
-            # Verify language is preserved
-            assert new_context.get("language") == "es-ES"
-
-            # Update context for next iteration
-            context = new_context
-
-    def test_phase_manager_handles_missing_language(self):
-        """Test phase manager handles context without language."""
-        from src.agents.phase_manager import PhaseManager
-
-        phase_manager = PhaseManager()
-
-        # Context without language
-        context = {
-            "current_phase": "greeting",
-            "user_id": "test-user",
-            "session_id": "test-session",
-        }
-
-        # Transition should not fail
-        new_context = phase_manager.transition_to_phase(context, "discovery")
-
-        # Language should remain unset (None or missing)
-        assert new_context.get("language") is None
-
-
 class TestOrchestrator:
     """Test orchestrator language handling."""
 

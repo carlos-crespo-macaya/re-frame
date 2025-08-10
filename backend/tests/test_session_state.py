@@ -133,7 +133,7 @@ class TestSessionStatePersistence:
         # The agent's instruction includes CBT context
         # which provides the initial "state" through prompting
         assert "Session State Management" in agent.instruction
-        assert "greeting/discovery/reframing/summary" in agent.instruction
+        assert "warmup/clarify/reframe/summary" in agent.instruction.lower()
 
         # Mock a response that shows awareness of being in initial state
         mock_event = MagicMock()
