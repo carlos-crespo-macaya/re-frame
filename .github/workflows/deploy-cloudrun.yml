@@ -242,7 +242,16 @@ jobs:
             --memory         1Gi \
             --min-instances  0 \
             --max-instances  10 \
-            --set-env-vars   "NODE_ENV=production,GCP_PROJECT_ID=${{ env.PROJECT_ID }},GCP_REGION=${{ env.REGION }},BACKEND_INTERNAL_HOST=${INTERNAL_HOST},BACKEND_PUBLIC_URL=${AUDIENCE_URL}${NP_SITE_KEY:+,NEXT_PUBLIC_RECAPTCHA_SITE_KEY=$NP_SITE_KEY}${NP_PROVIDER:+,NEXT_PUBLIC_RECAPTCHA_PROVIDER=$NP_PROVIDER},RECAPTCHA_SECRET_KEY=${{ secrets.RECAPTCHA_SECRET_KEY }},RECAPTCHA_GATE_SECRET=${{ secrets.RECAPTCHA_GATE_SECRET }}${{ secrets.RECAPTCHA_THRESHOLD && format(',RECAPTCHA_THRESHOLD={0}', secrets.RECAPTCHA_THRESHOLD) || '' }}"
+            --set-env-vars   NODE_ENV=production \
+            --set-env-vars   GCP_PROJECT_ID=${{ env.PROJECT_ID }} \
+            --set-env-vars   GCP_REGION=${{ env.REGION }} \
+            --set-env-vars   BACKEND_INTERNAL_HOST=${INTERNAL_HOST} \
+            --set-env-vars   BACKEND_PUBLIC_URL=${AUDIENCE_URL} \
+            ${NP_SITE_KEY:+--set-env-vars NEXT_PUBLIC_RECAPTCHA_SITE_KEY=$NP_SITE_KEY} \
+            ${NP_PROVIDER:+--set-env-vars NEXT_PUBLIC_RECAPTCHA_PROVIDER=$NP_PROVIDER} \
+            --set-env-vars   RECAPTCHA_SECRET_KEY=${{ secrets.RECAPTCHA_SECRET }} \
+            --set-env-vars   RECAPTCHA_GATE_SECRET=${{ secrets.RECAPTCHA_GATE_SECRET }} \
+            ${{ secrets.RECAPTCHA_THRESHOLD && format('--set-env-vars RECAPTCHA_THRESHOLD={0}', secrets.RECAPTCHA_THRESHOLD) || '' }}
 
       - name: Grant frontend SA invoke rights on backend
         run: |
