@@ -36,14 +36,16 @@ def get_db_client() -> firestore.Client | None:
 class FeedbackIn(BaseModel):
     helpful: bool
     reasons: list[str] = Field(default_factory=list)
-    session_id: str | None = None
-    lang: str | None = None
-    platform: str | None = None
-    comment: str | None = None
+    session_id: str | None = Field(default=None, max_length=64)
+    lang: str | None = Field(default=None, max_length=10)
+    platform: str | None = Field(default=None, max_length=32)
+    comment: str | None = Field(default=None, max_length=1000)
     # New optional metadata fields for richer feedback
-    message_id: str | None = None
-    source: str | None = None  # e.g. "feedback_page" | "chat_inline"
-    page_path: str | None = None
+    message_id: str | None = Field(default=None, max_length=128)
+    source: str | None = Field(
+        default=None, max_length=32
+    )  # e.g. "feedback_page" | "chat_inline"
+    page_path: str | None = Field(default=None, max_length=512)
     # Optional lightweight conversation context
     # Expect a list of { role: str, content: str, timestamp?: int }
     context: list[dict] | None = None
@@ -115,10 +117,29 @@ async def post_feedback(
         "context": normalized_context,
     }
 
+    # Log only non-PII metadata
+    log_fields = {
+        "helpful": body.helpful,
+        "reasons": [r for r in body.reasons if r in ALLOWED_REASONS],
+        "session_id": (body.session_id or "none")[:64],
+        "lang": body.lang or "unknown",
+        "platform": body.platform or "unknown",
+        "message_id": body.message_id,
+        "source": body.source,
+        "page_path": body.page_path,
+        "context_size": len(normalized_context or []),
+        "has_comment": bool(normalized_comment),
+    }
+
     client = get_db_client()
     if client is not None:
-        client.collection("feedback_v1").add(doc)
-        logger.info("feedback_received", **doc)
+        try:
+            # Use threadpool to avoid blocking the event loop
+            await run_in_threadpool(lambda: client.collection("feedback_v1").add(doc))
+            logger.info("feedback_received", **log_fields)
+        except Exception as exc:
+            logger.warning("feedback_store_failed", error=str(exc), **log_fields)
+            # Still return success to user - we don't want feedback failures to break UX
     else:
-        logger.info("feedback_received_noop", **doc)
+        logger.info("feedback_received_noop", **log_fields)
     return {"ok": True}

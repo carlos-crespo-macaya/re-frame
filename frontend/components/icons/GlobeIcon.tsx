@@ -12,6 +12,7 @@ export function GlobeIcon({ className = "w-5 h-5", ...props }: GlobeIconProps) {
       stroke="currentColor"
       strokeWidth={1.5}
       viewBox="0 0 24 24"
+      aria-hidden="true"
       {...props}
     >
       <path
