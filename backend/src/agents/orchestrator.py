@@ -25,7 +25,7 @@ def _extract_between(text: str, tag: str) -> str | None:
 def _sanitize_text(raw: str) -> str:
     """Remove tool/code fences and control blocks; trim whitespace.
 
-    - Strips triple‑backtick code blocks (```tool_code, ```python, or any fenced block)
+    - Strips triple-backtick code blocks (```tool_code, ```python, or any fenced block)
     - Removes any remaining <control>...</control>
     - Collapses excessive whitespace
     """
