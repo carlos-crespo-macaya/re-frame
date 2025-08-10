@@ -31,21 +31,7 @@ function getLocale(request: NextRequest): string {
 }
 
 export function middleware(request: NextRequest) {
-  const pathname = request.nextUrl.pathname
-  
-  // Check if the pathname already has a locale
-  const pathnameHasLocale = locales.some(
-    (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
-  )
-
-  if (pathnameHasLocale) {
-    return NextResponse.next()
-  }
-
-  // Redirect if no locale
-  const locale = getLocale(request)
-  const newUrl = new URL(`/${locale}${pathname}`, request.url)
-  return NextResponse.redirect(newUrl)
+  return handleMiddleware(request)
 }
 
 export const config = {
@@ -53,4 +39,89 @@ export const config = {
     // Skip all internal paths (_next, api, etc.)
     '/((?!_next|api|favicon.ico|.*\\..*).*)',
   ],
+}
+
+// --- reCAPTCHA gate integration (edge-safe HMAC verification) ---
+const DISABLED = process.env.RECAPTCHA_DISABLED === '1'
+const GATE_SECRET = process.env.RECAPTCHA_GATE_SECRET || 'dev-only-secret-change-me'
+
+function base64url(ab: ArrayBuffer) {
+  let str = ''
+  const bytes = new Uint8Array(ab)
+  for (let i = 0; i < bytes.length; i++) str += String.fromCharCode(bytes[i])
+  return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '')
+}
+
+async function hmac(payload: string) {
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(GATE_SECRET),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  )
+  const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(payload))
+  return base64url(sig)
+}
+
+async function validGate(value: string | undefined, expected: 'chat_gate' | 'feedback_gate') {
+  if (!value) return false
+  const parts = value.split('.')
+  if (parts.length !== 3) return false
+  const [action, expStr, sig] = parts
+  if (action !== expected) return false
+  const exp = Number(expStr)
+  if (!Number.isFinite(exp) || Date.now() > exp) return false
+  const payload = `${action}.${exp}`
+  const expect = await hmac(payload)
+  return sig === expect
+}
+
+async function handleMiddleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname
+
+  // Check if the pathname already has a locale
+  const pathnameHasLocale = locales.some(
+    (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
+  )
+
+  // Redirect if no locale
+  if (!pathnameHasLocale) {
+    const locale = getLocale(request)
+    const newUrl = new URL(`/${locale}${pathname}`, request.url)
+    return NextResponse.redirect(newUrl)
+  }
+
+  // reCAPTCHA gate checks (skip when disabled)
+  if (!DISABLED) {
+    const url = request.nextUrl
+    const locale = pathname.split('/')[1] || 'en'
+    const search = url.searchParams.toString()
+
+    // Gate /chat
+    if (/^\/(en|es)\/chat(\/|$)/.test(pathname)) {
+      const ok = await validGate(request.cookies.get('rf_chat_gate')?.value, 'chat_gate')
+      if (!ok) {
+        const dest = url.clone()
+        dest.pathname = `/${locale}/gate`
+        dest.searchParams.set('action', 'chat_gate')
+        dest.searchParams.set('redirect', pathname + (search ? `?${search}` : ''))
+        return NextResponse.redirect(dest)
+      }
+    }
+
+    // Gate /feedback
+    if (/^\/(en|es)\/feedback(\/|$)/.test(pathname)) {
+      const ok = await validGate(request.cookies.get('rf_feedback_gate')?.value, 'feedback_gate')
+      if (!ok) {
+        const dest = url.clone()
+        dest.pathname = `/${locale}/gate`
+        dest.searchParams.set('action', 'feedback_gate')
+        dest.searchParams.set('redirect', pathname + (search ? `?${search}` : ''))
+        return NextResponse.redirect(dest)
+      }
+    }
+  }
+
+  return NextResponse.next()
 }
