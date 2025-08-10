@@ -23,5 +23,12 @@ CONTRACT = f"""
 
 
 def enforce_ui_contract(instruction: str, phase: str | None = None) -> str:
+    """Enforce the UI contract.
+    Args:
+        instruction: The instruction to enforce the contract on.
+        phase: The phase to enforce the contract on.
+    Returns:
+        The instruction with the contract enforced.
+    """
     phase_line = f"\nPHASE: {phase.upper()}" if phase else ""
     return instruction + phase_line + "\n" + CONTRACT

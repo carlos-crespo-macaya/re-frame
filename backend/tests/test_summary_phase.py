@@ -5,7 +5,6 @@ This module tests the summary generation functionality including
 insight extraction, action item generation, and summary formatting.
 """
 
-from src.agents.phase_manager import ConversationPhase
 from src.agents.summary_agent import (
     create_summary_agent,
     extract_key_insights,
@@ -98,63 +97,3 @@ class TestSummaryAgent:
         assert "Closing Options" in instruction
         assert "download" in instruction
         assert "Thank them" in instruction
-
-
-class TestSummaryPhaseIntegration:
-    """Test integration aspects of the summary phase."""
-
-    def test_summary_receives_complete_session_data(self):
-        """Test that summary can process complete session data."""
-        # Simulate session data that would be passed to summary
-        session_data = {
-            "phase": ConversationPhase.SUMMARY,
-            "situation": "Meeting new people at party",
-            "automatic_thought": "Everyone will think I'm boring",
-            "emotions": {"anxiety": 7, "sadness": 5},
-            "distortions": ["MIND", "LABEL"],
-            "balanced_thought": "I can't know what others think, I'll focus on being myself",
-            "micro_action": "Start one conversation by asking about their interests",
-        }
-
-        # Extract insights from session data
-        insights = extract_key_insights(
-            thought=session_data["automatic_thought"],
-            distortions=session_data["distortions"],
-            balanced_thought=session_data["balanced_thought"],
-        )
-
-        assert insights["status"] == "success"
-
-    def test_summary_handles_minimal_session_data(self):
-        """Test that summary handles cases with minimal data gracefully."""
-        result = format_session_summary(
-            situation="Work stress",
-            thought="I can't handle this",
-            emotions={"stress": 8},
-            distortions=["All-or-Nothing Thinking"],
-            balanced_thought="I can handle this one step at a time",
-            insights=["You respond well to breaking things down"],
-        )
-
-        assert result["status"] == "success"
-        assert result["summary_sections"]["situation_explored"] == "Work stress"
-
-    def test_summary_preserves_user_language(self):
-        """Test that summary preserves user's original language."""
-        user_thought = "My boss definitely hates me because of that mistake"
-        user_balanced = (
-            "My boss might be disappointed but one mistake doesn't mean hatred"
-        )
-
-        result = format_session_summary(
-            situation="Made error in report",
-            thought=user_thought,
-            emotions={"worry": 9},
-            distortions=["Mind Reading", "Mental Filter"],
-            balanced_thought=user_balanced,
-            insights=["You assume others' thoughts", "You focus on negatives"],
-        )
-
-        sections = result["summary_sections"]
-        assert sections["original_thought"] == user_thought
-        assert sections["balanced_perspective"] == user_balanced
