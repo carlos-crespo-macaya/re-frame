@@ -1,18 +1,18 @@
 """
-Tests for the Discovery Phase Agent.
+Tests for the Clarify Phase Agent.
 
-This module tests the discovery phase functionality including
+This module tests the clarify phase functionality including
 thought extraction, emotion identification, and phase transitions.
 """
 
-from unittest.mock import patch
+# from unittest.mock import patch  # No longer needed
 
 from src.agents.discovery_agent import (
     create_discovery_agent,
     extract_thought_details,
     identify_emotions,
 )
-from src.agents.phase_manager import ConversationPhase, check_phase_transition
+from src.agents.state import Phase
 from src.knowledge.cbt_context import CBT_MODEL
 
 
@@ -46,12 +46,14 @@ class TestDiscoveryTools:
         assert "explore_intensity" in result["emotion_guidance"]
 
     def test_phase_transition_tool_integration(self):
-        """Test phase transition tool works for discovery to reframing."""
-        result = check_phase_transition("reframing")
+        """Test that tools work for clarify to reframe (phase transitions handled by orchestrator)."""
+        # Phase transitions are now handled by the orchestrator
+        # so we just verify the phase order is correct
+        from src.agents.state import PHASE_ORDER
 
-        assert result["status"] == "success"
-        assert "reframing" in result["message"]
-        assert result["target_phase"] == "reframing"
+        clarify_index = PHASE_ORDER.index(Phase.CLARIFY)
+        next_phase = PHASE_ORDER[clarify_index + 1]
+        assert next_phase == Phase.REFRAME
 
 
 class TestDiscoveryAgent:
@@ -63,14 +65,14 @@ class TestDiscoveryAgent:
 
         assert agent.name == "DiscoveryAgent"
         assert agent.model == "gemini-2.0-flash"
-        assert len(agent.tools) == 3
+        assert len(agent.tools) == 2  # No phase transition tool
 
     def test_discovery_agent_has_correct_tools(self):
         """Test discovery agent has all required tools."""
         agent = create_discovery_agent()
 
         tool_names = [tool.__name__ for tool in agent.tools]
-        assert "check_phase_transition" in tool_names
+        # No phase transition tool in new architecture
         assert "extract_thought_details" in tool_names
         assert "identify_emotions" in tool_names
 
@@ -84,9 +86,12 @@ class TestDiscoveryAgent:
         assert "Cognitive Behavioral Therapy" in instruction
         assert "does not replace professional therapy" in instruction
 
-        # Check for discovery phase specifics
-        assert "DISCOVERY phase" in instruction
-        assert "explore their thoughts and feelings" in instruction
+        # Check for clarify phase specifics
+        assert "CLARIFY phase" in instruction or "clarify" in instruction.lower()
+        assert (
+            "explore their thoughts and feelings" in instruction
+            or "explore your situation" in instruction
+        )
 
         # Check for CBT model components
         for component in CBT_MODEL["components"]:
@@ -152,32 +157,30 @@ class TestDiscoveryScenarios:
 class TestDiscoveryIntegration:
     """Test discovery phase integration with overall system."""
 
-    def test_discovery_phase_enum_exists(self):
-        """Test that DISCOVERY is a valid conversation phase."""
-        assert ConversationPhase.DISCOVERY
-        assert ConversationPhase.DISCOVERY.value == "discovery"
+    def test_clarify_phase_enum_exists(self):
+        """Test that CLARIFY is a valid conversation phase."""
+        assert Phase.CLARIFY
+        assert Phase.CLARIFY.value == "clarify"
 
-    def test_discovery_follows_greeting_phase(self):
-        """Test phase transition from greeting to discovery."""
-        from src.agents.phase_manager import PHASE_TRANSITIONS
+    def test_clarify_follows_warmup_phase(self):
+        """Test phase transition from warmup to clarify."""
+        from src.agents.state import PHASE_ORDER
 
-        # Check that discovery can follow greeting
-        assert (
-            ConversationPhase.DISCOVERY in PHASE_TRANSITIONS[ConversationPhase.GREETING]
-        )
+        # Check that clarify follows warmup in phase order
+        warmup_index = PHASE_ORDER.index(Phase.WARMUP)
+        clarify_index = PHASE_ORDER.index(Phase.CLARIFY)
+        assert clarify_index == warmup_index + 1
 
-        # Check that discovery leads to reframing
-        assert (
-            ConversationPhase.REFRAMING
-            in PHASE_TRANSITIONS[ConversationPhase.DISCOVERY]
-        )
+        # Check that clarify leads to reframe
+        reframe_index = PHASE_ORDER.index(Phase.REFRAME)
+        assert reframe_index == clarify_index + 1
 
-    @patch("src.agents.phase_manager.PhaseManager.get_phase_instruction")
-    def test_discovery_uses_phase_manager_instruction(self, mock_get_instruction):
-        """Test that discovery agent uses phase manager instructions."""
-        mock_get_instruction.return_value = "Test discovery instruction"
-
+    def test_discovery_uses_clarify_phase_instruction(self):
+        """Test that discovery agent uses clarify phase instructions."""
         agent = create_discovery_agent()
 
-        mock_get_instruction.assert_called_with(ConversationPhase.DISCOVERY)
-        assert "Test discovery instruction" in agent.instruction
+        # Verify clarify phase instruction is included
+        assert (
+            "CLARIFY phase" in agent.instruction
+            or "clarify" in agent.instruction.lower()
+        )

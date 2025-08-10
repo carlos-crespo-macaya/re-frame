@@ -74,7 +74,7 @@ class TestSummaryAgent:
         agent = create_summary_agent()
 
         instruction = agent.instruction
-        assert "Summary Phase Instructions" in instruction
+        assert "SUMMARY Phase Instructions" in instruction
         assert "summary specialist" in instruction
         assert "What We Explored" in instruction
         assert "What We Discovered" in instruction

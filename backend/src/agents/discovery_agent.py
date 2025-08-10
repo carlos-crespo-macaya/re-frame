@@ -7,11 +7,6 @@ helping users explore their thoughts and emotions.
 
 from google.adk.agents import LlmAgent
 
-from src.agents.phase_manager import (
-    ConversationPhase,
-    PhaseManager,
-    check_phase_transition,
-)
 from src.knowledge.cbt_context import BASE_CBT_CONTEXT, CBT_MODEL
 from src.utils.language_utils import get_language_instruction
 
@@ -96,8 +91,8 @@ def create_discovery_agent(
     discovery_instruction = (
         BASE_CBT_CONTEXT
         + f"\n\n## IMPORTANT: Language Requirement\n{language_instruction}\n"
-        + "## Discovery Phase Instructions\n\n"
-        + PhaseManager.get_phase_instruction(ConversationPhase.DISCOVERY)
+        + "## CLARIFY Phase Instructions\n\n"
+        + "You are in the CLARIFY phase. Help the user explore their situation, thoughts, emotions, and intensity."
         + "\n\n## Your Specific Tasks:\n"
         + "1. Help the user explore their thoughts and feelings about a specific situation\n"
         + "2. Use the CBT model to structure your exploration:\n"
@@ -109,7 +104,7 @@ def create_discovery_agent(
         + "4. Validate their experience without judgment\n"
         + "5. Use the extract_thought_details tool to structure the information\n"
         + "6. Use the identify_emotions tool to help categorize emotions\n"
-        + "7. Once you have a clear picture of the situation, thoughts, and emotions, use check_phase_transition to move to 'reframing'\n\n"
+        + "7. Once you have a clear picture of the situation, thoughts, and emotions, the orchestrator will handle the transition\n\n"
         + "## Important Guidelines:\n"
         + "- Be curious and non-judgmental\n"
         + "- Use empathetic reflections\n"
@@ -129,5 +124,5 @@ def create_discovery_agent(
         model=model,
         name="DiscoveryAgent",
         instruction=enforce_ui_contract(discovery_instruction, phase="clarify"),
-        tools=[check_phase_transition, extract_thought_details, identify_emotions],
+        tools=[extract_thought_details, identify_emotions],
     )

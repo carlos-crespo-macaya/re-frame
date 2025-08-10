@@ -22,13 +22,12 @@ class TestGreetingAgentI18n:
     # Language detection has been removed - using URL parameter only
 
     def test_greeting_agent_has_language_detection_tool(self):
-        """Test that greeting agent has language detection tool."""
-        # In reactive implementation, language detection happens in router, not agent
+        """Test that greeting agent has no tools (orchestrator handles transitions)."""
+        # In new implementation, orchestrator handles all transitions
         agent = create_greeting_agent()
-        tool_names = [tool.__name__ for tool in agent.tools]
-        # Greeting agent should only have phase transition tool
-        assert "check_phase_transition" in tool_names
-        assert "detect_user_language" not in tool_names
+        # Agent should have no tools
+        assert len(agent.tools) == 0
+        # Phase transitions are deterministic, not tool-driven
 
     def test_greeting_agent_instruction_mentions_language(self):
         """Test that greeting agent instructions mention language detection."""

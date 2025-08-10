@@ -7,7 +7,6 @@ The main agent instance for ADK commands is in __agent__.py.
 
 from google.adk.agents import LlmAgent
 
-from src.agents.phase_manager import check_phase_transition, get_current_phase_info
 from src.knowledge.cbt_context import BASE_CBT_CONTEXT
 from src.utils.language_utils import get_language_instruction
 from src.utils.logging import get_logger
@@ -59,12 +58,13 @@ def create_cbt_assistant(
         + "If the user shares their name, remember to use it in subsequent interactions."
         + "\n\n## Conversation Phase Management\n"
         + "This conversation follows a structured flow through phases:\n"
-        + "1. greeting - Welcome and orientation\n"
-        + "2. discovery - Explore thoughts and emotions\n"
-        + "3. reframing - Identify distortions and create balanced alternatives\n"
-        + "4. summary - Recap insights and progress\n\n"
-        + "Use the phase management tools (check_phase_transition, get_current_phase_info) "
-        + "to follow the phases in order (greeting/discovery/reframing/summary)."
+        + "1. WARMUP - Welcome and orientation\n"
+        + "2. CLARIFY - Situation, thought, emotion, intensity\n"
+        + "3. REFRAME - Identify distortions + offer a balanced alternative\n"
+        + "4. SUMMARY - Recap + SUDS/confidence check (no actions)\n"
+        + "5. FOLLOWUP - Brief clarifications only\n"
+        + "6. CLOSED - Session end\n\n"
+        + "Phase transitions are determined by the orchestrator; do not invoke tools."
         + "\n\n## IMPORTANT: Reactive Behavior\n"
         + "Wait for the user to send their first message before greeting them. "
         + "When they do, provide a warm welcome message in response. "
@@ -75,14 +75,14 @@ def create_cbt_assistant(
         "creating_cbt_assistant",
         model=model,
         language_code=language_code,
-        tools=[check_phase_transition, get_current_phase_info],
+        tools=[],
     )
 
     agent = LlmAgent(
         model=model,
         name="CBTAssistant",
         instruction=enforce_ui_contract(enhanced_instruction, phase=None),
-        tools=[check_phase_transition, get_current_phase_info],
+        tools=[],
     )
 
     logger.info("cbt_assistant_created", model=model, agent_name=agent.name)

@@ -7,10 +7,6 @@ recap of their session with key insights and actionable takeaways.
 
 from google.adk.agents import LlmAgent
 
-from src.agents.phase_manager import (
-    ConversationPhase,
-    PhaseManager,
-)
 from src.knowledge.cbt_context import BASE_CBT_CONTEXT
 from src.utils.language_utils import get_language_instruction
 
@@ -110,8 +106,8 @@ def create_summary_agent(
     summary_instruction = (
         BASE_CBT_CONTEXT
         + f"\n\n## IMPORTANT: Language Requirement\n{language_instruction}\n"
-        + "## Summary Phase Instructions\n\n"
-        + PhaseManager.get_phase_instruction(ConversationPhase.SUMMARY)
+        + "## SUMMARY Phase Instructions\n\n"
+        + "You are in the SUMMARY phase. Provide a recap and SUDS/confidence check (no actions)."
         + "\n\n## Your Specific Role:\n"
         + "You are the summary specialist, responsible for creating a concise, relatable "
         + "recap of the CBT session.\n\n"

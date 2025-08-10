@@ -33,7 +33,9 @@ class TestReframingAgent:
         """Test that reframing agent can be created."""
         agent = create_reframing_agent()
         assert agent.name == "ReframingAgent"
-        assert len(agent.tools) == 3  # All reframing tools (no design_micro_action)
+        assert (
+            len(agent.tools) == 2
+        )  # Only evidence and balanced thought tools (no phase transition)
 
     def test_evidence_gathering_for(self):
         """Test evidence gathering for supporting evidence."""
