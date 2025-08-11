@@ -46,7 +46,8 @@ export const config = {
 }
 
 // --- reCAPTCHA gate integration (edge-safe HMAC verification) ---
-const DISABLED = process.env.RECAPTCHA_DISABLED === '1'
+// Temporary kill-switch: default to disabled unless explicitly set to '0'
+const DISABLED = (process.env.RECAPTCHA_DISABLED ?? '1') === '1'
 const GATE_SECRET = process.env.RECAPTCHA_GATE_SECRET || 'dev-only-secret-change-me'
 
 function base64url(ab: ArrayBuffer) {

@@ -16,7 +16,7 @@ class TestCBTAssistant:
     def test_agent_has_name(self):
         """Test that agent has correct name."""
         agent = create_cbt_assistant()
-        assert agent.name == "CBTAssistant"
+        assert agent.name == "Aura"
 
     def test_agent_uses_gemini_model(self):
         """Test that agent uses correct Gemini model."""

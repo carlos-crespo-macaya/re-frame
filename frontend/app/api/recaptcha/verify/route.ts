@@ -4,7 +4,8 @@ import crypto from 'node:crypto'
 export const runtime = 'nodejs' // ensure Node runtime (we use node:crypto)
 
 const SECRET = process.env.RECAPTCHA_SECRET_KEY
-const DISABLED = process.env.RECAPTCHA_DISABLED === '1'
+// Temporary kill-switch: default to disabled unless explicitly set to '0'
+const DISABLED = (process.env.RECAPTCHA_DISABLED ?? '1') === '1'
 const THRESHOLD = Number(process.env.RECAPTCHA_THRESHOLD ?? '0.5')
 const GATE_SECRET = process.env.RECAPTCHA_GATE_SECRET || 'dev-only-secret-change-me'
 
