@@ -80,7 +80,7 @@ def create_cbt_assistant(
 
     agent = LlmAgent(
         model=model,
-        name="CBTAssistant",
+        name="Aura",
         instruction=enforce_ui_contract(enhanced_instruction, phase=None),
         tools=[],
     )
